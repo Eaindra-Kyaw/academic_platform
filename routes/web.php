@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Department;
@@ -83,6 +84,12 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::get('/timetable', [StudentController::class, 'timetable'])->name('timetable');
     Route::get('/progress', [StudentController::class, 'progress'])->name('progress');
 });
+
+// Logout Route
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/login');
+})->name('logout');
 
 // Fallback route for 404
 Route::fallback(function () {

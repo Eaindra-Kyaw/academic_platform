@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         DB::table('users')->insert([
             'role_id' => 1,
             'name' => 'Admin User',
-            'email' => 'admin1@mtu.edu',
+            'email' => 'admin1@mtu.edu.mm',
             'password' => Hash::make('admin001'),
             'is_active' => true,
             'created_at' => Carbon::now(),
@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
             'role_id' => 2,
             'name' => 'Dr. Phyo Thu Zar Tun',
             'email' => 'phyothuzartun@mtu.edu.mm',
-            'password' => Hash::make('password123'),
+            'password' => Hash::make('phyo123'),
             'is_active' => true,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
@@ -45,15 +45,15 @@ class DatabaseSeeder extends Seeder
             'role_id' => 3,
             'name' => 'Eaindra Kyaw',
             'email' => 'eaindrakyaw@mtu.edu.mm',
-            'password' => Hash::make('password123'),
+            'password' => Hash::make('eain123'),
             'is_active' => true,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
 
         $this->command->info('Database seeded with:');
-        $this->command->info('  - Admin: admin1@mtu.edu / admin001');
-        $this->command->info('  - Lecturer: phyothuzartun@mtu.edu.mm / password123 (Dr. Phyo Thu Zar Tun)');
-        $this->command->info('  - Student: eaindrakyaw@mtu.edu.mm / password123 (Eaindra Kyaw)');
+        $this->command->info('  - Admin: admin1@mtu.edu.mm / admin001');
+        $this->command->info('  - Lecturer: phyothuzartun@mtu.edu.mm / phyo123');
+        $this->command->info('  - Student: eaindrakyaw@mtu.edu.mm / eain123');
     }
 }

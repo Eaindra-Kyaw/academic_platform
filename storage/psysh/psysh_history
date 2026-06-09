@@ -114,3 +114,16 @@ $student->save();
 echo\040"Created\0401\040lecturer\040and\0401\040student!";
 \134App\134Models\134User::all(['id',\040'role_id',\040'name',\040'email']);
 \134App\134Models\134User::all(['id',\040'role_id',\040'name',\040'email']);
+//\040Update\040admin\040email
+DB::table('users')->where('email',\040'admin1@mtu.edu')->update(['email'\040=>\040'admin1@mtu.edu.mm']);
+//\040Update\040lecturer\040password
+DB::table('users')->where('email',\040'phyothuzartun@mtu.edu.mm')->update(['password'\040=>\040bcrypt('phyo123')]);
+//\040Update\040student\040password
+DB::table('users')->where('email',\040'eaindrakyaw@mtu.edu.mm')->update(['password'\040=>\040bcrypt('eain123')]);
+echo\040"Credentials\040updated!";
+$users\040=\040\134App\134Models\134User::all();
+\134App\134Models\134User::where('email',\040'phyothuzartun@mtu.edu.mm')->update(['role_id'\040=>\0402]);
+\134App\134Models\134User::where('email',\040'eaindrakyaw@mtu.edu.mm')->update(['role_id'\040=>\0403]);
+\134App\134Models\134User::all(['name',\040'email',\040'role_id']);
+$users\040=\040\134App\134Models\134User::all();
+$lecturer\040=\040\134App\134Models\134User::where('email',\040'phyothuzartun@mtu.edu.mm')->first();
