@@ -2,9 +2,39 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class InterventionLog extends Model
 {
-    //
+    use HasFactory;
+
+    protected $fillable = [
+        'student_id',
+        'course_id',
+        'intervention_type',
+        'intervention_trigger',
+        'intervention_action',
+        'effectiveness_score'
+    ];
+
+    protected $casts = [
+        'effectiveness_score' => 'decimal:2',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    public function student()
+    {
+        return $this->belongsTo(User::class, 'student_id');
+    }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
+    }
 }
