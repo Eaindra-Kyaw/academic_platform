@@ -19,17 +19,16 @@ class LecturerSeeder extends Seeder
             ['name' => 'U Win Zaw', 'email' => 'winzaw@mtu.edu.mm', 'dept_code' => 'EC'],
             ['name' => 'Dr. Tin Tin Hla', 'email' => 'tintinhla@mtu.edu.mm', 'dept_code' => 'EP'],
             ['name' => 'Dr. Kyaw Soe Lwin', 'email' => 'kyawsoelwin@mtu.edu.mm', 'dept_code' => 'ME'],
-            ['name' => 'Dr. Thida Aung', 'email' => 'thidaaung@mtu.edu.mm', 'dept_code' => 'IT'],
-            ['name' => 'U Nay Myo', 'email' => 'naymyo@mtu.edu.mm', 'dept_code' => 'IT'],
-            ['name' => 'Dr. Zaw Min Naing', 'email' => 'zawminnaing@mtu.edu.mm', 'dept_code' => 'MEC'],
-            ['name' => 'Dr. Hla Hla Win', 'email' => 'hlahlawin@mtu.edu.mm', 'dept_code' => 'AE'],
+            ['name' => 'Dr. Thida Aung', 'email' => 'thidaaung@mtu.edu.mm', 'dept_code' => 'Archi'],
+            ['name' => 'U Nay Myo', 'email' => 'naymyo@mtu.edu.mm', 'dept_code' => 'MEC'],
+            ['name' => 'Dr. Zaw Min Naing', 'email' => 'zawminnaing@mtu.edu.mm', 'dept_code' => 'AE'],
         ];
 
         foreach ($lecturers as $lec) {
             $dept = DB::table('departments')->where('code', $lec['dept_code'])->first();
 
             DB::table('users')->insert([
-                'role_id' => 2,
+                'role_id' => 2,  // IMPORTANT: Set role_id to 2 for Lecturer
                 'department_id' => $dept ? $dept->id : null,
                 'name' => $lec['name'],
                 'email' => $lec['email'],

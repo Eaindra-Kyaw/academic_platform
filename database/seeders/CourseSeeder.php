@@ -21,10 +21,9 @@ class CourseSeeder extends Seeder
             ['code' => 'EC301', 'name' => 'Digital Signal Processing', 'dept_code' => 'EC', 'credits' => 3],
             ['code' => 'EC302', 'name' => 'Microcontroller Systems', 'dept_code' => 'EC', 'credits' => 3],
 
-            // Information Technology
-            ['code' => 'IT301', 'name' => 'Data Structures', 'dept_code' => 'IT', 'credits' => 3],
-            ['code' => 'IT302', 'name' => 'Mobile App Development', 'dept_code' => 'IT', 'credits' => 3],
-            ['code' => 'IT303', 'name' => 'Cloud Computing', 'dept_code' => 'IT', 'credits' => 3],
+            // Architectural Engineering
+            ['code' => 'AR301', 'name' => 'Building Design', 'dept_code' => 'Archi', 'credits' => 3],
+            ['code' => 'AR302', 'name' => 'Urban Planning', 'dept_code' => 'Archi', 'credits' => 3],
 
             // Mechanical Engineering
             ['code' => 'ME301', 'name' => 'Thermodynamics', 'dept_code' => 'ME', 'credits' => 3],
@@ -34,7 +33,12 @@ class CourseSeeder extends Seeder
         foreach ($courses as $course) {
             $dept = DB::table('departments')->where('code', $course['dept_code'])->first();
 
-            // Get a random lecturer from same department
+            if (!$dept) {
+                $this->command->warn("Department not found for: " . $course['dept_code']);
+                continue;
+            }
+
+            // Get a random lecturer from same department (if exists)
             $lecturer = DB::table('users')
                 ->where('role_id', 2)
                 ->where('department_id', $dept->id)
@@ -53,6 +57,10 @@ class CourseSeeder extends Seeder
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
+
+            $this->command->info("Added course: " . $course['code'] . " - " . $course['name']);
         }
+
+        $this->command->info("Course seeding completed!");
     }
 }

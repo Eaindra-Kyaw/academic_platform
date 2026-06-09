@@ -6,6 +6,9 @@ use App\Models\Department;
 use App\Models\Course;
 use App\Models\Enrollment;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\LecturerController;
+use App\Http\Controllers\StudentController;
 
 // Test routes (remove after testing)
 Route::get('/test-relations', function () {
@@ -39,88 +42,46 @@ Route::get('/test-relations', function () {
     return $results;
 });
 
-// Dashboard Routes (will be implemented in Day 5)
+// Dashboard Routes - Role-based redirect
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
         $user = auth()->user();
 
         if ($user->role_id == 1) {
-            return view('admin.dashboard');
+            return redirect()->route('admin.dashboard');
         } elseif ($user->role_id == 2) {
-            return view('lecturer.dashboard');
+            return redirect()->route('lecturer.dashboard');
         } else {
-            return view('student.dashboard');
+            return redirect()->route('student.dashboard');
         }
     })->name('dashboard');
 });
 
-// Admin Routes (will be implemented in Day 5)
+// Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
-
-    Route::get('/users', function () {
-        return view('admin.users');
-    })->name('users');
-
-    Route::get('/courses', function () {
-        return view('admin.courses');
-    })->name('courses');
-
-    Route::get('/departments', function () {
-        return view('admin.departments');
-    })->name('departments');
-
-    Route::get('/reports', function () {
-        return view('admin.reports');
-    })->name('reports');
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+    Route::get('/users', [AdminController::class, 'users'])->name('users');
+    Route::get('/courses', [AdminController::class, 'courses'])->name('courses');
+    Route::get('/departments', [AdminController::class, 'departments'])->name('departments');
+    Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
 });
 
-// Lecturer Routes (will be implemented in Day 5)
+// Lecturer Routes
 Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('lecturer.dashboard');
-    })->name('dashboard');
-
-    Route::get('/attendance', function () {
-        return view('lecturer.attendance');
-    })->name('attendance');
-
-    Route::get('/students', function () {
-        return view('lecturer.students');
-    })->name('students');
-
-    Route::get('/schedule', function () {
-        return view('lecturer.schedule');
-    })->name('schedule');
-
-    Route::get('/reports', function () {
-        return view('lecturer.reports');
-    })->name('reports');
+    Route::get('/dashboard', [LecturerController::class, 'dashboard'])->name('dashboard');
+    Route::get('/attendance', [LecturerController::class, 'attendance'])->name('attendance');
+    Route::get('/students', [LecturerController::class, 'students'])->name('students');
+    Route::get('/schedule', [LecturerController::class, 'schedule'])->name('schedule');
+    Route::get('/reports', [LecturerController::class, 'reports'])->name('reports');
 });
 
-// Student Routes (will be implemented in Day 5)
+// Student Routes
 Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('student.dashboard');
-    })->name('dashboard');
-
-    Route::get('/attendance', function () {
-        return view('student.attendance');
-    })->name('attendance');
-
-    Route::get('/scan', function () {
-        return view('student.scan');
-    })->name('scan');
-
-    Route::get('/timetable', function () {
-        return view('student.timetable');
-    })->name('timetable');
-
-    Route::get('/progress', function () {
-        return view('student.progress');
-    })->name('progress');
+    Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
+    Route::get('/attendance', [StudentController::class, 'attendance'])->name('attendance');
+    Route::get('/scan', [StudentController::class, 'scan'])->name('scan');
+    Route::get('/timetable', [StudentController::class, 'timetable'])->name('timetable');
+    Route::get('/progress', [StudentController::class, 'progress'])->name('progress');
 });
 
 // Fallback route for 404
