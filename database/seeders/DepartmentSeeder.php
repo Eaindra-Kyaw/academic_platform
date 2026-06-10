@@ -11,35 +11,28 @@ class DepartmentSeeder extends Seeder
     public function run(): void
     {
         $departments = [
-            ['code' => 'CS', 'name' => 'Computer Engineering and Information Technology', 'head' => 'Dr. Phyo Thu Zar Tun'],
-            ['code' => 'EC', 'name' => 'Electronic Engineering', 'head' => 'Dr. Myo Myint'],
-            ['code' => 'EP', 'name' => 'Electrical Power Engineering', 'head' => 'Dr. Tin Tin Hla'],
-            ['code' => 'ME', 'name' => 'Mechanical Engineering', 'head' => 'Dr. Kyaw Soe Lwin'],
-            ['code' => 'CE', 'name' => 'Civil Engineering', 'head' => 'Dr. Aung Kyaw Myint'],
-            ['code' => 'Archi', 'name' => 'Architectural Engineering', 'head' => 'Dr. Thida Aung'],
-            ['code' => 'MEC', 'name' => 'Mechatronic Engineering', 'head' => 'Dr. Zaw Min Naing'],
-            ['code' => 'AE', 'name' => 'Agricultural Engineering', 'head' => 'Dr. Hla Hla Win'],
+            ['code' => 'CS', 'name' => 'Department of Computer Engineering and Information Technology'],
+            ['code' => 'EC', 'name' => 'Department of Electronic Engineering'],
+            ['code' => 'EP', 'name' => 'Department of Electrical Power Engineering'],
+            ['code' => 'ME', 'name' => 'Department of Mechanical Engineering'],
+            ['code' => 'CE', 'name' => 'Department of Civil Engineering'],
+            ['code' => 'MEC', 'name' => 'Department of Mechatronics Engineering'],
+            ['code' => 'CH', 'name' => 'Department of Chemical Engineering'],
+            ['code' => 'NT', 'name' => 'Department of Nuclear Technology'],
+            ['code' => 'AE', 'name' => 'Department of Agricultural Engineering'],
+            ['code' => 'BT', 'name' => 'Department of Biotechnology'],
+            ['code' => 'AR', 'name' => 'Department of Architecture (B.Arch.)'],
         ];
 
         foreach ($departments as $dept) {
-            // Check if department already exists
-            $exists = DB::table('departments')->where('code', $dept['code'])->exists();
-
-            if (!$exists) {
-                DB::table('departments')->insert([
-                    'code' => $dept['code'],
-                    'name' => $dept['name'],
-                    'head_of_department' => $dept['head'],
-                    'description' => $dept['name'] . ' Department',
-                    'created_at' => Carbon::now(),
-                    'updated_at' => Carbon::now(),
-                ]);
-                $this->command->info("Added department: " . $dept['name']);
-            } else {
-                $this->command->warn("Department already exists: " . $dept['name'] . " - Skipping");
-            }
+            DB::table('departments')->insert([
+                'code' => $dept['code'],
+                'name' => $dept['name'],
+                'description' => $dept['name'],
+                'head_of_department' => 'To be assigned',
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
         }
-
-        $this->command->info("Department seeding completed!");
     }
 }

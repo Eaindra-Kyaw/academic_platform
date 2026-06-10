@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password - MTU Academic System</title>
+    <title>Student Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
@@ -55,6 +55,7 @@
         .logo h2 {
             color: #800000;
             font-size: 20px;
+            margin-top: 10px;
         }
 
         .logo p {
@@ -63,19 +64,22 @@
             margin-top: 5px;
         }
 
+        .role-badge {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
         h1 {
             font-size: 24px;
             font-weight: 700;
             color: #800000;
             text-align: center;
             margin-bottom: 10px;
-        }
-
-        .description {
-            color: #666;
-            font-size: 14px;
-            text-align: center;
-            margin-bottom: 25px;
         }
 
         .input-group {
@@ -129,27 +133,6 @@
             text-decoration: none;
             font-size: 14px;
         }
-
-        .alert-success {
-            background: #dcfce7;
-            color: #166534;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 3px solid #10b981;
-            font-size: 13px;
-            word-break: break-all;
-        }
-
-        .alert-success a {
-            color: #166534;
-        }
-
-        .error {
-            color: #dc2626;
-            font-size: 12px;
-            margin-top: 5px;
-        }
     </style>
 </head>
 
@@ -160,30 +143,25 @@
             <h2>Academic Portal</h2>
         </div>
 
-        <h1>Forgot Password?</h1>
-        <p class="description">Enter your email address and we'll help you reset your password.</p>
+        <div class="role-badge">
+            <i class="bi bi-mortarboard-fill"></i> Student Login
+        </div>
 
-        @if (session('status'))
-            <div class="alert-success">
-                <i class="bi bi-check-circle"></i> {!! session('status') !!}
-            </div>
-        @endif
-
-        <form method="POST" action="{{ route('password.email') }}">
+        <form method="POST" action="{{ route('login') }}">
             @csrf
             <div class="input-group">
                 <label>Email Address</label>
-                <input type="email" name="email" value="{{ old('email') }}" required autofocus>
-                @error('email')
-                    <div class="error">{{ $message }}</div>
-                @enderror
+                <input type="email" name="email" placeholder="Enter your email" required>
             </div>
-
-            <button type="submit" class="btn">Send Reset Link</button>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn">Login as Student</button>
         </form>
 
         <div class="back-link">
-            <a href="{{ route('login') }}"><i class="bi bi-arrow-left"></i> Back to Login</a>
+            <a href="{{ url('/') }}"><i class="bi bi-arrow-left"></i> Back to Home</a>
         </div>
     </div>
 </body>

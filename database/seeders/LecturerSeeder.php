@@ -11,32 +11,15 @@ class LecturerSeeder extends Seeder
 {
     public function run(): void
     {
-        $lecturers = [
-            ['name' => 'Dr. Phyo Thu Zar Tun', 'email' => 'phyothuzartun@mtu.edu.mm', 'dept_code' => 'CS'],
-            ['name' => 'Dr. Aung Ko Ko', 'email' => 'aungkoko@mtu.edu.mm', 'dept_code' => 'CS'],
-            ['name' => 'Daw Thida Soe', 'email' => 'thidasoe@mtu.edu.mm', 'dept_code' => 'CS'],
-            ['name' => 'Dr. Myo Myint', 'email' => 'myomyint@mtu.edu.mm', 'dept_code' => 'EC'],
-            ['name' => 'U Win Zaw', 'email' => 'winzaw@mtu.edu.mm', 'dept_code' => 'EC'],
-            ['name' => 'Dr. Tin Tin Hla', 'email' => 'tintinhla@mtu.edu.mm', 'dept_code' => 'EP'],
-            ['name' => 'Dr. Kyaw Soe Lwin', 'email' => 'kyawsoelwin@mtu.edu.mm', 'dept_code' => 'ME'],
-            ['name' => 'Dr. Thida Aung', 'email' => 'thidaaung@mtu.edu.mm', 'dept_code' => 'Archi'],
-            ['name' => 'U Nay Myo', 'email' => 'naymyo@mtu.edu.mm', 'dept_code' => 'MEC'],
-            ['name' => 'Dr. Zaw Min Naing', 'email' => 'zawminnaing@mtu.edu.mm', 'dept_code' => 'AE'],
-        ];
-
-        foreach ($lecturers as $lec) {
-            $dept = DB::table('departments')->where('code', $lec['dept_code'])->first();
-
-            DB::table('users')->insert([
-                'role_id' => 2,  // IMPORTANT: Set role_id to 2 for Lecturer
-                'department_id' => $dept ? $dept->id : null,
-                'name' => $lec['name'],
-                'email' => $lec['email'],
-                'password' => Hash::make('password123'),
-                'is_active' => true,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
-        }
+        DB::table('users')->insert([
+            'role_id' => 2,
+            'name' => 'Dr. Phyo Thu Zar Tun',
+            'email' => 'phyothuzartun@mtu.edu.mm',
+            'password' => Hash::make('phyo123'),
+            'is_active' => true,
+            'must_change_password' => false,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
     }
 }

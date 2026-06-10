@@ -4,9 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password - MTU Academic System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <title>Set Your Password - MTU Academic System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -28,7 +27,7 @@
             background: white;
             border-radius: 24px;
             padding: 40px;
-            max-width: 500px;
+            max-width: 450px;
             width: 100%;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
@@ -52,30 +51,17 @@
             font-weight: bold;
         }
 
-        .logo h2 {
-            color: #800000;
-            font-size: 20px;
-        }
-
-        .logo p {
-            color: #666;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
-        h1 {
-            font-size: 24px;
-            font-weight: 700;
+        h2 {
             color: #800000;
             text-align: center;
             margin-bottom: 10px;
         }
 
-        .description {
+        p {
             color: #666;
-            font-size: 14px;
             text-align: center;
             margin-bottom: 25px;
+            font-size: 14px;
         }
 
         .input-group {
@@ -87,7 +73,6 @@
             margin-bottom: 8px;
             font-weight: 600;
             color: #333;
-            font-size: 14px;
         }
 
         input {
@@ -103,7 +88,7 @@
             border-color: #800000;
         }
 
-        .btn {
+        button {
             width: 100%;
             padding: 12px;
             background: #800000;
@@ -115,34 +100,8 @@
             cursor: pointer;
         }
 
-        .btn:hover {
+        button:hover {
             background: #5f0000;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .back-link a {
-            color: #800000;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .alert-success {
-            background: #dcfce7;
-            color: #166534;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 3px solid #10b981;
-            font-size: 13px;
-            word-break: break-all;
-        }
-
-        .alert-success a {
-            color: #166534;
         }
 
         .error {
@@ -156,35 +115,31 @@
 <body>
     <div class="card">
         <div class="logo">
-            <div class="logo-icon">Uni</div>
-            <h2>Academic Portal</h2>
+            <div class="logo-icon">MTU</div>
+            <h2>Set Your Password</h2>
+            <p>Please create a secure password for your account</p>
         </div>
 
-        <h1>Forgot Password?</h1>
-        <p class="description">Enter your email address and we'll help you reset your password.</p>
-
-        @if (session('status'))
-            <div class="alert-success">
-                <i class="bi bi-check-circle"></i> {!! session('status') !!}
-            </div>
-        @endif
-
-        <form method="POST" action="{{ route('password.email') }}">
+        <form method="POST" action="{{ route('password.setup') }}">
             @csrf
+            <input type="hidden" name="token" value="{{ $token }}">
+            <input type="hidden" name="email" value="{{ $email }}">
+
             <div class="input-group">
-                <label>Email Address</label>
-                <input type="email" name="email" value="{{ old('email') }}" required autofocus>
-                @error('email')
+                <label>New Password</label>
+                <input type="password" name="password" required>
+                @error('password')
                     <div class="error">{{ $message }}</div>
                 @enderror
             </div>
 
-            <button type="submit" class="btn">Send Reset Link</button>
-        </form>
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <input type="password" name="password_confirmation" required>
+            </div>
 
-        <div class="back-link">
-            <a href="{{ route('login') }}"><i class="bi bi-arrow-left"></i> Back to Login</a>
-        </div>
+            <button type="submit">Set Password & Activate Account</button>
+        </form>
     </div>
 </body>
 

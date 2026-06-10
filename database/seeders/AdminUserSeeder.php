@@ -11,20 +11,15 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Delete existing admin1 if exists
-        DB::table('users')->where('email', 'admin1@mtu.edu')->delete();
-
-        // Insert new admin1
         DB::table('users')->insert([
             'role_id' => 1,
             'name' => 'Admin User',
-            'email' => 'admin1@mtu.edu',
+            'email' => 'admin1@mtu.edu.mm',
             'password' => Hash::make('admin001'),
             'is_active' => true,
+            'must_change_password' => false,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
-
-        $this->command->info('Admin user created: admin1@mtu.edu / admin001');
     }
 }

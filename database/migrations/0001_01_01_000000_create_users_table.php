@@ -31,11 +31,13 @@ return new class extends Migration
             $table->text('address')->nullable();
 
             // Academic Information
-            $table->integer('semester')->nullable();
+            $table->integer('current_year')->nullable()->comment('1=1st Year, 2=2nd Year, 3=3rd Year, 4=4th Year, 5=5th Year, 6=6th Year');
             $table->year('enrollment_year')->nullable();
 
             // Account Status
             $table->boolean('is_active')->default(true);
+            $table->boolean('must_change_password')->default(true);
+            $table->timestamp('password_changed_at')->nullable();
 
             $table->rememberToken();
             $table->timestamps();
