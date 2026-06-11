@@ -85,7 +85,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/users/store', [AdminController::class, 'storeUser'])->name('users.store');
     Route::post('/users/resend-link', [AdminController::class, 'resendSetupLink'])->name('admin.users.resendLink');
     Route::get('/courses', [AdminController::class, 'courses'])->name('courses');
-    Route::get('/departments', [AdminController::class, 'departments'])->name('departments');
+
+    // Department Routes (CRUD)
+    Route::resource('departments', App\Http\Controllers\Admin\DepartmentController::class);
+
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
 });
 

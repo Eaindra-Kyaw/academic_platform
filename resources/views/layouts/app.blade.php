@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'MTU Academic Intelligence System')</title>
 
@@ -178,6 +178,7 @@
             margin-left: 280px;
             padding: 1.5rem;
             min-height: 100vh;
+            width: calc(100% - 280px);
         }
 
         /* Top Bar */
@@ -318,7 +319,9 @@
             color: var(--danger);
         }
 
-        /* Responsive */
+        /* ===== RESPONSIVE STYLES FOR ALL DEVICES ===== */
+
+        /* iPad / Tablet (768px - 1024px) */
         @media (max-width: 1024px) {
             .sidebar {
                 width: 80px;
@@ -333,6 +336,8 @@
 
             .main-content {
                 margin-left: 80px;
+                padding: 1rem;
+                width: calc(100% - 80px);
             }
 
             .nav-item {
@@ -342,9 +347,7 @@
             .nav-item i {
                 width: auto;
             }
-        }
 
-        @media (max-width: 768px) {
             .topbar {
                 flex-direction: column;
                 align-items: flex-start;
@@ -353,6 +356,130 @@
 
             .account-dropdown {
                 align-self: flex-end;
+            }
+
+            .page-title-section h1 {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* iPhone 14 Pro Max / Samsung Galaxy Ultra (430px - 768px) */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 70px;
+                padding: 0.75rem;
+                width: calc(100% - 70px);
+            }
+
+            .sidebar {
+                width: 70px;
+            }
+
+            .topbar {
+                padding: 0.75rem;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .page-title-section h1 {
+                font-size: 1.1rem;
+            }
+
+            .welcome-text {
+                font-size: 0.65rem;
+            }
+
+            .account-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* iPhone 14 / 15 / Samsung S23 (375px - 430px) */
+        @media (max-width: 430px) {
+            .main-content {
+                margin-left: 60px;
+                padding: 0.5rem;
+                width: calc(100% - 60px);
+            }
+
+            .sidebar {
+                width: 60px;
+            }
+
+            .sidebar-header {
+                padding: 0.8rem;
+            }
+
+            .brand-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+
+            .page-title-section h1 {
+                font-size: 0.95rem;
+            }
+
+            .topbar {
+                padding: 0.5rem;
+            }
+
+            .account-avatar {
+                width: 30px;
+                height: 30px;
+                font-size: 0.7rem;
+            }
+
+            .welcome-text {
+                font-size: 0.55rem;
+            }
+        }
+
+        /* iPhone SE / Small Android (320px - 375px) */
+        @media (max-width: 375px) {
+            .main-content {
+                margin-left: 55px;
+                padding: 0.4rem;
+                width: calc(100% - 55px);
+            }
+
+            .sidebar {
+                width: 55px;
+            }
+
+            .brand-icon {
+                width: 30px;
+                height: 30px;
+                font-size: 0.8rem;
+            }
+
+            .page-title-section h1 {
+                font-size: 0.85rem;
+            }
+
+            .welcome-text {
+                font-size: 0.5rem;
+            }
+
+            .topbar {
+                padding: 0.4rem;
+            }
+
+            .account-avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 0.65rem;
+            }
+
+            .nav-item {
+                padding: 0.5rem;
+                margin: 0.2rem 0.5rem;
+            }
+
+            .nav-item i {
+                font-size: 1rem;
             }
         }
     </style>
@@ -367,7 +494,6 @@
                     <div class="brand-icon">Uni</div>
                     <div class="brand-text">
                         <h2>Academic Portal</h2>
-                        {{-- <p>@yield('role', 'Student') Intelligence</p> --}}
                     </div>
                 </div>
             </div>

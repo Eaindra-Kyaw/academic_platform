@@ -74,6 +74,11 @@
                 word-break: break-all;
             }
 
+            .alert-success a {
+                color: #166534;
+                text-decoration: underline;
+            }
+
             .user-table {
                 width: 100%;
                 border-collapse: collapse;
@@ -155,7 +160,8 @@
 
         @if (session('success'))
             <div class="alert-success">
-                <i class="bi bi-check-circle"></i> {{ session('success') }}
+                <i class="bi bi-check-circle"></i>
+                {!! session('success') !!}
             </div>
         @endif
 
@@ -258,9 +264,6 @@
         </div>
     <td>
         <button class="btn-sm" onclick="alert('Edit feature coming soon for {{ $user->name }}')">Edit</button>
-        @if ($user->must_change_password)
-            <button class="btn-sm" onclick="resendSetupLink('{{ $user->email }}')">Resend Link</button>
-        @endif
         </div>
         </tr>
         @endforeach
@@ -286,30 +289,5 @@
 
             roleSelect.addEventListener('change', toggleYearField);
             toggleYearField(); // Run on page load
-
-            // Resend setup link function
-            function resendSetupLink(email) {
-                fetch('/admin/users/resend-link', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify({
-                            email: email
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.link) {
-                            alert('Setup link for ' + data.email + ':\n\n' + data.link);
-                        } else {
-                            alert('Error: ' + (data.error || 'Unknown error'));
-                        }
-                    })
-                    .catch(error => {
-                        alert('Error generating setup link');
-                    });
-            }
         </script>
     @endsection

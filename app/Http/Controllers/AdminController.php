@@ -64,14 +64,10 @@ class AdminController extends Controller
 
         // Generate password setup URL
         $setupUrl = url('/password/setup/' . $token);
+        $clickableLink = '<a href="' . $setupUrl . '" style="color: #166534; text-decoration: underline;" target="_blank">Click here to set password</a>';
 
-        // Send welcome email (or show link on screen)
-        try {
-            Mail::to($user->email)->send(new WelcomeEmail($user, $setupUrl));
-            $message = 'User created successfully! Welcome email sent to ' . $user->email;
-        } catch (\Exception $e) {
-            $message = 'User created successfully! Setup link: ' . $setupUrl;
-        }
+        // ONLY show clickable link (no email message)
+        $message = 'User created successfully!<br><br><strong>Setup Link:</strong> ' . $clickableLink;
 
         return redirect()->back()->with('success', $message);
     }

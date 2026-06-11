@@ -168,3 +168,16 @@ DB::table('departments')->truncate();
 use\040App\134Models\134User;
 use\040Illuminate\134Support\134Str;
 $user\040=\040User::where('email',\040'phyothuzartun@mtu.edu.mm')->first();
+//\040For\040lecturer
+$lecturer\040=\040\134App\134Models\134User::where('email',\040'phyothuzartun@mtu.edu.mm')->first();
+f\040($lecturer)\040{
+//\040For\040student
+$student\040=\040\134App\134Models\134User::where('email',\040'eaindrakyaw@mtu.edu.mm')->first();
+f\040($student)\040{
+exit;
+$user\040=\040\134App\134Models\134User::where('email',\040'phyothuzartun@mtu.edu.mm')->first();
+DB::table('departments')->insert([\012\040\040\040\040'code'\040=>\040'AR',\012\040\040\040\040'name'\040=>\040'Department\040of\040Architectural\040Engineering',\012\040\040\040\040'description'\040=>\040'Department\040of\040Architectural\040Engineering',\012\040\040\040\040'head_of_department'\040=>\040'To\040be\040assigned',\012\040\040\040\040'created_at'\040=>\040now(),\012\040\040\040\040'updated_at'\040=>\040now(),\012]);
+xit;
+exit
+Department::count();
+exit
