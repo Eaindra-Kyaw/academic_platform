@@ -29,7 +29,7 @@
 @section('content')
     <style>
         .form-card {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
             border-radius: 1rem;
@@ -65,7 +65,8 @@
         }
 
         .form-group input:focus,
-        .form-group select:focus {
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: #800000;
         }
@@ -161,7 +162,6 @@
                     @enderror
                 </div>
 
-                <!-- Department as DROPDOWN -->
                 <div class="form-group">
                     <label>Department *</label>
                     <select name="department_id" required>
@@ -169,7 +169,7 @@
                         @foreach ($departments as $dept)
                             <option value="{{ $dept->id }}"
                                 {{ old('department_id', $course->department_id) == $dept->id ? 'selected' : '' }}>
-                                {{ $dept->name }}
+                                {{ $dept->code }} - {{ $dept->name }}
                             </option>
                         @endforeach
                     </select>
@@ -178,7 +178,6 @@
                     @enderror
                 </div>
 
-                <!-- Lecturer as TEXT INPUT (not dropdown) -->
                 <div class="form-group">
                     <label>Lecturer *</label>
                     <input type="text" name="lecturer_name" value="{{ old('lecturer_name', $course->lecturer_name) }}"
@@ -198,7 +197,6 @@
                     @enderror
                 </div>
 
-                <!-- YEAR Dropdown -->
                 <div class="form-group">
                     <label>Year *</label>
                     <select name="year" required>
@@ -221,7 +219,6 @@
                     @enderror
                 </div>
 
-                <!-- SEMESTER Dropdown -->
                 <div class="form-group">
                     <label>Semester *</label>
                     <select name="semester" required>
@@ -283,13 +280,13 @@
                 <div class="form-group">
                     <label>Start Time</label>
                     <input type="time" name="schedule_time"
-                        value="{{ old('schedule_time', $course->schedule_time) }}">
+                        value="{{ old('schedule_time', $course->schedule_time ? \Carbon\Carbon::parse($course->schedule_time)->format('H:i') : '') }}">
                 </div>
 
                 <div class="form-group">
                     <label>End Time</label>
                     <input type="time" name="schedule_end_time"
-                        value="{{ old('schedule_end_time', $course->schedule_end_time) }}">
+                        value="{{ old('schedule_end_time', $course->schedule_end_time ? \Carbon\Carbon::parse($course->schedule_end_time)->format('H:i') : '') }}">
                 </div>
 
                 <div class="form-group full-width">

@@ -12,6 +12,7 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         DB::table('users')->insert([
+            'id' => 1,
             'role_id' => 1,
             'name' => 'Admin User',
             'email' => 'admin1@mtu.edu.mm',

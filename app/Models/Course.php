@@ -28,11 +28,11 @@ class Course extends Model
     ];
 
     protected $casts = [
-    'is_active' => 'boolean',
-    'deleted_at' => 'datetime',
-    'schedule_time' => 'datetime',
-    'schedule_end_time' => 'datetime',
-];
+        'is_active' => 'boolean',
+        'deleted_at' => 'datetime',
+        'schedule_time' => 'datetime',
+        'schedule_end_time' => 'datetime',
+    ];
 
     public function department()
     {
@@ -60,17 +60,17 @@ class Course extends Model
     }
 
     public function scopeActive($query)
-{
-    return $query->where('is_active', true);
-}
+    {
+        return $query->where('is_active', true);
+    }
 
-public function scopeForDepartment($query, $departmentId)
-{
-    return $query->where('department_id', $departmentId);
-}
+    public function scopeForDepartment($query, $departmentId)
+    {
+        return $query->where('department_id', $departmentId);
+    }
 
-public function scopeForSemester($query, $semester)
-{
-    return $query->where('semester', $semester);
-}
+    public function scopeForSemester($query, $semester)
+    {
+        return $query->where('semester', $semester);
+    }
 }

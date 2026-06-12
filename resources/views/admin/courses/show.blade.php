@@ -300,7 +300,7 @@
             </div>
         </div>
 
-        <!-- Enrolled Students Card - FIXED with null check -->
+        <!-- Enrolled Students Card -->
         <div class="detail-card">
             <div class="detail-header">
                 <i class="bi bi-people"></i>
@@ -308,33 +308,35 @@
             </div>
             <div class="detail-body">
                 @if ($course->enrollments && $course->enrollments->count() > 0)
-                    <table class="students-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Student Name</th>
-                                <th>Student ID</th>
-                                <th>Email</th>
-                                <th>Enrollment Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($course->enrollments as $index => $enrollment)
+                    <div style="overflow-x: auto;">
+                        <table class="students-table">
+                            <thead>
                                 <tr>
-                                    <td>{{ $index + 1 }}</td>
-                                    <td>{{ $enrollment->student->name ?? 'N/A' }}</td>
-                                    <td>{{ $enrollment->student->student_id ?? 'N/A' }}</td>
-                                    <td>{{ $enrollment->student->email ?? 'N/A' }}</td>
-                                    <td>{{ $enrollment->created_at ? $enrollment->created_at->format('d M Y') : 'N/A' }}
-                                    </td>
-                                    <td>
-                                        <span class="badge-active">Enrolled</span>
-                                    </td>
+                                    <th>#</th>
+                                    <th>Student Name</th>
+                                    <th>Student ID</th>
+                                    <th>Email</th>
+                                    <th>Enrollment Date</th>
+                                    <th>Status</th>
                                 </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach ($course->enrollments as $index => $enrollment)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $enrollment->student->name ?? 'N/A' }}</td>
+                                        <td>{{ $enrollment->student->student_id ?? 'N/A' }}</td>
+                                        <td>{{ $enrollment->student->email ?? 'N/A' }}</td>
+                                        <td>{{ $enrollment->created_at ? $enrollment->created_at->format('d M Y') : 'N/A' }}
+                                        </td>
+                                        <td>
+                                            <span class="badge-active">Enrolled</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @else
                     <div class="empty-state">
                         <i class="bi bi-person-x" style="font-size: 2rem; color: #9ca3af;"></i>

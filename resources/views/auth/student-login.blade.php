@@ -65,8 +65,8 @@
         }
 
         .role-badge {
-            background: #e0f2fe;
-            color: #0369a1;
+            background: #fef3c7;
+            color: #92400e;
             padding: 10px;
             border-radius: 12px;
             text-align: center;
@@ -133,6 +133,20 @@
             text-decoration: none;
             font-size: 14px;
         }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border-left: 4px solid #dc2626;
+        }
+
+        .alert-danger p {
+            margin: 0;
+        }
     </style>
 </head>
 
@@ -147,11 +161,20 @@
             <i class="bi bi-mortarboard-fill"></i> Student Login
         </div>
 
-        <form method="POST" action="{{ route('login') }}">
+        @if ($errors->any())
+            <div class="alert-danger">
+                @foreach ($errors->all() as $error)
+                    <p><i class="bi bi-exclamation-triangle-fill"></i> {{ $error }}</p>
+                @endforeach
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('student.login.submit') }}">
             @csrf
             <div class="input-group">
                 <label>Email Address</label>
-                <input type="email" name="email" placeholder="Enter your email" required>
+                <input type="email" name="email" placeholder="Enter your email" value="{{ old('email') }}"
+                    required>
             </div>
             <div class="input-group">
                 <label>Password</label>

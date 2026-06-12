@@ -29,7 +29,7 @@
 @section('content')
     <style>
         .form-card {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             background: white;
             border-radius: 1rem;
@@ -65,7 +65,8 @@
         }
 
         .form-group input:focus,
-        .form-group select:focus {
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: #800000;
         }
@@ -160,14 +161,13 @@
                     @enderror
                 </div>
 
-                <!-- Department as DROPDOWN -->
                 <div class="form-group">
                     <label>Department *</label>
                     <select name="department_id" required>
                         <option value="">Select Department</option>
                         @foreach ($departments as $dept)
                             <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>
-                                {{ $dept->name }}
+                                {{ $dept->code }} - {{ $dept->name }}
                             </option>
                         @endforeach
                     </select>
@@ -176,7 +176,6 @@
                     @enderror
                 </div>
 
-                <!-- Lecturer as TEXT INPUT -->
                 <div class="form-group">
                     <label>Lecturer *</label>
                     <input type="text" name="lecturer_name" value="{{ old('lecturer_name') }}"
@@ -196,7 +195,6 @@
                     @enderror
                 </div>
 
-                <!-- YEAR Dropdown -->
                 <div class="form-group">
                     <label>Year *</label>
                     <select name="year" required>
@@ -215,7 +213,6 @@
                     @enderror
                 </div>
 
-                <!-- SEMESTER Dropdown - Now stores strings -->
                 <div class="form-group">
                     <label>Semester *</label>
                     <select name="semester" required>

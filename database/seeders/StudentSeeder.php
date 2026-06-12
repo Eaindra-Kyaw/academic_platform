@@ -15,6 +15,7 @@ class StudentSeeder extends Seeder
         $dept = DB::table('departments')->where('code', 'CS')->first();
 
         DB::table('users')->insert([
+            'id' => 3,
             'role_id' => 3,
             'department_id' => $dept ? $dept->id : null,
             'name' => 'Eaindra Kyaw',

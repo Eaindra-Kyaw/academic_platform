@@ -12,6 +12,7 @@ class LecturerSeeder extends Seeder
     public function run(): void
     {
         DB::table('users')->insert([
+            'id' => 2,
             'role_id' => 2,
             'name' => 'Dr. Phyo Thu Zar Tun',
             'email' => 'phyothuzartun@mtu.edu.mm',

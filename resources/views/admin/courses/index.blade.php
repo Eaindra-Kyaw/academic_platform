@@ -28,7 +28,6 @@
 
 @section('content')
     <style>
-        /* Modern Course Management Styles */
         .stats-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -105,15 +104,6 @@
         .filter-input:focus {
             outline: none;
             border-color: #800000;
-            ring: 2px solid rgba(128, 0, 0, 0.1);
-        }
-
-        .filter-input label {
-            display: block;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #6b7280;
-            margin-bottom: 0.25rem;
         }
 
         .action-buttons-group {
@@ -132,7 +122,6 @@
             font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
@@ -140,7 +129,6 @@
 
         .btn-filter-primary:hover {
             background: #9a0000;
-            transform: translateY(-1px);
         }
 
         .btn-filter-secondary {
@@ -152,7 +140,6 @@
             font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -172,7 +159,6 @@
             font-size: 0.8rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -208,7 +194,6 @@
             font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
             color: #6b7280;
             border-bottom: 1px solid #e5e7eb;
         }
@@ -267,7 +252,6 @@
             display: inline-flex;
             align-items: center;
             gap: 0.25rem;
-            transition: all 0.15s;
             cursor: pointer;
             border: none;
         }
@@ -317,17 +301,19 @@
             background: #fee2e2;
         }
 
+        .action-toggle {
+            background: #f3e8ff;
+            color: #6b21a5;
+        }
+
+        .action-toggle:hover {
+            background: #e9d5ff;
+        }
+
         .schedule-cell {
             font-size: 0.7rem;
             white-space: nowrap;
             font-family: monospace;
-        }
-
-        .dept-cell {
-            max-width: 200px;
-            white-space: normal;
-            word-break: break-word;
-            line-height: 1.4;
         }
 
         .add-course-btn {
@@ -340,29 +326,91 @@
             align-items: center;
             gap: 0.5rem;
             font-weight: 500;
-            transition: all 0.2s;
         }
 
         .add-course-btn:hover {
             background: #9a0000;
-            transform: translateY(-1px);
         }
 
+        /* MODERN PAGINATION STYLES */
         .pagination-wrapper {
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             display: flex;
             justify-content: center;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #9ca3af;
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
-        .empty-state i {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+        .pagination li {
+            display: inline-block;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 0.9rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .pagination a {
+            background: white;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        .pagination a:hover {
+            background: #fef3c7;
+            color: #800000;
+            border-color: #800000;
+            transform: translateY(-2px);
+        }
+
+        .pagination .active span {
+            background: #800000;
+            color: white;
+            border: 1px solid #800000;
+            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.25);
+        }
+
+        .pagination .disabled span {
+            background: #f9fafb;
+            color: #d1d5db;
+            border: 1px solid #e5e7eb;
+            cursor: not-allowed;
+        }
+
+        .pagination .disabled span:hover {
+            transform: none;
+        }
+
+        .pagination a i,
+        .pagination span i {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .pagination-info {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            color: #6b7280;
         }
 
         @media (max-width: 768px) {
@@ -381,18 +429,25 @@
             }
 
             .courses-table {
-                min-width: 800px;
+                min-width: 900px;
             }
 
             .action-icons {
                 flex-direction: column;
                 gap: 0.3rem;
             }
+
+            .pagination a,
+            .pagination span {
+                min-width: 34px;
+                height: 34px;
+                padding: 0 0.6rem;
+                font-size: 0.75rem;
+            }
         }
     </style>
 
     <div>
-        <!-- Header with Add Button -->
         <div
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
             <div>
@@ -400,12 +455,13 @@
                 <p style="color: #6b7280; font-size: 0.8rem; margin-top: 0.25rem;">Create, edit, and manage all university
                     courses</p>
             </div>
-            <a href="{{ route('admin.courses.create') }}" class="add-course-btn">
-                <i class="bi bi-plus-circle"></i> Add New Course
-            </a>
+            <div>
+                <a href="{{ route('admin.courses.create') }}" class="add-course-btn">
+                    <i class="bi bi-plus-circle"></i> Add New Course
+                </a>
+            </div>
         </div>
 
-        <!-- Success/Error Messages -->
         @if (session('success'))
             <div
                 style="background: #dcfce7; color: #166534; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border-left: 3px solid #10b981;">
@@ -420,7 +476,6 @@
             </div>
         @endif
 
-        <!-- Statistics Cards -->
         <div class="stats-cards">
             <div class="stat-card">
                 <div class="stat-title">Total Courses</div>
@@ -436,7 +491,6 @@
             </div>
         </div>
 
-        <!-- Filter Section -->
         <div class="filter-section">
             <div class="filter-title">
                 <i class="bi bi-sliders2"></i> Filter Courses
@@ -487,6 +541,13 @@
                     </div>
                     <div>
                         <label
+                            style="display: block; font-size: 0.7rem; font-weight: 600; color: #6b7280; margin-bottom: 0.25rem;">Academic
+                            Year</label>
+                        <input type="text" name="academic_year" class="filter-input" placeholder="e.g., 2024-2025"
+                            value="{{ request('academic_year') }}">
+                    </div>
+                    <div>
+                        <label
                             style="display: block; font-size: 0.7rem; font-weight: 600; color: #6b7280; margin-bottom: 0.25rem;">Status</label>
                         <select name="status" class="filter-input">
                             <option value="">All</option>
@@ -498,17 +559,14 @@
                     <div>
                         <label
                             style="display: block; font-size: 0.7rem; font-weight: 600; color: #6b7280; margin-bottom: 0.25rem;">Search</label>
-                        <input type="text" name="search" class="filter-input" placeholder="Course code or name..."
-                            value="{{ request('search') }}">
+                        <input type="text" name="search" class="filter-input"
+                            placeholder="Course code, name, or lecturer..." value="{{ request('search') }}">
                     </div>
                 </div>
                 <div class="action-buttons-group">
-                    <button type="submit" class="btn-filter-primary">
-                        <i class="bi bi-search"></i> Apply Filters
-                    </button>
-                    <a href="{{ route('admin.courses.index') }}" class="btn-filter-secondary">
-                        <i class="bi bi-arrow-repeat"></i> Reset
-                    </a>
+                    <button type="submit" class="btn-filter-primary"><i class="bi bi-search"></i> Apply Filters</button>
+                    <a href="{{ route('admin.courses.index') }}" class="btn-filter-secondary"><i
+                            class="bi bi-arrow-repeat"></i> Reset</a>
                     <a href="{{ route('admin.courses.index', ['trash' => 'only']) }}"
                         class="btn-trash-filter {{ request('trash') == 'only' ? 'active' : '' }}">
                         <i class="bi bi-trash"></i> View Trash
@@ -517,7 +575,6 @@
             </form>
         </div>
 
-        <!-- Courses Table -->
         <div class="table-wrapper">
             <table class="courses-table">
                 <thead>
@@ -530,6 +587,7 @@
                         <th>Credits</th>
                         <th>Year</th>
                         <th>Semester</th>
+                        <th>Acad Year</th>
                         <th>Schedule</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -550,11 +608,12 @@
                             <td>{{ $courses->firstItem() + $index }}</td>
                             <td><strong>{{ $course->course_code }}</strong></td>
                             <td>{{ $course->course_name }}</td>
-                            <td class="dept-cell">{{ $course->department->name ?? 'N/A' }}</td>
+                            <td>{{ $course->department->name ?? 'N/A' }}</td>
                             <td>{{ $course->lecturer_name ?? 'Not Assigned' }}</td>
                             <td style="text-align: center;">{{ $course->credits }}</td>
                             <td>{{ $course->year ?? 'N/A' }}</td>
                             <td>{{ $course->semester ?? 'N/A' }}</td>
+                            <td>{{ $course->academic_year ?? 'N/A' }}</td>
                             <td class="schedule-cell">{{ $scheduleDisplay }}</td>
                             <td>
                                 @if ($isTrashed)
@@ -579,29 +638,29 @@
                                             onsubmit="return confirm('Permanently delete? This cannot be undone!')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="action-icon action-force">
-                                                <i class="bi bi-trash3"></i> Delete
-                                            </button>
+                                            <button type="submit" class="action-icon action-force"><i
+                                                    class="bi bi-trash3"></i> Delete</button>
                                         </form>
                                     </div>
                                 @else
                                     <div class="action-icons">
                                         <a href="{{ route('admin.courses.show', $course) }}"
-                                            class="action-icon action-view">
-                                            <i class="bi bi-eye"></i> View
-                                        </a>
+                                            class="action-icon action-view"><i class="bi bi-eye"></i> View</a>
                                         <a href="{{ route('admin.courses.edit', $course) }}"
-                                            class="action-icon action-edit">
-                                            <i class="bi bi-pencil"></i> Edit
+                                            class="action-icon action-edit"><i class="bi bi-pencil"></i> Edit</a>
+                                        <a href="{{ route('admin.courses.toggleStatus', $course) }}"
+                                            class="action-icon action-toggle"
+                                            onclick="return confirm('{{ $course->is_active ? 'Deactivate' : 'Activate' }} this course?')">
+                                            <i class="bi bi-{{ $course->is_active ? 'toggle-off' : 'toggle-on' }}"></i>
+                                            {{ $course->is_active ? 'Off' : 'On' }}
                                         </a>
                                         <form method="POST" action="{{ route('admin.courses.destroy', $course) }}"
                                             style="display: inline-block; margin: 0;"
                                             onsubmit="return confirm('Move this course to trash?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="action-icon action-delete">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
+                                            <button type="submit" class="action-icon action-delete"><i
+                                                    class="bi bi-trash"></i> Delete</button>
                                         </form>
                                     </div>
                                 @endif
@@ -609,7 +668,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="empty-state">
+                            <td colspan="12" class="empty-state">
                                 @if (request('trash') == 'only')
                                     <i class="bi bi-trash"></i>
                                     <p>No deleted courses in trash.</p>
@@ -628,8 +687,66 @@
             </table>
         </div>
 
-        <div class="pagination-wrapper">
-            {{ $courses->appends(request()->query())->links() }}
-        </div>
+        <!-- MODERN PAGINATION -->
+        @if ($courses->hasPages())
+            <div class="pagination-wrapper">
+                <ul class="pagination">
+                    @if ($courses->onFirstPage())
+                        <li class="disabled">
+                            <span><i class="bi bi-chevron-double-left"></i> Previous</span>
+                        </li>
+                    @else
+                        <li>
+                            <a href="{{ $courses->previousPageUrl() }}" rel="prev"><i
+                                    class="bi bi-chevron-double-left"></i> Previous</a>
+                        </li>
+                    @endif
+
+                    @php
+                        $start = max(1, $courses->currentPage() - 2);
+                        $end = min($start + 4, $courses->lastPage());
+                        if ($end - $start < 4 && $start > 1) {
+                            $start = max(1, $end - 4);
+                        }
+                    @endphp
+
+                    @if ($start > 1)
+                        <li><a href="{{ $courses->url(1) }}">1</a></li>
+                        @if ($start > 2)
+                            <li class="disabled"><span>...</span></li>
+                        @endif
+                    @endif
+
+                    @for ($page = $start; $page <= $end; $page++)
+                        @if ($page == $courses->currentPage())
+                            <li class="active"><span>{{ $page }}</span></li>
+                        @else
+                            <li><a href="{{ $courses->url($page) }}">{{ $page }}</a></li>
+                        @endif
+                    @endfor
+
+                    @if ($end < $courses->lastPage())
+                        @if ($end < $courses->lastPage() - 1)
+                            <li class="disabled"><span>...</span></li>
+                        @endif
+                        <li><a href="{{ $courses->url($courses->lastPage()) }}">{{ $courses->lastPage() }}</a></li>
+                    @endif
+
+                    @if ($courses->hasMorePages())
+                        <li>
+                            <a href="{{ $courses->nextPageUrl() }}" rel="next">Next <i
+                                    class="bi bi-chevron-double-right"></i></a>
+                        </li>
+                    @else
+                        <li class="disabled">
+                            <span>Next <i class="bi bi-chevron-double-right"></i></span>
+                        </li>
+                    @endif
+                </ul>
+            </div>
+            <div class="pagination-info">
+                Showing {{ $courses->firstItem() }} to {{ $courses->lastItem() }} of {{ $courses->total() }} results
+            </div>
+        @endif
     </div>
 @endsection
