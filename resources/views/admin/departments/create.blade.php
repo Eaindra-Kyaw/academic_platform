@@ -7,11 +7,18 @@
 
 @section('sidebar')
     <div class="nav-label">Management</div>
-    <a href="{{ route('admin.dashboard') }}" class="nav-item"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
-    <a href="{{ route('admin.users') }}" class="nav-item"><i class="bi bi-people"></i><span>User Management</span></a>
-    <a href="{{ route('admin.departments.index') }}" class="nav-item active"><i
-            class="bi bi-building"></i><span>Departments</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-book"></i><span>Course Management</span></a>
+    <a href="/admin/dashboard" class="nav-item @if (request()->routeIs('admin.dashboard')) active @endif">
+        <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
+    </a>
+    <a href="/admin/users" class="nav-item @if (request()->routeIs('admin.users')) active @endif">
+        <i class="bi bi-people"></i><span>User Management</span>
+    </a>
+    <a href="/admin/departments" class="nav-item @if (request()->routeIs('admin.departments.*')) active @endif">
+        <i class="bi bi-building"></i><span>Departments</span>
+    </a>
+    <a href="/admin/courses" class="nav-item @if (request()->routeIs('admin.courses.*')) active @endif">
+        <i class="bi bi-book"></i><span>Course Management</span>
+    </a>
     <div class="nav-label">Analytics</div>
     <a href="#" class="nav-item"><i class="bi bi-calendar"></i><span>Semesters</span></a>
     <a href="#" class="nav-item"><i class="bi bi-megaphone"></i><span>Announcements</span></a>

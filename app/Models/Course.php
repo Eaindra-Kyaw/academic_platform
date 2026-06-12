@@ -4,35 +4,35 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Course extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'department_id',
         'lecturer_id',
+        'lecturer_name',
         'course_code',
         'course_name',
         'credits',
+        'year',
         'semester',
         'academic_year',
+        'room',
         'schedule_day',
         'schedule_time',
         'schedule_end_time',
-        'room',
         'is_active'
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
-    ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
+    'is_active' => 'boolean',
+    'deleted_at' => 'datetime',
+    'schedule_time' => 'datetime',
+    'schedule_end_time' => 'datetime',
+];
 
     public function department()
     {
@@ -54,38 +54,23 @@ class Course extends Model
         return $this->hasMany(AttendanceSession::class);
     }
 
-    public function attendanceEvaluations()
+    public function isActive()
     {
-        return $this->hasMany(AttendanceEvaluation::class);
+        return $this->is_active;
     }
 
-    public function riskPredictions()
-    {
-        return $this->hasMany(RiskPrediction::class);
-    }
+    public function scopeActive($query)
+{
+    return $query->where('is_active', true);
+}
 
-    public function recommendations()
-    {
-        return $this->hasMany(Recommendation::class);
-    }
+public function scopeForDepartment($query, $departmentId)
+{
+    return $query->where('department_id', $departmentId);
+}
 
-    public function peerBenchmarks()
-    {
-        return $this->hasMany(PeerBenchmark::class);
-    }
-
-    public function timetableEntries()
-    {
-        return $this->hasMany(TimetableEntry::class);
-    }
-
-    public function lecturerInsights()
-    {
-        return $this->hasMany(LecturerInsight::class);
-    }
-
-    public function interventionLogs()
-    {
-        return $this->hasMany(InterventionLog::class);
-    }
+public function scopeForSemester($query, $semester)
+{
+    return $query->where('semester', $semester);
+}
 }

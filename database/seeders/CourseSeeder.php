@@ -3,64 +3,50 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
+use App\Models\Course;
+use App\Models\Department;
+use App\Models\User;
 
 class CourseSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
+        $csDept = Department::where('code', 'CS')->first();
+        $lecturer = User::where('role_id', 2)->first();
+
         $courses = [
-            // Computer Engineering
-            ['code' => 'CS301', 'name' => 'Database Management Systems', 'dept_code' => 'CS', 'credits' => 3],
-            ['code' => 'CS302', 'name' => 'Computer Networks', 'dept_code' => 'CS', 'credits' => 3],
-            ['code' => 'CS303', 'name' => 'Operating Systems', 'dept_code' => 'CS', 'credits' => 3],
-            ['code' => 'CS304', 'name' => 'Web Development', 'dept_code' => 'CS', 'credits' => 3],
-
-            // Electronic Engineering
-            ['code' => 'EC301', 'name' => 'Digital Signal Processing', 'dept_code' => 'EC', 'credits' => 3],
-            ['code' => 'EC302', 'name' => 'Microcontroller Systems', 'dept_code' => 'EC', 'credits' => 3],
-
-            // Architectural Engineering
-            ['code' => 'AR301', 'name' => 'Building Design', 'dept_code' => 'Archi', 'credits' => 3],
-            ['code' => 'AR302', 'name' => 'Urban Planning', 'dept_code' => 'Archi', 'credits' => 3],
-
-            // Mechanical Engineering
-            ['code' => 'ME301', 'name' => 'Thermodynamics', 'dept_code' => 'ME', 'credits' => 3],
-            ['code' => 'ME302', 'name' => 'Fluid Mechanics', 'dept_code' => 'ME', 'credits' => 3],
+            [
+                'department_id' => $csDept->id,
+                'lecturer_id' => $lecturer->id,
+                'course_code' => 'CS301',
+                'course_name' => 'Database Systems',
+                'credits' => 3,
+                'semester' => 6,
+                'academic_year' => 2024,
+                'schedule_day' => 'Monday',
+                'schedule_time' => '09:00:00',
+                'schedule_end_time' => '10:30:00',
+                'room' => 'A-203',
+                'is_active' => true,
+            ],
+            [
+                'department_id' => $csDept->id,
+                'lecturer_id' => $lecturer->id,
+                'course_code' => 'CS302',
+                'course_name' => 'Computer Networks',
+                'credits' => 3,
+                'semester' => 6,
+                'academic_year' => 2024,
+                'schedule_day' => 'Tuesday',
+                'schedule_time' => '11:00:00',
+                'schedule_end_time' => '12:30:00',
+                'room' => 'B-101',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($courses as $course) {
-            $dept = DB::table('departments')->where('code', $course['dept_code'])->first();
-
-            if (!$dept) {
-                $this->command->warn("Department not found for: " . $course['dept_code']);
-                continue;
-            }
-
-            // Get a random lecturer from same department (if exists)
-            $lecturer = DB::table('users')
-                ->where('role_id', 2)
-                ->where('department_id', $dept->id)
-                ->inRandomOrder()
-                ->first();
-
-            DB::table('courses')->insert([
-                'department_id' => $dept->id,
-                'lecturer_id' => $lecturer ? $lecturer->id : null,
-                'course_code' => $course['code'],
-                'course_name' => $course['name'],
-                'credits' => $course['credits'],
-                'semester' => 6,
-                'academic_year' => 2024,
-                'is_active' => true,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
-            ]);
-
-            $this->command->info("Added course: " . $course['code'] . " - " . $course['name']);
+            Course::create($course);
         }
-
-        $this->command->info("Course seeding completed!");
     }
 }

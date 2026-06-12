@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\Admin\CourseController;
 
 // Landing Page (Home)
 Route::get('/', function () {
@@ -84,12 +85,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users', [AdminController::class, 'users'])->name('users');
     Route::post('/users/store', [AdminController::class, 'storeUser'])->name('users.store');
     Route::post('/users/resend-link', [AdminController::class, 'resendSetupLink'])->name('admin.users.resendLink');
-    Route::get('/courses', [AdminController::class, 'courses'])->name('courses');
 
-    // Department Routes (CRUD)
+    // Course Routes - points to Admin\CourseController
+    Route::resource('courses', App\Http\Controllers\Admin\CourseController::class);
+
+    // Additional routes for Soft Delete (Restore and Force Delete)
+    Route::get('/courses/{id}/restore', [App\Http\Controllers\Admin\CourseController::class, 'restore'])->name('courses.restore');
+    Route::delete('/courses/{id}/force-delete', [App\Http\Controllers\Admin\CourseController::class, 'forceDelete'])->name('courses.force-delete');
+
+    // Department Routes
     Route::resource('departments', App\Http\Controllers\Admin\DepartmentController::class);
 
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+
 });
 
 // Lecturer Routes

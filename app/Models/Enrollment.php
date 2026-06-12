@@ -10,14 +10,10 @@ class Enrollment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'student_id', 'course_id', 'enrollment_date', 'status', 'approved_at', 'dropped_at',
-        'attendance_percentage', 'roll_call_mark', 'eligibility_status'
-    ];
-
-    protected $casts = [
-        'enrollment_date' => 'date',
-        'approved_at' => 'datetime',
-        'dropped_at' => 'datetime',
+        'student_id',
+        'course_id',
+        'enrollment_date',
+        'status',
     ];
 
     public function student()
