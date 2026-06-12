@@ -7,14 +7,31 @@
 
 @section('sidebar')
     <div class="nav-label">Main</div>
-    <a href="#" class="nav-item active"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-qr-code-scan"></i><span>Take Attendance</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-clock-history"></i><span>Session History</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-people"></i><span>All Students</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-calendar3"></i><span>Schedule</span></a>
+    <a href="{{ route('lecturer.dashboard') }}" class="nav-item active">
+        <i class="bi bi-speedometer2"></i><span>Dashboard</span>
+    </a>
+    <a href="{{ route('lecturer.attendance.take') }}" class="nav-item">
+        <i class="bi bi-qr-code-scan"></i><span>Take Attendance</span>
+    </a>
+    <a href="{{ route('lecturer.enrollments.index') }}" class="nav-item">
+        <i class="bi bi-list-check"></i><span>Enrollments</span>
+    </a>
+    <a href="{{ route('lecturer.students') }}" class="nav-item">
+        <i class="bi bi-people"></i><span>All Students</span>
+    </a>
+    <a href="{{ route('lecturer.attendance.history') }}" class="nav-item">
+        <i class="bi bi-clock-history"></i><span>Session History</span>
+    </a>
+    <a href="{{ route('lecturer.schedule') }}" class="nav-item">
+        <i class="bi bi-calendar3"></i><span>Schedule</span>
+    </a>
     <div class="nav-label">Reports</div>
-    <a href="#" class="nav-item"><i class="bi bi-download"></i><span>Export Reports</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
+    <a href="{{ route('lecturer.reports') }}" class="nav-item">
+        <i class="bi bi-download"></i><span>Export Reports</span>
+    </a>
+    <a href="{{ route('lecturer.announcements') }}" class="nav-item">
+        <i class="bi bi-megaphone"></i><span>Announcements</span>
+    </a>
 @endsection
 
 @section('content')
@@ -41,6 +58,12 @@
             text-align: center;
             border: 1px solid #e5e7eb;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .ld-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .ld-stat-number {
@@ -76,8 +99,8 @@
 
         .ld-qr-placeholder {
             background: white;
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             margin: 0.5rem auto;
             border-radius: 0.75rem;
             display: flex;
@@ -86,7 +109,7 @@
         }
 
         .ld-qr-placeholder i {
-            font-size: 2rem;
+            font-size: 3rem;
             color: #800000;
         }
 
@@ -243,6 +266,14 @@
             min-width: 100px;
         }
 
+        .ld-course-select {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #ddd;
+            margin-bottom: 1rem;
+        }
+
         @media (max-width: 992px) {
             .ld-stat-card {
                 flex: 1 1 calc(33.333% - 1rem);
@@ -291,99 +322,97 @@
             .ld-export select {
                 width: 100%;
             }
-
-            .ld-card-header {
-                font-size: 0.8rem;
-            }
-        }
-
-        @media (max-width: 375px) {
-            .ld-stat-number {
-                font-size: 1rem;
-            }
-
-            .ld-stat-card {
-                padding: 0.5rem;
-            }
-
-            .ld-live-number {
-                font-size: 1.1rem;
-            }
-
-            .ld-table th,
-            .ld-table td {
-                padding: 0.3rem;
-                font-size: 0.65rem;
-            }
         }
     </style>
 
     <div class="lecturer-container">
+        <!-- Statistics Cards -->
         <div class="ld-stats">
             <div class="ld-stat-card">
-                <div class="ld-stat-number">156</div>
+                <div class="ld-stat-number">{{ $totalStudents ?? 0 }}</div>
                 <div class="ld-stat-label">Total Students</div>
             </div>
             <div class="ld-stat-card">
-                <div class="ld-stat-number" style="color:#dc2626;">23</div>
+                <div class="ld-stat-number" style="color:#dc2626;">{{ $atRiskStudents ?? 0 }}</div>
                 <div class="ld-stat-label">At Risk Students</div>
             </div>
             <div class="ld-stat-card">
-                <div class="ld-stat-number">78%</div>
+                <div class="ld-stat-number">{{ $avgAttendance ?? 0 }}%</div>
                 <div class="ld-stat-label">Avg Attendance</div>
-                <div style="color:#dc2626; font-size:10px;">↓ 3%</div>
             </div>
             <div class="ld-stat-card">
-                <div class="ld-stat-number">84</div>
+                <div class="ld-stat-number">{{ $courseEngagement ?? 0 }}</div>
                 <div class="ld-stat-label">Course Engagement</div>
-                <div style="color:#10b981; font-size:10px;">↑ +5</div>
             </div>
             <div class="ld-stat-card">
-                <div class="ld-stat-number" style="color:#f59e0b;">7</div>
+                <div class="ld-stat-number" style="color:#f59e0b;">{{ $lowAlerts ?? 0 }}</div>
                 <div class="ld-stat-label">Low Alerts</div>
             </div>
             <div class="ld-stat-card">
-                <div class="ld-stat-number">2</div>
-                <div class="ld-stat-label">Active Sessions</div><button class="ld-btn-primary"
-                    style="margin-top:5px; font-size:11px;" onclick="alert('New QR Session')">+ New</button>
+                <div class="ld-stat-number">{{ $activeSessions ?? 0 }}</div>
+                <div class="ld-stat-label">Active Sessions</div>
+                <a href="{{ route('lecturer.attendance.take') }}" class="ld-btn-primary"
+                    style="margin-top:5px; font-size:11px; display:inline-block; text-decoration:none;">+ New</a>
             </div>
         </div>
 
         <div class="ld-two-col">
+            <!-- Active QR Session -->
             <div class="ld-qr">
                 <h5 style="margin-bottom:10px;"><i class="bi bi-qr-code"></i> Active QR Session</h5>
-                <div class="ld-qr-placeholder"><i class="bi bi-qr-code-scan"></i></div>
-                <p>Database Systems (CS301)</p>
-                <p>QR expires: <span id="timer">45</span> sec</p>
+                <div class="ld-qr-placeholder">
+                    @if ($activeSession)
+                        {!! QrCode::size(100)->generate($activeSession->session_token) !!}
+                    @else
+                        <i class="bi bi-qr-code-scan"></i>
+                    @endif
+                </div>
+                <p><strong>{{ $activeSession ? $activeSession->course->course_name : 'No Active Session' }}</strong></p>
+                <p>QR expires: <span id="timer">{{ $activeSession ? $expiresIn : 0 }}</span> sec</p>
                 <div style="display:flex; gap:8px; justify-content:center;">
-                    <button class="ld-btn-danger" onclick="alert('Session ended')">End</button>
-                    <button class="ld-btn-sm" style="background:rgba(255,255,255,0.2); color:white;"
-                        onclick="alert('QR Refreshed')">Refresh</button>
+                    <form method="POST" action="{{ route('lecturer.attendance.end', $activeSession->id ?? 0) }}"
+                        style="display:inline;">
+                        @csrf
+                        <button type="submit" class="ld-btn-danger">End</button>
+                    </form>
+                    <a href="{{ route('lecturer.attendance.generate') }}" class="ld-btn-sm"
+                        style="background:rgba(255,255,255,0.2); color:white; text-decoration:none;">Refresh</a>
                 </div>
             </div>
+
+            <!-- Manual Attendance -->
             <div class="ld-card">
                 <div class="ld-card-header"><i class="bi bi-pencil-square"></i> Manual Attendance</div>
                 <div class="ld-card-body">
-                    <select style="width:100%; padding:6px; margin-bottom:8px; border-radius:6px; border:1px solid #ddd;">
-                        <option>Database Systems (CS301)</option>
-                        <option>Networking (CS302)</option>
-                    </select>
-                    <select style="width:100%; padding:6px; margin-bottom:8px; border-radius:6px; border:1px solid #ddd;">
-                        <option>Select Student</option>
-                        <option>Eaindra Kyaw</option>
-                        <option>Su Mon Kyaw</option>
-                    </select>
-                    <select style="width:100%; padding:6px; margin-bottom:12px; border-radius:6px; border:1px solid #ddd;">
-                        <option>Present</option>
-                        <option>Absent</option>
-                        <option>Late</option>
-                    </select>
-                    <button class="ld-btn-primary" style="width:100%;"
-                        onclick="alert('Manual attendance saved')">Save</button>
+                    <form method="POST" action="{{ route('lecturer.attendance.manual') }}">
+                        @csrf
+                        <select name="course_id" class="ld-course-select" required>
+                            <option value="">Select Course</option>
+                            @foreach ($courses as $course)
+                                <option value="{{ $course->id }}">{{ $course->course_code }} -
+                                    {{ $course->course_name }}</option>
+                            @endforeach
+                        </select>
+                        <select name="student_id" class="ld-course-select" required>
+                            <option value="">Select Student</option>
+                            @foreach ($students as $student)
+                                <option value="{{ $student->id }}">{{ $student->name }}
+                                    ({{ $student->student_id ?? 'No ID' }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <select name="status" class="ld-course-select" required>
+                            <option value="present">Present</option>
+                            <option value="absent">Absent</option>
+                            <option value="late">Late</option>
+                        </select>
+                        <button type="submit" class="ld-btn-primary" style="width:100%;">Save Attendance</button>
+                    </form>
                 </div>
             </div>
         </div>
 
+        <!-- Live Attendance -->
         <div class="ld-card">
             <div class="ld-card-header"><i class="bi bi-clock-history"></i> Live Attendance <span
                     style="background:#10b981; color:white; padding:2px 8px; border-radius:20px; font-size:10px; float:right;">LIVE</span>
@@ -391,30 +420,40 @@
             <div class="ld-card-body">
                 <div class="ld-live-stats">
                     <div class="ld-live-box">
-                        <div class="ld-live-number">28</div>
-                        <div>Present</div><small>71%</small>
+                        <div class="ld-live-number">{{ $presentCount ?? 0 }}</div>
+                        <div>Present</div><small>{{ $presentPercent ?? 0 }}%</small>
                     </div>
                     <div class="ld-live-box">
-                        <div class="ld-live-number" style="color:#dc2626;">8</div>
-                        <div>Absent</div><small>21%</small>
+                        <div class="ld-live-number" style="color:#dc2626;">{{ $absentCount ?? 0 }}</div>
+                        <div>Absent</div><small>{{ $absentPercent ?? 0 }}%</small>
                     </div>
                     <div class="ld-live-box">
-                        <div class="ld-live-number" style="color:#f59e0b;">3</div>
-                        <div>Late</div><small>8%</small>
+                        <div class="ld-live-number" style="color:#f59e0b;">{{ $lateCount ?? 0 }}</div>
+                        <div>Late</div><small>{{ $latePercent ?? 0 }}%</small>
                     </div>
                     <div class="ld-live-box">
-                        <div class="ld-live-number">39</div>
+                        <div class="ld-live-number">{{ $totalEnrolled ?? 0 }}</div>
                         <div>Total</div>
                     </div>
                 </div>
                 <div class="ld-progress">
-                    <div style="width:72%; height:100%; background:#10b981;"></div>
+                    <div style="width:{{ $presentPercent ?? 0 }}%; height:100%; background:#10b981;"></div>
                 </div>
-                <div style="margin-top:10px; padding:8px; background:#fef9c3; border-radius:6px; font-size:12px;">
-                    <strong>Late Arrivals:</strong> Eaindra Kyaw (+8), Su Mon Kyaw (+12), Phone Myint (+5)</div>
+                @if ($lateStudents->count() > 0)
+                    <div style="margin-top:10px; padding:8px; background:#fef9c3; border-radius:6px; font-size:12px;">
+                        <strong>Late Arrivals:</strong>
+                        @foreach ($lateStudents as $late)
+                            {{ $late->student->name }} (+{{ $late->late_minutes ?? '?' }})
+                            @if (!$loop->last)
+                                ,
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </div>
 
+        <!-- Roll Call Calculation -->
         <div class="ld-card">
             <div class="ld-card-header"><i class="bi bi-star-fill"></i> Roll Call Calculation</div>
             <div class="ld-card-body">
@@ -443,6 +482,7 @@
             </div>
         </div>
 
+        <!-- Charts & Insights -->
         <div class="ld-two-col">
             <div class="ld-card">
                 <div class="ld-card-header">Course Engagement Trend</div>
@@ -461,9 +501,10 @@
             </div>
         </div>
 
+        <!-- At-Risk Students -->
         <div class="ld-card">
-            <div class="ld-card-header">At-Risk Students <span class="ld-badge-danger" style="float:right;">23
-                    Students</span></div>
+            <div class="ld-card-header">At-Risk Students <span class="ld-badge-danger"
+                    style="float:right;">{{ $atRiskStudents ?? 0 }} Students</span></div>
             <div class="ld-table-responsive">
                 <table class="ld-table">
                     <thead>
@@ -476,77 +517,111 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong>Eaindra Kyaw</strong></td>
-                            <td>Networking</td>
-                            <td>58%<div class="ld-progress mt-1">
-                                    <div style="width:58%; height:100%; background:#dc2626;"></div>
-                                </div>
-                            </td>
-                            <td><span class="ld-badge-danger">High</span></td>
-                            <td><button class="ld-btn-sm" onclick="alert('Notify')">Notify</button></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Su Mon Kyaw</strong></td>
-                            <td>Database</td>
-                            <td>62%<div class="ld-progress mt-1">
-                                    <div style="width:62%; height:100%; background:#f59e0b;"></div>
-                                </div>
-                            </td>
-                            <td><span class="ld-badge-warning">Medium</span></td>
-                            <td><button class="ld-btn-sm" onclick="alert('Notify')">Notify</button></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Phone Myint</strong></td>
-                            <td>Web Dev</td>
-                            <td>55%<div class="ld-progress mt-1">
-                                    <div style="width:55%; height:100%; background:#dc2626;"></div>
-                                </div>
-                            </td>
-                            <td><span class="ld-badge-danger">High</span></td>
-                            <td><button class="ld-btn-sm" onclick="alert('Notify')">Notify</button></td>
-                        </tr>
-                    </tbody>
-                </table>
+                        @forelse($atRiskList as $risk)
+                            <tr>
+                                <td><strong>{{ $risk->student->name }}</strong></td>
+                                <td>{{ $risk->course->course_name }}
             </div>
-            <div style="padding:12px; border-top:1px solid #e5e7eb;"><button class="ld-btn-primary" style="width:100%;"
-                    onclick="alert('Announcement sent')">Send Announcement to All</button></div>
-        </div>
-
-        <div class="ld-card">
-            <div class="ld-card-header">Export Reports</div>
-            <div class="ld-card-body">
-                <div class="ld-export">
-                    <select>
-                        <option>All Courses</option>
-                        <option>Database</option>
-                        <option>Networking</option>
-                    </select>
-                    <button class="ld-btn-primary" onclick="alert('PDF Export')">PDF</button>
-                    <button class="ld-btn-sm" onclick="alert('Excel Export')">Excel</button>
-                    <button class="ld-btn-sm" onclick="alert('CSV Export')">CSV</button>
+            <td>{{ $risk->attendance_percentage }}%<div class="ld-progress mt-1">
+                    <div style="width:{{ $risk->attendance_percentage }}%; height:100%; background:#dc2626;"></div>
                 </div>
+            </td>
+            <td><span
+                    class="ld-badge-{{ $risk->risk_level == 'High' ? 'danger' : 'warning' }}">{{ $risk->risk_level }}</span>
+        </div>
+        <td><button class="ld-btn-sm" onclick="notifyStudent({{ $risk->student->id }})">Notify</button>
+    </div>
+    </tr>
+@empty
+    <tr>
+        <td colspan="5" style="text-align:center;">No at-risk students detected</td>
+    </tr>
+    @endforelse
+    </tbody>
+    </table>
+    </div>
+    <div style="padding:12px; border-top:1px solid #e5e7eb;">
+        <button class="ld-btn-primary" style="width:100%;" onclick="sendAnnouncement()">Send Announcement to All</button>
+    </div>
+    </div>
+
+    <!-- Export Reports -->
+    <div class="ld-card">
+        <div class="ld-card-header">Export Reports</div>
+        <div class="ld-card-body">
+            <div class="ld-export">
+                <select id="exportCourse">
+                    <option value="all">All Courses</option>
+                    @foreach ($courses as $course)
+                        <option value="{{ $course->id }}">{{ $course->course_code }} - {{ $course->course_name }}
+                        </option>
+                    @endforeach
+                </select>
+                <button class="ld-btn-primary" onclick="exportReport('pdf')">PDF</button>
+                <button class="ld-btn-sm" onclick="exportReport('excel')">Excel</button>
+                <button class="ld-btn-sm" onclick="exportReport('csv')">CSV</button>
             </div>
         </div>
+    </div>
     </div>
 
     <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
         <button onclick="openUniBot()"
-            style="background:#800000; color:white; border:none; padding:10px 16px; border-radius:50px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);"><i
-                class="bi bi-robot"></i> Uni Bot</button>
+            style="background:#800000; color:white; border:none; padding:10px 16px; border-radius:50px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+            <i class="bi bi-robot"></i> Uni Bot
+        </button>
     </div>
 
     <script>
-        function openUniBot() {
-            alert('🤖 Uni Bot: Lecturer Help\n\n- Show at-risk students\n- Attendance summary\n- Export report');
-        }
-        let timer = 45;
-        setInterval(() => {
+        let timer = {{ $expiresIn ?? 0 }};
+        const timerInterval = setInterval(() => {
             if (timer > 0) {
                 timer--;
                 document.getElementById('timer').innerText = timer;
+            } else {
+                clearInterval(timerInterval);
             }
         }, 1000);
+
+        function openUniBot() {
+            alert('🤖 Uni Bot: Lecturer Help\n\n- Show at-risk students\n- Attendance summary\n- Export report');
+        }
+
+        function notifyStudent(studentId) {
+            if (confirm('Send notification to this student?')) {
+                fetch('/lecturer/notify-student/' + studentId, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    }
+                }).then(() => alert('Notification sent!'));
+            }
+        }
+
+        function sendAnnouncement() {
+            let message = prompt('Enter announcement message:');
+            if (message) {
+                fetch('/lecturer/send-announcement', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message
+                    })
+                }).then(() => alert('Announcement sent to all students!'));
+            }
+        }
+
+        function exportReport(type) {
+            const courseId = document.getElementById('exportCourse').value;
+            alert('Exporting ' + type.toUpperCase() + ' report for ' + (courseId === 'all' ? 'all courses' :
+                'selected course'));
+            // window.location.href = '/lecturer/export/' + type + '?course_id=' + courseId;
+        }
+
         new Chart(document.getElementById('engagementChart'), {
             type: 'line',
             data: {

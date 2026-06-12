@@ -19,6 +19,9 @@
     <a href="/admin/courses" class="nav-item @if (request()->routeIs('admin.courses.*')) active @endif">
         <i class="bi bi-book"></i><span>Course Management</span>
     </a>
+    <a href="{{ route('admin.enrollments.index') }}" class="nav-item @if (request()->routeIs('admin.enrollments.*')) active @endif">
+        <i class="bi bi-list-check"></i><span>Enrollments</span>
+    </a>
     <div class="nav-label">Analytics</div>
     <a href="#" class="nav-item"><i class="bi bi-calendar"></i><span>Semesters</span></a>
     <a href="#" class="nav-item"><i class="bi bi-megaphone"></i><span>Announcements</span></a>

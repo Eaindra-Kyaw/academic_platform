@@ -12,6 +12,8 @@ use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Auth\RoleLoginController;
+use App\Http\Controllers\Admin\EnrollmentController;
+use App\Http\Controllers\Student\EnrollmentController as StudentEnrollmentController;
 
 // Landing Page (Home)
 Route::get('/', function () {
@@ -109,17 +111,31 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('departments', App\Http\Controllers\Admin\DepartmentController::class);
 
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+
+    // ============================================================
+    // ENROLLMENT MANAGEMENT ROUTES (ADMIN)
+    // ============================================================
+    Route::get('/enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
+    Route::get('/enrollments/{id}/approve', [EnrollmentController::class, 'approve'])->name('enrollments.approve');
+    Route::post('/enrollments/{id}/reject', [EnrollmentController::class, 'reject'])->name('enrollments.reject');
 });
 
-// ============================================================
-// LECTURER ROUTES
-// ============================================================
 Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->group(function () {
     Route::get('/dashboard', [LecturerController::class, 'dashboard'])->name('dashboard');
-    Route::get('/attendance', [LecturerController::class, 'attendance'])->name('attendance');
     Route::get('/students', [LecturerController::class, 'students'])->name('students');
     Route::get('/schedule', [LecturerController::class, 'schedule'])->name('schedule');
     Route::get('/reports', [LecturerController::class, 'reports'])->name('reports');
+    Route::get('/announcements', [LecturerController::class, 'announcements'])->name('announcements');
+
+    // Attendance Routes
+    Route::get('/attendance/take', [App\Http\Controllers\Lecturer\AttendanceController::class, 'takeAttendance'])->name('attendance.take');
+    Route::post('/attendance/generate-qr', [App\Http\Controllers\Lecturer\AttendanceController::class, 'generateQR'])->name('attendance.generate');
+    Route::post('/attendance/end/{id}', [App\Http\Controllers\Lecturer\AttendanceController::class, 'endSession'])->name('attendance.end');
+    Route::post('/attendance/manual', [App\Http\Controllers\Lecturer\AttendanceController::class, 'manualAttendance'])->name('attendance.manual');
+    Route::get('/attendance/history', [App\Http\Controllers\Lecturer\AttendanceController::class, 'history'])->name('attendance.history');
+
+    // Enrollment Routes
+    Route::get('/enrollments', [App\Http\Controllers\Lecturer\EnrollmentController::class, 'index'])->name('enrollments.index');
 });
 
 // ============================================================
@@ -131,6 +147,18 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::get('/scan', [StudentController::class, 'scan'])->name('scan');
     Route::get('/timetable', [StudentController::class, 'timetable'])->name('timetable');
     Route::get('/progress', [StudentController::class, 'progress'])->name('progress');
+
+    // ============================================================
+    // ENROLLMENT ROUTES (STUDENT)
+    // ============================================================
+    Route::get('/courses/available', [StudentEnrollmentController::class, 'availableCourses'])->name('courses.available');
+    Route::post('/courses/{course}/enroll', [StudentEnrollmentController::class, 'requestEnrollment'])->name('courses.enroll');
+    Route::get('/my-enrollments', [StudentEnrollmentController::class, 'myEnrollments'])->name('my.enrollments');
+
+    // QR Attendance API Routes (Student)
+Route::post('/scan/process', [StudentController::class, 'processQR'])->name('scan.process');
+Route::post('/scan/manual', [StudentController::class, 'manualAttendance'])->name('scan.manual');
+Route::get('/scan/check-session', [StudentController::class, 'checkSession'])->name('scan.check-session');
 });
 
 // ============================================================

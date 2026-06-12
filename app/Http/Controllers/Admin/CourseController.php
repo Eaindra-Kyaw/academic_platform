@@ -48,10 +48,10 @@ class CourseController extends Controller
         }
 
         $courses = $query->orderBy('course_code')->paginate(15);
-        $departments = Department::orderBy('name')->get();
-        $lecturers = User::where('role_id', 2)->orderBy('name')->get();
+    $departments = Department::orderBy('name')->get();  // Make sure this exists
+    $lecturers = User::where('role_id', 2)->orderBy('name')->get();
 
-        return view('admin.courses.index', compact('courses', 'departments', 'lecturers'));
+    return view('admin.courses.index', compact('courses', 'departments', 'lecturers'));
     }
 
     public function create()

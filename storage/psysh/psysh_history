@@ -238,3 +238,12 @@ pp\134Models\134Course::where('academic_year',\040'2024-2025')->count();
 exit
 App\134Models\134Course::where('academic_year',\040'2024-2025')->count();
 exit
+$courses\040=\040App\134Models\134Course::select('course_code',\040'course_name',\040'year',\040'semester',\040'academic_year')
+foreach\040($courses\040as\040$course)\040{\012\040\040\040\040echo\040$course->year\040.\040"\040-\040"\040.\040$course->semester\040.\040"\040:\040"\040.\040$course->course_code\040.\040"\040-\040"\040.\040$course->course_name\040.\040"\134n";\012}
+App\134Models\134User::where('role_id',\0403)->get(['name',\040'current_year',\040'email']);
+exit
+$courses\040=\040App\134Models\134Course::orderBy('year')->orderBy('semester')->get(['course_code',\040'course_name',\040'year',\040'semester']);
+App\134Models\134Course::select('year',\040App\134Models\134DB::raw('count(*)\040as\040total'))->groupBy('year')->get()->toArray();
+App\134Models\134Course::select('semester',\040App\134Models\134DB::raw('count(*)\040as\040total'))->groupBy('semester')->get()->toArray();
+App\134Models\134Course::where('year',\040'Third\040Year')->get(['course_code',\040'course_name'])->toArray();
+App\134Models\134Course::groupBy('year')->select('year',\040\134Illuminate\134Support\134Facades\134DB::raw('count(*)\040as\040total'))->get()->toArray();
