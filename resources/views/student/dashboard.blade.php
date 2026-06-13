@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Student Dashboard | MTU Academic Intelligence')
+@section('title', 'Student Dashboard')
 @section('role', 'Student')
 @section('page-title', 'Student Dashboard')
 @section('welcome-text', 'Welcome back, ' . Auth::user()->name)
@@ -36,7 +36,6 @@
 
 @section('content')
     <style>
-        /* Student Dashboard Styles */
         .welcome-card {
             background: linear-gradient(135deg, #800000 0%, #5f0000 100%);
             color: white;
@@ -58,12 +57,6 @@
             border-radius: 0.75rem;
             text-align: center;
             border: 1px solid #e5e7eb;
-            transition: all 0.2s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
 
         .stat-number {
@@ -125,12 +118,61 @@
             font-size: 0.7rem;
         }
 
-        .badge-critical {
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+
+        .badge-approved {
+            background: #dcfce7;
+            color: #166534;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+
+        .badge-rejected {
             background: #fee2e2;
             color: #991b1b;
             padding: 0.2rem 0.6rem;
             border-radius: 20px;
             font-size: 0.7rem;
+        }
+
+        .enrollment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f0f2f4;
+        }
+
+        .enrollment-item:last-child {
+            border-bottom: none;
+        }
+
+        .enrollment-course {
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .enrollment-date {
+            font-size: 0.65rem;
+            color: #6b7280;
+        }
+
+        .view-all-link {
+            display: block;
+            text-align: center;
+            padding: 0.5rem;
+            background: #f9fafb;
+            color: #800000;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
 
         .progress-bar-custom {
@@ -152,10 +194,6 @@
 
         .progress-fill.warning {
             background: #f59e0b;
-        }
-
-        .progress-fill.danger {
-            background: #ef4444;
         }
 
         .ahs-ring {
@@ -200,16 +238,6 @@
             border-left-color: #10b981;
         }
 
-        .recommendation-warning {
-            background: #fef3c7;
-            border-left-color: #f59e0b;
-        }
-
-        .recommendation-critical {
-            background: #fef2f2;
-            border-left-color: #ef4444;
-        }
-
         .uni-bot-btn {
             background: #800000;
             color: white;
@@ -219,15 +247,8 @@
             font-weight: 600;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            transition: all 0.2s ease;
         }
 
-        .uni-bot-btn:hover {
-            background: #9a0000;
-            transform: scale(1.02);
-        }
-
-        /* Responsive */
         @media (max-width: 1024px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -255,10 +276,6 @@
                 grid-template-columns: 1fr;
             }
 
-            .stat-number {
-                font-size: 1.2rem;
-            }
-
             .ahs-ring {
                 width: 80px;
                 height: 80px;
@@ -272,44 +289,15 @@
             .ahs-score {
                 font-size: 1.2rem;
             }
-
-            .welcome-card {
-                padding: 1rem;
-            }
-
-            .welcome-card h3 {
-                font-size: 1.1rem;
-            }
-        }
-
-        @media (max-width: 375px) {
-            .stat-number {
-                font-size: 1rem;
-            }
-
-            .stat-card {
-                padding: 0.5rem;
-            }
-
-            .course-name {
-                font-size: 0.75rem;
-            }
-
-            .recommendation-box {
-                font-size: 0.7rem;
-                padding: 0.5rem;
-            }
         }
     </style>
 
     <div>
-        <!-- Welcome Card -->
         <div class="welcome-card">
             <h3>Hello, {{ Auth::user()->name }}! 👋</h3>
             <p style="font-size: 0.85rem; opacity: 0.9;">Here's your academic summary. Keep up the good work!</p>
         </div>
 
-        <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number">82%</div>
@@ -322,34 +310,23 @@
                 <div class="stat-number">7.5</div>
                 <div class="stat-label">Roll Call Mark</div>
                 <div class="stat-label">(out of 10)</div>
-                <div class="progress-bar-custom mt-1">
-                    <div class="progress-fill success" style="width:75%"></div>
-                </div>
             </div>
             <div class="stat-card">
                 <div class="stat-number">86</div>
                 <div class="stat-label">Health Score</div>
                 <div class="stat-label">Stable</div>
-                <div class="progress-bar-custom mt-1">
-                    <div class="progress-fill success" style="width:86%"></div>
-                </div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" style="font-size: 1.2rem; color: #10b981;">Eligible</div>
+                <div class="stat-number">Eligible</div>
                 <div class="stat-label">Exam Status</div>
-                <div class="progress-bar-custom mt-1">
-                    <div class="progress-fill success" style="width:100%"></div>
-                </div>
             </div>
         </div>
 
-        <!-- Two Column Layout -->
         <div class="two-col">
-            <!-- Academic Health Score -->
             <div class="course-list">
                 <div
                     style="padding: 0.75rem 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #800000;">
-                    <i class="bi bi-heart-fill"></i> Academic Score
+                    <i class="bi bi-heart-fill"></i> Academic Health Score
                 </div>
                 <div style="padding: 1rem; text-align: center;">
                     <div class="ahs-ring">
@@ -358,37 +335,24 @@
                             <div style="font-size: 0.7rem;">Stable</div>
                         </div>
                     </div>
-                    <div style="margin-top: 0.75rem; font-size: 0.7rem; color: #6b7280;">
-                        40% Attendance | 25% Roll Call | 20% Streak | 15% Trend
-                    </div>
+                    <div style="margin-top: 0.75rem; font-size: 0.7rem;">40% Attendance | 25% Roll Call | 20% Streak | 15%
+                        Trend</div>
                 </div>
             </div>
-
-            <!-- Risk & Recovery -->
             <div class="course-list">
                 <div
                     style="padding: 0.75rem 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #800000;">
                     <i class="bi bi-shield-exclamation"></i> Risk & Recovery
                 </div>
                 <div style="padding: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                        <span>Risk Level:</span>
-                        <span class="badge-warning">Medium Risk</span>
-                    </div>
+                    <div>Risk Level: <span class="badge-warning">Medium Risk</span></div>
                     <div class="progress-bar-custom mt-1">
                         <div class="progress-fill warning" style="width:42%"></div>
                     </div>
-                    <div style="margin-top: 0.5rem; font-size: 0.8rem;">Risk Score: 42/100</div>
-                    <hr style="margin: 0.75rem 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                        <span>Recovery Status:</span>
-                        <span class="badge-eligible"><i class="bi bi-arrow-up"></i> Recovering</span>
-                    </div>
-                    <div
-                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 0.5rem;">
-                        <span>Streak:</span>
-                        <span><strong>12</strong> consecutive sessions</span>
-                    </div>
+                    <div class="mt-2">Risk Score: 42/100</div>
+                    <hr style="margin: 0.5rem 0;">
+                    <div>Recovery Status: <span class="badge-eligible">Recovering</span></div>
+                    <div>Streak: <strong>12</strong> consecutive sessions</div>
                 </div>
             </div>
         </div>
@@ -400,144 +364,96 @@
                 <i class="bi bi-book-open"></i> My Courses
             </div>
             <div class="course-item">
-                <div>
-                    <span class="course-name">CS301 - Database Systems</span>
-                    <br><small>Dr. Aye Min Thu</small>
-                </div>
-                <div>
-                    88% <span class="badge-eligible">Eligible</span>
-                    <div class="progress-bar-custom mt-1">
-                        <div class="progress-fill success" style="width:88%"></div>
-                    </div>
-                </div>
+                <div><span class="course-name">CS301 - Database Systems</span><br><small>Dr. Aye Min Thu</small></div>
+                <div>88% <span class="badge-eligible">Eligible</span></div>
             </div>
             <div class="course-item">
-                <div>
-                    <span class="course-name">CS302 - Networking</span>
-                    <br><small>Dr. Kyaw Kyaw</small>
-                </div>
-                <div>
-                    67% <span class="badge-warning">Warning</span>
-                    <div class="progress-bar-custom mt-1">
-                        <div class="progress-fill warning" style="width:67%"></div>
-                    </div>
-                </div>
+                <div><span class="course-name">CS302 - Networking</span><br><small>Dr. Kyaw Kyaw</small></div>
+                <div>67% <span class="badge-warning">Warning</span></div>
             </div>
             <div class="course-item">
-                <div>
-                    <span class="course-name">CS303 - Operating Systems</span>
-                    <br><small>Dr. Su Mon</small>
-                </div>
-                <div>
-                    95% <span class="badge-eligible">Eligible</span>
-                    <div class="progress-bar-custom mt-1">
-                        <div class="progress-fill success" style="width:95%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="course-item">
-                <div>
-                    <span class="course-name">CS304 - Web Development</span>
-                    <br><small>Dr. Thida Aung</small>
-                </div>
-                <div>
-                    73% <span class="badge-warning">Warning</span>
-                    <div class="progress-bar-custom mt-1">
-                        <div class="progress-fill warning" style="width:73%"></div>
-                    </div>
-                </div>
+                <div><span class="course-name">CS303 - Operating Systems</span><br><small>Dr. Su Mon</small></div>
+                <div>95% <span class="badge-eligible">Eligible</span></div>
             </div>
         </div>
 
-        <!-- Two Column Bottom -->
-        <div class="two-col">
-            <!-- Peer Benchmarking -->
-            <div class="course-list">
-                <div
-                    style="padding: 0.75rem 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #800000;">
-                    <i class="bi bi-bar-chart"></i> Peer Benchmarking
-                </div>
-                <div style="padding: 1rem;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span>Your Rank:</span>
-                        <span><strong>12 / 45</strong> <span style="color: #10b981;">(Top 27%)</span></span>
-                    </div>
-                    <hr style="margin: 0.5rem 0;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                        <span>Course Avg:</span>
-                        <span><strong>78%</strong></span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                        <span>Dept Avg:</span>
-                        <span><strong>79%</strong></span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Uni Avg:</span>
-                        <span><strong>74%</strong></span>
-                    </div>
-                </div>
+        <!-- Enrollment History Widget (Recent Enrollments) -->
+        <div class="course-list" style="margin-bottom: 1rem;">
+            <div
+                style="padding: 0.75rem 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #800000;">
+                <i class="bi bi-clock-history"></i> Recent Enrollment Activity
             </div>
-
-            <!-- Recovery Plan -->
-            <div class="course-list">
-                <div
-                    style="padding: 0.75rem 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #800000;">
-                    <i class="bi bi-arrow-repeat"></i> Recovery Plan
-                </div>
-                <div style="padding: 1rem;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span>Sessions Needed:</span>
-                        <span><strong>2</strong> more sessions</span>
+            <div style="padding: 0.5rem 0;">
+                @php
+                    $recentEnrollments = \App\Models\Enrollment::where('student_id', Auth::id())
+                        ->with('course')
+                        ->orderBy('created_at', 'desc')
+                        ->limit(5)
+                        ->get();
+                @endphp
+                @if ($recentEnrollments->count() > 0)
+                    @foreach ($recentEnrollments as $enrollment)
+                        <div class="enrollment-item">
+                            <div>
+                                <div class="enrollment-course">{{ $enrollment->course->course_code }} -
+                                    {{ $enrollment->course->course_name }}</div>
+                                <div class="enrollment-date">
+                                    <i class="bi bi-calendar"></i> Requested: {{ $enrollment->created_at->format('d M Y') }}
+                                    @if ($enrollment->status == 'approved' && $enrollment->approved_at)
+                                        | ✅ Approved:
+                                        {{ \Carbon\Carbon::parse($enrollment->approved_at)->format('d M Y') }}
+                                    @elseif($enrollment->status == 'rejected' && $enrollment->rejected_at)
+                                        | ❌ Rejected:
+                                        {{ \Carbon\Carbon::parse($enrollment->rejected_at)->format('d M Y') }}
+                                    @endif
+                                </div>
+                            </div>
+                            <div>
+                                @if ($enrollment->status == 'pending')
+                                    <span class="badge-pending"><i class="bi bi-clock-history"></i> Pending</span>
+                                @elseif($enrollment->status == 'approved')
+                                    <span class="badge-approved"><i class="bi bi-check-circle"></i> Approved</span>
+                                @else
+                                    <span class="badge-rejected"><i class="bi bi-x-circle"></i> Rejected</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                    <a href="{{ route('student.my.enrollments') }}" class="view-all-link">
+                        View All Enrollments <i class="bi bi-arrow-right"></i>
+                    </a>
+                @else
+                    <div style="text-align: center; padding: 1rem; color: #9ca3af;">
+                        <i class="bi bi-inbox"></i>
+                        <p>No enrollment requests yet</p>
+                        <a href="{{ route('student.courses.available') }}" class="btn-sm"
+                            style="background: #800000; color: white; padding: 0.3rem 0.8rem; border-radius: 0.5rem; text-decoration: none;">Browse
+                            Courses</a>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                        <span>Target:</span>
-                        <span>Reach 75% eligibility</span>
-                    </div>
-                    <div class="progress-bar-custom mt-2">
-                        <div class="progress-fill success" style="width:75%"></div>
-                    </div>
-                    <div style="margin-top: 0.5rem; font-size: 0.7rem; color: #6b7280; text-align: center;">
-                        Currently at 67% in Networking
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
 
-        <!-- Recommendations -->
         <div class="course-list">
             <div
                 style="padding: 0.75rem 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #800000;">
                 <i class="bi bi-lightbulb"></i> Recommendations
             </div>
             <div style="padding: 1rem;">
-                <div class="recommendation-box recommendation-warning">
-                    <strong>⚠️ Networking (CS302)</strong><br>
-                    Your attendance is 67%. Attend next 2 sessions to reach eligibility.
-                </div>
-                <div class="recommendation-box recommendation-success">
-                    <strong>✅ Operating Systems (CS303)</strong><br>
-                    Excellent! 95% attendance. Keep it up!
-                </div>
-                <div class="recommendation-box recommendation-warning">
-                    <strong>📖 Web Development (CS304)</strong><br>
-                    Two consecutive absences detected. Review missed materials.
-                </div>
-                <div class="recommendation-box recommendation-success">
-                    <strong>🎯 Database Systems (CS301)</strong><br>
-                    Great consistency! 88% attendance maintained.
-                </div>
+                <div class="recommendation-box"><strong>⚠️ Networking (CS302)</strong><br>Your attendance is 67%. Attend
+                    next 2 sessions to reach eligibility.</div>
+                <div class="recommendation-box recommendation-success"><strong>✅ Operating Systems
+                        (CS303)</strong><br>Excellent! 95% attendance. Keep it up!</div>
             </div>
         </div>
     </div>
 
-    <!-- Floating Uni Bot Button -->
     <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
         <button onclick="openUniBot()" class="uni-bot-btn">
             <i class="bi bi-robot"></i> Uni Bot
         </button>
     </div>
 
-    <!-- Uni Bot Modal -->
     <div id="uniBotModal"
         style="display:none; position:fixed; bottom:80px; right:20px; width:350px; background:white; border-radius:1rem; box-shadow:0 20px 40px rgba(0,0,0,0.2); z-index:1001; overflow:hidden;">
         <div
@@ -547,36 +463,22 @@
                 style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">&times;</button>
         </div>
         <div style="padding:15px; max-height:400px; overflow-y:auto;">
-            <div style="margin-bottom:15px;">
-                <div style="background:#f3f4f6; padding:10px; border-radius:12px; margin-bottom:10px;">
-                    <i class="bi bi-robot" style="color:#800000;"></i> Hello! How can I help you today?
-                </div>
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    <button onclick="askBot('attendance')"
-                        style="background:#f8f9fa; border:1px solid #e5e7eb; padding:8px; border-radius:8px; text-align:left; cursor:pointer;">
-                        📊 What is my attendance?
-                    </button>
-                    <button onclick="askBot('eligibility')"
-                        style="background:#f8f9fa; border:1px solid #e5e7eb; padding:8px; border-radius:8px; text-align:left; cursor:pointer;">
-                        ✅ Am I eligible for exam?
-                    </button>
-                    <button onclick="askBot('risk')"
-                        style="background:#f8f9fa; border:1px solid #e5e7eb; padding:8px; border-radius:8px; text-align:left; cursor:pointer;">
-                        ⚠️ What is my risk level?
-                    </button>
-                    <button onclick="askBot('recommendations')"
-                        style="background:#f8f9fa; border:1px solid #e5e7eb; padding:8px; border-radius:8px; text-align:left; cursor:pointer;">
-                        💡 Show my recommendations
-                    </button>
-                    <button onclick="askBot('healthscore')"
-                        style="background:#f8f9fa; border:1px solid #e5e7eb; padding:8px; border-radius:8px; text-align:left; cursor:pointer;">
-                        ❤️ What is my Academic Health Score?
-                    </button>
-                    <button onclick="askBot('timetable')"
-                        style="background:#f8f9fa; border:1px solid #e5e7eb; padding:8px; border-radius:8px; text-align:left; cursor:pointer;">
-                        📅 What is my next class?
-                    </button>
-                </div>
+            <div style="background:#f3f4f6; padding:10px; border-radius:12px; margin-bottom:10px;">
+                <i class="bi bi-robot" style="color:#800000;"></i> Hello! How can I help you?
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <button onclick="askBot('attendance')"
+                    style="background:#f8f9fa; border:1px solid #e5e7eb; padding:8px; border-radius:8px; text-align:left;">📊
+                    What is my attendance?</button>
+                <button onclick="askBot('eligibility')"
+                    style="background:#f8f9fa; border:1px solid #e5e7eb; padding:8px; border-radius:8px; text-align:left;">✅
+                    Am I eligible for exam?</button>
+                <button onclick="askBot('risk')"
+                    style="background:#f8f9fa; border:1px solid #e5e7eb; padding:8px; border-radius:8px; text-align:left;">⚠️
+                    What is my risk level?</button>
+                <button onclick="askBot('recommendations')"
+                    style="background:#f8f9fa; border:1px solid #e5e7eb; padding:8px; border-radius:8px; text-align:left;">💡
+                    Show my recommendations</button>
             </div>
             <div id="botResponse" style="margin-top:15px; display:none;">
                 <div style="background:#80000010; padding:10px; border-radius:12px; border-left:3px solid #800000;">
@@ -597,34 +499,15 @@
         }
 
         function askBot(query) {
-            const responseDiv = document.getElementById('botResponse');
-            const responseText = document.getElementById('botResponseText');
-
             let response = '';
-            if (query === 'attendance') {
-                response =
-                    '📊 Your current attendance rate is <strong>82%</strong>. You need 75% to be eligible. Keep attending!';
-            } else if (query === 'eligibility') {
-                response = '✅ You are currently <strong>eligible</strong> for the exam with 82% attendance. Great job!';
-            } else if (query === 'risk') {
-                response =
-                    '⚠️ Your risk level is <strong>Medium Risk (42/100)</strong>. Your attendance in Networking (67%) needs improvement.';
-            } else if (query === 'recommendations') {
-                response =
-                    '💡 <strong>Recommendations:</strong><br>• Attend next 2 Networking sessions<br>• Review missed Web Development materials<br>• Keep up your excellent work in Operating Systems!';
-            } else if (query === 'healthscore') {
-                response =
-                    '❤️ Your Academic Health Score is <strong>86 (Stable)</strong>. This is calculated from: Attendance (40%), Roll Call (25%), Attendance Streak (20%), and Engagement Trend (15%).';
-            } else if (query === 'timetable') {
-                response =
-                    '📅 Your next class is <strong>Database Systems (CS301)</strong> with Dr. Aye Min Thu at <strong>Monday 1:00 PM</strong> in Room A-203.';
-            }
-
-            responseText.innerHTML = response;
-            responseDiv.style.display = 'block';
+            if (query === 'attendance') response = '📊 Your current attendance rate is <strong>82%</strong>.';
+            else if (query === 'eligibility') response = '✅ You are currently <strong>eligible</strong> for the exam.';
+            else if (query === 'risk') response = '⚠️ Your risk level is <strong>Medium Risk (42/100)</strong>.';
+            else if (query === 'recommendations') response =
+                '💡 <strong>Recommendations:</strong><br>• Attend next 2 Networking sessions<br>• Keep up your excellent work in Operating Systems!';
+            document.getElementById('botResponseText').innerHTML = response;
+            document.getElementById('botResponse').style.display = 'block';
         }
-
-        // Close modal when clicking outside
         document.addEventListener('click', function(event) {
             const modal = document.getElementById('uniBotModal');
             const botBtn = document.querySelector('.uni-bot-btn');

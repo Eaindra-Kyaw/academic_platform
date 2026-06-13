@@ -90,6 +90,12 @@
             margin-top: 0.25rem;
         }
 
+        .approval-date {
+            font-size: 0.7rem;
+            color: #166534;
+            margin-top: 0.25rem;
+        }
+
         .empty-state {
             text-align: center;
             padding: 3rem;
@@ -125,7 +131,7 @@
 
         @media (max-width: 768px) {
             .enrollments-table {
-                min-width: 500px;
+                min-width: 600px;
             }
 
             .stats-grid {
@@ -179,6 +185,7 @@
                             <th>Course Name</th>
                             <th>Request Date</th>
                             <th>Status</th>
+                            <th>Approved/Rejected Date</th>
                             <th>Details</th>
                         </tr>
                     </thead>
@@ -204,14 +211,28 @@
                                     @endif
                                 </td>
                                 <td>
+                                    @if ($enrollment->status == 'approved' && $enrollment->approved_at)
+                                        <span class="approval-date">
+                                            <i class="bi bi-calendar-check"></i>
+                                            {{ \Carbon\Carbon::parse($enrollment->approved_at)->format('d M Y') }}
+                                        </span>
+                                    @elseif($enrollment->status == 'rejected' && $enrollment->rejected_at)
+                                        <span class="rejection-reason" style="color: #dc2626;">
+                                            <i class="bi bi-calendar-x"></i>
+                                            {{ \Carbon\Carbon::parse($enrollment->rejected_at)->format('d M Y') }}
+                                        </span>
+                                    @else
+                                        <span style="font-size: 0.7rem; color: #6b7280;">—</span>
+                                    @endif
+                                </td>
+                                <td>
                                     @if ($enrollment->status == 'rejected' && $enrollment->rejection_reason)
                                         <div class="rejection-reason">
                                             <strong>Reason:</strong> {{ $enrollment->rejection_reason }}
                                         </div>
                                     @elseif($enrollment->status == 'approved' && $enrollment->approved_at)
-                                        <div class="rejection-reason" style="color: #166534;">
-                                            Approved on
-                                            {{ \Carbon\Carbon::parse($enrollment->approved_at)->format('d M Y') }}
+                                        <div class="approval-date">
+                                            <i class="bi bi-check-circle"></i> Enrollment confirmed
                                         </div>
                                     @else
                                         <span style="font-size: 0.7rem; color: #6b7280;">Waiting for review</span>
@@ -237,7 +258,8 @@
     <script>
         function openUniBot() {
             alert(
-                '🤖 Uni Bot: How can I help you?\n\n- What is my enrollment status?\n- Check my courses\n- Track my attendance');
+                '🤖 Uni Bot: How can I help you?\n\n- What is my enrollment status?\n- Check my courses\n- Track my attendance'
+                );
         }
     </script>
 @endsection

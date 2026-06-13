@@ -238,8 +238,8 @@
                 <div class="form-group">
                     <label>Academic Year *</label>
                     <input type="text" name="academic_year" value="{{ old('academic_year', $course->academic_year) }}"
-                        placeholder="e.g., 2024-2025" required>
-                    <div class="help-text">Format: 2024-2025</div>
+                        placeholder="e.g., 2026-2027" required>
+
                     @error('academic_year')
                         <div class="error">{{ $message }}</div>
                     @enderror

@@ -245,10 +245,101 @@
             border-radius: 1rem;
         }
 
+        /* Modern Pagination Styles */
         .pagination-wrapper {
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             display: flex;
             justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.5rem;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pagination li {
+            display: inline-block;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0 0.9rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .pagination a {
+            background: white;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        .pagination a:hover {
+            background: #fef3c7;
+            color: #800000;
+            border-color: #800000;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(128, 0, 0, 0.15);
+        }
+
+        .pagination .active span {
+            background: #800000;
+            color: white;
+            border: 1px solid #800000;
+            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.25);
+        }
+
+        .pagination .disabled span {
+            background: #f9fafb;
+            color: #d1d5db;
+            border: 1px solid #e5e7eb;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .pagination .disabled span:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .pagination a i,
+        .pagination span i {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .pagination-info {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #6b7280;
+            padding: 0.5rem 1rem;
+            background: #f9fafb;
+            border-radius: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pagination-info i {
+            color: #800000;
+            font-size: 0.8rem;
         }
 
         @media (max-width: 768px) {
@@ -265,12 +356,26 @@
                 width: 100%;
                 justify-content: center;
             }
+
+            .pagination a,
+            .pagination span {
+                min-width: 36px;
+                height: 36px;
+                padding: 0 0.75rem;
+                font-size: 0.75rem;
+            }
+
+            .pagination-info {
+                font-size: 0.65rem;
+            }
         }
     </style>
 
     <div>
         <div class="year-badge">
-            <i class="bi bi-calendar-check"></i> Enrolling for: <strong>{{ $studentYearString }}</strong>
+            <i class="bi bi-building"></i>
+            {{ Auth::user()->department ? Auth::user()->department->name : 'Your Department' }} |
+            <i class="bi bi-calendar-check"></i> {{ $studentYearString }}
         </div>
 
         @if (session('success'))
@@ -289,15 +394,13 @@
 
         <!-- Search Filter Section -->
         <div class="filter-section">
-            <div class="filter-title">
-                <i class="bi bi-search"></i> Search & Filter Courses
-            </div>
+
             <form method="GET" action="{{ route('student.courses.available') }}">
                 <div class="filter-grid">
                     <input type="text" name="search" class="filter-input"
                         placeholder="🔍 Search by course code, name, or lecturer..." value="{{ request('search') }}">
                     <select name="department" class="filter-select">
-                        <option value="">All Departments</option>
+                        <option value="">All Departments (within your year)</option>
                         @foreach (\App\Models\Department::orderBy('name')->get() as $dept)
                             <option value="{{ $dept->id }}"
                                 {{ request('department') == $dept->id ? 'selected' : '' }}>
@@ -315,10 +418,10 @@
                 </div>
                 <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
                     <button type="submit" class="btn-filter">
-                        <i class="bi bi-search"></i> Apply Filters
+                        <i class="bi bi-search"></i> Apply
                     </button>
                     <a href="{{ route('student.courses.available') }}" class="btn-reset">
-                        <i class="bi bi-arrow-repeat"></i> Reset All
+                        <i class="bi bi-arrow-repeat"></i> Reset
                     </a>
                 </div>
             </form>
@@ -340,14 +443,11 @@
             <div class="courses-grid">
                 @foreach ($availableCourses as $course)
                     @php
-                        $isEnrolled = in_array($course->id, $enrolledCourseIds);
-                        $status = null;
-                        if ($isEnrolled) {
-                            $enrollment = App\Models\Enrollment::where('student_id', auth()->id())
-                                ->where('course_id', $course->id)
-                                ->first();
-                            $status = $enrollment ? $enrollment->status : null;
-                        }
+                        // Check enrollment status for this specific course
+                        $enrollment = App\Models\Enrollment::where('student_id', auth()->id())
+                            ->where('course_id', $course->id)
+                            ->first();
+                        $enrollmentStatus = $enrollment ? $enrollment->status : null;
                     @endphp
                     <div class="course-card">
                         <div class="course-header">
@@ -381,16 +481,14 @@
                             @endif
                         </div>
                         <div style="padding: 0 1rem 1rem 1rem;">
-                            @if ($isEnrolled)
-                                @if ($status == 'approved')
-                                    <div class="btn-enrolled">
-                                        <i class="bi bi-check-circle"></i> Enrolled
-                                    </div>
-                                @elseif($status == 'pending')
-                                    <div class="btn-pending">
-                                        <i class="bi bi-clock-history"></i> Pending Approval
-                                    </div>
-                                @endif
+                            @if ($enrollmentStatus == 'approved')
+                                <div class="btn-enrolled">
+                                    <i class="bi bi-check-circle-fill"></i> ✅ Already Enrolled
+                                </div>
+                            @elseif($enrollmentStatus == 'pending')
+                                <div class="btn-pending">
+                                    <i class="bi bi-clock-history"></i> ⏳ Pending Approval
+                                </div>
                             @else
                                 <form method="POST" action="{{ route('student.courses.enroll', $course->id) }}">
                                     @csrf
@@ -404,15 +502,63 @@
                 @endforeach
             </div>
 
-            <div class="pagination-wrapper">
-                {{ $availableCourses->appends(request()->query())->links() }}
-            </div>
+            <!-- Modern Pagination -->
+            @if ($availableCourses->hasPages())
+                <div class="pagination-wrapper">
+                    <ul class="pagination">
+                        @if ($availableCourses->onFirstPage())
+                            <li class="disabled">
+                                <span><i class="bi bi-chevron-left"></i> Prev</span>
+                            </li>
+                        @else
+                            <li>
+                                <a href="{{ $availableCourses->previousPageUrl() }}" rel="prev">
+                                    <i class="bi bi-chevron-left"></i> Prev
+                                </a>
+                            </li>
+                        @endif
+
+                        @foreach ($availableCourses->getUrlRange(1, $availableCourses->lastPage()) as $page => $url)
+                            @if ($page == $availableCourses->currentPage())
+                                <li class="active">
+                                    <span>{{ $page }}</span>
+                                </li>
+                            @else
+                                <li>
+                                    <a href="{{ $url }}">{{ $page }}</a>
+                                </li>
+                            @endif
+                        @endforeach
+
+                        @if ($availableCourses->hasMorePages())
+                            <li>
+                                <a href="{{ $availableCourses->nextPageUrl() }}" rel="next">
+                                    Next <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        @else
+                            <li class="disabled">
+                                <span>Next <i class="bi bi-chevron-right"></i></span>
+                            </li>
+                        @endif
+                    </ul>
+
+                    <div class="pagination-info">
+                        <i class="bi bi-info-circle"></i>
+                        Showing <strong>{{ $availableCourses->firstItem() }}</strong> to
+                        <strong>{{ $availableCourses->lastItem() }}</strong>
+                        of <strong>{{ $availableCourses->total() }}</strong> courses
+                    </div>
+                </div>
+            @endif
         @else
             <div class="empty-state">
                 <i class="bi bi-book" style="font-size: 3rem; color: #9ca3af;"></i>
-                <p>No courses found matching your criteria.</p>
-                <a href="{{ route('student.courses.available') }}" class="btn-reset" style="margin-top: 1rem;">Clear
-                    Filters</a>
+                <p>No courses available for your department and year.</p>
+                @if (request('search') || request('department') || request('semester'))
+                    <a href="{{ route('student.courses.available') }}" class="btn-reset" style="margin-top: 1rem;">Clear
+                        Filters</a>
+                @endif
             </div>
         @endif
     </div>
@@ -420,7 +566,8 @@
     <script>
         function openUniBot() {
             alert(
-                '🤖 Uni Bot: How can I help you?\n\n- What courses are available?\n- How to enroll?\n- What is my enrollment status?');
+                '🤖 Uni Bot: How can I help you?\n\n- What courses are available?\n- How to enroll?\n- What is my enrollment status?'
+            );
         }
     </script>
 @endsection

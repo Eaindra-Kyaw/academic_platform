@@ -322,7 +322,7 @@
             }
 
             .courses-table {
-                min-width: 800px;
+                min-width: 700px;
             }
 
             .page-link {
@@ -341,11 +341,7 @@
     <div>
         <!-- Header -->
         <div
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-            <div>
-                <h3 style="color: #800000; margin: 0;">📚 Course Management</h3>
-                <p style="color: #6b7280; font-size: 0.8rem;">Manage courses organized by department</p>
-            </div>
+            style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
             <a href="{{ route('admin.courses.create') }}" class="btn-add">
                 <i class="bi bi-plus-circle"></i> Add New Course
             </a>
@@ -391,54 +387,39 @@
                     <tr>
                         <th>Code</th>
                         <th>Course Name</th>
+                        <th>Department</th>
                         <th>Lecturer</th>
-                        <th>Credits</th>
                         <th>Year</th>
                         <th>Semester</th>
-                        <th>Schedule</th>
-                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="coursesBody">
                     @foreach ($courses as $course)
-                        @php
-                            $scheduleDisplay = 'TBA';
-                            if ($course->schedule_day && $course->schedule_time && $course->schedule_end_time) {
-                                $startTime = \Carbon\Carbon::parse($course->schedule_time)->format('g:i A');
-                                $endTime = \Carbon\Carbon::parse($course->schedule_end_time)->format('g:i A');
-                                $scheduleDisplay = $course->schedule_day . ' ' . $startTime . ' - ' . $endTime;
-                            }
-                        @endphp
                         <tr data-dept="{{ $course->department_id }}"
                             data-search="{{ strtolower($course->course_code . ' ' . $course->course_name . ' ' . $course->lecturer_name) }}"
                             data-year="{{ $course->year }}" data-semester="{{ $course->semester }}">
                             <td><strong>{{ $course->course_code }}</strong></td>
                             <td>{{ $course->course_name }}</td>
+                            <td>{{ $course->department->code ?? 'N/A' }}</td>
                             <td>{{ $course->lecturer_name ?? 'Not Assigned' }}</td>
-                            <td>{{ $course->credits }}</td>
                             <td>{{ $course->year ?? 'N/A' }}</td>
                             <td>{{ $course->semester ?? 'N/A' }}</td>
-                            <td><span style="font-size: 0.7rem;">{{ $scheduleDisplay }}</span></td>
-                            <td>
-                                @if ($course->is_active)
-                                    <span class="badge-active">Active</span>
-                                @else
-                                    <span class="badge-inactive">Inactive</span>
-                                @endif
-                            </td>
                             <td>
                                 <div class="action-icons">
-                                    <a href="{{ route('admin.courses.show', $course) }}" class="action-icon action-view"><i
-                                            class="bi bi-eye"></i> View</a>
-                                    <a href="{{ route('admin.courses.edit', $course) }}" class="action-icon action-edit"><i
-                                            class="bi bi-pencil"></i> Edit</a>
+                                    <a href="{{ route('admin.courses.show', $course) }}" class="action-icon action-view">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <a href="{{ route('admin.courses.edit', $course) }}" class="action-icon action-edit">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
                                     <form method="POST" action="{{ route('admin.courses.destroy', $course) }}"
                                         style="display: inline;" onsubmit="return confirm('Move this course to trash?')">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="action-icon action-delete"><i class="bi bi-trash"></i>
-                                            Delete</button>
+                                        <button type="submit" class="action-icon action-delete">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
                                     </form>
                                 </div>
                             </td>

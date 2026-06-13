@@ -94,4 +94,38 @@ class AdminController extends Controller
 
         return response()->json(['link' => $setupLink, 'email' => $user->email]);
     }
+
+    // Update user
+public function updateUser(Request $request, $id)
+{
+    $user = User::findOrFail($id);
+
+    $validated = $request->validate([
+        'name' => 'required|string|max:100',
+        'email' => 'required|email|unique:users,email,' . $id,
+        'role_id' => 'required|exists:roles,id',
+        'department_id' => 'nullable|exists:departments,id',
+        'current_year' => 'nullable|integer|min:1|max:6',
+        'is_active' => 'boolean',
+    ]);
+
+    $user->update($validated);
+
+    return redirect()->route('admin.users')->with('success', 'User updated successfully!');
+}
+
+// Delete user
+public function deleteUser($id)
+{
+    $user = User::findOrFail($id);
+
+    // Prevent deleting admin if it's the only admin
+    if ($user->role_id == 1 && User::where('role_id', 1)->count() <= 1) {
+        return redirect()->back()->with('error', 'Cannot delete the only admin user.');
+    }
+
+    $user->delete();
+
+    return redirect()->route('admin.users')->with('success', 'User deleted successfully!');
+}
 }

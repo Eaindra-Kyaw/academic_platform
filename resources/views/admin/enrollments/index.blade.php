@@ -89,12 +89,6 @@
             background: #f9fafb;
         }
 
-        .search-input-simple:focus {
-            outline: none;
-            border-color: #800000;
-            background: white;
-        }
-
         .status-filter-simple {
             padding: 0.6rem 1rem;
             border: 1px solid #e5e7eb;
@@ -119,8 +113,26 @@
             text-decoration: none;
         }
 
-        .btn-reset-simple:hover {
-            background: #e5e7eb;
+        .btn-add {
+            background: #800000;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-batch {
+            background: #059669;
+        }
+
+        .btn-batch:hover {
+            background: #047857;
         }
 
         .enrollment-table-simple {
@@ -148,10 +160,6 @@
             border-bottom: 1px solid #f0f2f4;
             font-size: 0.8rem;
             vertical-align: middle;
-        }
-
-        .enrollment-table-simple tr:hover td {
-            background: #fefce8;
         }
 
         .status-badge {
@@ -201,26 +209,14 @@
             color: white;
         }
 
-        .btn-approve-sm:hover {
-            background: #059669;
-        }
-
         .btn-reject-sm {
             background: #ef4444;
             color: white;
         }
 
-        .btn-reject-sm:hover {
-            background: #dc2626;
-        }
-
         .btn-view-sm {
             background: #eff6ff;
             color: #2563eb;
-        }
-
-        .btn-view-sm:hover {
-            background: #dbeafe;
         }
 
         .empty-state-simple {
@@ -231,6 +227,14 @@
             border-radius: 0.75rem;
         }
 
+        .row-number {
+            width: 50px;
+            text-align: center;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        /* Modal Styles */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -252,9 +256,9 @@
             background: white;
             border-radius: 0.75rem;
             padding: 1.5rem;
-            max-width: 500px;
+            max-width: 750px;
             width: 90%;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
         }
 
@@ -299,10 +303,6 @@
             color: #1f2937;
         }
 
-        .detail-value strong {
-            color: #800000;
-        }
-
         .modal-buttons {
             display: flex;
             gap: 0.75rem;
@@ -325,16 +325,6 @@
             color: #374151;
         }
 
-        .modal-btn-approve {
-            background: #10b981;
-            color: white;
-        }
-
-        .modal-btn-reject {
-            background: #ef4444;
-            color: white;
-        }
-
         .reject-textarea {
             width: 100%;
             padding: 0.6rem;
@@ -343,6 +333,89 @@
             font-size: 0.8rem;
             margin: 0.75rem 0;
             resize: vertical;
+        }
+
+        /* Batch Modal Styles */
+        .filter-group {
+            margin-bottom: 1rem;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: #374151;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            background: #f9fafb;
+        }
+
+        .filter-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .students-list {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .student-item {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #f0f2f4;
+        }
+
+        .student-item:hover {
+            background: #f9fafb;
+        }
+
+        .student-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-checkbox {
+            margin-right: 0.5rem;
+        }
+
+        .selected-count {
+            background: #800000;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+        }
+
+        /* Course Search Dropdown */
+        .course-dropdown {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .course-option:hover {
+            background: #fef3c7;
+        }
+
+        .course-option.selected {
+            background: #800000;
+            color: white;
+        }
+
+        .course-option.selected small {
+            color: rgba(255, 255, 255, 0.7);
         }
 
         @media (max-width: 768px) {
@@ -363,8 +436,12 @@
                 min-width: 700px;
             }
 
-            .detail-label {
-                width: 100px;
+            .filter-row-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                max-width: 95%;
             }
         }
     </style>
@@ -378,6 +455,14 @@
     @endphp
 
     <div>
+        <div
+            style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+
+            <button class="btn-add btn-batch" onclick="openBatchEnrollModal()">
+                <i class="bi bi-people-fill"></i> Batch Enroll Students
+            </button>
+        </div>
+
         <div class="stats-row">
             <div class="stat-card-simple">
                 <div class="stat-number-simple pending">{{ $pendingEnrollments->count() }}</div>
@@ -406,15 +491,14 @@
                 <option value="approved">Approved</option>
                 <option value="rejected">Rejected</option>
             </select>
-            <button class="btn-reset-simple" onclick="resetFilters()">
-                <i class="bi bi-arrow-repeat"></i> Reset
-            </button>
+            <button class="btn-reset-simple" onclick="resetFilters()"><i class="bi bi-arrow-repeat"></i> Reset</button>
         </div>
 
         <div style="overflow-x: auto;">
             <table class="enrollment-table-simple">
                 <thead>
                     <tr>
+                        <th class="row-number">#</th>
                         <th>Student</th>
                         <th>Course</th>
                         <th>Department</th>
@@ -424,19 +508,11 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
+                    @php $rowCounter = 1; @endphp
                     @foreach ($allEnrollments as $enrollment)
-                        @php
-                            $searchText = strtolower(
-                                $enrollment->student->name .
-                                    ' ' .
-                                    $enrollment->student->email .
-                                    ' ' .
-                                    $enrollment->course->course_name .
-                                    ' ' .
-                                    $enrollment->course->course_code,
-                            );
-                        @endphp
+                        @php $searchText = strtolower($enrollment->student->name . ' ' . $enrollment->student->email . ' ' . $enrollment->course->course_name . ' ' . $enrollment->course->course_code); @endphp
                         <tr data-status="{{ $enrollment->status }}" data-search="{{ $searchText }}">
+                            <td class="row-number">{{ $rowCounter++ }}</td>
                             <td>
                                 <strong>{{ $enrollment->student->name }}</strong>
                                 <br><small>{{ $enrollment->student->email }}</small>
@@ -464,13 +540,11 @@
                                 @if ($enrollment->status == 'pending')
                                     <div class="action-buttons-simple">
                                         <button class="btn-sm btn-approve-sm"
-                                            onclick="approveEnrollment({{ $enrollment->id }})">
-                                            <i class="bi bi-check-lg"></i> Approve
-                                        </button>
+                                            onclick="approveEnrollment({{ $enrollment->id }})"><i
+                                                class="bi bi-check-lg"></i> Approve</button>
                                         <button class="btn-sm btn-reject-sm"
-                                            onclick="showRejectModal({{ $enrollment->id }})">
-                                            <i class="bi bi-x-lg"></i> Reject
-                                        </button>
+                                            onclick="showRejectModal({{ $enrollment->id }})"><i class="bi bi-x-lg"></i>
+                                            Reject</button>
                                     </div>
                                 @else
                                     <button class="btn-sm btn-view-sm"
@@ -486,9 +560,8 @@
                                         '{{ $enrollment->approved_at ? \Carbon\Carbon::parse($enrollment->approved_at)->format('d M Y, h:i A') : '' }}',
                                         '{{ addslashes($enrollment->rejection_reason) }}',
                                         '{{ $enrollment->updated_at ? \Carbon\Carbon::parse($enrollment->updated_at)->format('d M Y, h:i A') : '' }}'
-                                    )">
-                                        <i class="bi bi-eye"></i> View
-                                    </button>
+                                    )"><i
+                                            class="bi bi-eye"></i> View</button>
                                 @endif
                             </td>
                         </tr>
@@ -496,39 +569,143 @@
                 </tbody>
             </table>
         </div>
-
-        <div id="emptyState" class="empty-state-simple" style="display: none;">
-            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+        <div id="emptyState" class="empty-state-simple" style="display: none;"><i class="bi bi-inbox"
+                style="font-size: 2rem;"></i>
             <p>No enrollment requests found</p>
         </div>
     </div>
 
+    <!-- View Details Modal -->
     <div id="detailsModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h4><i class="bi bi-info-circle"></i> Enrollment Details</h4>
-                <button class="modal-close" onclick="closeDetailsModal()">&times;</button>
+                <h4><i class="bi bi-info-circle"></i> Enrollment Details</h4><button class="modal-close"
+                    onclick="closeDetailsModal()">&times;</button>
             </div>
             <div id="detailsContent"></div>
-            <div class="modal-buttons">
-                <button class="modal-btn modal-btn-cancel" onclick="closeDetailsModal()">Close</button>
-            </div>
+            <div class="modal-buttons"><button class="modal-btn modal-btn-cancel"
+                    onclick="closeDetailsModal()">Close</button></div>
         </div>
     </div>
 
+    <!-- Reject Modal -->
     <div id="rejectModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 style="color: #ef4444;"><i class="bi bi-exclamation-triangle"></i> Reject Enrollment</h4>
-                <button class="modal-close" onclick="closeRejectModal()">&times;</button>
+                <h4 style="color: #ef4444;"><i class="bi bi-exclamation-triangle"></i> Reject Enrollment</h4><button
+                    class="modal-close" onclick="closeRejectModal()">&times;</button>
             </div>
             <p id="rejectModalMessage" style="font-size: 0.8rem; color: #6b7280;"></p>
             <textarea id="rejectionReason" class="reject-textarea" rows="3"
                 placeholder="Please provide a reason for rejection..."></textarea>
-            <div class="modal-buttons">
-                <button class="modal-btn modal-btn-cancel" onclick="closeRejectModal()">Cancel</button>
-                <button class="modal-btn modal-btn-reject" id="confirmRejectBtn">Confirm Rejection</button>
+            <div class="modal-buttons"><button class="modal-btn modal-btn-cancel"
+                    onclick="closeRejectModal()">Cancel</button><button class="modal-btn modal-btn-reject"
+                    id="confirmRejectBtn" style="background:#ef4444;color:white;">Confirm Rejection</button></div>
+        </div>
+    </div>
+
+    <!-- Batch Enrollment Modal -->
+    <div id="batchEnrollModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4><i class="bi bi-people-fill"></i> Batch Enroll Students</h4>
+                <button class="modal-close" onclick="closeBatchEnrollModal()">&times;</button>
             </div>
+            <form method="POST" action="{{ route('admin.enrollments.batch') }}">
+                @csrf
+                <div class="filter-group">
+                    <label>📚 Select Course *</label>
+                    <div style="position: relative;">
+                        <input type="text" id="courseSearchInput" class="filter-select"
+                            placeholder="Type course code or name to search..." autocomplete="off"
+                            style="width: 100%; padding: 0.6rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; font-size: 0.8rem;">
+                        <input type="hidden" name="course_id" id="selectedCourseId" required>
+                        <div id="courseDropdown" class="course-dropdown"
+                            style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #e5e7eb; border-radius: 0.5rem; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            @foreach ($allCourses ?? [] as $course)
+                                <div class="course-option" data-id="{{ $course->id }}"
+                                    data-code="{{ $course->course_code }}" data-name="{{ $course->course_name }}"
+                                    data-dept="{{ $course->department->code ?? 'N/A' }}"
+                                    style="padding: 0.5rem; cursor: pointer; border-bottom: 1px solid #f0f2f4;">
+                                    <strong>{{ $course->course_code }}</strong> - {{ $course->course_name }}
+                                    <small style="color: #6b7280;">({{ $course->department->code ?? 'N/A' }})</small>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    <div id="selectedCourseDisplay"
+                        style="margin-top: 0.5rem; font-size: 0.75rem; color: #059669; display: none;">
+                        <i class="bi bi-check-circle"></i> Selected: <span id="selectedCourseText"></span>
+                    </div>
+                </div>
+
+                <div class="filter-row-3">
+                    <div>
+                        <label>🏛️ Department</label>
+                        <select id="filterDept" class="filter-select">
+                            <option value="all">All Departments</option>
+                            @foreach ($allDepartments ?? [] as $dept)
+                                <option value="{{ $dept->id }}">{{ $dept->code }} - {{ $dept->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label>🎓 Year</label>
+                        <select id="filterYear" class="filter-select">
+                            <option value="all">All Years</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                            <option value="5">5th Year</option>
+                            <option value="5">6th Year</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>🔍 Search Students</label>
+                        <input type="text" id="filterSearch" class="filter-select" placeholder="Name or email...">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <div
+                        style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                        <label style="cursor: pointer;">
+                            <input type="checkbox" id="selectAllFiltered" onchange="toggleAllFiltered()">
+                            <strong>Select All Students</strong>
+                        </label>
+                        <span id="selectedCountBadge" class="selected-count">0 selected</span>
+                    </div>
+                    <div class="students-list" id="studentsListContainer">
+                        @foreach ($allStudents ?? [] as $student)
+                            <div class="student-item" data-dept="{{ $student->department_id }}"
+                                data-year="{{ $student->current_year }}" data-name="{{ strtolower($student->name) }}"
+                                data-email="{{ strtolower($student->email) }}">
+                                <label style="cursor: pointer; width: 100%; display: flex; align-items: center;">
+                                    <input type="checkbox" name="student_ids[]" value="{{ $student->id }}"
+                                        class="student-checkbox">
+                                    <strong>{{ $student->name }}</strong>
+                                    <small style="color: #6b7280; margin-left: 0.5rem;">(Year {{ $student->current_year }}
+                                        - {{ $student->email }})</small>
+                                </label>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label>📅 Enrollment Date</label>
+                    <input type="date" name="enrollment_date" class="filter-select" value="{{ date('Y-m-d') }}"
+                        required>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="modal-btn modal-btn-cancel"
+                        onclick="closeBatchEnrollModal()">Cancel</button>
+                    <button type="submit" class="modal-btn" style="background: #059669; color: white;" id="submitBtn"
+                        disabled>✓ Enroll Selected Students</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -537,62 +714,29 @@
 
         function showDetailsModal(studentName, studentEmail, studentYear, courseCode, courseName, department, requestDate,
             status, approvedAt, rejectionReason, rejectedAt) {
-            let statusHtml = '';
-            if (status === 'pending') {
-                statusHtml = '<span class="status-badge status-pending"><i class="bi bi-clock-history"></i> Pending</span>';
-            } else if (status === 'approved') {
-                statusHtml =
-                '<span class="status-badge status-approved"><i class="bi bi-check-circle"></i> Approved</span>';
-            } else {
-                statusHtml = '<span class="status-badge status-rejected"><i class="bi bi-x-circle"></i> Rejected</span>';
-            }
-
+            let statusHtml = status === 'pending' ?
+                '<span class="status-badge status-pending"><i class="bi bi-clock-history"></i> Pending</span>' : (status ===
+                    'approved' ?
+                    '<span class="status-badge status-approved"><i class="bi bi-check-circle"></i> Approved</span>' :
+                    '<span class="status-badge status-rejected"><i class="bi bi-x-circle"></i> Rejected</span>');
             let additionalInfo = '';
-            if (status === 'approved' && approvedAt) {
-                additionalInfo =
-                    '<div class="detail-row"><div class="detail-label">Approved Date</div><div class="detail-value">' +
-                    approvedAt + '</div></div>';
-            } else if (status === 'rejected' && rejectionReason) {
-                additionalInfo =
-                    '<div class="detail-row"><div class="detail-label">Rejection Reason</div><div class="detail-value" style="color: #dc2626;">' +
-                    rejectionReason + '</div></div>' +
-                    '<div class="detail-row"><div class="detail-label">Rejected Date</div><div class="detail-value">' +
-                    rejectedAt + '</div></div>';
-            }
-
-            const content = `
-                <div class="detail-row">
-                    <div class="detail-label">Student Name</div>
-                    <div class="detail-value"><strong>${studentName}</strong></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Student Email</div>
-                    <div class="detail-value">${studentEmail}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Student Year</div>
-                    <div class="detail-value">Year ${studentYear}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Course</div>
-                    <div class="detail-value"><strong>${courseCode}</strong> - ${courseName}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Department</div>
-                    <div class="detail-value">${department}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Request Date</div>
-                    <div class="detail-value">${requestDate}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Status</div>
-                    <div class="detail-value">${statusHtml}</div>
-                </div>
-                ${additionalInfo}
-            `;
-
-            document.getElementById('detailsContent').innerHTML = content;
+            if (status === 'approved' && approvedAt) additionalInfo =
+                '<div class="detail-row"><div class="detail-label">Approved Date</div><div class="detail-value">' +
+                approvedAt + '</div></div>';
+            else if (status === 'rejected' && rejectionReason) additionalInfo =
+                '<div class="detail-row"><div class="detail-label">Rejection Reason</div><div class="detail-value" style="color:#dc2626;">' +
+                rejectionReason +
+                '</div></div><div class="detail-row"><div class="detail-label">Rejected Date</div><div class="detail-value">' +
+                rejectedAt + '</div></div>';
+            document.getElementById('detailsContent').innerHTML =
+                `
+                <div class="detail-row"><div class="detail-label">Student Name</div><div class="detail-value"><strong>${studentName}</strong></div></div>
+                <div class="detail-row"><div class="detail-label">Student Email</div><div class="detail-value">${studentEmail}</div></div>
+                <div class="detail-row"><div class="detail-label">Student Year</div><div class="detail-value">Year ${studentYear}</div></div>
+                <div class="detail-row"><div class="detail-label">Course</div><div class="detail-value"><strong>${courseCode}</strong> - ${courseName}</div></div>
+                <div class="detail-row"><div class="detail-label">Department</div><div class="detail-value">${department}</div></div>
+                <div class="detail-row"><div class="detail-label">Request Date</div><div class="detail-value">${requestDate}</div></div>
+                <div class="detail-row"><div class="detail-label">Status</div><div class="detail-value">${statusHtml}</div></div>${additionalInfo}`;
             document.getElementById('detailsModal').classList.add('show');
         }
 
@@ -601,9 +745,7 @@
         }
 
         function approveEnrollment(id) {
-            if (confirm('Approve this enrollment?')) {
-                window.location.href = '/admin/enrollments/' + id + '/approve';
-            }
+            if (confirm('Approve this enrollment?')) window.location.href = '/admin/enrollments/' + id + '/approve';
         }
 
         function showRejectModal(id) {
@@ -618,33 +760,158 @@
             currentRejectId = null;
         }
 
-        const confirmBtn = document.getElementById('confirmRejectBtn');
-        if (confirmBtn) {
-            confirmBtn.addEventListener('click', function() {
-                const reason = document.getElementById('rejectionReason').value.trim();
-                if (!reason) {
-                    alert('Please provide a reason for rejection');
-                    return;
-                }
+        document.getElementById('confirmRejectBtn')?.addEventListener('click', function() {
+            let reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) {
+                alert('Please provide a reason for rejection');
+                return;
+            }
+            let form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/enrollments/' + currentRejectId + '/reject';
+            let csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            let reasonInput = document.createElement('input');
+            reasonInput.type = 'hidden';
+            reasonInput.name = 'rejection_reason';
+            reasonInput.value = reason;
+            form.appendChild(csrf);
+            form.appendChild(reasonInput);
+            document.body.appendChild(form);
+            form.submit();
+        });
 
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/admin/enrollments/' + currentRejectId + '/reject';
-                const csrf = document.createElement('input');
-                csrf.type = 'hidden';
-                csrf.name = '_token';
-                csrf.value = '{{ csrf_token() }}';
-                const reasonInput = document.createElement('input');
-                reasonInput.type = 'hidden';
-                reasonInput.name = 'rejection_reason';
-                reasonInput.value = reason;
-                form.appendChild(csrf);
-                form.appendChild(reasonInput);
-                document.body.appendChild(form);
-                form.submit();
+        // ========== COURSE SEARCH FUNCTIONALITY ==========
+        const courseSearchInput = document.getElementById('courseSearchInput');
+        const courseDropdown = document.getElementById('courseDropdown');
+        const selectedCourseId = document.getElementById('selectedCourseId');
+        const selectedCourseDisplay = document.getElementById('selectedCourseDisplay');
+        const selectedCourseText = document.getElementById('selectedCourseText');
+        const submitBtn = document.getElementById('submitBtn');
+        const courseOptions = document.querySelectorAll('.course-option');
+
+        function filterCourses() {
+            const searchTerm = courseSearchInput.value.toLowerCase();
+            let hasVisible = false;
+            courseOptions.forEach(opt => {
+                const code = opt.dataset.code.toLowerCase();
+                const name = opt.dataset.name.toLowerCase();
+                const matches = searchTerm === '' || code.includes(searchTerm) || name.includes(searchTerm);
+                opt.style.display = matches ? 'block' : 'none';
+                if (matches) hasVisible = true;
+            });
+            courseDropdown.style.display = searchTerm !== '' && hasVisible ? 'block' : 'none';
+        }
+
+        function selectCourse(id, code, name, dept) {
+            selectedCourseId.value = id;
+            courseSearchInput.value = code + ' - ' + name;
+            selectedCourseText.innerHTML = code + ' - ' + name + ' (' + dept + ')';
+            selectedCourseDisplay.style.display = 'block';
+            courseDropdown.style.display = 'none';
+            submitBtn.disabled = false;
+
+            courseOptions.forEach(opt => {
+                if (opt.dataset.id == id) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
             });
         }
 
+        if (courseSearchInput) {
+            courseSearchInput.addEventListener('focus', function() {
+                if (courseSearchInput.value !== '') {
+                    filterCourses();
+                }
+            });
+            courseSearchInput.addEventListener('keyup', filterCourses);
+        }
+
+        courseOptions.forEach(opt => {
+            opt.addEventListener('click', function() {
+                selectCourse(this.dataset.id, this.dataset.code, this.dataset.name, this.dataset.dept);
+            });
+        });
+
+        document.addEventListener('click', function(e) {
+            if (courseSearchInput && !courseSearchInput.contains(e.target) && courseDropdown && !courseDropdown
+                .contains(e.target)) {
+                courseDropdown.style.display = 'none';
+            }
+        });
+
+        // ========== BATCH ENROLLMENT FUNCTIONS ==========
+        function filterStudentList() {
+            const dept = document.getElementById('filterDept').value;
+            const year = document.getElementById('filterYear').value;
+            const search = document.getElementById('filterSearch').value.toLowerCase();
+            const items = document.querySelectorAll('#studentsListContainer .student-item');
+            let visibleCount = 0;
+            items.forEach(item => {
+                const itemDept = item.getAttribute('data-dept');
+                const itemYear = item.getAttribute('data-year');
+                const itemName = item.getAttribute('data-name');
+                const itemEmail = item.getAttribute('data-email');
+                const matchesDept = dept === 'all' || itemDept == dept;
+                const matchesYear = year === 'all' || itemYear == year;
+                const matchesSearch = search === '' || itemName.includes(search) || itemEmail.includes(search);
+                if (matchesDept && matchesYear && matchesSearch) {
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            updateSelectedCount();
+        }
+
+        function toggleAllFiltered() {
+            const selectAll = document.getElementById('selectAllFiltered');
+            const visibleItems = document.querySelectorAll(
+                '#studentsListContainer .student-item[style=""] .student-checkbox, #studentsListContainer .student-item:not([style="display: none"]) .student-checkbox'
+            );
+            visibleItems.forEach(cb => cb.checked = selectAll.checked);
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const checked = document.querySelectorAll('#studentsListContainer .student-checkbox:checked').length;
+            const badge = document.getElementById('selectedCountBadge');
+            if (badge) badge.innerText = checked + ' selected';
+        }
+
+        function openBatchEnrollModal() {
+            document.getElementById('batchEnrollModal').style.display = 'flex';
+            // Reset course selection
+            if (courseSearchInput) courseSearchInput.value = '';
+            if (selectedCourseId) selectedCourseId.value = '';
+            if (selectedCourseDisplay) selectedCourseDisplay.style.display = 'none';
+            if (submitBtn) submitBtn.disabled = true;
+            if (courseDropdown) courseDropdown.style.display = 'none';
+            // Reset filters
+            if (document.getElementById('filterDept')) document.getElementById('filterDept').value = 'all';
+            if (document.getElementById('filterYear')) document.getElementById('filterYear').value = 'all';
+            if (document.getElementById('filterSearch')) document.getElementById('filterSearch').value = '';
+            filterStudentList();
+        }
+
+        function closeBatchEnrollModal() {
+            document.getElementById('batchEnrollModal').style.display = 'none';
+        }
+
+        document.getElementById('filterDept')?.addEventListener('change', filterStudentList);
+        document.getElementById('filterYear')?.addEventListener('change', filterStudentList);
+        document.getElementById('filterSearch')?.addEventListener('keyup', filterStudentList);
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.classList && e.target.classList.contains('student-checkbox'))
+                updateSelectedCount();
+        });
+
+        // ========== MAIN TABLE FILTER ==========
         const searchInput = document.getElementById('searchInput');
         const statusFilterElem = document.getElementById('statusFilter');
         const rows = document.querySelectorAll('#tableBody tr');
@@ -654,15 +921,12 @@
             const searchTerm = searchInput.value.toLowerCase();
             const statusValue = statusFilterElem.value;
             let visibleCount = 0;
-
             for (let i = 0; i < rows.length; i++) {
                 const row = rows[i];
                 const searchText = row.getAttribute('data-search') || '';
                 const rowStatus = row.getAttribute('data-status') || '';
-
                 const matchesSearch = searchTerm === '' || searchText.includes(searchTerm);
                 const matchesStatus = statusValue === 'all' || rowStatus === statusValue;
-
                 if (matchesSearch && matchesStatus) {
                     row.style.display = '';
                     visibleCount++;
@@ -670,7 +934,6 @@
                     row.style.display = 'none';
                 }
             }
-
             emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
         }
 
@@ -679,7 +942,6 @@
             statusFilterElem.value = 'all';
             filterTable();
         }
-
         if (searchInput) searchInput.addEventListener('keyup', filterTable);
         if (statusFilterElem) statusFilterElem.addEventListener('change', filterTable);
     </script>

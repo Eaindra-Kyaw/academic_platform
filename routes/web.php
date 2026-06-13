@@ -118,6 +118,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
     Route::get('/enrollments/{id}/approve', [EnrollmentController::class, 'approve'])->name('enrollments.approve');
     Route::post('/enrollments/{id}/reject', [EnrollmentController::class, 'reject'])->name('enrollments.reject');
+
+    // Batch Enrollment
+Route::post('/enrollments/batch', [App\Http\Controllers\Admin\EnrollmentController::class, 'batchEnroll'])->name('enrollments.batch');
+
+// User Management Routes
+Route::put('/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
+Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
 });
 
 Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->group(function () {
