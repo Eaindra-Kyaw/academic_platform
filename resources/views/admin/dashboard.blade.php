@@ -195,7 +195,7 @@
             $eligibilityRate = $totalEnrollments > 0 ? round(($eligibleEnrollments / $totalEnrollments) * 100) : 0;
 
             // Active sessions
-            $activeSessions = AttendanceSession::where('is_active', true)->where('status', 'active')->count();
+            $activeSessions = AttendanceSession::where('status', 'active')->count();
 
             // Department attendance data
             $departmentAttendance = [];

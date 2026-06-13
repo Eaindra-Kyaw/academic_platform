@@ -6,25 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('attendance_records', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('session_id')->constrained('attendance_sessions')->onDelete('cascade');
+            $table->foreignId('attendance_session_id')->constrained('attendance_sessions')->onDelete('cascade');
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
-            $table->enum('status', ['present', 'absent', 'late'])->default('absent');
-            $table->timestamp('scan_time')->nullable();
+            $table->enum('status', ['present', 'absent', 'late'])->default('present');
+            $table->timestamp('scanned_at')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
-            $table->foreignId('marked_by')->nullable()->constrained('users')->onDelete('set null');
-            $table->text('notes')->nullable();
+            $table->string('device_info')->nullable();
+            $table->string('ip_address')->nullable();
+            $table->softDeletes();
             $table->timestamps();
 
-            $table->unique(['session_id', 'student_id']);
+            // Prevent duplicate attendance
+            $table->unique(['attendance_session_id', 'student_id'], 'unique_session_student');
+            $table->index(['attendance_session_id', 'status']);
+            $table->index(['student_id']);
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('attendance_records');
     }

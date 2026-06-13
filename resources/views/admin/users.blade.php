@@ -99,6 +99,16 @@
                 border-left: 3px solid #10b981;
             }
 
+            .alert-success a {
+                color: #166534;
+                text-decoration: underline;
+                font-weight: 600;
+            }
+
+            .alert-success a:hover {
+                color: #0a3d2a;
+            }
+
             .alert-danger {
                 background: #fee2e2;
                 color: #991b1b;
@@ -303,6 +313,25 @@
                 color: #6b7280;
             }
 
+            .setup-link-box {
+                background: #f0fdf4;
+                border: 1px solid #bbf7d0;
+                border-radius: 0.5rem;
+                padding: 0.75rem;
+                margin-top: 0.5rem;
+                word-break: break-all;
+            }
+
+            .setup-link-box a {
+                color: #166534;
+                text-decoration: underline;
+                font-weight: 500;
+            }
+
+            .setup-link-box a:hover {
+                color: #0a3d2a;
+            }
+
             @media (max-width: 1024px) {
                 .two-columns {
                     grid-template-columns: 1fr;
@@ -345,7 +374,8 @@
 
         @if (session('success'))
             <div class="alert-success">
-                <i class="bi bi-check-circle"></i> {{ session('success') }}
+                <i class="bi bi-check-circle"></i>
+                {!! session('success') !!}
             </div>
         @endif
 

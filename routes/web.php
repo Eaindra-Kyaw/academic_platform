@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Auth\RoleLoginController;
 use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Controllers\Student\EnrollmentController as StudentEnrollmentController;
+use App\Http\Controllers\Lecturer\AttendanceController;
+use App\Http\Controllers\Student\QRScanController;
 
 // Landing Page (Home)
 Route::get('/', function () {
@@ -102,7 +104,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Course Routes
     Route::resource('courses', App\Http\Controllers\Admin\CourseController::class);
 
-    // Additional course routes
     Route::get('/courses/{id}/restore', [App\Http\Controllers\Admin\CourseController::class, 'restore'])->name('courses.restore');
     Route::delete('/courses/{id}/force-delete', [App\Http\Controllers\Admin\CourseController::class, 'forceDelete'])->name('courses.force-delete');
     Route::get('/courses/{course}/toggle-status', [App\Http\Controllers\Admin\CourseController::class, 'toggleStatus'])->name('courses.toggleStatus');
@@ -112,37 +113,45 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
 
-    // ============================================================
-    // ENROLLMENT MANAGEMENT ROUTES (ADMIN)
-    // ============================================================
+    // Enrollment Management Routes (Admin)
     Route::get('/enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
     Route::get('/enrollments/{id}/approve', [EnrollmentController::class, 'approve'])->name('enrollments.approve');
     Route::post('/enrollments/{id}/reject', [EnrollmentController::class, 'reject'])->name('enrollments.reject');
-
-    // Batch Enrollment
-Route::post('/enrollments/batch', [App\Http\Controllers\Admin\EnrollmentController::class, 'batchEnroll'])->name('enrollments.batch');
-
-// User Management Routes
-Route::put('/users/{id}', [AdminController::class, 'updateUser'])->name('admin.users.update');
-Route::delete('/users/{id}', [AdminController::class, 'deleteUser'])->name('admin.users.delete');
+    Route::post('/enrollments/batch', [EnrollmentController::class, 'batchEnroll'])->name('enrollments.batch');
 });
 
+// ============================================================
+// LECTURER ROUTES
+// ============================================================
 Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->group(function () {
+    // Dashboard
     Route::get('/dashboard', [LecturerController::class, 'dashboard'])->name('dashboard');
+
+    // Student Management
     Route::get('/students', [LecturerController::class, 'students'])->name('students');
     Route::get('/schedule', [LecturerController::class, 'schedule'])->name('schedule');
     Route::get('/reports', [LecturerController::class, 'reports'])->name('reports');
     Route::get('/announcements', [LecturerController::class, 'announcements'])->name('announcements');
 
-    // Attendance Routes
-    Route::get('/attendance/take', [App\Http\Controllers\Lecturer\AttendanceController::class, 'takeAttendance'])->name('attendance.take');
-    Route::post('/attendance/generate-qr', [App\Http\Controllers\Lecturer\AttendanceController::class, 'generateQR'])->name('attendance.generate');
-    Route::post('/attendance/end/{id}', [App\Http\Controllers\Lecturer\AttendanceController::class, 'endSession'])->name('attendance.end');
-    Route::post('/attendance/manual', [App\Http\Controllers\Lecturer\AttendanceController::class, 'manualAttendance'])->name('attendance.manual');
-    Route::get('/attendance/history', [App\Http\Controllers\Lecturer\AttendanceController::class, 'history'])->name('attendance.history');
-
     // Enrollment Routes
     Route::get('/enrollments', [App\Http\Controllers\Lecturer\EnrollmentController::class, 'index'])->name('enrollments.index');
+
+    // Attendance Session Routes
+    Route::get('/attendance/take', [AttendanceController::class, 'takeAttendance'])->name('attendance.take');
+    Route::get('/attendance/sessions', [AttendanceController::class, 'sessions'])->name('attendance.sessions');
+    Route::post('/attendance/sessions', [AttendanceController::class, 'createSession'])->name('attendance.sessions.create');
+    Route::post('/attendance/sessions/{id}/end', [AttendanceController::class, 'endSession'])->name('attendance.sessions.end');
+    Route::get('/attendance/sessions/{id}/refresh', [AttendanceController::class, 'refreshSession'])->name('attendance.sessions.refresh');
+    Route::get('/attendance/history', [AttendanceController::class, 'history'])->name('attendance.history');
+
+    // Manual Attendance
+    Route::post('/attendance/manual', [AttendanceController::class, 'manualAttendance'])->name('attendance.manual');
+
+    // QR Generation Routes (New)
+    Route::post('/generate-qr', [LecturerController::class, 'generateQr'])->name('generateQr');
+    Route::post('/end-session/{sessionId}', [LecturerController::class, 'endSession'])->name('endSession');
+    Route::post('/refresh-qr/{sessionId}', [LecturerController::class, 'refreshQr'])->name('refreshQr');
+    Route::get('/session-stats/{sessionId}', [LecturerController::class, 'sessionStats'])->name('sessionStats');
 });
 
 // ============================================================
@@ -151,21 +160,19 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
 Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
     Route::get('/attendance', [StudentController::class, 'attendance'])->name('attendance');
-    Route::get('/scan', [StudentController::class, 'scan'])->name('scan');
     Route::get('/timetable', [StudentController::class, 'timetable'])->name('timetable');
     Route::get('/progress', [StudentController::class, 'progress'])->name('progress');
 
-    // ============================================================
-    // ENROLLMENT ROUTES (STUDENT)
-    // ============================================================
+    // Enrollment Routes (Student)
     Route::get('/courses/available', [StudentEnrollmentController::class, 'availableCourses'])->name('courses.available');
     Route::post('/courses/{course}/enroll', [StudentEnrollmentController::class, 'requestEnrollment'])->name('courses.enroll');
     Route::get('/my-enrollments', [StudentEnrollmentController::class, 'myEnrollments'])->name('my.enrollments');
 
-    // QR Attendance API Routes (Student)
-Route::post('/scan/process', [StudentController::class, 'processQR'])->name('scan.process');
-Route::post('/scan/manual', [StudentController::class, 'manualAttendance'])->name('scan.manual');
-Route::get('/scan/check-session', [StudentController::class, 'checkSession'])->name('scan.check-session');
+    // QR Attendance Routes (Student)
+    Route::get('/scan', [QRScanController::class, 'index'])->name('scan');
+    Route::get('/scan/check-session', [QRScanController::class, 'checkSession'])->name('scan.check-session');
+    Route::get('/scan/process', [QRScanController::class, 'processScan'])->name('scan.process');
+    Route::post('/scan/manual', [QRScanController::class, 'manualAttendance'])->name('scan.manual');
 });
 
 // ============================================================
