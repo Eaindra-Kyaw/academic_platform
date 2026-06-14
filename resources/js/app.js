@@ -1,7 +1,7 @@
-@import 'bootstrap/dist/css/bootstrap.min.css';
+import './bootstrap';
 
-import Alpine from 'alpinejs';
+// Import QR Scanner class
+import QRScanner from './qr-scanner';
 
-window.Alpine = Alpine;
-
-Alpine.start();
+// Make QRScanner available globally
+window.QRScanner = QRScanner;

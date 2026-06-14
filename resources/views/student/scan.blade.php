@@ -25,28 +25,21 @@
     <a href="{{ route('student.progress') }}" class="nav-item">
         <i class="bi bi-graph-up"></i><span>My Progress</span>
     </a>
-    <div class="nav-label">Support</div>
-    <a href="#" class="nav-item" onclick="openUniBot()">
-        <i class="bi bi-robot"></i><span>Uni Bot</span>
-    </a>
-    <a href="#" class="nav-item">
-        <i class="bi bi-bell"></i><span>Notifications</span>
-    </a>
 @endsection
 
 @section('content')
     <style>
         .scanner-container {
             background: white;
-            border-radius: 1.5rem;
+            border-radius: 1rem;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
             margin-bottom: 1.5rem;
         }
 
         .scanner-header {
             background: linear-gradient(135deg, #800000 0%, #6b0000 100%);
-            padding: 1.25rem;
+            padding: 1rem;
             text-align: center;
             color: white;
         }
@@ -57,14 +50,28 @@
             max-width: 500px;
             margin: 0 auto;
             background: #000;
+            min-height: 300px;
             border-radius: 0.5rem;
             overflow: hidden;
         }
 
-        video {
+        #video {
             width: 100%;
             height: auto;
             display: block;
+            background: #000;
+        }
+
+        .scan-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 200px;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
         }
 
         .security-badge {
@@ -96,6 +103,18 @@
 
         .info-row:last-child {
             border-bottom: none;
+        }
+
+        .manual-code-display {
+            font-size: 1.8rem;
+            font-weight: bold;
+            font-family: monospace;
+            letter-spacing: 0.3rem;
+            text-align: center;
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            margin-top: 10px;
         }
 
         .btn-manual {
@@ -156,38 +175,85 @@
             cursor: pointer;
         }
 
-        @media (max-width: 768px) {
-            .security-badge {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+        .tab-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.5rem;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: #800000;
+            color: white;
+        }
+
+        #statusMsg {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
         }
     </style>
 
-    <script type="importmap">
-        {
-            "imports": {
-                "@zxing/library": "https://unpkg.com/@zxing/library@0.21.3/umd/index.js"
-            }
-        }
-    </script>
-
     <div>
-        <div class="scanner-container">
+        <div class="tab-buttons">
+            <button class="tab-btn active" id="cameraTabBtn">📷 Scan QR Code</button>
+            <button class="tab-btn" id="manualTabBtn">⌨️ Enter Manual Code</button>
+        </div>
+
+        <!-- Camera Scanner Section -->
+        <div id="cameraSection" class="scanner-container">
             <div class="scanner-header">
                 <i class="bi bi-camera-fill"></i>
-                <h3>QR Code Scanner</h3>
-                <p style="font-size: 0.75rem; opacity: 0.9; margin-top: 0.25rem;">Point camera at the QR code</p>
+                <h3>ZXing QR Code Scanner</h3>
+                <p style="font-size: 0.75rem; opacity: 0.9;">Powered by Google's ZXing library</p>
             </div>
             <div style="padding: 1rem;">
                 <div class="video-container">
-                    <video id="video" playsinline></video>
+                    <video id="video" playsinline autoplay></video>
+                    <div id="scanOverlay" class="scan-overlay"></div>
                 </div>
                 <div class="camera-controls">
-                    <button class="camera-btn" onclick="switchCamera()"><i class="bi bi-arrow-repeat"></i> Switch
+                    <button class="camera-btn" id="switchCameraBtn"><i class="bi bi-arrow-repeat"></i> Switch
                         Camera</button>
-                    <button class="camera-btn" onclick="startScanner()"><i class="bi bi-play-fill"></i> Restart</button>
+                    <button class="camera-btn" id="restartScannerBtn"><i class="bi bi-play-fill"></i> Restart
+                        Scanner</button>
                 </div>
+                <div id="statusMsg"></div>
+            </div>
+        </div>
+
+        <!-- Manual Entry Section -->
+        <div id="manualSection" style="display: none;">
+            <div class="session-card">
+                <h3 style="color:#800000;">📝 Manual Code Entry</h3>
+                <p>Enter the 6-digit manual code provided by your lecturer:</p>
+                <input type="text" id="manualCodeInput" placeholder="Enter 6-digit code" maxlength="6"
+                    style="width:100%; padding:0.8rem; border:2px solid #ddd; border-radius:0.5rem; text-align:center; font-size:1.2rem; text-transform:uppercase;">
+                <button class="btn-manual" id="manualSubmitBtn" style="margin-top:1rem;">✓ Submit Attendance</button>
             </div>
         </div>
 
@@ -203,128 +269,192 @@
             <div class="session-header"
                 style="border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
                 <i class="bi bi-clock-history"></i>
-                <h4 style="display: inline; margin-left: 0.5rem;">No Active Session</h4>
+                <h4 style="display: inline; margin-left: 0.5rem;">Checking for active sessions...</h4>
             </div>
-            <div class="info-row"><span>Status</span><span>Waiting for QR scan</span></div>
-            <div class="info-row"><span>Note</span><span>Ask your lecturer to generate a QR code</span></div>
+            <div class="info-row"><span>Status</span><span>Loading...</span></div>
+            <div class="info-row"><span>Note</span><span>Please wait</span></div>
         </div>
 
-        <button class="btn-manual" onclick="showManualEntry()"><i class="bi bi-pencil-square"></i> Can't scan? Enter Manual
-            Code</button>
         <button class="btn-back" onclick="window.location.href='{{ route('student.dashboard') }}'"><i
                 class="bi bi-arrow-left"></i> Back to Dashboard</button>
     </div>
 
-    <!-- Manual Entry Modal -->
-    <div id="manualModal"
-        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:1.5rem; padding:1.5rem; max-width:350px; width:90%;">
-            <div style="text-align:center; margin-bottom:1rem;">
-                <i class="bi bi-keyboard" style="font-size:2rem; color:#800000;"></i>
-                <h3 style="margin-top:0.5rem;">Manual Entry</h3>
-                <p style="font-size:0.8rem; color:#6b7280;">Enter the 6-digit code from your lecturer</p>
-            </div>
-            <input type="text" id="manualCode" placeholder="000000" maxlength="6"
-                style="width:100%; padding:0.8rem; border:2px solid #e5e7eb; border-radius:0.75rem; text-align:center; letter-spacing:4px; font-size:1rem;">
-            <div style="display:flex; gap:0.75rem; margin-top:1rem;">
-                <button onclick="verifyManualCode()"
-                    style="flex:1; background:#800000; color:white; border:none; padding:0.6rem; border-radius:0.75rem; font-weight:600; cursor:pointer;">Verify</button>
-                <button onclick="closeManualModal()"
-                    style="flex:1; background:#f3f4f6; color:#374151; border:none; padding:0.6rem; border-radius:0.75rem; cursor:pointer;">Cancel</button>
-            </div>
-        </div>
-    </div>
+    <!-- ZXing Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
 
-    <script type="module">
-        import {
-            BrowserMultiFormatReader
-        } from '@zxing/library';
-
+    <script>
         let reader = null;
-        let currentCameraId = 'environment';
         let isScanning = false;
+        let videoElement = null;
+        let currentFacingMode = 'environment';
 
-        async function initScanner() {
-            reader = new BrowserMultiFormatReader();
-            await reader.listVideoInputDevices();
-            startScanner();
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMsg');
+            statusDiv.innerHTML = message;
+            statusDiv.className = `status-${type}`;
+            setTimeout(() => {
+                if (statusDiv.innerHTML === message) {
+                    statusDiv.innerHTML = '';
+                    statusDiv.className = '';
+                }
+            }, 3000);
         }
 
-        async function startScanner() {
-            if (isScanning) return;
+        async function initZXingScanner() {
+            showStatus('Initializing camera...', 'info');
+
             try {
-                const devices = await reader.listVideoInputDevices();
-                const backCamera = devices.find(device =>
-                    device.label.toLowerCase().includes('back') ||
-                    device.label.toLowerCase().includes('environment')
-                );
-                const cameraId = currentCameraId === 'environment' && backCamera ? backCamera.deviceId : devices[0]
-                    ?.deviceId;
-                if (!cameraId) {
-                    showResult('No camera found', 'error');
+                reader = new ZXing.BrowserMultiFormatReader();
+                videoElement = document.getElementById('video');
+
+                if (!videoElement) {
+                    showStatus('Video element not found!', 'error');
                     return;
                 }
-                const videoElement = document.getElementById('video');
-                await reader.decodeFromVideoElement(videoElement, cameraId, (result, error) => {
-                    if (result) {
-                        processQR(result.getText());
-                    }
-                });
-                isScanning = true;
+
+                await startZXingScanner();
+                showStatus('Camera ready! Point at QR code.', 'success');
             } catch (error) {
-                showResult('Unable to access camera', 'error');
+                console.error('Scanner init error:', error);
+                showStatus('Unable to initialize camera: ' + error.message, 'error');
             }
         }
 
-        async function switchCamera() {
-            currentCameraId = currentCameraId === 'environment' ? 'user' : 'environment';
+        async function startZXingScanner() {
+            if (isScanning) return;
+
+            try {
+                const devices = await reader.listVideoInputDevices();
+                console.log('Available cameras:', devices);
+
+                if (devices.length === 0) {
+                    showStatus('No camera detected on this device!', 'error');
+                    return;
+                }
+
+                // Find appropriate camera based on facing mode
+                let selectedDevice = null;
+
+                if (currentFacingMode === 'environment') {
+                    // Find back camera
+                    selectedDevice = devices.find(device =>
+                        device.label.toLowerCase().includes('back') ||
+                        device.label.toLowerCase().includes('environment') ||
+                        device.label.toLowerCase().includes('rear')
+                    );
+                } else {
+                    // Find front camera
+                    selectedDevice = devices.find(device =>
+                        device.label.toLowerCase().includes('front') ||
+                        device.label.toLowerCase().includes('user')
+                    );
+                }
+
+                // Fallback to first camera
+                if (!selectedDevice && devices.length > 0) {
+                    selectedDevice = devices[0];
+                }
+
+                if (!selectedDevice) {
+                    showStatus('No suitable camera found!', 'error');
+                    return;
+                }
+
+                showStatus('Starting camera: ' + selectedDevice.label, 'info');
+
+                await reader.decodeFromVideoElement(
+                    videoElement,
+                    selectedDevice.deviceId,
+                    (result, error) => {
+                        if (result) {
+                            console.log('QR Code detected:', result.getText());
+                            processZXingQR(result.getText());
+                        }
+                    }
+                );
+
+                isScanning = true;
+                console.log('Scanner started successfully');
+            } catch (error) {
+                console.error('Start scanner error:', error);
+                showStatus('Camera error: ' + error.message, 'error');
+
+                // Try to request camera permission explicitly
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: true
+                    });
+                    stream.getTracks().forEach(track => track.stop());
+                    showStatus('Camera permission granted. Please refresh and try again.', 'info');
+                } catch (permError) {
+                    showStatus('Camera permission denied. Please allow camera access.', 'error');
+                }
+            }
+        }
+
+        async function switchZXingCamera() {
+            currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+            showStatus('Switching camera...', 'info');
+
             if (reader && isScanning) {
                 await reader.reset();
                 isScanning = false;
-                startScanner();
+                await startZXingScanner();
             }
         }
 
-        function stopScanner() {
+        function stopZXingScanner() {
             if (reader && isScanning) {
                 reader.reset();
                 isScanning = false;
             }
         }
 
-        function processQR(qrData) {
-            stopScanner();
-            const url = new URL(qrData);
-            const token = url.searchParams.get('token');
-            const sessionId = url.searchParams.get('session');
+        function processZXingQR(qrData) {
+            stopZXingScanner();
 
-            fetch('{{ route('student.scan.process') }}?token=' + token + '&session=' + sessionId, {
-                    method: 'GET',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showResult(data.message, 'success');
-                        setTimeout(() => {
-                            window.location.href = '{{ route('student.dashboard') }}';
-                        }, 2000);
-                    } else {
-                        showResult(data.message, 'error');
-                        setTimeout(() => {
-                            startScanner();
-                        }, 2000);
-                    }
-                })
-                .catch(error => {
-                    showResult('Network error', 'error');
-                    setTimeout(() => {
-                        startScanner();
-                    }, 2000);
-                });
+            try {
+                const url = new URL(qrData);
+                const token = url.searchParams.get('token');
+                const sessionId = url.searchParams.get('session');
+
+                if (!token || !sessionId) {
+                    showResult('Invalid QR code format', 'error');
+                    setTimeout(() => startZXingScanner(), 2000);
+                    return;
+                }
+
+                showResult('Processing attendance...', 'info');
+
+                fetch(`/student/scan/process?token=${encodeURIComponent(token)}&session=${encodeURIComponent(sessionId)}`, {
+                        method: 'GET',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showResult(data.message, 'success');
+                            setTimeout(() => {
+                                window.location.href = '/student/dashboard';
+                            }, 2000);
+                        } else {
+                            showResult(data.message, 'error');
+                            setTimeout(() => startZXingScanner(), 2000);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showResult('Network error', 'error');
+                        setTimeout(() => startZXingScanner(), 2000);
+                    });
+            } catch (error) {
+                console.error('QR parse error:', error);
+                showResult('Invalid QR code', 'error');
+                setTimeout(() => startZXingScanner(), 2000);
+            }
         }
 
         function showResult(message, type) {
@@ -335,48 +465,63 @@
             setTimeout(() => {
                 area.style.display = 'none';
                 area.innerHTML = '';
-            }, 3000);
+            }, 4000);
         }
 
         function checkActiveSession() {
-            fetch('{{ route('student.scan.check-session') }}')
+            fetch('{{ route('student.scan.check-session') }}', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.hasSession) {
-                        document.getElementById('sessionCard').innerHTML =
-                            `
-                            <div class="session-header" style="border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
-                                <i class="bi bi-clock-history"></i>
-                                <h4 style="display: inline; margin-left: 0.5rem;">Active Session</h4>
-                            </div>
-                            <div class="info-row"><span>Course</span><span><strong>${data.session.course_name}</strong></span></div>
-                            <div class="info-row"><span>Lecturer</span><span>${data.session.lecturer_name}</span></div>
-                            <div class="info-row"><span>Room</span><span>${data.session.room || 'Not specified'}</span></div>
-                            <div class="info-row"><span>Expires in</span><span style="color:#dc2626; font-weight:bold;">${data.session.expires_in} seconds</span></div>`;
+                    if (data.hasSession && data.session) {
+                        document.getElementById('sessionCard').innerHTML = `
+                        <div class="session-header" style="border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                            <i class="bi bi-check-circle-fill" style="color:#10b981;"></i>
+                            <h4 style="display: inline; margin-left: 0.5rem;">Active Session Found!</h4>
+                        </div>
+                        <div class="info-row"><span>📚 Course</span><span><strong>${data.session.course_name}</strong></span></div>
+                        <div class="info-row"><span>👨‍🏫 Lecturer</span><span>${data.session.lecturer_name}</span></div>
+                        <div class="info-row"><span>📍 Room</span><span>${data.session.room || 'Not specified'}</span></div>
+                        <div class="info-row"><span>⏰ Expires in</span><span style="color:#dc2626;">${Math.floor(data.session.expires_in / 60)}m ${data.session.expires_in % 60}s</span></div>
+                        <div class="info-row"><span>🔑 Manual Code</span></div>
+                        <div class="manual-code-display">${data.session.session_code}</div>
+                    `;
+                    } else {
+                        document.getElementById('sessionCard').innerHTML = `
+                        <div class="session-header" style="border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                            <i class="bi bi-clock-history"></i>
+                            <h4 style="display: inline; margin-left: 0.5rem;">No Active Session</h4>
+                        </div>
+                        <div class="info-row"><span>Status</span><span>Waiting for QR scan</span></div>
+                        <div class="info-row"><span>Note</span><span>Ask your lecturer to generate a QR code</span></div>
+                    `;
                     }
-                }).catch(() => {});
+                })
+                .catch(error => console.error('Error:', error));
         }
 
-        function showManualEntry() {
-            document.getElementById('manualModal').style.display = 'flex';
-        }
-
-        function closeManualModal() {
-            document.getElementById('manualModal').style.display = 'none';
-            document.getElementById('manualCode').value = '';
-        }
-
-        function verifyManualCode() {
-            const code = document.getElementById('manualCode').value;
+        // Manual code submission
+        function submitManualCode() {
+            let code = document.getElementById('manualCodeInput').value.toUpperCase();
             if (code.length !== 6) {
                 alert('Please enter a valid 6-digit code');
                 return;
             }
+
+            let btn = document.getElementById('manualSubmitBtn');
+            btn.innerText = 'Processing...';
+            btn.disabled = true;
+
             fetch('{{ route('student.scan.manual') }}', {
                     method: 'POST',
                     headers: {
+                        'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json'
+                        'Accept': 'application/json'
                     },
                     body: JSON.stringify({
                         manual_code: code
@@ -386,27 +531,67 @@
                 .then(data => {
                     if (data.success) {
                         showResult(data.message, 'success');
-                        closeManualModal();
                         setTimeout(() => {
-                            window.location.href = '{{ route('student.dashboard') }}';
+                            window.location.href = '/student/dashboard';
                         }, 2000);
                     } else {
                         showResult(data.message, 'error');
+                        btn.innerText = '✓ Submit Attendance';
+                        btn.disabled = false;
                     }
-                }).catch(error => {
+                })
+                .catch(error => {
+                    console.error('Error:', error);
                     showResult('Network error', 'error');
+                    btn.innerText = '✓ Submit Attendance';
+                    btn.disabled = false;
                 });
         }
 
-        window.onload = () => {
-            initScanner();
-            checkActiveSession();
-            setInterval(checkActiveSession, 10000);
-        };
-        window.switchCamera = switchCamera;
-        window.startScanner = startScanner;
-        window.showManualEntry = showManualEntry;
-        window.closeManualModal = closeManualModal;
-        window.verifyManualCode = verifyManualCode;
+        // Tab switching
+        document.getElementById('cameraTabBtn').addEventListener('click', function() {
+            document.getElementById('cameraSection').style.display = 'block';
+            document.getElementById('manualSection').style.display = 'none';
+            this.classList.add('active');
+            document.getElementById('manualTabBtn').classList.remove('active');
+            initZXingScanner();
+        });
+
+        document.getElementById('manualTabBtn').addEventListener('click', function() {
+            document.getElementById('cameraSection').style.display = 'none';
+            document.getElementById('manualSection').style.display = 'block';
+            this.classList.add('active');
+            document.getElementById('cameraTabBtn').classList.remove('active');
+            stopZXingScanner();
+        });
+
+        // Event listeners
+        document.getElementById('switchCameraBtn').addEventListener('click', switchZXingCamera);
+        document.getElementById('restartScannerBtn').addEventListener('click', () => {
+            stopZXingScanner();
+            initZXingScanner();
+        });
+
+        document.getElementById('manualCodeInput').addEventListener('input', function(e) {
+            this.value = this.value.toUpperCase().slice(0, 6);
+        });
+        document.getElementById('manualCodeInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') submitManualCode();
+        });
+        document.getElementById('manualSubmitBtn').addEventListener('click', submitManualCode);
+
+        // Initialize
+        checkActiveSession();
+        setInterval(checkActiveSession, 30000);
+
+        // Initialize scanner when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initZXingScanner, 500);
+        });
+
+        // Stop scanner on page unload
+        window.addEventListener('beforeunload', () => {
+            stopZXingScanner();
+        });
     </script>
 @endsection

@@ -155,9 +155,16 @@
                 <div class="qr-container">
                     <h4><i class="bi bi-qr-code"></i> Active QR Session</h4>
                     <div class="qr-box">
-                        {!! QrCode::size(180)->generate(
-                            route('student.scan.process') . '?token=' . $activeSession->session_token . '&session=' . $activeSession->id,
-                        ) !!}
+                        @if (class_exists('SimpleSoftwareIO\QrCode\Facades\QrCode'))
+                            {!! QrCode::size(180)->generate(
+                                route('student.scan.process') . '?token=' . $activeSession->session_token . '&session=' . $activeSession->id,
+                            ) !!}
+                        @else
+                            <div style="padding: 40px; background: #f0f0f0; color: #333; border-radius: 8px;">
+                                <i class="bi bi-exclamation-triangle" style="font-size: 48px;"></i>
+                                <p>QR Code package not installed. Run: composer require simplesoftwareio/simple-qrcode</p>
+                            </div>
+                        @endif
                     </div>
                     <div>
                         <p><strong>Course:</strong> {{ $activeSession->course->course_name ?? 'N/A' }}</p>
@@ -273,8 +280,8 @@
                             <div class="session-item">
                                 <strong>{{ $session->course->course_name ?? 'N/A' }}</strong><br>
                                 <small>
-                                    {{ $session->created_at->format('M d, Y H:i') }} |
-                                    {{ $session->present_count }}/{{ $session->total_students }} present
+                                    {{ \Carbon\Carbon::parse($session->created_at)->format('M d, Y H:i') }} |
+                                    {{ $session->present_count }}/{{ $session->total_students ?? 0 }} present
                                 </small>
                             </div>
                         @endforeach
@@ -287,7 +294,6 @@
     </div>
 
     <script>
-        // Timer for active session
         @if ($activeSession && $activeSession->qr_expires_at)
             let expiresAt = new Date('{{ $activeSession->qr_expires_at }}').getTime();
             let timerInterval = setInterval(function() {
@@ -297,7 +303,7 @@
                 if (distance < 0) {
                     clearInterval(timerInterval);
                     document.getElementById('countdownTimer').innerHTML = 'QR EXPIRED';
-                    location.reload();
+                    document.getElementById('countdownTimer').style.color = '#ffcccc';
                     return;
                 }
 

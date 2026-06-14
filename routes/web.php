@@ -136,22 +136,29 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     // Enrollment Routes
     Route::get('/enrollments', [App\Http\Controllers\Lecturer\EnrollmentController::class, 'index'])->name('enrollments.index');
 
-    // Attendance Session Routes
+    // ============================================================
+    // ATTENDANCE SESSION ROUTES
+    // ============================================================
+    // Main attendance pages
     Route::get('/attendance/take', [AttendanceController::class, 'takeAttendance'])->name('attendance.take');
     Route::get('/attendance/sessions', [AttendanceController::class, 'sessions'])->name('attendance.sessions');
+    Route::get('/attendance/history', [AttendanceController::class, 'history'])->name('attendance.history');
+
+    // Session management
     Route::post('/attendance/sessions', [AttendanceController::class, 'createSession'])->name('attendance.sessions.create');
     Route::post('/attendance/sessions/{id}/end', [AttendanceController::class, 'endSession'])->name('attendance.sessions.end');
     Route::get('/attendance/sessions/{id}/refresh', [AttendanceController::class, 'refreshSession'])->name('attendance.sessions.refresh');
-    Route::get('/attendance/history', [AttendanceController::class, 'history'])->name('attendance.history');
 
     // Manual Attendance
     Route::post('/attendance/manual', [AttendanceController::class, 'manualAttendance'])->name('attendance.manual');
 
-    // QR Generation Routes (New)
-    Route::post('/generate-qr', [LecturerController::class, 'generateQr'])->name('generateQr');
-    Route::post('/end-session/{sessionId}', [LecturerController::class, 'endSession'])->name('endSession');
-    Route::post('/refresh-qr/{sessionId}', [LecturerController::class, 'refreshQr'])->name('refreshQr');
-    Route::get('/session-stats/{sessionId}', [LecturerController::class, 'sessionStats'])->name('sessionStats');
+    // ============================================================
+    // AJAX ROUTES FOR ATTENDANCE (Dashboard)
+    // ============================================================
+    Route::post('/generate-qr', [AttendanceController::class, 'generateQr'])->name('generateQr');
+    Route::post('/end-session/{id}', [AttendanceController::class, 'endSessionAjax'])->name('endSession');
+    Route::post('/refresh-qr/{id}', [AttendanceController::class, 'refreshQrAjax'])->name('refreshQr');
+    Route::get('/session-stats/{id}', [AttendanceController::class, 'getSessionStats'])->name('sessionStats');
 });
 
 // ============================================================
@@ -173,6 +180,7 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::get('/scan/check-session', [QRScanController::class, 'checkSession'])->name('scan.check-session');
     Route::get('/scan/process', [QRScanController::class, 'processScan'])->name('scan.process');
     Route::post('/scan/manual', [QRScanController::class, 'manualAttendance'])->name('scan.manual');
+
 });
 
 // ============================================================

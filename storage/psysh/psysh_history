@@ -304,3 +304,5 @@ $lecturer->save();
 echo\040"Lecturer\040created:\040"\040.\040$lecturer->id;
 //\040Exit\040tinker
 exit
+use\040SimpleSoftwareIO\134QrCode\134Facades\134QrCode;
+echo\040QrCode::size(200)->generate('https://google.com');
