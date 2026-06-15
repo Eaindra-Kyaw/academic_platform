@@ -86,8 +86,9 @@ class LecturerController extends Controller
                                        ->where('status', 'approved')
                                        ->count();
 
-            $presentCount = $activeSession->attendanceRecords()->where('status', 'present')->count();
-            $lateCount = $activeSession->attendanceRecords()->where('status', 'late')->count();
+            // FIXED: Changed from attendanceRecords() to records()
+            $presentCount = $activeSession->records()->where('status', 'present')->count();
+            $lateCount = $activeSession->records()->where('status', 'late')->count();
             $presentCount += $lateCount; // Late students are also present
             $absentCount = max(0, $totalInSession - $presentCount);
 
@@ -97,7 +98,8 @@ class LecturerController extends Controller
                 $latePercent = round(($lateCount / $totalInSession) * 100, 1);
             }
 
-            $lateStudents = $activeSession->attendanceRecords()
+            // FIXED: Changed from attendanceRecords() to records()
+            $lateStudents = $activeSession->records()
                                          ->where('status', 'late')
                                          ->with('student')
                                          ->get();
@@ -114,7 +116,8 @@ class LecturerController extends Controller
             $sessions = AttendanceSession::where('course_id', $course->id)->get();
             $totalAttendance = 0;
             foreach ($sessions as $session) {
-                $totalAttendance += $session->attendanceRecords()->count();
+                // FIXED: Changed from attendanceRecords() to records()
+                $totalAttendance += $session->records()->count();
             }
             if ($sessions->count() > 0 && $enrolledCount > 0) {
                 $courseAvg = ($totalAttendance / ($sessions->count() * $enrolledCount)) * 100;
@@ -165,8 +168,9 @@ class LecturerController extends Controller
         $totalSessions = AttendanceSession::where('course_id', $courseId)->count();
         if ($totalSessions == 0) return 100;
 
+        // FIXED: Changed from attendanceRecords to records
         $presentSessions = AttendanceSession::where('course_id', $courseId)
-            ->whereHas('attendanceRecords', function($q) use ($studentId) {
+            ->whereHas('records', function($q) use ($studentId) {
                 $q->where('student_id', $studentId)
                   ->whereIn('status', ['present', 'late']);
             })->count();
@@ -302,15 +306,18 @@ class LecturerController extends Controller
 
     public function sessionStats($sessionId)
     {
-        $session = AttendanceSession::with(['course', 'attendanceRecords.student'])
+        // FIXED: Changed from attendanceRecords to records
+        $session = AttendanceSession::with(['course', 'records.student'])
                                    ->where('lecturer_id', Auth::id())
                                    ->findOrFail($sessionId);
 
-        $presentCount = $session->attendanceRecords->whereIn('status', ['present', 'late'])->count();
+        // FIXED: Changed from attendanceRecords to records
+        $presentCount = $session->records->whereIn('status', ['present', 'late'])->count();
         $totalStudents = Enrollment::where('course_id', $session->course_id)
                                    ->where('status', 'approved')
                                    ->count();
-        $lateCount = $session->attendanceRecords->where('status', 'late')->count();
+        // FIXED: Changed from attendanceRecords to records
+        $lateCount = $session->records->where('status', 'late')->count();
 
         return response()->json([
             'success' => true,
@@ -318,7 +325,8 @@ class LecturerController extends Controller
             'total' => $totalStudents,
             'percentage' => $totalStudents > 0 ? round(($presentCount / $totalStudents) * 100, 1) : 0,
             'late' => $lateCount,
-            'records' => $session->attendanceRecords->map(function($record) {
+            // FIXED: Changed from attendanceRecords to records
+            'records' => $session->records->map(function($record) {
                 return [
                     'student_name' => $record->student->name,
                     'student_email' => $record->student->email,

@@ -6,44 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('timetable_entries', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId('course_id')
-                  ->constrained('courses')
-                  ->onDelete('cascade');
-
-            $table->foreignId('lecturer_id')
-                  ->constrained('users')
-                  ->onDelete('cascade');
-
-            $table->enum('day_of_week', [
-                'Monday',
-                'Tuesday',
-                'Wednesday',
-                'Thursday',
-                'Friday',
-                'Saturday',
-                'Sunday'
-            ]);
-
+            $table->foreignId('course_id')->constrained()->onDelete('cascade');
+            $table->string('room')->nullable();
+            $table->integer('day_of_week'); // 1=Monday, 7=Sunday
             $table->time('start_time');
             $table->time('end_time');
-
-            $table->string('room', 50);
-
-            $table->integer('semester');
-            $table->year('academic_year');
-
-            $table->boolean('is_active')->default(true);
-
+            $table->string('lecturer_name')->nullable();
+            $table->string('academic_year')->nullable();
+            $table->string('semester')->nullable();
             $table->timestamps();
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('timetable_entries');
     }

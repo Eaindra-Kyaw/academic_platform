@@ -139,26 +139,27 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     // ============================================================
     // ATTENDANCE SESSION ROUTES
     // ============================================================
-    // Main attendance pages
     Route::get('/attendance/take', [AttendanceController::class, 'takeAttendance'])->name('attendance.take');
     Route::get('/attendance/sessions', [AttendanceController::class, 'sessions'])->name('attendance.sessions');
     Route::get('/attendance/history', [AttendanceController::class, 'history'])->name('attendance.history');
 
-    // Session management
     Route::post('/attendance/sessions', [AttendanceController::class, 'createSession'])->name('attendance.sessions.create');
     Route::post('/attendance/sessions/{id}/end', [AttendanceController::class, 'endSession'])->name('attendance.sessions.end');
     Route::get('/attendance/sessions/{id}/refresh', [AttendanceController::class, 'refreshSession'])->name('attendance.sessions.refresh');
 
-    // Manual Attendance
     Route::post('/attendance/manual', [AttendanceController::class, 'manualAttendance'])->name('attendance.manual');
 
-    // ============================================================
-    // AJAX ROUTES FOR ATTENDANCE (Dashboard)
-    // ============================================================
+    // AJAX Routes
     Route::post('/generate-qr', [AttendanceController::class, 'generateQr'])->name('generateQr');
     Route::post('/end-session/{id}', [AttendanceController::class, 'endSessionAjax'])->name('endSession');
     Route::post('/refresh-qr/{id}', [AttendanceController::class, 'refreshQrAjax'])->name('refreshQr');
     Route::get('/session-stats/{id}', [AttendanceController::class, 'getSessionStats'])->name('sessionStats');
+
+    // Semester QR Routes
+    Route::post('/course/{course}/regenerate-semester-qr', [AttendanceController::class, 'regenerateSemesterQr'])->name('course.regenerate-semester-qr');
+
+    // ADD THIS ROUTE:
+    Route::post('/generate-semester-qr-direct', [AttendanceController::class, 'generateSemesterQrDirect'])->name('lecturer.generate.semester.qr.direct');
 });
 
 // ============================================================
@@ -181,6 +182,12 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::get('/scan/process', [QRScanController::class, 'processScan'])->name('scan.process');
     Route::post('/scan/manual', [QRScanController::class, 'manualAttendance'])->name('scan.manual');
 
+    // ============================================================
+    // STATIC QR SCAN ROUTE (Student scans Static QR from PowerPoint)
+    // ============================================================
+    Route::get('/scan/static', [QRScanController::class, 'staticScan'])->name('scan.static');
+
+    Route::get('/scan/semester', [QRScanController::class, 'semesterScan'])->name('scan.semester');
 });
 
 // ============================================================

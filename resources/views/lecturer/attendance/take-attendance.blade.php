@@ -45,12 +45,26 @@
             margin-bottom: 20px;
         }
 
+        .qr-container-semester {
+            background: linear-gradient(135deg, #1a5f7a, #0d3b4f);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
         .qr-box {
             background: white;
             padding: 15px;
             border-radius: 10px;
             display: inline-block;
             margin: 10px auto;
+        }
+
+        .qr-box img {
+            width: 220px;
+            height: 220px;
         }
 
         .manual-code {
@@ -64,38 +78,12 @@
             font-family: monospace;
         }
 
-        .session-info {
+        .mode-selector {
             background: white;
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
             border: 1px solid #e5e7eb;
-        }
-
-        .stat-number {
-            font-size: 28px;
-            font-weight: bold;
-            color: #800000;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 12px;
         }
 
         .btn-custom {
@@ -129,120 +117,208 @@
             border-bottom: 1px solid #eee;
         }
 
-        .session-item:hover {
-            background: #f9fafb;
-        }
-
         .countdown {
             font-size: 14px;
             margin-top: 10px;
         }
 
-        .timer-critical {
-            color: #ffcccc;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            text-align: center;
         }
 
-        .timer-warning {
-            color: #ffd700;
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 12px;
+        }
+
+        .download-btn {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-top: 8px;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            background: #059669;
+            color: white;
         }
     </style>
 
     <div class="row">
-        <!-- Left Column - QR Session -->
         <div class="col-md-6">
             @if ($activeSession)
-                <!-- Active Session Display -->
-                <div class="qr-container">
-                    <h4><i class="bi bi-qr-code"></i> Active QR Session</h4>
-                    <div class="qr-box">
-                        @if (class_exists('SimpleSoftwareIO\QrCode\Facades\QrCode'))
-                            {!! QrCode::size(180)->generate(
-                                route('student.scan.process') . '?token=' . $activeSession->session_token . '&session=' . $activeSession->id,
-                            ) !!}
-                        @else
-                            <div style="padding: 40px; background: #f0f0f0; color: #333; border-radius: 8px;">
-                                <i class="bi bi-exclamation-triangle" style="font-size: 48px;"></i>
-                                <p>QR Code package not installed. Run: composer require simplesoftwareio/simple-qrcode</p>
+                @if ($activeSession->course->qr_mode == 'semester')
+                    <!-- Semester QR Mode Display -->
+                    <div class="qr-container-semester">
+                        <h4><i class="bi bi-qr-code"></i> Semester QR (Static)</h4>
+                        <p style="font-size: 12px;">Same QR for whole semester - put on PowerPoint once</p>
+                        <div class="qr-box">
+                            @php
+                                // Use localhost for Mac-only testing
+                                $baseUrl = 'http://127.0.0.1:8000';
+                                $semesterQrText =
+                                    $baseUrl .
+                                    '/student/scan/semester?token=' .
+                                    $activeSession->course->semester_qr_token .
+                                    '&course=' .
+                                    $activeSession->course->id;
+                            @endphp
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode($semesterQrText) }}"
+                                alt="Semester QR">
+                            <div>
+                                <a href="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode($semesterQrText) }}"
+                                    download="semester-qr.png" class="download-btn">💾 Download QR Code</a>
                             </div>
-                        @endif
-                    </div>
-                    <div>
-                        <p><strong>Course:</strong> {{ $activeSession->course->course_name ?? 'N/A' }}</p>
-                        <p><strong>Room:</strong> {{ $activeSession->room ?? 'Not specified' }}</p>
-                        <p><strong>Manual Code:</strong></p>
-                        <div class="manual-code">{{ $activeSession->session_code }}</div>
-                        <div class="countdown">
-                            <span id="countdownTimer"></span>
+                        </div>
+                        <div>
+                            <p><strong>Course:</strong> {{ $activeSession->course->course_name ?? 'N/A' }}</p>
+                            <p><strong>Room:</strong> {{ $activeSession->room ?? 'Not specified' }}</p>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <form method="POST"
+                                action="{{ route('lecturer.course.regenerate-semester-qr', $activeSession->course->id) }}"
+                                style="display: inline;">
+                                @csrf
+                                <button type="submit" class="btn-custom" style="background: #f59e0b;">⟳ Regenerate
+                                    QR</button>
+                            </form>
+                            <form method="POST"
+                                action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
+                                style="display: inline;">
+                                @csrf
+                                <button type="submit" class="btn-custom" style="background: #dc2626;">⏹ End
+                                    Session</button>
+                            </form>
                         </div>
                     </div>
-                    <div style="margin-top: 15px;">
-                        <form method="POST" action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
-                            style="display: inline;">
-                            @csrf
-                            <button type="submit" class="btn-custom" style="background: #dc2626;">End Session</button>
-                        </form>
-                        <a href="{{ route('lecturer.attendance.sessions.refresh', $activeSession->id) }}"
-                            class="btn-custom" style="background: #f59e0b;">Refresh QR</a>
+                @else
+                    <!-- Dynamic Session QR Mode Display -->
+                    <div class="qr-container">
+                        <h4><i class="bi bi-qr-code"></i> Session QR (Dynamic)</h4>
+                        <p style="font-size: 12px;">Changes every session - expires in {{ $activeSession->duration }}
+                            minutes</p>
+                        <div class="qr-box">
+                            @php
+                                // Use localhost for Mac-only testing
+                                $baseUrl = 'http://127.0.0.1:8000';
+                                $dynamicQrText =
+                                    $baseUrl .
+                                    '/student/scan/process?token=' .
+                                    $activeSession->session_token .
+                                    '&session=' .
+                                    $activeSession->id;
+                            @endphp
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode($dynamicQrText) }}"
+                                alt="Dynamic QR">
+                            <div>
+                                <a href="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode($dynamicQrText) }}"
+                                    download="dynamic-qr.png" class="download-btn">💾 Download QR Code</a>
+                            </div>
+                        </div>
+                        <div>
+                            <p><strong>Course:</strong> {{ $activeSession->course->course_name ?? 'N/A' }}</p>
+                            <p><strong>Room:</strong> {{ $activeSession->room ?? 'Not specified' }}</p>
+                            <p><strong>Manual Code:</strong></p>
+                            <div class="manual-code">{{ $activeSession->session_code }}</div>
+                            <div class="countdown"><span id="countdownTimer"></span></div>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <form method="POST"
+                                action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
+                                style="display: inline;">
+                                @csrf
+                                <button type="submit" class="btn-custom" style="background: #dc2626;">End Session</button>
+                            </form>
+                            <a href="{{ route('lecturer.attendance.sessions.refresh', $activeSession->id) }}"
+                                class="btn-custom" style="background: #f59e0b;">Refresh QR</a>
+                        </div>
                     </div>
-                </div>
+                @endif
 
                 <!-- Live Stats -->
-                <div class="session-info">
+                <div class="mode-selector">
                     <h5><i class="bi bi-graph-up"></i> Live Attendance Statistics</h5>
                     <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-number" id="presentCount">{{ $activeSession->present_count ?? 0 }}</div>
+                        <div>
+                            <div class="stat-number" style="color:#10b981;">{{ $activeSession->present_count ?? 0 }}</div>
                             <div class="stat-label">Present</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="lateCount">{{ $activeSession->late_count ?? 0 }}</div>
+                        <div>
+                            <div class="stat-number" style="color:#f59e0b;">{{ $activeSession->late_count ?? 0 }}</div>
                             <div class="stat-label">Late</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="absentCount">
+                        <div>
+                            <div class="stat-number" style="color:#ef4444;">
                                 {{ ($activeSession->total_students ?? 0) - ($activeSession->present_count ?? 0) }}</div>
                             <div class="stat-label">Absent</div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-number" id="totalCount">{{ $activeSession->total_students ?? 0 }}</div>
-                            <div class="stat-label">Total Enrolled</div>
+                        <div>
+                            <div class="stat-number" style="color:#800000;">{{ $activeSession->total_students ?? 0 }}</div>
+                            <div class="stat-label">Total</div>
                         </div>
                     </div>
                 </div>
             @else
                 <!-- Create New Session Form -->
-                <div class="session-info">
-                    <h5><i class="bi bi-plus-circle"></i> Create New QR Session</h5>
+                <div class="mode-selector">
+                    <h5 style="margin-bottom: 15px;"><i class="bi bi-sliders2"></i> Select QR Mode</h5>
+
                     <form method="POST" action="{{ route('lecturer.attendance.sessions.create') }}">
                         @csrf
                         <select name="course_id" class="form-control" required>
-                            <option value="">Select Course</option>
+                            <option value="">-- Select Course --</option>
                             @foreach ($courses as $course)
                                 <option value="{{ $course->id }}">{{ $course->course_code }} -
                                     {{ $course->course_name }}</option>
                             @endforeach
                         </select>
 
-                        <select name="duration" class="form-control" required>
-                            <option value="30">30 minutes</option>
-                            <option value="45">45 minutes</option>
-                            <option value="60">60 minutes</option>
-                            <option value="90">90 minutes</option>
-                            <option value="120">120 minutes</option>
-                        </select>
+                        <div style="margin: 15px 0;">
+                            <label
+                                style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; cursor: pointer;">
+                                <input type="radio" name="qr_mode" value="session" checked> 📱 Session QR (Dynamic) - New
+                                QR every session
+                            </label>
+                            <label
+                                style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="radio" name="qr_mode" value="semester"> 📚 Semester QR (Static) - Same QR
+                                all semester
+                            </label>
+                        </div>
+
+                        <div id="durationField">
+                            <select name="duration" class="form-control" required>
+                                <option value="30">30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60">60 minutes</option>
+                                <option value="90">90 minutes</option>
+                                <option value="120">120 minutes</option>
+                            </select>
+                        </div>
 
                         <input type="text" name="room" class="form-control" placeholder="Room (optional)">
 
-                        <button type="submit" class="btn-custom" style="width: 100%;">Generate QR Code</button>
+                        <button type="submit" class="btn-custom" style="width: 100%; margin-top: 10px;">🚀 Start QR
+                            Session</button>
                     </form>
                 </div>
             @endif
         </div>
 
-        <!-- Right Column - Manual Attendance -->
         <div class="col-md-6">
             <!-- Manual Attendance Form -->
-            <div class="session-info">
+            <div class="mode-selector">
                 <h5><i class="bi bi-pencil-square"></i> Manual Attendance Entry</h5>
                 <form method="POST" action="{{ route('lecturer.attendance.manual') }}">
                     @csrf
@@ -253,36 +329,31 @@
                             </option>
                         @endforeach
                     </select>
-
                     <select name="student_id" class="form-control" required>
                         <option value="">Select Student</option>
                         @foreach ($students as $student)
                             <option value="{{ $student->id }}">{{ $student->name }} ({{ $student->email }})</option>
                         @endforeach
                     </select>
-
                     <select name="status" class="form-control" required>
                         <option value="present">Present</option>
                         <option value="late">Late</option>
                         <option value="absent">Absent</option>
                     </select>
-
                     <button type="submit" class="btn-custom" style="width: 100%;">Save Manual Attendance</button>
                 </form>
             </div>
 
             <!-- Recent Sessions -->
-            <div class="session-info">
+            <div class="mode-selector">
                 <h5><i class="bi bi-clock-history"></i> Recent Sessions</h5>
                 <div class="recent-sessions">
                     @if ($recentSessions && $recentSessions->count() > 0)
                         @foreach ($recentSessions as $session)
                             <div class="session-item">
                                 <strong>{{ $session->course->course_name ?? 'N/A' }}</strong><br>
-                                <small>
-                                    {{ \Carbon\Carbon::parse($session->created_at)->format('M d, Y H:i') }} |
-                                    {{ $session->present_count }}/{{ $session->total_students ?? 0 }} present
-                                </small>
+                                <small>{{ \Carbon\Carbon::parse($session->created_at)->format('M d, Y H:i') }} |
+                                    {{ $session->present_count }}/{{ $session->total_students ?? 0 }} present</small>
                             </div>
                         @endforeach
                     @else
@@ -294,32 +365,31 @@
     </div>
 
     <script>
-        @if ($activeSession && $activeSession->qr_expires_at)
+        @if ($activeSession && $activeSession->qr_expires_at && $activeSession->course->qr_mode == 'session')
             let expiresAt = new Date('{{ $activeSession->qr_expires_at }}').getTime();
-            let timerInterval = setInterval(function() {
+            setInterval(function() {
                 let now = new Date().getTime();
                 let distance = expiresAt - now;
-
                 if (distance < 0) {
-                    clearInterval(timerInterval);
-                    document.getElementById('countdownTimer').innerHTML = 'QR EXPIRED';
-                    document.getElementById('countdownTimer').style.color = '#ffcccc';
+                    document.getElementById('countdownTimer').innerHTML = 'EXPIRED';
                     return;
                 }
-
                 let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-                let timerText = `Time remaining: ${minutes}m ${seconds}s`;
-                let timerElement = document.getElementById('countdownTimer');
-                timerElement.innerHTML = timerText;
-
-                if (minutes < 1) {
-                    timerElement.className = 'timer-critical';
-                } else if (minutes < 5) {
-                    timerElement.className = 'timer-warning';
-                }
+                document.getElementById('countdownTimer').innerHTML = `Time remaining: ${minutes}m ${seconds}s`;
             }, 1000);
         @endif
+
+        // Hide/show duration field based on QR mode selection
+        document.querySelectorAll('input[name="qr_mode"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const durationField = document.getElementById('durationField');
+                if (this.value === 'semester') {
+                    durationField.style.display = 'none';
+                } else {
+                    durationField.style.display = 'block';
+                }
+            });
+        });
     </script>
 @endsection

@@ -306,3 +306,5 @@ echo\040"Lecturer\040created:\040"\040.\040$lecturer->id;
 exit
 use\040SimpleSoftwareIO\134QrCode\134Facades\134QrCode;
 echo\040QrCode::size(200)->generate('https://google.com');
+use\040SimpleSoftwareIO\134QrCode\134Facades\134QrCode;
+echo\040QrCode::size(100)->generate('https://google.com');

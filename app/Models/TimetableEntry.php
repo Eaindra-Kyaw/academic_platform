@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class TimetableEntry extends Model
 {
@@ -11,18 +12,18 @@ class TimetableEntry extends Model
 
     protected $fillable = [
         'course_id',
-        'lecturer_id',
+        'room',
         'day_of_week',
         'start_time',
         'end_time',
-        'room',
-        'semester',
+        'lecturer_name',
         'academic_year',
-        'is_active'
+        'semester',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'start_time' => 'datetime:H:i:s',
+        'end_time' => 'datetime:H:i:s',
     ];
 
     public function course()
@@ -30,8 +31,31 @@ class TimetableEntry extends Model
         return $this->belongsTo(Course::class);
     }
 
-    public function lecturer()
+    public function getDayNameAttribute()
     {
-        return $this->belongsTo(User::class, 'lecturer_id');
+        $days = [
+            1 => 'Monday',
+            2 => 'Tuesday',
+            3 => 'Wednesday',
+            4 => 'Thursday',
+            5 => 'Friday',
+            6 => 'Saturday',
+            7 => 'Sunday',
+        ];
+        return $days[$this->day_of_week] ?? 'Unknown';
+    }
+
+    public function getDurationAttribute()
+    {
+        $start = Carbon::parse($this->start_time);
+        $end = Carbon::parse($this->end_time);
+        return $end->diffInMinutes($start);
+    }
+
+    public function isActiveNow()
+    {
+        $now = Carbon::now();
+        return $this->day_of_week == $now->dayOfWeek &&
+               $now->between(Carbon::parse($this->start_time), Carbon::parse($this->end_time));
     }
 }
