@@ -24,15 +24,24 @@ class StudentController extends Controller
             ->where('status', 'approved')
             ->get();
 
+        // Get attendance records with notes
+        $attendanceRecords = AttendanceRecord::where('student_id', $student->id)
+            ->with('session.course')
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
         // Calculate attendance statistics
         $totalSessions = 0;
         $attendedSessions = 0;
+        $totalPresent = 0;
+        $totalLate = 0;
+        $totalAbsent = 0;
 
         foreach ($enrollments as $enrollment) {
             // Get total sessions for this course
             $sessions = AttendanceSession::where('course_id', $enrollment->course_id)
-                ->where('status', 'active')
-                ->orWhere('status', 'closed')
+                ->whereIn('status', ['active', 'ended'])
                 ->count();
 
             // Get attended sessions
@@ -42,11 +51,29 @@ class StudentController extends Controller
                 })
                 ->count();
 
+            // Get present/late counts
+            $present = AttendanceRecord::where('student_id', $student->id)
+                ->whereHas('session', function($q) use ($enrollment) {
+                    $q->where('course_id', $enrollment->course_id);
+                })
+                ->where('status', 'present')
+                ->count();
+
+            $late = AttendanceRecord::where('student_id', $student->id)
+                ->whereHas('session', function($q) use ($enrollment) {
+                    $q->where('course_id', $enrollment->course_id);
+                })
+                ->where('status', 'late')
+                ->count();
+
             $totalSessions += $sessions;
             $attendedSessions += $attended;
+            $totalPresent += $present;
+            $totalLate += $late;
         }
 
         $attendancePercentage = $totalSessions > 0 ? round(($attendedSessions / $totalSessions) * 100) : 0;
+        $totalAbsent = $totalSessions - $attendedSessions;
 
         // Calculate Academic Health Score
         $healthScore = $this->calculateHealthScore($attendancePercentage);
@@ -56,9 +83,13 @@ class StudentController extends Controller
 
         return view('student.dashboard', compact(
             'enrollments',
+            'attendanceRecords',
             'attendancePercentage',
             'healthScore',
-            'riskScore'
+            'riskScore',
+            'totalPresent',
+            'totalLate',
+            'totalAbsent'
         ));
     }
 

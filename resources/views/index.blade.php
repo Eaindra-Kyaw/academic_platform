@@ -188,7 +188,7 @@
 
         .footer {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 100px;
             padding-top: 25px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             font-size: 13px;
@@ -230,9 +230,9 @@
                     <p>Academic Portal</p>
                 </div>
             </div>
-            <h2>Smart Attendance. Predictive Analytics.</h2>
-            <p>Secure QR | Real-time Monitoring | AI Risk Prediction</p>
-            <div class="stats-bar">
+            <h2>Inteligent University Portal</h2>
+            <p> QR Attendance | Predictive Analysis</p>
+            {{-- <div class="stats-bar">
                 <div class="stat-item">
                     <div class="stat-number">1,284+</div>
                     <div class="stat-label">Students</div>
@@ -246,66 +246,66 @@
                     <div class="stat-label">Courses</div>
                 </div>
             </div>
+        </div> --}}
+
+            <div class="role-grid">
+                <div class="role-card" onclick="goToLogin('admin')">
+                    <div class="role-icon"><i class="bi bi-shield-lock-fill"></i></div>
+                    <h3>Administrator</h3>
+                    <p>University-wide control & analytics</p>
+                    <ul class="role-features">
+                        <li><i class="bi bi-check-circle"></i> Academic Performance</li>
+                        <li><i class="bi bi-check-circle"></i> Risk Forecasting</li>
+                        <li><i class="bi bi-check-circle"></i> Department Intelligence</li>
+                    </ul>
+                    <button class="btn-role">Access Admin →</button>
+                </div>
+                <div class="role-card" onclick="goToLogin('lecturer')">
+                    <div class="role-icon"><i class="bi bi-person-badge"></i></div>
+                    <h3>Lecturer</h3>
+                    <p>Manage classes & monitor engagement</p>
+                    <ul class="role-features">
+                        <li><i class="bi bi-check-circle"></i> Generate QR Codes</li>
+                        <li><i class="bi bi-check-circle"></i> Risk Analytics</li>
+                        <li><i class="bi bi-check-circle"></i> Student Intervention</li>
+                    </ul>
+                    <button class="btn-role">Access Lecturer →</button>
+                </div>
+                <div class="role-card" onclick="goToLogin('student')">
+                    <div class="role-icon"><i class="bi bi-mortarboard-fill"></i></div>
+                    <h3>Student</h3>
+                    <p>Track your academic journey</p>
+                    <ul class="role-features">
+                        <li><i class="bi bi-check-circle"></i> QR Attendance</li>
+                        <li><i class="bi bi-check-circle"></i> Recommendations</li>
+                        <li><i class="bi bi-check-circle"></i> Uni Bot</li>
+                    </ul>
+                    <button class="btn-role">Access Student →</button>
+                </div>
+            </div>
+
+            <div class="footer">© 2026 University Academic Intelligence System</div>
         </div>
 
-        <div class="role-grid">
-            <div class="role-card" onclick="goToLogin('admin')">
-                <div class="role-icon"><i class="bi bi-shield-lock-fill"></i></div>
-                <h3>Administrator</h3>
-                <p>University-wide control & analytics</p>
-                <ul class="role-features">
-                    <li><i class="bi bi-check-circle"></i> Academic Performance</li>
-                    <li><i class="bi bi-check-circle"></i> Risk Forecasting</li>
-                    <li><i class="bi bi-check-circle"></i> Department Intelligence</li>
-                </ul>
-                <button class="btn-role">Access Admin →</button>
-            </div>
-            <div class="role-card" onclick="goToLogin('lecturer')">
-                <div class="role-icon"><i class="bi bi-person-badge"></i></div>
-                <h3>Lecturer</h3>
-                <p>Manage classes & monitor engagement</p>
-                <ul class="role-features">
-                    <li><i class="bi bi-check-circle"></i> Generate QR Codes</li>
-                    <li><i class="bi bi-check-circle"></i> Risk Analytics</li>
-                    <li><i class="bi bi-check-circle"></i> Student Intervention</li>
-                </ul>
-                <button class="btn-role">Access Lecturer →</button>
-            </div>
-            <div class="role-card" onclick="goToLogin('student')">
-                <div class="role-icon"><i class="bi bi-mortarboard-fill"></i></div>
-                <h3>Student</h3>
-                <p>Track your academic journey</p>
-                <ul class="role-features">
-                    <li><i class="bi bi-check-circle"></i> QR Attendance</li>
-                    <li><i class="bi bi-check-circle"></i> Health Score</li>
-                    <li><i class="bi bi-check-circle"></i> AI Recommendations</li>
-                </ul>
-                <button class="btn-role">Access Student →</button>
-            </div>
-        </div>
+        <script>
+            function goToLogin(role) {
 
-        <div class="footer">© 2026 University Academic Intelligence System</div>
-    </div>
+                switch (role) {
 
-    <script>
-        function goToLogin(role) {
+                    case 'admin':
+                        window.location.href = "{{ route('admin.login') }}";
+                        break;
 
-            switch (role) {
+                    case 'lecturer':
+                        window.location.href = "{{ route('lecturer.login') }}";
+                        break;
 
-                case 'admin':
-                    window.location.href = "{{ route('admin.login') }}";
-                    break;
-
-                case 'lecturer':
-                    window.location.href = "{{ route('lecturer.login') }}";
-                    break;
-
-                case 'student':
-                    window.location.href = "{{ route('student.login') }}";
-                    break;
+                    case 'student':
+                        window.location.href = "{{ route('student.login') }}";
+                        break;
+                }
             }
-        }
-    </script>
+        </script>
 </body>
 
 </html>

@@ -377,6 +377,52 @@
             </div>
         </div>
 
+        <!-- Attendance History with Notes -->
+        <div class="course-list" style="margin-bottom: 1rem;">
+            <div
+                style="padding: 0.75rem 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #800000;">
+                <i class="bi bi-clock-history"></i> Recent Attendance
+            </div>
+            <div style="padding: 0.5rem 0;">
+                @if (isset($attendanceRecords) && $attendanceRecords->count() > 0)
+                    @foreach ($attendanceRecords as $record)
+                        <div class="enrollment-item">
+                            <div>
+                                <div class="enrollment-course">{{ $record->session->course->course_name ?? 'N/A' }}</div>
+                                <div class="enrollment-date">
+                                    <i class="bi bi-calendar"></i>
+                                    {{ $record->scanned_at ? \Carbon\Carbon::parse($record->scanned_at)->format('M d, Y h:i A') : 'N/A' }}
+                                    @if ($record->is_manual)
+                                        <span
+                                            style="background: #dbeafe; color: #1e40af; padding: 0.1rem 0.4rem; border-radius: 10px; font-size: 0.6rem; margin-left: 0.3rem;">Manual</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div>
+                                <span class="badge-{{ $record->status }}">
+                                    {{ ucfirst($record->status) }}
+                                </span>
+                            </div>
+                        </div>
+                        @if ($record->notes)
+                            <div
+                                style="padding: 0.1rem 1rem 0.5rem 1rem; font-size: 0.75rem; color: #6b7280; font-style: italic; border-bottom: 1px solid #f0f2f4;">
+                                📝 {{ $record->notes }}
+                            </div>
+                        @endif
+                    @endforeach
+                    <a href="{{ route('student.attendance') }}" class="view-all-link">
+                        View All Attendance <i class="bi bi-arrow-right"></i>
+                    </a>
+                @else
+                    <div style="text-align: center; padding: 1rem; color: #9ca3af;">
+                        <i class="bi bi-inbox"></i>
+                        <p>No attendance records yet</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
         <!-- Enrollment History Widget (Recent Enrollments) -->
         <div class="course-list" style="margin-bottom: 1rem;">
             <div
@@ -398,7 +444,8 @@
                                 <div class="enrollment-course">{{ $enrollment->course->course_code }} -
                                     {{ $enrollment->course->course_name }}</div>
                                 <div class="enrollment-date">
-                                    <i class="bi bi-calendar"></i> Requested: {{ $enrollment->created_at->format('d M Y') }}
+                                    <i class="bi bi-calendar"></i> Requested:
+                                    {{ $enrollment->created_at->format('d M Y') }}
                                     @if ($enrollment->status == 'approved' && $enrollment->approved_at)
                                         | ✅ Approved:
                                         {{ \Carbon\Carbon::parse($enrollment->approved_at)->format('d M Y') }}

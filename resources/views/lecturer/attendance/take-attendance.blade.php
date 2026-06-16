@@ -329,18 +329,29 @@
                             </option>
                         @endforeach
                     </select>
+
                     <select name="student_id" class="form-control" required>
                         <option value="">Select Student</option>
                         @foreach ($students as $student)
                             <option value="{{ $student->id }}">{{ $student->name }} ({{ $student->email }})</option>
                         @endforeach
                     </select>
+
                     <select name="status" class="form-control" required>
                         <option value="present">Present</option>
                         <option value="late">Late</option>
                         <option value="absent">Absent</option>
                     </select>
-                    <button type="submit" class="btn-custom" style="width: 100%;">Save Manual Attendance</button>
+
+                    <!-- Notes Field -->
+                    <div style="margin-top: 10px;">
+                        <label style="font-size: 12px; color: #6b7280;">Notes (Optional)</label>
+                        <textarea name="notes" class="form-control" rows="2"
+                            placeholder="e.g., Student arrived 15 minutes late due to traffic" style="resize: vertical;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-custom" style="width: 100%; margin-top: 10px;">Save Manual
+                        Attendance</button>
                 </form>
             </div>
 
