@@ -289,12 +289,20 @@
 
     <script>
         function goToLogin(role) {
-            if (role === 'admin') {
-                window.location.href = '{{ route('admin.login') }}';
-            } else if (role === 'lecturer') {
-                window.location.href = '{{ route('lecturer.login') }}';
-            } else if (role === 'student') {
-                window.location.href = '{{ route('student.login') }}';
+
+            switch (role) {
+
+                case 'admin':
+                    window.location.href = "{{ route('admin.login') }}";
+                    break;
+
+                case 'lecturer':
+                    window.location.href = "{{ route('lecturer.login') }}";
+                    break;
+
+                case 'student':
+                    window.location.href = "{{ route('student.login') }}";
+                    break;
             }
         }
     </script>

@@ -2,7 +2,10 @@ const https = require('https');
 const fs = require('fs');
 const http = require('http');
 
-const YOUR_IP = '172.20.10.3';
+// Manually set your IP
+const YOUR_IP = '192.168.1.20';
+
+console.log(`📡 Using IP: ${YOUR_IP}`);
 
 const options = {
   key: fs.readFileSync(`${YOUR_IP}-key.pem`),
@@ -12,7 +15,6 @@ const options = {
 https.createServer(options, (req, res) => {
   console.log('📱 Request:', req.method, req.url);
 
-  // Fix host header
   if (req.headers.host) {
     req.headers.host = req.headers.host.replace(':8443', '');
   }
@@ -26,7 +28,6 @@ https.createServer(options, (req, res) => {
   }, (proxyRes) => {
     console.log('✅ Response:', proxyRes.statusCode);
 
-    // Fix redirect URLs
     if (proxyRes.headers.location) {
       proxyRes.headers.location = proxyRes.headers.location
         .replace('http://127.0.0.1:8000', `https://${YOUR_IP}:8443`)
@@ -40,14 +41,14 @@ https.createServer(options, (req, res) => {
   proxyReq.on('error', (err) => {
     console.error('❌ Error:', err.message);
     res.writeHead(500);
-    res.end(`<h1>Proxy Error</h1><p>${err.message}</p><p>Make sure Laravel is running on port 8000</p>`);
+    res.end(`<h1>Proxy Error</h1><p>${err.message}</p>`);
   });
 
   req.pipe(proxyReq);
 }).listen(8443, '0.0.0.0', () => {
   console.log('');
   console.log('═══════════════════════════════════════════════════');
-  console.log('✅ HTTPS PROXY SERVER RUNNING');
+  console.log('✅ HTTPS PROXY RUNNING');
   console.log(`📱 iPhone URL: https://${YOUR_IP}:8443/student/scan`);
   console.log('⚠️  Tap "Show Details" → "Visit Website"');
   console.log('═══════════════════════════════════════════════════');

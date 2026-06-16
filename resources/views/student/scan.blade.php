@@ -116,6 +116,12 @@
             color: #991b1b;
             border-left: 4px solid #ef4444;
         }
+
+        .result-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #2563eb;
+        }
     </style>
 
     <div>
@@ -194,7 +200,11 @@
         }
 
         function startScannerInternal() {
+
+            console.log('Starting scanner...');
+
             html5QrCode = new Html5Qrcode("qr-reader");
+
             const config = {
                 fps: 10,
                 qrbox: {
@@ -203,13 +213,67 @@
                 }
             };
 
-            html5QrCode.start({
-                facingMode: "environment"
-            }, config, (decodedText) => {
-                html5QrCode.stop();
-                console.log('Raw QR data:', decodedText);
-                processQR(decodedText);
-            }, (err) => {});
+            Html5Qrcode.getCameras()
+                .then(devices => {
+
+                    console.log('Available Cameras:', devices);
+
+                    if (!devices || devices.length === 0) {
+
+                        showResult(
+                            'No camera found on this device',
+                            'error'
+                        );
+
+                        return;
+                    }
+
+                    let cameraId = devices[0].id;
+
+                    const backCamera = devices.find(device =>
+                        device.label.toLowerCase().includes('back')
+                    );
+
+                    if (backCamera) {
+                        cameraId = backCamera.id;
+                    }
+
+                    return html5QrCode.start(
+                        cameraId,
+                        config,
+
+                        (decodedText) => {
+
+                            console.log(
+                                'QR Scanned:',
+                                decodedText
+                            );
+
+                            html5QrCode.stop()
+                                .then(() => processQR(decodedText))
+                                .catch(() => processQR(decodedText));
+                        },
+
+                        (errorMessage) => {
+                            console.log(
+                                'Scanner Frame:',
+                                errorMessage
+                            );
+                        }
+                    );
+                })
+                .catch(error => {
+
+                    console.error(
+                        'Camera startup failed:',
+                        error
+                    );
+
+                    showResult(
+                        'Camera Error: ' + error,
+                        'error'
+                    );
+                });
         }
 
         function processQR(qrData) {

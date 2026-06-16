@@ -165,8 +165,8 @@
                         <p style="font-size: 12px;">Same QR for whole semester - put on PowerPoint once</p>
                         <div class="qr-box">
                             @php
-                                // Use localhost for Mac-only testing
-                                $baseUrl = 'http://127.0.0.1:8000';
+                                $baseUrl = config('app.url');
+
                                 $semesterQrText =
                                     $baseUrl .
                                     '/student/scan/semester?token=' .
@@ -210,8 +210,8 @@
                             minutes</p>
                         <div class="qr-box">
                             @php
-                                // Use localhost for Mac-only testing
-                                $baseUrl = 'http://127.0.0.1:8000';
+                                $baseUrl = config('app.url');
+
                                 $dynamicQrText =
                                     $baseUrl .
                                     '/student/scan/process?token=' .
