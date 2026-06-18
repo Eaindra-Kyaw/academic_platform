@@ -34,11 +34,12 @@ class AttendanceController extends Controller
             ->with('course')
             ->first();
 
+        // Fix: Use created_at instead of session_date
         $recentSessions = AttendanceSession::where('lecturer_id', $lecturer->id)
             ->where('status', 'ended')
-            ->where('session_date', '>=', Carbon::now()->subDays(7))
+            ->where('created_at', '>=', Carbon::now()->subDays(7))
             ->with('course')
-            ->orderBy('session_date', 'desc')
+            ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
 
@@ -105,7 +106,7 @@ class AttendanceController extends Controller
                 'session_code' => $sessionCode,
                 'manual_code' => $sessionCode,
                 'duration' => 480,
-                'session_date' => Carbon::now()->toDateString(),
+                'created_at' => Carbon::now(), // Use created_at instead of session_date
                 'start_time' => Carbon::now(),
                 'started_at' => Carbon::now(),
                 'room' => $request->room ?? $course->room,
@@ -158,7 +159,7 @@ class AttendanceController extends Controller
             'session_code' => $sessionCode,
             'manual_code' => $sessionCode,
             'duration' => $duration,
-            'session_date' => Carbon::now()->toDateString(),
+            'created_at' => Carbon::now(), // Use created_at instead of session_date
             'start_time' => Carbon::now(),
             'started_at' => Carbon::now(),
             'room' => $request->room ?? $course->room,
@@ -407,7 +408,7 @@ class AttendanceController extends Controller
             'session_code' => $sessionCode,
             'manual_code' => $sessionCode,
             'duration' => $duration,
-            'session_date' => Carbon::now()->toDateString(),
+            'created_at' => Carbon::now(), // Use created_at instead of session_date
             'start_time' => Carbon::now(),
             'started_at' => Carbon::now(),
             'room' => $request->room ?? $course->room,

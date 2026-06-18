@@ -6,32 +6,7 @@
 @section('welcome-text', 'Welcome back, ' . Auth::user()->name)
 
 @section('sidebar')
-    <div class="nav-label">Main</div>
-    <a href="{{ route('lecturer.dashboard') }}" class="nav-item active">
-        <i class="bi bi-speedometer2"></i><span>Dashboard</span>
-    </a>
-    <a href="{{ route('lecturer.attendance.take') }}" class="nav-item">
-        <i class="bi bi-qr-code-scan"></i><span>Take Attendance</span>
-    </a>
-    <a href="{{ route('lecturer.enrollments.index') }}" class="nav-item">
-        <i class="bi bi-list-check"></i><span>Enrollments</span>
-    </a>
-    <a href="{{ route('lecturer.students') }}" class="nav-item">
-        <i class="bi bi-people"></i><span>All Students</span>
-    </a>
-    <a href="{{ route('lecturer.attendance.history') }}" class="nav-item">
-        <i class="bi bi-clock-history"></i><span>Session History</span>
-    </a>
-    <a href="{{ route('lecturer.schedule') }}" class="nav-item">
-        <i class="bi bi-calendar3"></i><span>Schedule</span>
-    </a>
-    <div class="nav-label">Reports</div>
-    <a href="{{ route('lecturer.reports') }}" class="nav-item">
-        <i class="bi bi-download"></i><span>Export Reports</span>
-    </a>
-    <a href="{{ route('lecturer.announcements') }}" class="nav-item">
-        <i class="bi bi-megaphone"></i><span>Announcements</span>
-    </a>
+    @include('layouts.partials.lecturer-sidebar')
 @endsection
 
 @section('content')

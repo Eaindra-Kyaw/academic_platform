@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\LecturerController as AdminLecturerController;
 use App\Http\Controllers\Admin\MessageController as AdminMessageController;
+use App\Http\Controllers\Lecturer\MessageController as LecturerMessageController;
 use App\Http\Controllers\Student\MessageController as StudentMessageController;
 use App\Http\Controllers\Auth\RoleLoginController;
 use App\Http\Controllers\Admin\EnrollmentController;
@@ -131,8 +132,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // ============================================================
     // MESSAGE ROUTES (Admin)
     // ============================================================
+    Route::get('/messages', [AdminMessageController::class, 'inbox'])->name('messages.inbox');
+    Route::get('/messages/sent', [AdminMessageController::class, 'sent'])->name('messages.sent');
+    Route::get('/messages/compose', [AdminMessageController::class, 'compose'])->name('messages.compose');
     Route::post('/messages/send', [AdminMessageController::class, 'send'])->name('messages.send');
-    Route::get('/messages/{user}', [AdminMessageController::class, 'getMessages'])->name('messages.get');
+    Route::get('/messages/{message}', [AdminMessageController::class, 'show'])->name('messages.show');
+    Route::get('/messages/unread/count', [AdminMessageController::class, 'unreadCount'])->name('messages.unread');
     Route::put('/messages/{message}/read', [AdminMessageController::class, 'markAsRead'])->name('messages.read');
 
     // ============================================================
@@ -239,6 +244,16 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     // ============================================================
     Route::post('/course/{course}/regenerate-semester-qr', [AttendanceController::class, 'regenerateSemesterQr'])->name('course.regenerate-semester-qr');
     Route::post('/generate-semester-qr-direct', [AttendanceController::class, 'generateSemesterQrDirect'])->name('lecturer.generate.semester.qr.direct');
+
+    // ============================================================
+    // MESSAGE ROUTES (Lecturer)
+    // ============================================================
+    Route::get('/messages', [LecturerMessageController::class, 'inbox'])->name('messages.inbox');
+    Route::get('/messages/sent', [LecturerMessageController::class, 'sent'])->name('messages.sent');
+    Route::get('/messages/compose', [LecturerMessageController::class, 'compose'])->name('messages.compose');
+    Route::post('/messages/send', [LecturerMessageController::class, 'send'])->name('messages.send');
+    Route::get('/messages/{message}', [LecturerMessageController::class, 'show'])->name('messages.show');
+    Route::get('/messages/unread/count', [LecturerMessageController::class, 'unreadCount'])->name('messages.unread');
 });
 
 // ============================================================

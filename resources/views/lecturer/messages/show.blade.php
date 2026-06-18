@@ -5,7 +5,7 @@
 @section('welcome-text', 'View message details')
 
 @section('sidebar')
-    @include('layouts.partials.student-sidebar')
+    @include('layouts.partials.lecturer-sidebar')
 @endsection
 
 @section('content')
@@ -55,16 +55,6 @@
             font-size: 0.7rem;
             color: #6b7280;
             text-align: right;
-        }
-
-        .message-detail-box .header .meta .badge-new {
-            background: #3b82f6;
-            color: white;
-            font-size: 0.55rem;
-            padding: 0.1rem 0.6rem;
-            border-radius: 1rem;
-            display: inline-block;
-            margin-top: 0.2rem;
         }
 
         .message-detail-box .sender-info {
@@ -139,56 +129,69 @@
             background: #e5e7eb;
         }
 
-        @media (max-width: 480px) {
-            .message-detail-box {
-                padding: 1.25rem;
-            }
+        .message-detail-box .actions .btn-reply {
+            background: #800000;
+            color: white;
+            border: none;
+            padding: 0.4rem 1.2rem;
+            border-radius: 0.4rem;
+            font-size: 0.8rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-            .message-detail-box .header h3 {
-                font-size: 1rem;
-            }
-
-            .message-detail-box .body p {
-                font-size: 0.85rem;
-            }
+        .message-detail-box .actions .btn-reply:hover {
+            background: #a00000;
         }
     </style>
 
     <div class="message-detail-box">
-        <!-- Back Link -->
-        <a href="{{ route('student.messages.inbox') }}" class="back-link">
+        <a href="{{ route('lecturer.messages.inbox') }}" class="back-link">
             <i class="bi bi-arrow-left"></i> Back to Inbox
         </a>
 
-        <!-- Header -->
+        @php
+            $isSent = $message->sender_id == Auth::id();
+            $otherUser = $isSent ? $message->recipient : $message->sender;
+            $userName = $otherUser->name ?? 'Unknown';
+            $userInitials = strtoupper(substr($userName, 0, 2));
+        @endphp
+
         <div class="header">
             <h3>{{ $message->subject ?? 'No Subject' }}</h3>
             <div class="meta">
                 <div>{{ $message->created_at->format('F j, Y g:i A') }}</div>
-                @if (!$message->is_read)
-                    <span class="badge-new">New</span>
-                @endif
             </div>
         </div>
 
-        <!-- Sender Info -->
-        @php
-            $sender = $message->sender;
-            $senderName = $sender->name ?? 'Unknown';
-            $senderInitials = strtoupper(substr($senderName, 0, 2));
-        @endphp
         <div class="sender-info">
-            <div class="avatar">{{ $senderInitials }}</div>
+            <div class="avatar">{{ $userInitials }}</div>
             <div>
-                <div class="name">From: {{ $senderName }}</div>
-                <div class="email">{{ $sender->email ?? '' }}</div>
+                <div class="name">
+                    @if ($isSent)
+                        To: {{ $userName }}
+                    @else
+                        From: {{ $userName }}
+                    @endif
+                </div>
+                <div class="email">{{ $otherUser->email ?? '' }}</div>
             </div>
         </div>
 
-        <!-- Message Body -->
         <div class="body">
             <p>{{ $message->message }}</p>
         </div>
 
-
-    @endsection
+        <div class="actions">
+            <a href="{{ route('lecturer.messages.inbox') }}" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Back to Inbox
+            </a>
+            @if (!$isSent)
+                <a href="{{ route('lecturer.messages.compose') }}?recipient={{ $otherUser->id }}" class="btn-reply">
+                    <i class="bi bi-reply"></i> Reply
+                </a>
+            @endif
+        </div>
+    </div>
+@endsection

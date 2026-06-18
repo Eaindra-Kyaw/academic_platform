@@ -5,7 +5,7 @@
 @section('welcome-text', 'View and manage your messages')
 
 @section('sidebar')
-    @include('layouts.partials.admin-sidebar')
+    @include('layouts.partials.lecturer-sidebar')
 @endsection
 
 @section('content')
@@ -285,9 +285,6 @@
             font-size: 0.8rem;
         }
 
-        /* ============================================================
-               RESPONSIVE
-               ============================================================ */
         @media (max-width: 768px) {
             .message-item {
                 flex-wrap: wrap;
@@ -348,46 +345,46 @@
     <div style="max-width:900px; margin:0 auto;">
         <!-- Tabs -->
         <div class="message-tabs">
-            <a href="{{ route('admin.messages.inbox') }}" class="message-tab active">
+            <a href="{{ route('lecturer.messages.inbox') }}" class="message-tab active">
                 <i class="bi bi-inbox"></i> Inbox
                 @if ($unreadCount > 0)
                     <span class="badge-count">{{ $unreadCount }}</span>
                 @endif
             </a>
-            <a href="{{ route('admin.messages.sent') }}" class="message-tab">
+            <a href="{{ route('lecturer.messages.sent') }}" class="message-tab">
                 <i class="bi bi-send"></i> Sent
             </a>
-            <a href="{{ route('admin.messages.compose') }}" class="message-tab"
+            <a href="{{ route('lecturer.messages.compose') }}" class="message-tab"
                 style="margin-left:auto; background:#800000; color:white;">
                 <i class="bi bi-plus-circle"></i> Compose
             </a>
         </div>
 
-        <!-- ===== STATS ROW (CLICKABLE FILTERS) ===== -->
+        <!-- ===== STATS ROW ===== -->
         @php
             $sentCount = $messages->where('sender_id', Auth::id())->count();
             $receivedCount = $messages->where('recipient_id', Auth::id())->count();
             $unreadReceived = $messages->where('recipient_id', Auth::id())->where('is_read', false)->count();
-            $readReceived = $messages->where('recipient_id', Auth::id())->where('is_read', true)->count();
         @endphp
 
         <div class="stats-row">
-            <a href="{{ route('admin.messages.inbox') }}" class="stat-box {{ !request()->get('filter') ? 'active' : '' }}">
+            <a href="{{ route('lecturer.messages.inbox') }}"
+                class="stat-box {{ !request()->get('filter') ? 'active' : '' }}">
                 <div class="number">{{ $messages->count() }}</div>
                 <div class="label">Total Messages</div>
                 <span class="filter-badge">All</span>
             </a>
-            <a href="{{ route('admin.messages.inbox', ['filter' => 'unread']) }}"
+            <a href="{{ route('lecturer.messages.inbox', ['filter' => 'unread']) }}"
                 class="stat-box {{ request()->get('filter') == 'unread' ? 'active' : '' }}">
                 <div class="number blue">{{ $unreadReceived }}</div>
                 <div class="label">Unread</div>
-                {{-- <span class="filter-badge">Filter</span> --}}
+                <span class="filter-badge">Filter</span>
             </a>
-            <a href="{{ route('admin.messages.inbox', ['filter' => 'sent']) }}"
+            <a href="{{ route('lecturer.messages.inbox', ['filter' => 'sent']) }}"
                 class="stat-box {{ request()->get('filter') == 'sent' ? 'active' : '' }}">
                 <div class="number orange">{{ $sentCount }}</div>
                 <div class="label">Sent</div>
-                {{-- <span class="filter-badge">Filter</span> --}}
+                <span class="filter-badge">Filter</span>
             </a>
         </div>
 
@@ -417,12 +414,9 @@
                         $userName = $otherUser->name ?? 'Unknown';
                         $userInitials = strtoupper(substr($userName, 0, 2));
                     @endphp
-                    <a href="{{ route('admin.messages.show', $message) }}"
+                    <a href="{{ route('lecturer.messages.show', $message) }}"
                         class="message-item {{ $isUnread ? 'unread' : '' }} {{ $isSent ? 'sent-item' : '' }}">
-                        <!-- Avatar -->
                         <div class="avatar">{{ $userInitials }}</div>
-
-                        <!-- Content -->
                         <div class="content">
                             <div class="top-row">
                                 <span class="subject">{{ $message->subject ?? 'No Subject' }}</span>
@@ -444,8 +438,6 @@
                             </div>
                             <div class="preview">{{ Str::limit($message->message, 80) }}</div>
                         </div>
-
-                        <!-- Time -->
                         <div class="time">{{ $message->created_at->diffForHumans() }}</div>
                     </a>
                 @endforeach
@@ -454,7 +446,7 @@
                     <i class="bi bi-inbox"></i>
                     <h5>No {{ $filter }} Messages</h5>
                     <p>You don't have any {{ $filter }} messages in your inbox.</p>
-                    <a href="{{ route('admin.messages.inbox') }}" class="btn-reset-filter">
+                    <a href="{{ route('lecturer.messages.inbox') }}" class="btn-reset-filter">
                         <i class="bi bi-arrow-left"></i> View all messages
                     </a>
                 </div>
@@ -464,8 +456,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Update unread badge in sidebar
-            const badge = document.getElementById('adminUnreadBadge');
+            const badge = document.getElementById('lecturerUnreadBadge');
             if (badge) {
                 const count = {{ $unreadReceived }};
                 if (count > 0) {
