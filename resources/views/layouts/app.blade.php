@@ -74,9 +74,9 @@
         }
 
         .sidebar-header {
-            padding: 1.5rem;
+            padding: 1.25rem 1.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .brand {
@@ -86,49 +86,49 @@
         }
 
         .brand-icon {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             background: var(--secondary);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 1.25rem;
+            font-size: 1rem;
             color: var(--primary);
         }
 
         .brand-text h2 {
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 700;
             margin: 0;
         }
 
         .brand-text p {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             opacity: 0.7;
             margin: 0;
         }
 
         .nav-label {
-            padding: 0.75rem 1rem 0.5rem;
-            font-size: 0.7rem;
+            padding: 0.5rem 0.75rem 0.25rem;
+            font-size: 0.6rem !important;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.8px;
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.7rem 1rem;
-            margin: 0.25rem 0.75rem;
-            border-radius: 10px;
-            color: rgba(255, 255, 255, 0.8);
+            gap: 0.6rem;
+            padding: 0.45rem 0.75rem !important;
+            margin: 0.15rem 0.6rem;
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.75);
             text-decoration: none;
-            font-size: 0.875rem;
+            font-size: 0.9rem !important;
             font-weight: 500;
             transition: all 0.2s ease;
         }
@@ -144,27 +144,26 @@
         }
 
         .nav-item i {
-            font-size: 1.2rem;
-            width: 1.5rem;
+            font-size: 1rem !important;
+            width: 1.3rem;
         }
 
         .sidebar-note {
-            margin: 1rem 0.75rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            margin: 0.75rem 0.6rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .sidebar-note strong {
             display: block;
-            margin-bottom: 0.25rem;
-            font-size: 0.8rem;
+            font-size: 0.7rem !important;
         }
 
         .sidebar-note p {
-            font-size: 0.7rem;
-            opacity: 0.7;
+            font-size: 0.6rem !important;
+            opacity: 0.6;
             margin: 0;
         }
 
@@ -187,7 +186,7 @@
             justify-content: space-between;
             align-items: center;
             background: white;
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1.5rem;
             border-radius: 1rem;
             margin-bottom: 1.5rem;
             box-shadow: var(--shadow-sm);
@@ -195,19 +194,19 @@
         }
 
         .page-title-section h1 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: var(--primary);
             margin: 0;
         }
 
         .welcome-text {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--gray-500);
-            margin-top: 0.25rem;
+            margin-top: 0.15rem;
         }
 
-        /* Account Dropdown - Clean Version */
+        /* Account Dropdown */
         .account-dropdown {
             position: relative;
             display: inline-block;
@@ -216,9 +215,9 @@
         .account-button {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
             cursor: pointer;
-            padding: 0.25rem;
+            padding: 0.2rem;
             border-radius: 2rem;
             transition: all 0.2s ease;
         }
@@ -228,8 +227,8 @@
         }
 
         .account-avatar {
-            width: 45px;
-            height: 45px;
+            width: 38px;
+            height: 38px;
             background: var(--primary);
             border-radius: 50%;
             display: flex;
@@ -237,11 +236,11 @@
             justify-content: center;
             color: var(--secondary);
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.85rem;
         }
 
         .dropdown-arrow {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: var(--gray-500);
             transition: transform 0.2s ease;
         }
@@ -255,7 +254,7 @@
             border-radius: 0.75rem;
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--gray-200);
-            min-width: 180px;
+            min-width: 160px;
             z-index: 1000;
             display: none;
             overflow: hidden;
@@ -281,11 +280,11 @@
         .dropdown-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
+            gap: 0.6rem;
+            padding: 0.6rem 1rem;
             color: var(--gray-700);
             text-decoration: none;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             transition: all 0.2s ease;
             cursor: pointer;
             width: 100%;
@@ -300,8 +299,8 @@
         }
 
         .dropdown-item i {
-            width: 1.25rem;
-            font-size: 1rem;
+            width: 1rem;
+            font-size: 0.85rem;
         }
 
         .dropdown-divider {
@@ -319,12 +318,10 @@
             color: var(--danger);
         }
 
-        /* ===== RESPONSIVE STYLES FOR ALL DEVICES ===== */
-
-        /* iPad / Tablet (768px - 1024px) */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
             .sidebar {
-                width: 80px;
+                width: 72px;
             }
 
             .sidebar .brand-text,
@@ -335,113 +332,66 @@
             }
 
             .main-content {
-                margin-left: 80px;
+                margin-left: 72px;
                 padding: 1rem;
-                width: calc(100% - 80px);
+                width: calc(100% - 72px);
             }
 
             .nav-item {
                 justify-content: center;
+                padding: 0.6rem !important;
             }
 
             .nav-item i {
                 width: auto;
+                font-size: 1.2rem !important;
             }
 
             .topbar {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 1rem;
+                gap: 0.75rem;
             }
 
             .account-dropdown {
                 align-self: flex-end;
             }
-
-            .page-title-section h1 {
-                font-size: 1.3rem;
-            }
         }
 
-        /* iPhone 14 Pro Max / Samsung Galaxy Ultra (430px - 768px) */
         @media (max-width: 768px) {
             .main-content {
-                margin-left: 70px;
+                margin-left: 65px;
                 padding: 0.75rem;
-                width: calc(100% - 70px);
+                width: calc(100% - 65px);
             }
 
             .sidebar {
-                width: 70px;
+                width: 65px;
             }
 
             .topbar {
-                padding: 0.75rem;
-                flex-direction: column;
-                align-items: stretch;
+                padding: 0.6rem 0.75rem;
             }
 
             .page-title-section h1 {
-                font-size: 1.1rem;
+                font-size: 1rem;
             }
 
             .welcome-text {
-                font-size: 0.65rem;
+                font-size: 0.6rem;
             }
 
             .account-avatar {
-                width: 35px;
-                height: 35px;
-                font-size: 0.8rem;
-            }
-        }
-
-        /* iPhone 14 / 15 / Samsung S23 (375px - 430px) */
-        @media (max-width: 430px) {
-            .main-content {
-                margin-left: 60px;
-                padding: 0.5rem;
-                width: calc(100% - 60px);
-            }
-
-            .sidebar {
-                width: 60px;
-            }
-
-            .sidebar-header {
-                padding: 0.8rem;
-            }
-
-            .brand-icon {
-                width: 35px;
-                height: 35px;
-                font-size: 0.9rem;
-            }
-
-            .page-title-section h1 {
-                font-size: 0.95rem;
-            }
-
-            .topbar {
-                padding: 0.5rem;
-            }
-
-            .account-avatar {
-                width: 30px;
-                height: 30px;
+                width: 32px;
+                height: 32px;
                 font-size: 0.7rem;
             }
-
-            .welcome-text {
-                font-size: 0.55rem;
-            }
         }
 
-        /* iPhone SE / Small Android (320px - 375px) */
-        @media (max-width: 375px) {
+        @media (max-width: 430px) {
             .main-content {
                 margin-left: 55px;
-                padding: 0.4rem;
+                padding: 0.5rem;
                 width: calc(100% - 55px);
             }
 
@@ -449,37 +399,37 @@
                 width: 55px;
             }
 
+            .sidebar-header {
+                padding: 0.6rem;
+            }
+
             .brand-icon {
-                width: 30px;
-                height: 30px;
-                font-size: 0.8rem;
+                width: 32px;
+                height: 32px;
+                font-size: 0.75rem;
             }
 
             .page-title-section h1 {
                 font-size: 0.85rem;
             }
 
-            .welcome-text {
-                font-size: 0.5rem;
-            }
-
             .topbar {
-                padding: 0.4rem;
+                padding: 0.4rem 0.6rem;
             }
 
             .account-avatar {
                 width: 28px;
                 height: 28px;
-                font-size: 0.65rem;
+                font-size: 0.6rem;
             }
 
             .nav-item {
-                padding: 0.5rem;
-                margin: 0.2rem 0.5rem;
+                padding: 0.4rem !important;
+                margin: 0.1rem 0.4rem;
             }
 
             .nav-item i {
-                font-size: 1rem;
+                font-size: 0.9rem !important;
             }
         }
     </style>
@@ -494,6 +444,7 @@
                     <div class="brand-icon">Uni</div>
                     <div class="brand-text">
                         <h2>Academic Portal</h2>
+                        <p>MTU System</p>
                     </div>
                 </div>
             </div>
@@ -510,7 +461,7 @@
                     <p class="welcome-text">@yield('welcome-text')</p>
                 </div>
 
-                <!-- Account Dropdown - Only Avatar -->
+                <!-- Account Dropdown -->
                 <div class="account-dropdown" id="accountDropdown">
                     <div class="account-button" onclick="toggleDropdown()">
                         <div class="account-avatar">{{ substr(Auth::user()->name ?? 'U', 0, 2) }}</div>
@@ -543,7 +494,6 @@
             arrow.style.transform = menu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
         }
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('accountDropdown');
             if (!dropdown.contains(event.target)) {

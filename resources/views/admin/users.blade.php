@@ -6,27 +6,7 @@
 @section('welcome-text', 'Create and manage user accounts')
 
 @section('sidebar')
-    <div class="nav-label">Management</div>
-    <a href="/admin/dashboard" class="nav-item @if (request()->routeIs('admin.dashboard')) active @endif">
-        <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
-    </a>
-    <a href="/admin/users" class="nav-item @if (request()->routeIs('admin.users')) active @endif">
-        <i class="bi bi-people"></i><span>User Management</span>
-    </a>
-    <a href="/admin/departments" class="nav-item @if (request()->routeIs('admin.departments.*')) active @endif">
-        <i class="bi bi-building"></i><span>Departments</span>
-    </a>
-    <a href="/admin/courses" class="nav-item @if (request()->routeIs('admin.courses.*')) active @endif">
-        <i class="bi bi-book"></i><span>Course Management</span>
-    </a>
-    <a href="{{ route('admin.enrollments.index') }}" class="nav-item @if (request()->routeIs('admin.enrollments.*')) active @endif">
-        <i class="bi bi-list-check"></i><span>Enrollments</span>
-    </a>
-    <div class="nav-label">Analytics</div>
-    <a href="#" class="nav-item"><i class="bi bi-calendar"></i><span>Semesters</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-graph-up"></i><span>Analytics</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-download"></i><span>Reports</span></a>
+    @include('layouts.partials.admin-sidebar')
 @endsection
 
 @section('content')

@@ -6,24 +6,7 @@
 @section('welcome-text', 'Update department information')
 
 @section('sidebar')
-    <div class="nav-label">Management</div>
-    <a href="/admin/dashboard" class="nav-item @if (request()->routeIs('admin.dashboard')) active @endif">
-        <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
-    </a>
-    <a href="/admin/users" class="nav-item @if (request()->routeIs('admin.users')) active @endif">
-        <i class="bi bi-people"></i><span>User Management</span>
-    </a>
-    <a href="/admin/departments" class="nav-item @if (request()->routeIs('admin.departments.*')) active @endif">
-        <i class="bi bi-building"></i><span>Departments</span>
-    </a>
-    <a href="/admin/courses" class="nav-item @if (request()->routeIs('admin.courses.*')) active @endif">
-        <i class="bi bi-book"></i><span>Course Management</span>
-    </a>
-    <div class="nav-label">Analytics</div>
-    <a href="#" class="nav-item"><i class="bi bi-calendar"></i><span>Semesters</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-graph-up"></i><span>Analytics</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-download"></i><span>Reports</span></a>
+    @include('layouts.partials.admin-sidebar')
 @endsection
 
 @section('content')
@@ -89,12 +72,43 @@
             display: inline-block;
         }
 
+        .btn-cancel:hover {
+            background: #6b7280;
+        }
+
         .error {
             color: #dc2626;
             font-size: 0.75rem;
             margin-top: 0.25rem;
         }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7a8f;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.5rem;
+            background: white;
+            border: 1px solid #e9edf4;
+            transition: all 0.2s;
+            margin-bottom: 1.25rem;
+        }
+
+        .back-link:hover {
+            color: #800000;
+            border-color: #800000;
+            transform: translateX(-3px);
+        }
     </style>
+
+    <!-- Back Link -->
+    <a href="{{ route('admin.departments.show', $department) }}" class="back-link">
+        <i class="bi bi-arrow-left"></i> Back to Department
+    </a>
 
     <div class="form-card">
         <h3 style="color: #800000; margin-bottom: 1.5rem;">Edit Department: {{ $department->name }}</h3>
@@ -140,7 +154,7 @@
             </div>
 
             <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                <a href="{{ route('admin.departments.index') }}" class="btn-cancel">Cancel</a>
+                <a href="{{ route('admin.departments.show', $department) }}" class="btn-cancel">Cancel</a>
                 <button type="submit" class="btn-submit">Update Department</button>
             </div>
         </form>

@@ -6,25 +6,7 @@
 @section('welcome-text', 'Point camera at QR code')
 
 @section('sidebar')
-    <div class="nav-label">Navigation</div>
-    <a href="{{ route('student.dashboard') }}" class="nav-item">
-        <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
-    </a>
-    <a href="{{ route('student.courses.available') }}" class="nav-item">
-        <i class="bi bi-book"></i><span>Available Courses</span>
-    </a>
-    <a href="{{ route('student.my.enrollments') }}" class="nav-item">
-        <i class="bi bi-list-check"></i><span>My Enrollments</span>
-    </a>
-    <a href="{{ route('student.scan') }}" class="nav-item active">
-        <i class="bi bi-qr-code-scan"></i><span>QR Attendance</span>
-    </a>
-    <a href="{{ route('student.timetable') }}" class="nav-item">
-        <i class="bi bi-calendar"></i><span>Timetable</span>
-    </a>
-    <a href="{{ route('student.progress') }}" class="nav-item">
-        <i class="bi bi-graph-up"></i><span>My Progress</span>
-    </a>
+    @include('layouts.partials.student-sidebar')
 @endsection
 
 @section('content')

@@ -1,4 +1,5 @@
 <?php
+// database/seeders/AdminUserSeeder.php - KEEP AS IS
 
 namespace Database\Seeders;
 
@@ -18,8 +19,8 @@ class AdminUserSeeder extends Seeder
                 'password' => Hash::make('admin001'),
                 'role_id' => 1,
                 'email_verified_at' => now(),
-                'must_change_password' => false, // Add this - password already set
-                'is_active' => true, // Add this to ensure user is active
+                'must_change_password' => false,
+                'is_active' => true,
             ]
         );
 
@@ -31,8 +32,8 @@ class AdminUserSeeder extends Seeder
                 'password' => Hash::make('phyo123'),
                 'role_id' => 2,
                 'email_verified_at' => now(),
-                'must_change_password' => false, // Add this - password already set
-                'is_active' => true, // Add this to ensure user is active
+                'must_change_password' => false,
+                'is_active' => true,
             ]
         );
 

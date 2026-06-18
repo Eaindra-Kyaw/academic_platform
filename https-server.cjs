@@ -3,13 +3,17 @@ const fs = require('fs');
 const http = require('http');
 
 // Manually set your IP
-const YOUR_IP = '192.168.1.20';
+
+// const YOUR_IP = '192.168.1.12';
+const YOUR_IP = 'localhost';
 
 console.log(`📡 Using IP: ${YOUR_IP}`);
 
 const options = {
-  key: fs.readFileSync(`${YOUR_IP}-key.pem`),
-  cert: fs.readFileSync(`${YOUR_IP}.pem`)
+//   key: fs.readFileSync(`${YOUR_IP}-key.pem`),
+//   cert: fs.readFileSync(`${YOUR_IP}.pem`)
+key: fs.readFileSync(`localhost-key.pem`),
+cert: fs.readFileSync(`localhost.pem`)
 };
 
 https.createServer(options, (req, res) => {

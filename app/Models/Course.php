@@ -4,37 +4,33 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class Course extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'course_code',
         'course_name',
-        'description',
-        'credits',
         'department_id',
         'lecturer_id',
         'lecturer_name',
+        'credits',
+        'year',
         'semester',
         'academic_year',
         'room',
-        'schedule',
+        'schedule_day',
+        'schedule_time',
+        'schedule_end_time',
         'is_active',
-        'qr_mode',
-        'semester_qr_token',
-        'semester_qr_updated_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
-        'semester_qr_updated_at' => 'datetime',
     ];
 
+    // Relationships
     public function department()
     {
         return $this->belongsTo(Department::class);
@@ -43,6 +39,13 @@ class Course extends Model
     public function lecturer()
     {
         return $this->belongsTo(User::class, 'lecturer_id');
+    }
+
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'enrollments', 'course_id', 'student_id')
+            ->withPivot(['attendance_percentage', 'roll_call_mark', 'eligibility_status', 'status'])
+            ->withTimestamps();
     }
 
     public function enrollments()
@@ -55,39 +58,45 @@ class Course extends Model
         return $this->hasMany(AttendanceSession::class);
     }
 
-    public function getSemesterQrUrl()
+    public function attendanceRecords()
     {
-        if (!$this->semester_qr_token) {
-            $this->regenerateSemesterQr();
-        }
-        $baseUrl = 'https://192.168.1.16:8443';
-        return $baseUrl . '/student/scan/semester?token=' . $this->semester_qr_token . '&course=' . $this->id;
+        return $this->hasManyThrough(AttendanceRecord::class, AttendanceSession::class);
     }
 
-    public function regenerateSemesterQr()
+    // Scopes
+    public function scopeActive($query)
     {
-        $this->semester_qr_token = hash('sha256', $this->id . $this->course_code . time() . rand(100000, 999999) . uniqid());
-        $this->semester_qr_updated_at = now();
+        return $query->where('is_active', true);
     }
 
-    public function getEnrolledStudentsCountAttribute()
+    public function scopeByYear($query, $year)
     {
-        return $this->enrollments()->where('status', 'approved')->count();
+        return $query->where('year', $year);
     }
 
-    public function getAttendanceRateAttribute()
+    // Get student count
+    public function getStudentCountAttribute()
     {
-        $totalStudents = $this->enrolled_students_count;
-        if ($totalStudents == 0) return 0;
+        return $this->students()->wherePivot('status', 'approved')->count();
+    }
 
-        $totalSessions = $this->attendanceSessions()->count();
-        if ($totalSessions == 0) return 0;
+    // Get average attendance
+    public function getAverageAttendanceAttribute()
+    {
+        return round($this->students()
+            ->wherePivot('status', 'approved')
+            ->avg('enrollments.attendance_percentage') ?? 0, 1);
+    }
 
-        $totalAttendance = 0;
-        foreach ($this->attendanceSessions as $session) {
-            $totalAttendance += $session->present_count;
-        }
+    // Get year label
+    public function getYearLabelAttribute()
+    {
+        return $this->year ?? 'N/A';
+    }
 
-        return round(($totalAttendance / ($totalSessions * $totalStudents)) * 100);
+    // Get semester label
+    public function getSemesterLabelAttribute()
+    {
+        return $this->semester ?? 'N/A';
     }
 }

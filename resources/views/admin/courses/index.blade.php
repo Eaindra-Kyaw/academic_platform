@@ -1,542 +1,538 @@
 @extends('layouts.app')
 
-@section('title', 'Manage Courses')
-@section('role', 'Admin')
-@section('page-title', 'Course Management')
-@section('welcome-text', 'Manage courses by department')
+@section('title', 'Courses - ' . $department->name)
+@section('page-title', '📚 Courses')
+@section('welcome-text', $department->name . ' • ' . $department->code)
 
 @section('sidebar')
-    <div class="nav-label">Management</div>
-    <a href="{{ route('admin.dashboard') }}" class="nav-item">
-        <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
-    </a>
-    <a href="{{ route('admin.users') }}" class="nav-item">
-        <i class="bi bi-people"></i><span>User Management</span>
-    </a>
-    <a href="{{ route('admin.departments.index') }}" class="nav-item">
-        <i class="bi bi-building"></i><span>Departments</span>
-    </a>
-    <a href="{{ route('admin.courses.index') }}" class="nav-item active">
-        <i class="bi bi-book"></i><span>Course Management</span>
-    </a>
-    <a href="{{ route('admin.enrollments.index') }}" class="nav-item">
-        <i class="bi bi-list-check"></i><span>Enrollments</span>
-    </a>
-    <div class="nav-label">Analytics</div>
-    <a href="#" class="nav-item"><i class="bi bi-calendar"></i><span>Semesters</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-graph-up"></i><span>Analytics</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-download"></i><span>Reports</span></a>
+    @include('layouts.partials.admin-sidebar')
 @endsection
 
 @section('content')
     <style>
-        /* Department Tabs */
-        .dept-tabs {
-            display: flex;
-            flex-wrap: wrap;
+        .back-link-course {
+            display: inline-flex;
+            align-items: center;
             gap: 0.5rem;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 0.5rem;
-        }
-
-        .dept-tab {
-            padding: 0.6rem 1.2rem;
-            border-radius: 2rem;
+            color: #6b7a8f;
+            text-decoration: none;
             font-size: 0.8rem;
             font-weight: 500;
-            cursor: pointer;
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.5rem;
+            background: white;
+            border: 1px solid #e9edf4;
             transition: all 0.2s;
-            background: #f3f4f6;
-            color: #4b5563;
-            border: 1px solid #e5e7eb;
+            margin-bottom: 1.25rem;
         }
 
-        .dept-tab:hover {
-            background: #fef3c7;
+        .back-link-course:hover {
             color: #800000;
             border-color: #800000;
+            transform: translateX(-3px);
         }
 
-        .dept-tab.active {
-            background: #800000;
-            color: white;
-            border-color: #800000;
-        }
-
-        .search-section {
-            background: white;
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            border: 1px solid #e5e7eb;
+        .action-bar-course {
             display: flex;
-            gap: 1rem;
+            justify-content: flex-end;
             align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
 
-        .search-input {
-            flex: 1;
-            padding: 0.6rem 1rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 2rem;
+        .btn-action-course {
+            padding: 0.4rem 1.2rem;
+            border-radius: 0.5rem;
             font-size: 0.8rem;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #800000;
-        }
-
-        .filter-select {
-            padding: 0.6rem 1rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 2rem;
-            font-size: 0.8rem;
-            background: #f9fafb;
-            min-width: 130px;
-        }
-
-        .btn-filter {
-            background: #800000;
-            color: white;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
             border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 2rem;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
         }
 
-        .btn-reset {
-            background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #e5e7eb;
-            padding: 0.6rem 1.2rem;
-            border-radius: 2rem;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-        }
-
-        .btn-add {
+        .btn-action-course-primary {
             background: #800000;
             color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 2rem;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
         }
 
-        .courses-table {
+        .btn-action-course-primary:hover {
+            background: #a00000;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+        }
+
+        /* ===== YEAR GROUP WITH CLEAR GAP ===== */
+        .year-group {
+            background: white;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        }
+
+        .year-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .year-group .year-header {
+            padding: 0.5rem 0.75rem;
+            background: #f8f9fc;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #1a2332;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .year-group .year-header .badge-count {
+            background: #800000;
+            color: white;
+            font-size: 0.6rem;
+            padding: 0.05rem 0.6rem;
+            border-radius: 1rem;
+        }
+
+        .course-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            border: 1px solid #e5e7eb;
-        }
-
-        .courses-table th {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            background: #f9fafb;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            color: #6b7280;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .courses-table td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid #f0f2f4;
             font-size: 0.8rem;
+            min-width: 950px;
+        }
+
+        .course-table thead th {
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: #6b7a8f;
+            border-bottom: 2px solid #e9edf4;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #fafbfc;
+            white-space: nowrap;
+        }
+
+        .course-table tbody td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
         }
 
-        .courses-table tr:hover td {
-            background: #fefce8;
+        .course-table tbody tr {
+            transition: all 0.2s;
         }
 
-        .badge-active {
-            background: #dcfce7;
-            color: #166534;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
+        .course-table tbody tr:hover {
+            background: #fafbfc;
+        }
+
+        .course-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .course-table .course-code-cell {
+            font-weight: 700;
+            color: #800000;
+            font-size: 0.7rem;
+            background: #fef3c7;
+            padding: 0.05rem 0.6rem;
+            border-radius: 0.3rem;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .course-table .attendance-pill {
             font-size: 0.65rem;
             font-weight: 600;
+            padding: 0.1rem 0.6rem;
+            border-radius: 1rem;
+            display: inline-block;
+            white-space: nowrap;
         }
 
-        .badge-inactive {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            font-weight: 600;
+        .course-table .attendance-pill.high {
+            background: #ecfdf5;
+            color: #10b981;
         }
 
-        .action-icons {
-            display: flex;
-            gap: 0.5rem;
+        .course-table .attendance-pill.medium {
+            background: #fffbeb;
+            color: #f59e0b;
         }
 
-        .action-icon {
-            padding: 0.3rem 0.6rem;
-            border-radius: 0.4rem;
+        .course-table .attendance-pill.low {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .course-table .btn-action-sm {
+            padding: 0.25rem 0.7rem;
+            border-radius: 0.3rem;
             font-size: 0.7rem;
             text-decoration: none;
+            transition: all 0.2s;
             display: inline-flex;
             align-items: center;
             gap: 0.2rem;
-            cursor: pointer;
             border: none;
+            cursor: pointer;
+            min-width: 34px;
+            justify-content: center;
         }
 
-        .action-view {
+        .btn-view-course {
             background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .btn-view-course:hover {
+            background: #dbeafe;
             color: #2563eb;
         }
 
-        .action-edit {
+        .btn-edit-course {
             background: #fef3c7;
-            color: #d97706;
+            color: #92400e;
         }
 
-        .action-delete {
-            background: #fef2f2;
-            color: #dc2626;
+        .btn-edit-course:hover {
+            background: #fde68a;
+            color: #78350f;
+        }
+
+        .btn-delete-course {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-delete-course:hover {
+            background: #fca5a5;
+            color: #7f1d1d;
         }
 
         .empty-state {
             text-align: center;
-            padding: 2rem;
+            padding: 2.5rem 1rem;
             color: #9ca3af;
-        }
-
-        /* ============================================ */
-        /* CUSTOM MODERN PAGINATION - CLEAN DESIGN */
-        /* ============================================ */
-        .pagination-wrapper {
-            margin-top: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .pagination {
-            display: flex;
-            gap: 0.5rem;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .page-item {
-            display: inline-block;
-        }
-
-        .page-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            min-width: 70px;
-            height: 40px;
-            padding: 0 1rem;
             background: white;
-            border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #4b5563;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
+            border: 1px solid #e5e7eb;
         }
 
-        .page-item:not(.disabled):hover .page-link {
-            background: #fef3c7;
-            color: #800000;
-            border-color: #800000;
-            transform: translateY(-1px);
-        }
-
-        .page-item.active .page-link {
-            background: #800000;
-            color: white;
-            border-color: #800000;
-        }
-
-        .page-item.disabled .page-link {
-            background: #f9fafb;
+        .empty-state i {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
             color: #d1d5db;
-            cursor: not-allowed;
         }
 
-        .pagination-info {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #6b7280;
-            padding: 0.5rem 1rem;
-            background: #f9fafb;
-            border-radius: 2rem;
-            display: inline-flex;
+        .action-cell {
+            display: flex;
+            gap: 0.4rem;
+            justify-content: center;
             align-items: center;
-            gap: 0.5rem;
+            flex-wrap: nowrap;
+            min-width: 130px;
         }
 
-        .pagination-info i {
-            color: #800000;
+        /* ===== CUSTOM CONFIRM DIALOG ===== */
+        .confirm-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirm-overlay.show {
+            display: flex;
+        }
+
+        .confirm-box {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .confirm-box .icon {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #ef4444;
+            margin-bottom: 0.5rem;
+        }
+
+        .confirm-box h4 {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a2332;
+            margin: 0 0 0.3rem 0;
+        }
+
+        .confirm-box p {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #6b7a8f;
+            margin: 0 0 1.5rem 0;
+        }
+
+        .confirm-box .buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .confirm-box .btn-confirm-cancel {
+            padding: 0.4rem 1.5rem;
+            border-radius: 0.4rem;
             font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid #e9edf4;
+            background: white;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .confirm-box .btn-confirm-cancel:hover {
+            background: #f3f4f6;
+        }
+
+        .confirm-box .btn-confirm-delete {
+            padding: 0.4rem 1.5rem;
+            border-radius: 0.4rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: none;
+            background: #dc2626;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .confirm-box .btn-confirm-delete:hover {
+            background: #b91c1c;
         }
 
         @media (max-width: 768px) {
-            .dept-tabs {
-                flex-wrap: wrap;
+            .course-table {
+                font-size: 0.7rem;
+                min-width: 750px;
             }
 
-            .search-section {
-                flex-direction: column;
+            .course-table thead th,
+            .course-table tbody td {
+                padding: 0.3rem 0.4rem;
             }
 
-            .search-input,
-            .filter-select,
-            .btn-filter,
-            .btn-reset {
-                width: 100%;
+            .action-bar-course {
+                justify-content: flex-start;
             }
 
-            .courses-table {
-                min-width: 700px;
+            .course-table .btn-action-sm {
+                padding: 0.15rem 0.4rem;
+                font-size: 0.6rem;
+                min-width: 28px;
             }
 
-            .page-link {
-                min-width: 55px;
-                height: 36px;
-                padding: 0 0.75rem;
-                font-size: 0.75rem;
+            .action-cell {
+                min-width: 100px;
+                gap: 0.2rem;
             }
 
-            .pagination-info {
+            .year-group {
+                margin-bottom: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .year-group {
+                margin-bottom: 0.75rem;
+            }
+
+            .course-table {
                 font-size: 0.65rem;
+                min-width: 650px;
+            }
+
+            .course-table .btn-action-sm {
+                padding: 0.1rem 0.3rem;
+                font-size: 0.55rem;
+                min-width: 24px;
+            }
+
+            .action-cell {
+                min-width: 80px;
+                gap: 0.15rem;
             }
         }
     </style>
 
-    <div>
-        <!-- Header -->
-        <div
-            style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-            <a href="{{ route('admin.courses.create') }}" class="btn-add">
-                <i class="bi bi-plus-circle"></i> Add New Course
+    <!-- ===== BACK LINK ===== -->
+    <a href="{{ route('admin.departments.show', $department) }}" class="back-link-course">
+        <i class="bi bi-arrow-left"></i> Back to Department
+    </a>
+
+    <!-- ===== ACTION BUTTONS ===== -->
+    <div class="action-bar-course">
+        <a href="{{ route('admin.departments.courses.create', $department) }}"
+            class="btn-action-course btn-action-course-primary">
+            <i class="bi bi-plus-circle"></i> Add Course
+        </a>
+    </div>
+
+    <!-- ===== COURSES TABLE ===== -->
+    @if ($courses->count() > 0)
+        @foreach ($courses as $year => $yearCourses)
+            <!-- Year Group with Gap -->
+            <div class="year-group">
+                <div class="year-header">
+                    <span>{{ $year }}</span>
+                    <span class="badge-count">{{ $yearCourses->count() }} courses</span>
+                </div>
+                <table class="course-table">
+                    <thead>
+                        <tr>
+                            <th style="width:10%;">Code</th>
+                            <th style="width:20%;">Course Name</th>
+                            <th style="width:18%;">Lecturer</th>
+                            <th style="width:8%;text-align:center;">Room</th>
+                            <th style="width:8%;text-align:center;">Students</th>
+                            <th style="width:12%;text-align:center;">Attendance</th>
+                            <th style="width:24%;text-align:center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($yearCourses as $course)
+                            @php
+                                $attendance = $course->avg_attendance ?? 0;
+                                $attendanceClass = $attendance >= 75 ? 'high' : ($attendance >= 60 ? 'medium' : 'low');
+                                $lecturerName = $course->lecturer->name ?? ($course->lecturer_name ?? 'Unassigned');
+                            @endphp
+                            <tr>
+                                <td><span class="course-code-cell">{{ $course->course_code }}</span></td>
+                                <td style="font-weight:500; color:#1a2332;">{{ $course->course_name }}</td>
+                                <td style="color:#6b7a8f; font-size:0.75rem;">
+                                    <i class="bi bi-person" style="color:#800000; font-size:0.6rem;"></i>
+                                    {{ $lecturerName }}
+                                </td>
+                                <td style="color:#6b7a8f; font-size:0.75rem; text-align:center;">
+                                    <i class="bi bi-door-open" style="font-size:0.6rem;"></i> {{ $course->room ?? 'N/A' }}
+                                </td>
+                                <td style="text-align:center; font-weight:600; color:#1a2332;">
+                                    {{ $course->student_count ?? 0 }}
+                                </td>
+                                <td style="text-align:center;">
+                                    <span class="attendance-pill {{ $attendanceClass }}">
+                                        {{ number_format($attendance, 1) }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="action-cell">
+                                        <a href="{{ route('admin.departments.courses.show', [$department, $course]) }}"
+                                            class="btn-action-sm btn-view-course" title="View Course">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="{{ route('admin.departments.courses.edit', [$department, $course]) }}"
+                                            class="btn-action-sm btn-edit-course" title="Edit Course">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <!-- DELETE BUTTON -->
+                                        <button type="button" class="btn-action-sm btn-delete-course" title="Delete Course"
+                                            onclick="showDeleteConfirm('{{ addslashes($course->course_name) }}', '{{ route('admin.departments.courses.destroy', [$department, $course]) }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endforeach
+    @else
+        <div class="empty-state">
+            <i class="bi bi-book"></i>
+            <p style="font-size:0.9rem; margin:0;">No courses found in this department</p>
+            <p style="font-size:0.75rem; margin:0.2rem 0 0.5rem;">Start by adding your first course</p>
+            <a href="{{ route('admin.departments.courses.create', $department) }}"
+                style="display:inline-block; background:#800000; color:white; padding:0.3rem 1rem; border-radius:0.4rem; text-decoration:none; font-size:0.8rem;">
+                <i class="bi bi-plus-circle"></i> Add Course
             </a>
         </div>
+    @endif
 
-        <!-- Department Tabs -->
-        <div class="dept-tabs" id="deptTabs">
-            <button class="dept-tab active" data-dept="all">📋 All Departments</button>
-            @foreach ($departments as $dept)
-                <button class="dept-tab" data-dept="{{ $dept->id }}">{{ $dept->code }} - {{ $dept->name }}</button>
-            @endforeach
-        </div>
-
-        <!-- Search & Filter Section -->
-        <div class="search-section">
-            <input type="text" id="searchInput" class="search-input"
-                placeholder="🔍 Search by course code, name, or lecturer...">
-            <select id="yearFilter" class="filter-select">
-                <option value="all">All Years</option>
-                <option value="First Year">First Year</option>
-                <option value="Second Year">Second Year</option>
-                <option value="Third Year">Third Year</option>
-                <option value="Fourth Year">Fourth Year</option>
-                <option value="Fifth Year">Fifth Year</option>
-            </select>
-            <select id="semesterFilter" class="filter-select">
-                <option value="all">All Semesters</option>
-                <option value="First Semester">First Semester</option>
-                <option value="Second Semester">Second Semester</option>
-            </select>
-            <button class="btn-filter" onclick="applyFilters()">
-                <i class="bi bi-search"></i> Apply
-            </button>
-            <button class="btn-reset" onclick="resetFilters()">
-                <i class="bi bi-arrow-repeat"></i> Reset
-            </button>
-        </div>
-
-        <!-- Courses Table -->
-        <div style="overflow-x: auto;">
-            <table class="courses-table" id="coursesTable">
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Course Name</th>
-                        <th>Department</th>
-                        <th>Lecturer</th>
-                        <th>Year</th>
-                        <th>Semester</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="coursesBody">
-                    @foreach ($courses as $course)
-                        <tr data-dept="{{ $course->department_id }}"
-                            data-search="{{ strtolower($course->course_code . ' ' . $course->course_name . ' ' . $course->lecturer_name) }}"
-                            data-year="{{ $course->year }}" data-semester="{{ $course->semester }}">
-                            <td><strong>{{ $course->course_code }}</strong></td>
-                            <td>{{ $course->course_name }}</td>
-                            <td>{{ $course->department->code ?? 'N/A' }}</td>
-                            <td>{{ $course->lecturer_name ?? 'Not Assigned' }}</td>
-                            <td>{{ $course->year ?? 'N/A' }}</td>
-                            <td>{{ $course->semester ?? 'N/A' }}</td>
-                            <td>
-                                <div class="action-icons">
-                                    <a href="{{ route('admin.courses.show', $course) }}" class="action-icon action-view">
-                                        <i class="bi bi-eye"></i> View
-                                    </a>
-                                    <a href="{{ route('admin.courses.edit', $course) }}" class="action-icon action-edit">
-                                        <i class="bi bi-pencil"></i> Edit
-                                    </a>
-                                    <form method="POST" action="{{ route('admin.courses.destroy', $course) }}"
-                                        style="display: inline;" onsubmit="return confirm('Move this course to trash?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="action-icon action-delete">
-                                            <i class="bi bi-trash"></i> Delete
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <div id="emptyState" class="empty-state" style="display: none;">
-            <i class="bi bi-book" style="font-size: 2rem;"></i>
-            <p>No courses found in this department</p>
-        </div>
-
-        <!-- CUSTOM MODERN PAGINATION -->
-        @if ($courses->hasPages())
-            <div class="pagination-wrapper">
-                <div class="pagination">
-                    @if ($courses->onFirstPage())
-                        <span class="page-item disabled">
-                            <span class="page-link"><i class="bi bi-chevron-left"></i> Prev</span>
-                        </span>
-                    @else
-                        <a class="page-item" href="{{ $courses->previousPageUrl() }}">
-                            <span class="page-link"><i class="bi bi-chevron-left"></i> Prev</span>
-                        </a>
-                    @endif
-
-                    @foreach ($courses->getUrlRange(1, $courses->lastPage()) as $page => $url)
-                        @if ($page == $courses->currentPage())
-                            <span class="page-item active">
-                                <span class="page-link">{{ $page }}</span>
-                            </span>
-                        @else
-                            <a class="page-item" href="{{ $url }}">
-                                <span class="page-link">{{ $page }}</span>
-                            </a>
-                        @endif
-                    @endforeach
-
-                    @if ($courses->hasMorePages())
-                        <a class="page-item" href="{{ $courses->nextPageUrl() }}">
-                            <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
-                        </a>
-                    @else
-                        <span class="page-item disabled">
-                            <span class="page-link">Next <i class="bi bi-chevron-right"></i></span>
-                        </span>
-                    @endif
-                </div>
-
-                <div class="pagination-info">
-                    <i class="bi bi-info-circle"></i>
-                    Showing <strong>{{ $courses->firstItem() }}</strong> to <strong>{{ $courses->lastItem() }}</strong>
-                    of <strong>{{ $courses->total() }}</strong> courses
-                </div>
+    <!-- ===== CUSTOM CONFIRM DIALOG ===== -->
+    <div class="confirm-overlay" id="deleteConfirm">
+        <div class="confirm-box">
+            <div class="icon">🗑️</div>
+            <h4>Delete Course</h4>
+            <p>Are you sure you want to delete "<span id="confirmCourseName"></span>"?<br>This action cannot be undone.</p>
+            <div class="buttons">
+                <button class="btn-confirm-cancel" onclick="closeConfirm()">Cancel</button>
+                <form id="deleteForm" method="POST" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn-confirm-delete">Yes, Delete</button>
+                </form>
             </div>
-        @endif
+        </div>
     </div>
 
     <script>
-        let currentDept = 'all';
+        function showDeleteConfirm(courseName, deleteUrl) {
+            document.getElementById('confirmCourseName').textContent = courseName;
+            document.getElementById('deleteForm').action = deleteUrl;
+            document.getElementById('deleteConfirm').classList.add('show');
+        }
 
-        function applyFilters() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const yearValue = document.getElementById('yearFilter').value;
-            const semesterValue = document.getElementById('semesterFilter').value;
-            const rows = document.querySelectorAll('#coursesBody tr');
-            let visibleCount = 0;
+        function closeConfirm() {
+            document.getElementById('deleteConfirm').classList.remove('show');
+        }
 
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const rowDept = row.getAttribute('data-dept');
-                const rowSearch = row.getAttribute('data-search') || '';
-                const rowYear = row.getAttribute('data-year') || '';
-                const rowSemester = row.getAttribute('data-semester') || '';
-
-                const matchesDept = currentDept === 'all' || rowDept == currentDept;
-                const matchesSearch = searchTerm === '' || rowSearch.includes(searchTerm);
-                const matchesYear = yearValue === 'all' || rowYear === yearValue;
-                const matchesSemester = semesterValue === 'all' || rowSemester === semesterValue;
-
-                if (matchesDept && matchesSearch && matchesYear && matchesSemester) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
+        // Close when clicking outside
+        document.getElementById('deleteConfirm').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeConfirm();
             }
-
-            document.getElementById('emptyState').style.display = visibleCount === 0 ? 'block' : 'none';
-        }
-
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('yearFilter').value = 'all';
-            document.getElementById('semesterFilter').value = 'all';
-            applyFilters();
-        }
-
-        // Department tab switching
-        const tabs = document.querySelectorAll('.dept-tab');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                tabs.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                currentDept = this.getAttribute('data-dept');
-                applyFilters();
-            });
         });
 
-        // Event listeners
-        document.getElementById('searchInput').addEventListener('keyup', applyFilters);
-        document.getElementById('yearFilter').addEventListener('change', applyFilters);
-        document.getElementById('semesterFilter').addEventListener('change', applyFilters);
-
-        // Initial filter
-        applyFilters();
+        // Close with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeConfirm();
+            }
+        });
     </script>
+
 @endsection

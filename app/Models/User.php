@@ -11,22 +11,18 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-    'role_id',
-    'department_id',
-    'student_id',
-    'name',
-    'email',
-    'password',
-    'profile_picture',
-    'phone',
-    'address',
-    'current_year',
-    'enrollment_year',
-    'is_active',
-    'must_change_password',
-    'password_changed_at',
-    'remember_token',
-];
+        'name',
+        'email',
+        'password',
+        'role_id',
+        'department_id',
+        'student_id',
+        'current_year',
+        'enrollment_year',
+        'is_active',
+        'must_change_password',
+        'email_verified_at',
+    ];
 
     protected $hidden = [
         'password',
@@ -36,14 +32,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'is_active' => 'boolean',
+        'must_change_password' => 'boolean',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
-
+    // Relationships
     public function role()
     {
         return $this->belongsTo(Role::class);
@@ -54,87 +46,99 @@ class User extends Authenticatable
         return $this->belongsTo(Department::class);
     }
 
-    // Lecturer Relationships
-
-    public function coursesTeaching()
-    {
-        return $this->hasMany(Course::class, 'lecturer_id');
-    }
-
-    public function attendanceSessions()
-    {
-        return $this->hasMany(AttendanceSession::class, 'lecturer_id');
-    }
-
-    public function lecturerInsights()
-    {
-        return $this->hasMany(LecturerInsight::class, 'lecturer_id');
-    }
-
-    public function timetableEntries()
-    {
-        return $this->hasMany(TimetableEntry::class, 'lecturer_id');
-    }
-
-    // Student Relationships
-
     public function enrollments()
     {
         return $this->hasMany(Enrollment::class, 'student_id');
     }
 
-    public function attendanceRecords()
+    public function courses()
     {
-        return $this->hasMany(AttendanceRecord::class, 'student_id');
+        return $this->belongsToMany(Course::class, 'enrollments', 'student_id', 'course_id')
+            ->withPivot(['attendance_percentage', 'roll_call_mark', 'eligibility_status', 'status'])
+            ->withTimestamps();
     }
 
-    public function attendanceEvaluations()
+    // For lecturers - courses they teach
+    public function taughtCourses()
     {
-        return $this->hasMany(AttendanceEvaluation::class, 'student_id');
+        return $this->hasMany(Course::class, 'lecturer_id');
     }
 
-    public function riskPredictions()
+    // For lecturers - students they teach
+    public function taughtStudents()
     {
-        return $this->hasMany(RiskPrediction::class, 'student_id');
+        return $this->hasManyThrough(
+            User::class,
+            Course::class,
+            'lecturer_id',  // Foreign key on courses table
+            'id',           // Foreign key on users table
+            'id',           // Local key on users table
+            'id'            // Local key on courses table
+        );
     }
 
-    public function academicHealthScores()
+    // Scopes
+    public function scopeStudents($query)
     {
-        return $this->hasMany(AcademicHealthScore::class, 'student_id');
+        return $query->where('role_id', 3);
     }
 
-    public function peerBenchmarks()
+    public function scopeLecturers($query)
     {
-        return $this->hasMany(PeerBenchmark::class, 'student_id');
+        return $query->where('role_id', 2);
     }
 
-    public function recommendations()
+    public function scopeActive($query)
     {
-        return $this->hasMany(Recommendation::class, 'student_id');
+        return $query->where('is_active', true);
     }
 
-    public function notifications()
+    // Role checks
+    public function isAdmin()
     {
-        return $this->hasMany(Notification::class);
+        return $this->role_id === 1;
     }
 
-    public function chatbotLogs()
+    public function isLecturer()
     {
-        return $this->hasMany(ChatbotLog::class);
+        return $this->role_id === 2;
     }
 
-    public function interventionLogs()
+    public function isStudent()
     {
-        return $this->hasMany(InterventionLog::class, 'student_id');
+        return $this->role_id === 3;
     }
 
-    public function auditLogs()
+    // Helper methods
+    public function attendancePercentage($courseId)
     {
-        return $this->hasMany(AuditLog::class);
+        $enrollment = $this->enrollments()
+            ->where('course_id', $courseId)
+            ->first();
+
+        return $enrollment ? $enrollment->attendance_percentage : 0;
     }
 
-    public function announcements()
+    public function rollCallScore($courseId)
     {
-        return $this->hasMany(Announcement::class, 'posted_by');
+        $enrollment = $this->enrollments()
+            ->where('course_id', $courseId)
+            ->first();
+
+        return $enrollment ? $enrollment->roll_call_mark : 0;
+    }
+
+    public function getYearLabelAttribute()
+    {
+        if (!$this->current_year) return 'N/A';
+
+        $suffixes = ['th', 'st', 'nd', 'rd'];
+        $suffix = $this->current_year <= 3 ? $suffixes[$this->current_year] : 'th';
+        return $this->current_year . $suffix . ' Year';
+    }
+
+    public function getFormattedStudentIdAttribute()
+    {
+        return $this->student_id ?? 'N/A';
     }
 }

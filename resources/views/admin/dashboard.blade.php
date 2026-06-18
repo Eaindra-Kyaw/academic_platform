@@ -6,27 +6,7 @@
 @section('welcome-text', 'Welcome back, ' . Auth::user()->name)
 
 @section('sidebar')
-    <div class="nav-label">Management</div>
-    <a href="/admin/dashboard" class="nav-item @if (request()->routeIs('admin.dashboard')) active @endif">
-        <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
-    </a>
-    <a href="/admin/users" class="nav-item @if (request()->routeIs('admin.users')) active @endif">
-        <i class="bi bi-people"></i><span>User Management</span>
-    </a>
-    <a href="/admin/departments" class="nav-item @if (request()->routeIs('admin.departments.*')) active @endif">
-        <i class="bi bi-building"></i><span>Departments</span>
-    </a>
-    <a href="/admin/courses" class="nav-item @if (request()->routeIs('admin.courses.*')) active @endif">
-        <i class="bi bi-book"></i><span>Course Management</span>
-    </a>
-    <a href="{{ route('admin.enrollments.index') }}" class="nav-item @if (request()->routeIs('admin.enrollments.*')) active @endif">
-        <i class="bi bi-list-check"></i><span>Enrollments</span>
-    </a>
-    <div class="nav-label">Analytics</div>
-    <a href="#" class="nav-item"><i class="bi bi-calendar"></i><span>Semesters</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-megaphone"></i><span>Announcements</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-graph-up"></i><span>Analytics</span></a>
-    <a href="#" class="nav-item"><i class="bi bi-download"></i><span>Reports</span></a>
+    @include('layouts.partials.admin-sidebar')
 @endsection
 
 @section('content')
@@ -234,7 +214,7 @@
                     <small>Full-time faculty</small>
                 </div>
             </a>
-            <a href="{{ route('admin.courses.index') }}" class="link-card">
+            <a href="{{ route('admin.departments.index') }}" class="link-card">
                 <div class="stat-card">
                     <div class="stat-value">{{ $totalCourses }}</div>
                     <div class="stat-label">Active Courses</div>
@@ -390,28 +370,35 @@
             <div class="card">
                 <div class="card-header"><i class="bi bi-file-text"></i> Smart Session Summaries</div>
                 <div class="card-body">
-                    @foreach (\App\Models\AttendanceSession::with('course')->latest()->limit(3)->get() as $session)
-                        <div class="p-2 bg-light rounded mb-2">
-                            <strong>📊 {{ $session->course->course_name ?? 'N/A' }}:</strong>
-                            {{ $session->present_count ?? 0 }}/{{ $session->total_students ?? 0 }} present
-                            @if ($session->present_count > $session->absent_count)
-                                ▲ Improving
-                            @else
-                                ▼ Declining
-                            @endif
-                        </div>
-                    @endforeach
+                    @php
+                        $sessions = \App\Models\AttendanceSession::with('course')->latest()->limit(3)->get();
+                    @endphp
+                    @if ($sessions->count() > 0)
+                        @foreach ($sessions as $session)
+                            <div class="p-2 bg-light rounded mb-2">
+                                <strong>📊 {{ $session->course->course_name ?? 'N/A' }}:</strong>
+                                {{ $session->present_count ?? 0 }}/{{ $session->total_students ?? 0 }} present
+                                @if (($session->present_count ?? 0) > ($session->absent_count ?? 0))
+                                    ▲ Improving
+                                @else
+                                    ▼ Declining
+                                @endif
+                            </div>
+                        @endforeach
+                    @else
+                        <p class="text-muted text-center">No recent sessions</p>
+                    @endif
                 </div>
             </div>
         </div>
 
         <!-- Quick Links Section -->
         <div class="stats-grid" style="margin-top: 1rem;">
-            <a href="{{ route('admin.courses.index') }}" class="link-card">
+            <a href="{{ route('admin.departments.index') }}" class="link-card">
                 <div class="stat-card" style="text-align: center;">
-                    <i class="bi bi-book" style="font-size: 2rem; color: #800000;"></i>
-                    <div class="stat-label">Manage Courses</div>
-                    <small>{{ $totalCourses }} active courses</small>
+                    <i class="bi bi-building" style="font-size: 2rem; color: #800000;"></i>
+                    <div class="stat-label">Manage Departments</div>
+                    <small>{{ $totalDepartments }} departments</small>
                 </div>
             </a>
             <a href="{{ route('admin.enrollments.index') }}" class="link-card">

@@ -3,185 +3,326 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Course;
 use App\Models\Department;
+use App\Models\Course;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class CourseController extends Controller
 {
-    public function index(Request $request)
+    // ============================================================
+    // NESTED METHODS (For department context)
+    // ============================================================
+
+    /**
+     * Display courses for a specific department (nested)
+     */
+    public function index(Department $department)
     {
-        if ($request->trash == 'only') {
-            $query = Course::onlyTrashed()->with(['department', 'lecturer']);
-        } else {
-            $query = Course::withTrashed()->with(['department', 'lecturer']);
-        }
+        $courses = $department->courses()
+            ->with(['lecturer', 'students'])
+            ->orderBy('year')
+            ->orderBy('course_code')
+            ->get()
+            ->groupBy('year');
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
-        if ($request->filled('year')) {
-            $query->where('year', $request->year);
-        }
-
-        if ($request->filled('semester')) {
-            $query->where('semester', $request->semester);
-        }
-
-        if ($request->filled('academic_year')) {
-            $query->where('academic_year', 'like', '%' . $request->academic_year . '%');
-        }
-
-        if ($request->filled('status') && $request->trash != 'only') {
-            $query->where('is_active', $request->status == 'active');
-        }
-
-        if ($request->filled('search')) {
-            $query->where(function($q) use ($request) {
-                $q->where('course_code', 'like', '%' . $request->search . '%')
-                  ->orWhere('course_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('lecturer_name', 'like', '%' . $request->search . '%');
-            });
-        }
-
-        $courses = $query->orderBy('course_code')->paginate(15);
-    $departments = Department::orderBy('name')->get();  // Make sure this exists
-    $lecturers = User::where('role_id', 2)->orderBy('name')->get();
-
-    return view('admin.courses.index', compact('courses', 'departments', 'lecturers'));
+        return view('admin.courses.index', compact('department', 'courses'));
     }
 
-    public function create()
+    /**
+     * Show create course form (nested)
+     */
+    public function create(Department $department)
     {
-        $departments = Department::orderBy('name')->get();
-        $lecturers = User::where('role_id', 2)->orderBy('name')->get();
-        return view('admin.courses.create', compact('departments', 'lecturers'));
+        $lecturers = User::where('role_id', 2)
+            ->where('department_id', $department->id)
+            ->get();
+
+        $allLecturers = User::where('role_id', 2)->get();
+
+        $years = [
+            'First Year' => 'First Year',
+            'Second Year' => 'Second Year',
+            'Third Year' => 'Third Year',
+            'Fourth Year' => 'Fourth Year',
+            'Fifth Year' => 'Fifth Year',
+            'Sixth Year' => 'Sixth Year',
+        ];
+
+        $semesters = ['First Semester', 'Second Semester'];
+
+        return view('admin.courses.create', compact(
+            'department',
+            'lecturers',
+            'allLecturers',
+            'years',
+            'semesters'
+        ));
     }
 
-    public function store(Request $request)
+    /**
+     * Store a new course (nested)
+     */
+    public function store(Request $request, Department $department)
     {
         $validated = $request->validate([
-            'department_id' => 'required|exists:departments,id',
-            'lecturer_id' => 'nullable|exists:users,id',
-            'lecturer_name' => 'nullable|string|max:100',
             'course_code' => 'required|string|max:20|unique:courses',
-            'course_name' => 'required|string|max:100',
+            'course_name' => 'required|string|max:255',
+            'lecturer_id' => 'nullable|exists:users,id',
+            'lecturer_name' => 'nullable|string|max:255',
             'credits' => 'required|integer|min:1|max:6',
-            'year' => 'nullable|string|max:50',
-            'semester' => 'nullable|string|max:50',
-            'academic_year' => 'nullable|string|max:20',
+            'year' => 'required|string',
+            'semester' => 'required|string',
+            'academic_year' => 'required|string',
             'room' => 'nullable|string|max:50',
-            'schedule_day' => 'nullable|string|max:20',
-            'schedule_time' => 'nullable',
-            'schedule_end_time' => 'nullable',
-            'is_active' => 'boolean',
         ]);
 
-        if ($request->filled('lecturer_id')) {
-            $lecturer = User::find($request->lecturer_id);
-            $validated['lecturer_name'] = $lecturer->name;
-        }
+        $course = $department->courses()->create($validated);
 
-        $validated['is_active'] = $request->has('is_active');
-
-        Course::create($validated);
-
-        return redirect()->route('admin.courses.index')
-            ->with('success', 'Course created successfully!');
+        return redirect()->route('admin.departments.courses.show', [$department, $course])
+            ->with('success', 'Course created successfully.');
     }
 
-    public function show(Course $course)
+    /**
+     * Show a specific course (nested)
+     */
+    public function show(Department $department, Course $course)
     {
-        $course->load(['department', 'lecturer', 'enrollments.student']);
-        return view('admin.courses.show', compact('course'));
+        $course->load(['lecturer', 'students']);
+        $students = $course->students()->paginate(20);
+
+        return view('admin.courses.show', compact('department', 'course', 'students'));
     }
 
-    public function edit(Course $course)
+    /**
+     * Show edit course form (nested)
+     */
+    public function edit(Department $department, Course $course)
     {
-        $departments = Department::orderBy('name')->get();
-        $lecturers = User::where('role_id', 2)->orderBy('name')->get();
-        return view('admin.courses.edit', compact('course', 'departments', 'lecturers'));
+        $lecturers = User::where('role_id', 2)->get();
+        $deptLecturers = User::where('role_id', 2)
+            ->where('department_id', $department->id)
+            ->get();
+
+        $years = [
+            'First Year' => 'First Year',
+            'Second Year' => 'Second Year',
+            'Third Year' => 'Third Year',
+            'Fourth Year' => 'Fourth Year',
+            'Fifth Year' => 'Fifth Year',
+            'Sixth Year' => 'Sixth Year',
+        ];
+
+        $semesters = ['First Semester', 'Second Semester'];
+
+        return view('admin.courses.edit', compact(
+            'department',
+            'course',
+            'lecturers',
+            'deptLecturers',
+            'years',
+            'semesters'
+        ));
     }
 
-    public function update(Request $request, Course $course)
+    /**
+     * Update course (nested)
+     */
+    public function update(Request $request, Department $department, Course $course)
     {
         $validated = $request->validate([
-            'department_id' => 'required|exists:departments,id',
-            'lecturer_id' => 'nullable|exists:users,id',
-            'lecturer_name' => 'nullable|string|max:100',
             'course_code' => 'required|string|max:20|unique:courses,course_code,' . $course->id,
-            'course_name' => 'required|string|max:100',
+            'course_name' => 'required|string|max:255',
+            'lecturer_id' => 'nullable|exists:users,id',
+            'lecturer_name' => 'nullable|string|max:255',
             'credits' => 'required|integer|min:1|max:6',
-            'year' => 'nullable|string|max:50',
-            'semester' => 'nullable|string|max:50',
-            'academic_year' => 'nullable|string|max:20',
+            'year' => 'required|string',
+            'semester' => 'required|string',
+            'academic_year' => 'required|string',
             'room' => 'nullable|string|max:50',
-            'schedule_day' => 'nullable|string|max:20',
-            'schedule_time' => 'nullable',
-            'schedule_end_time' => 'nullable',
-            'is_active' => 'boolean',
         ]);
-
-        if ($request->filled('lecturer_id')) {
-            $lecturer = User::find($request->lecturer_id);
-            $validated['lecturer_name'] = $lecturer->name;
-        } else {
-            $validated['lecturer_name'] = $request->lecturer_name;
-        }
-
-        $validated['is_active'] = $request->has('is_active');
 
         $course->update($validated);
 
-        return redirect()->route('admin.courses.index')
-            ->with('success', 'Course updated successfully!');
+        return redirect()->route('admin.departments.courses.show', [$department, $course])
+            ->with('success', 'Course updated successfully.');
     }
 
-    public function destroy(Course $course)
+    /**
+     * Delete course (nested)
+     */
+    public function destroy(Department $department, Course $course)
     {
-        if ($course->enrollments()->count() > 0) {
-            return redirect()->route('admin.courses.index')
-                ->with('error', 'Cannot delete course with enrolled students. Deactivate it instead.');
+        if ($course->attendanceRecords()->count() > 0) {
+            return back()->with('error', 'Cannot delete course with existing attendance records.');
+        }
+
+        $course->delete();
+
+        return redirect()->route('admin.departments.courses.index', $department)
+            ->with('success', 'Course deleted successfully.');
+    }
+
+    // ============================================================
+    // STANDALONE METHODS (For sidebar navigation)
+    // ============================================================
+
+    /**
+     * Display all courses (standalone - from sidebar)
+     */
+    public function standaloneIndex()
+    {
+        $courses = Course::with(['department', 'lecturer', 'students'])
+            ->orderBy('department_id')
+            ->orderBy('year')
+            ->orderBy('course_code')
+            ->paginate(20);
+
+        $departments = Department::all();
+
+        return view('admin.courses.standalone-index', compact('courses', 'departments'));
+    }
+
+    /**
+     * Show create course form (standalone)
+     */
+    public function standaloneCreate()
+    {
+        $departments = Department::all();
+        $lecturers = User::where('role_id', 2)->get();
+
+        $years = [
+            'First Year' => 'First Year',
+            'Second Year' => 'Second Year',
+            'Third Year' => 'Third Year',
+            'Fourth Year' => 'Fourth Year',
+            'Fifth Year' => 'Fifth Year',
+            'Sixth Year' => 'Sixth Year',
+        ];
+
+        $semesters = ['First Semester', 'Second Semester'];
+
+        return view('admin.courses.standalone-create', compact('departments', 'lecturers', 'years', 'semesters'));
+    }
+
+    /**
+     * Store a new course (standalone)
+     */
+    public function standaloneStore(Request $request)
+    {
+        $validated = $request->validate([
+            'course_code' => 'required|string|max:20|unique:courses',
+            'course_name' => 'required|string|max:255',
+            'department_id' => 'required|exists:departments,id',
+            'lecturer_id' => 'nullable|exists:users,id',
+            'lecturer_name' => 'nullable|string|max:255',
+            'credits' => 'required|integer|min:1|max:6',
+            'year' => 'required|string',
+            'semester' => 'required|string',
+            'academic_year' => 'required|string',
+            'room' => 'nullable|string|max:50',
+        ]);
+
+        $course = Course::create($validated);
+
+        return redirect()->route('admin.courses.show', $course)
+            ->with('success', 'Course created successfully.');
+    }
+
+    /**
+     * Show a specific course (standalone)
+     */
+    public function standaloneShow(Course $course)
+    {
+        $course->load(['department', 'lecturer', 'students']);
+        $students = $course->students()->paginate(20);
+
+        return view('admin.courses.standalone-show', compact('course', 'students'));
+    }
+
+    /**
+     * Show edit course form (standalone)
+     */
+    public function standaloneEdit(Course $course)
+    {
+        $departments = Department::all();
+        $lecturers = User::where('role_id', 2)->get();
+
+        $years = [
+            'First Year' => 'First Year',
+            'Second Year' => 'Second Year',
+            'Third Year' => 'Third Year',
+            'Fourth Year' => 'Fourth Year',
+            'Fifth Year' => 'Fifth Year',
+            'Sixth Year' => 'Sixth Year',
+        ];
+
+        $semesters = ['First Semester', 'Second Semester'];
+
+        return view('admin.courses.standalone-edit', compact('course', 'departments', 'lecturers', 'years', 'semesters'));
+    }
+
+    /**
+     * Update course (standalone)
+     */
+    public function standaloneUpdate(Request $request, Course $course)
+    {
+        $validated = $request->validate([
+            'course_code' => 'required|string|max:20|unique:courses,course_code,' . $course->id,
+            'course_name' => 'required|string|max:255',
+            'department_id' => 'required|exists:departments,id',
+            'lecturer_id' => 'nullable|exists:users,id',
+            'lecturer_name' => 'nullable|string|max:255',
+            'credits' => 'required|integer|min:1|max:6',
+            'year' => 'required|string',
+            'semester' => 'required|string',
+            'academic_year' => 'required|string',
+            'room' => 'nullable|string|max:50',
+        ]);
+
+        $course->update($validated);
+
+        return redirect()->route('admin.courses.show', $course)
+            ->with('success', 'Course updated successfully.');
+    }
+
+    /**
+     * Delete course (standalone)
+     */
+    public function standaloneDestroy(Course $course)
+    {
+        if ($course->attendanceRecords()->count() > 0) {
+            return back()->with('error', 'Cannot delete course with existing attendance records.');
         }
 
         $course->delete();
 
         return redirect()->route('admin.courses.index')
-            ->with('success', 'Course moved to trash successfully!');
+            ->with('success', 'Course deleted successfully.');
     }
+
+    // ============================================================
+    // RESTORE & FORCE DELETE (for soft deletes)
+    // ============================================================
 
     public function restore($id)
     {
         $course = Course::withTrashed()->findOrFail($id);
         $course->restore();
-
-        return redirect()->route('admin.courses.index')
-            ->with('success', 'Course restored successfully!');
+        return back()->with('success', 'Course restored successfully.');
     }
 
     public function forceDelete($id)
     {
         $course = Course::withTrashed()->findOrFail($id);
-
-        if ($course->enrollments()->count() > 0) {
-            return redirect()->route('admin.courses.index')
-                ->with('error', 'Cannot delete course with enrolled students.');
-        }
-
         $course->forceDelete();
-
-        return redirect()->route('admin.courses.index')
-            ->with('success', 'Course permanently deleted!');
+        return back()->with('success', 'Course permanently deleted.');
     }
 
     public function toggleStatus(Course $course)
     {
-        $course->update(['is_active' => !$course->is_active]);
-
-        $status = $course->is_active ? 'activated' : 'deactivated';
-        return redirect()->back()->with('success', "Course {$status} successfully!");
+        $course->is_active = !$course->is_active;
+        $course->save();
+        return back()->with('success', 'Course status updated.');
     }
 }

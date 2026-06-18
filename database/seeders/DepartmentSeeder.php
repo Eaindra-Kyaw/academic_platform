@@ -1,4 +1,5 @@
 <?php
+// database/seeders/DepartmentSeeder.php
 
 namespace Database\Seeders;
 
@@ -16,17 +17,72 @@ class DepartmentSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $departments = [
-            ['code' => 'CE', 'name' => 'Department of Civil Engineering', 'head_of_department' => 'To be assigned'],
-            ['code' => 'ME', 'name' => 'Department of Mechanical Engineering', 'head_of_department' => 'To be assigned'],
-            ['code' => 'EP', 'name' => 'Department of Electrical Power Engineering', 'head_of_department' => 'To be assigned'],
-            ['code' => 'EC', 'name' => 'Department of Electronic Engineering', 'head_of_department' => 'To be assigned'],
-            ['code' => 'CS', 'name' => 'Department of Computer Engineering and Information Technology', 'head_of_department' => 'To be assigned'],
-            ['code' => 'MEC', 'name' => 'Department of Mechatronics Engineering', 'head_of_department' => 'To be assigned'],
-            ['code' => 'CH', 'name' => 'Department of Chemical Engineering', 'head_of_department' => 'To be assigned'],
-            ['code' => 'AE', 'name' => 'Department of Agricultural Engineering', 'head_of_department' => 'To be assigned'],
-            ['code' => 'BT', 'name' => 'Department of Biotechnology', 'head_of_department' => 'To be assigned'],
-            ['code' => 'AR', 'name' => 'Department of Architecture', 'head_of_department' => 'To be assigned'],
-            ['code' => 'NT', 'name' => 'Department of Nuclear Technology', 'head_of_department' => 'To be assigned'],
+            [
+                'code' => 'CE',
+                'name' => 'Department of Civil Engineering',
+                'head_of_department' => 'Dr. Su Myat Mon',
+                'description' => 'Civil Engineering Department'
+            ],
+            [
+                'code' => 'ME',
+                'name' => 'Department of Mechanical Engineering',
+                'head_of_department' => 'Dr. Aung Kyaw Soe',
+                'description' => 'Mechanical Engineering Department'
+            ],
+            [
+                'code' => 'EP',
+                'name' => 'Department of Electrical Power Engineering',
+                'head_of_department' => 'To be assigned',
+                'description' => 'Electrical Power Engineering Department'
+            ],
+            [
+                'code' => 'EC',
+                'name' => 'Department of Electronic Engineering',
+                'head_of_department' => 'To be assigned',
+                'description' => 'Electronic Engineering Department'
+            ],
+            [
+                'code' => 'CS',
+                'name' => 'Department of Computer Engineering and Information Technology',
+                'head_of_department' => 'Dr. Phyo Thu Zar Tun',
+                'description' => 'Computer Engineering and Information Technology Department'
+            ],
+            [
+                'code' => 'MEC',
+                'name' => 'Department of Mechatronics Engineering',
+                'head_of_department' => 'To be assigned',
+                'description' => 'Mechatronics Engineering Department'
+            ],
+            [
+                'code' => 'CH',
+                'name' => 'Department of Chemical Engineering',
+                'head_of_department' => 'To be assigned',
+                'description' => 'Chemical Engineering Department'
+            ],
+            [
+                'code' => 'AE',
+                'name' => 'Department of Agricultural Engineering',
+                'head_of_department' => 'To be assigned',
+                'description' => 'Agricultural Engineering Department'
+            ],
+            [
+                'code' => 'BT',
+                'name' => 'Department of Biotechnology',
+                'head_of_department' => 'To be assigned',
+                'description' => 'Biotechnology Department'
+            ],
+            [
+                'code' => 'AR',
+                'name' => 'Department of Architecture',
+                'head_of_department' => 'To be assigned',
+                'description' => 'Architecture Department'
+            ],
+            [
+                'code' => 'NT',
+                'name' => 'Department of Nuclear Technology',
+                'head_of_department' => 'To be assigned',
+                'description' => 'Nuclear Technology Department'
+            ],
         ];
 
         foreach ($departments as $dept) {
@@ -38,16 +94,16 @@ class DepartmentSeeder extends Seeder
                     'code' => $dept['code'],
                     'name' => $dept['name'],
                     'head_of_department' => $dept['head_of_department'],
-                    'description' => $dept['name'],
+                    'description' => $dept['description'],
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ]);
-                $this->command->info("Added department: " . $dept['name']);
+                $this->command->info("✅ Added department: " . $dept['name']);
             } else {
-                $this->command->warn("Department already exists: " . $dept['name'] . " - Skipping");
+                $this->command->warn("⚠️ Department already exists: " . $dept['name'] . " - Skipping");
             }
         }
 
-        $this->command->info("Department seeding completed!");
+        $this->command->info("🎉 Department seeding completed!");
     }
 }

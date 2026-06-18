@@ -1,4 +1,5 @@
 <?php
+// database/seeders/DatabaseSeeder.php
 
 namespace Database\Seeders;
 
@@ -15,6 +16,7 @@ class DatabaseSeeder extends Seeder
             LecturerSeeder::class,
             StudentSeeder::class,
             CourseSeeder::class,
+            EnrollmentSeeder::class,
         ]);
     }
 }

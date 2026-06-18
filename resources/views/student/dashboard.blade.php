@@ -6,32 +6,7 @@
 @section('welcome-text', 'Welcome back, ' . Auth::user()->name)
 
 @section('sidebar')
-    <div class="nav-label">Navigation</div>
-    <a href="{{ route('student.dashboard') }}" class="nav-item active">
-        <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
-    </a>
-    <a href="{{ route('student.courses.available') }}" class="nav-item">
-        <i class="bi bi-book"></i><span>Available Courses</span>
-    </a>
-    <a href="{{ route('student.my.enrollments') }}" class="nav-item">
-        <i class="bi bi-list-check"></i><span>My Enrollments</span>
-    </a>
-    <a href="{{ route('student.scan') }}" class="nav-item">
-        <i class="bi bi-qr-code-scan"></i><span>QR Attendance</span>
-    </a>
-    <a href="{{ route('student.timetable') }}" class="nav-item">
-        <i class="bi bi-calendar"></i><span>Timetable</span>
-    </a>
-    <a href="{{ route('student.progress') }}" class="nav-item">
-        <i class="bi bi-graph-up"></i><span>My Progress</span>
-    </a>
-    <div class="nav-label">Support</div>
-    <a href="#" class="nav-item" onclick="openUniBot()">
-        <i class="bi bi-robot"></i><span>Uni Bot</span>
-    </a>
-    <a href="#" class="nav-item">
-        <i class="bi bi-bell"></i><span>Notifications</span>
-    </a>
+    @include('layouts.partials.student-sidebar')
 @endsection
 
 @section('content')

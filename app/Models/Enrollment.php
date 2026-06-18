@@ -1,4 +1,5 @@
 <?php
+// app/Models/Enrollment.php
 
 namespace App\Models;
 
@@ -14,23 +15,16 @@ class Enrollment extends Model
         'course_id',
         'enrollment_date',
         'status',
-        'rejection_reason',
         'attendance_percentage',
         'roll_call_mark',
         'eligibility_status',
-        'approved_at',
-        'rejected_at',
-        'dropped_at',
     ];
 
     protected $casts = [
-        'approved_at' => 'datetime',
-        'rejected_at' => 'datetime',
-        'dropped_at' => 'datetime',
-        'attendance_percentage' => 'decimal:2',
-        'roll_call_mark' => 'decimal:2',
+        'enrollment_date' => 'datetime',
     ];
 
+    // Relationships
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id');
@@ -41,18 +35,35 @@ class Enrollment extends Model
         return $this->belongsTo(Course::class);
     }
 
-    public function isApproved()
+    // Status constants
+    const STATUS_PENDING = 'pending';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+    const STATUS_DROPPED = 'dropped';
+
+    const ELIGIBILITY_ELIGIBLE = 'eligible';
+    const ELIGIBILITY_WARNING = 'warning';
+    const ELIGIBILITY_NOT_ELIGIBLE = 'not_eligible';
+
+    // Scopes
+    public function scopeApproved($query)
     {
-        return $this->status === 'approved';
+        return $query->where('status', self::STATUS_APPROVED);
     }
 
-    public function isRejected()
+    public function scopeEligible($query)
     {
-        return $this->status === 'rejected';
+        return $query->where('eligibility_status', self::ELIGIBILITY_ELIGIBLE);
     }
 
-    public function isPending()
+    // Get eligibility label with color
+    public function getEligibilityLabelAttribute()
     {
-        return $this->status === 'pending';
+        return match($this->eligibility_status) {
+            self::ELIGIBILITY_ELIGIBLE => ['label' => 'Eligible', 'class' => 'success'],
+            self::ELIGIBILITY_WARNING => ['label' => 'Warning', 'class' => 'warning'],
+            self::ELIGIBILITY_NOT_ELIGIBLE => ['label' => 'Not Eligible', 'class' => 'danger'],
+            default => ['label' => 'Unknown', 'class' => 'secondary'],
+        };
     }
 }

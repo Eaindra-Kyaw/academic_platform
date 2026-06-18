@@ -308,3 +308,10 @@ use\040SimpleSoftwareIO\134QrCode\134Facades\134QrCode;
 echo\040QrCode::size(200)->generate('https://google.com');
 use\040SimpleSoftwareIO\134QrCode\134Facades\134QrCode;
 echo\040QrCode::size(100)->generate('https://google.com');
+$courses\040=\040App\134Models\134Course::whereNotNull('lecturer_name')->get();
+uery->where('name',\040'LIKE',\040'%'\040.\040$course->lecturer_name\040.\040'%')
+}
+$courses\040=\040App\134Models\134Course::whereNotNull('lecturer_name')->whereNull('lecturer_id')->get();\040foreach($courses\040as\040$c)\040{\040$lecturer\040=\040App\134Models\134User::where('role_id',\0402)->where('name',\040'LIKE',\040'%'\040.\040explode(',',\040$c->lecturer_name)[0]\040.\040'%')->first();\040if($lecturer)\040{\040$c->lecturer_id\040=\040$lecturer->id;\040$c->save();\040echo\040"Updated:\040{$c->course_code}\040->\040{$lecturer->name}\134n";\040}\040}
+$lecturers\040=\040App\134Models\134User::where('role_id',\0402)->where('department_id',\0405)->get();
+//\040Check\040all\040lecturers\040and\040their\040department_id
+$lecturers\040=\040App\134Models\134User::where('role_id',\0402)->get(['id',\040'name',\040'department_id',\040'email']);
