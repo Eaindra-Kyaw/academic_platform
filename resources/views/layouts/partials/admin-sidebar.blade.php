@@ -37,7 +37,8 @@
 <a href="#" class="nav-item">
     <i class="bi bi-calendar"></i><span>Semesters</span>
 </a>
-<a href="#" class="nav-item">
+{{-- FIXED: Announcements link --}}
+<a href="{{ route('admin.announcements.index') }}" class="nav-item @if (request()->routeIs('admin.announcements*')) active @endif">
     <i class="bi bi-megaphone"></i><span>Announcements</span>
 </a>
 

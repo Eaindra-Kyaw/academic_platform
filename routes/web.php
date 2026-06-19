@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\CourseController;
 use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\LecturerController as AdminLecturerController;
 use App\Http\Controllers\Admin\MessageController as AdminMessageController;
+use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Lecturer\MessageController as LecturerMessageController;
 use App\Http\Controllers\Student\MessageController as StudentMessageController;
 use App\Http\Controllers\Auth\RoleLoginController;
@@ -124,8 +125,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // REPORTS
     // ============================================================
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
-Route::get('/reports/detail/{type}', [AdminController::class, 'reportDetail'])->name('reports.detail');
-Route::get('/reports/export/{type}', [AdminController::class, 'exportReport'])->name('reports.export');
+    Route::get('/reports/detail/{type}', [AdminController::class, 'reportDetail'])->name('reports.detail');
+    Route::get('/reports/export/{type}', [AdminController::class, 'exportReport'])->name('reports.export');
 
     // ============================================================
     // STUDENT MANAGEMENT
@@ -177,6 +178,20 @@ Route::get('/reports/export/{type}', [AdminController::class, 'exportReport'])->
     Route::get('/enrollments/student/{id}', [EnrollmentController::class, 'showStudent'])->name('enrollments.student');
     Route::post('/enrollments/bulk/approve', [EnrollmentController::class, 'bulkApprove'])->name('enrollments.bulk.approve');
     Route::post('/enrollments/bulk/reject', [EnrollmentController::class, 'bulkReject'])->name('enrollments.bulk.reject');
+
+    // ============================================================
+    // ANNOUNCEMENT ROUTES (Admin) - FIXED
+    // ============================================================
+    Route::prefix('announcements')->name('announcements.')->group(function () {
+        Route::get('/', [AnnouncementController::class, 'index'])->name('index');
+        Route::get('/create', [AnnouncementController::class, 'create'])->name('create');
+        Route::post('/', [AnnouncementController::class, 'store'])->name('store');
+        Route::get('/{id}', [AnnouncementController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [AnnouncementController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [AnnouncementController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AnnouncementController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/toggle', [AnnouncementController::class, 'toggleStatus'])->name('toggle');
+    });
 
     // ============================================================
     // LECTURER MANAGEMENT ROUTES
