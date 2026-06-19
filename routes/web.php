@@ -124,6 +124,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // REPORTS
     // ============================================================
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
+Route::get('/reports/detail/{type}', [AdminController::class, 'reportDetail'])->name('reports.detail');
+Route::get('/reports/export/{type}', [AdminController::class, 'exportReport'])->name('reports.export');
 
     // ============================================================
     // STUDENT MANAGEMENT
@@ -163,19 +165,18 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         ]);
     });
 
-    // Inside the admin routes group
-// ============================================================
-// ENROLLMENT MANAGEMENT ROUTES (Admin)
-// ============================================================
-Route::get('/enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
-Route::get('/enrollments/department/{departmentId}', [EnrollmentController::class, 'showDepartment'])->name('enrollments.department');
-Route::get('/enrollments/department/{departmentId}/year/{year}', [EnrollmentController::class, 'showDepartmentYear'])->name('enrollments.department.year');
-Route::get('/enrollments/course/{courseId}', [EnrollmentController::class, 'showCourse'])->name('enrollments.course');
-Route::get('/enrollments/{id}/approve', [EnrollmentController::class, 'approve'])->name('enrollments.approve');
-Route::post('/enrollments/{id}/reject', [EnrollmentController::class, 'reject'])->name('enrollments.reject');
-Route::get('/enrollments/student/{id}', [EnrollmentController::class, 'showStudent'])->name('enrollments.student');
-Route::post('/enrollments/bulk/approve', [EnrollmentController::class, 'bulkApprove'])->name('enrollments.bulk.approve');
-Route::post('/enrollments/bulk/reject', [EnrollmentController::class, 'bulkReject'])->name('enrollments.bulk.reject');
+    // ============================================================
+    // ENROLLMENT MANAGEMENT ROUTES (Admin)
+    // ============================================================
+    Route::get('/enrollments', [EnrollmentController::class, 'index'])->name('enrollments.index');
+    Route::get('/enrollments/department/{departmentId}', [EnrollmentController::class, 'showDepartment'])->name('enrollments.department');
+    Route::get('/enrollments/department/{departmentId}/year/{year}', [EnrollmentController::class, 'showDepartmentYear'])->name('enrollments.department.year');
+    Route::get('/enrollments/course/{courseId}', [EnrollmentController::class, 'showCourse'])->name('enrollments.course');
+    Route::get('/enrollments/{id}/approve', [EnrollmentController::class, 'approve'])->name('enrollments.approve');
+    Route::post('/enrollments/{id}/reject', [EnrollmentController::class, 'reject'])->name('enrollments.reject');
+    Route::get('/enrollments/student/{id}', [EnrollmentController::class, 'showStudent'])->name('enrollments.student');
+    Route::post('/enrollments/bulk/approve', [EnrollmentController::class, 'bulkApprove'])->name('enrollments.bulk.approve');
+    Route::post('/enrollments/bulk/reject', [EnrollmentController::class, 'bulkReject'])->name('enrollments.bulk.reject');
 
     // ============================================================
     // LECTURER MANAGEMENT ROUTES

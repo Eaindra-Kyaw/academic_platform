@@ -59,9 +59,9 @@
             min-height: 100vh;
         }
 
-        /* Sidebar */
+        /* Sidebar*/
         .sidebar {
-            width: 280px;
+            width: 250px;
             background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
             color: white;
             position: fixed;
@@ -71,12 +71,13 @@
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
         }
 
         .sidebar-header {
-            padding: 1.25rem 1.5rem;
+            padding: 1.25rem 1.25rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         .brand {
@@ -86,33 +87,35 @@
         }
 
         .brand-icon {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             background: var(--secondary);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: var(--primary);
+            flex-shrink: 0;
         }
 
         .brand-text h2 {
-            font-size: 0.9rem;
+            font-size: 1.2rem;
             font-weight: 700;
             margin: 0;
+            white-space: nowrap;
         }
 
         .brand-text p {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             opacity: 0.7;
             margin: 0;
         }
 
         .nav-label {
             padding: 0.5rem 0.75rem 0.25rem;
-            font-size: 0.6rem !important;
+            font-size: 0.67rem !important;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.8px;
@@ -124,13 +127,14 @@
             align-items: center;
             gap: 0.6rem;
             padding: 0.45rem 0.75rem !important;
-            margin: 0.15rem 0.6rem;
+            margin: 0.1rem 0.6rem;
             border-radius: 8px;
             color: rgba(255, 255, 255, 0.75);
             text-decoration: none;
             font-size: 0.9rem !important;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
         .nav-item:hover {
@@ -146,10 +150,11 @@
         .nav-item i {
             font-size: 1rem !important;
             width: 1.3rem;
+            flex-shrink: 0;
         }
 
         .sidebar-note {
-            margin: 0.75rem 0.6rem;
+            margin: 0.5rem 0.6rem;
             padding: 0.6rem 0.75rem;
             background: rgba(255, 255, 255, 0.08);
             border-radius: 8px;
@@ -169,15 +174,20 @@
 
         .nav-container {
             flex: 1;
+            overflow-y: auto;
         }
 
-        /* Main Content */
+        /* Main Content - MEDIUM MARGIN */
         .main-content {
             flex: 1;
-            margin-left: 280px;
+            margin-left: 240px;
+            /* MATCHES sidebar width */
             padding: 1.5rem;
             min-height: 100vh;
-            width: calc(100% - 280px);
+            width: calc(100% - 240px);
+            /* MATCHES sidebar width */
+            max-width: 100%;
+            overflow-x: hidden;
         }
 
         /* Top Bar */
@@ -186,15 +196,17 @@
             justify-content: space-between;
             align-items: center;
             background: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 1rem;
+            padding: 0.7rem 1.5rem;
+            border-radius: 0.75rem;
             margin-bottom: 1.5rem;
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .page-title-section h1 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: var(--primary);
             margin: 0;
@@ -203,7 +215,7 @@
         .welcome-text {
             font-size: 0.75rem;
             color: var(--gray-500);
-            margin-top: 0.15rem;
+            margin-top: 0.1rem;
         }
 
         /* Account Dropdown */
@@ -227,8 +239,8 @@
         }
 
         .account-avatar {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             background: var(--primary);
             border-radius: 50%;
             display: flex;
@@ -236,7 +248,8 @@
             justify-content: center;
             color: var(--secondary);
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
+            flex-shrink: 0;
         }
 
         .dropdown-arrow {
@@ -321,7 +334,7 @@
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
             .sidebar {
-                width: 72px;
+                width: 80px;
             }
 
             .sidebar .brand-text,
@@ -332,9 +345,9 @@
             }
 
             .main-content {
-                margin-left: 72px;
+                margin-left: 80px;
                 padding: 1rem;
-                width: calc(100% - 72px);
+                width: calc(100% - 80px);
             }
 
             .nav-item {
@@ -350,7 +363,7 @@
             .topbar {
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 0.75rem;
+                gap: 0.5rem;
             }
 
             .account-dropdown {
@@ -360,21 +373,31 @@
 
         @media (max-width: 768px) {
             .main-content {
-                margin-left: 65px;
+                margin-left: 68px;
                 padding: 0.75rem;
-                width: calc(100% - 65px);
+                width: calc(100% - 68px);
             }
 
             .sidebar {
-                width: 65px;
+                width: 68px;
+            }
+
+            .sidebar-header {
+                padding: 0.75rem;
+            }
+
+            .brand-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 0.7rem;
             }
 
             .topbar {
-                padding: 0.6rem 0.75rem;
+                padding: 0.5rem 0.75rem;
             }
 
             .page-title-section h1 {
-                font-size: 1rem;
+                font-size: 0.95rem;
             }
 
             .welcome-text {
@@ -382,35 +405,35 @@
             }
 
             .account-avatar {
-                width: 32px;
-                height: 32px;
+                width: 30px;
+                height: 30px;
                 font-size: 0.7rem;
             }
         }
 
         @media (max-width: 430px) {
             .main-content {
-                margin-left: 55px;
+                margin-left: 58px;
                 padding: 0.5rem;
-                width: calc(100% - 55px);
+                width: calc(100% - 58px);
             }
 
             .sidebar {
-                width: 55px;
+                width: 58px;
             }
 
             .sidebar-header {
-                padding: 0.6rem;
+                padding: 0.5rem;
             }
 
             .brand-icon {
-                width: 32px;
-                height: 32px;
-                font-size: 0.75rem;
+                width: 28px;
+                height: 28px;
+                font-size: 0.65rem;
             }
 
             .page-title-section h1 {
-                font-size: 0.85rem;
+                font-size: 0.8rem;
             }
 
             .topbar {
@@ -418,8 +441,8 @@
             }
 
             .account-avatar {
-                width: 28px;
-                height: 28px;
+                width: 26px;
+                height: 26px;
                 font-size: 0.6rem;
             }
 
@@ -444,6 +467,7 @@
                     <div class="brand-icon">Uni</div>
                     <div class="brand-text">
                         <h2>Academic Portal</h2>
+                        <p>Intelligence System</p>
                     </div>
                 </div>
             </div>

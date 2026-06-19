@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Department;
 use App\Models\Enrollment;
+use App\Models\Course;
 use App\Models\AttendanceSession;
 use App\Models\AttendanceRecord;
 use Illuminate\Http\Request;
@@ -262,11 +263,635 @@ class AdminController extends Controller
     }
 
     /**
-     * Display reports page
+     * Display reports page (Page 1 - Landing)
      */
     public function reports()
     {
-        return view('admin.reports');
+        return view('admin.reports.index');
+    }
+
+    /**
+     * Display report detail page with filters (Page 2)
+     */
+    public function reportDetail($type)
+    {
+        // Define report types
+        $reportConfigs = [
+            'students' => [
+                'title' => 'Student Report',
+                'icon' => '👨‍🎓',
+                'description' => 'Export student data with filters',
+                'filters' => ['department', 'year', 'status']
+            ],
+            'attendance' => [
+                'title' => 'Attendance Report',
+                'icon' => '📋',
+                'description' => 'Export attendance records with filters',
+                'filters' => ['department', 'course', 'date_range']
+            ],
+            'enrollments' => [
+                'title' => 'Enrollment Report',
+                'icon' => '📚',
+                'description' => 'Export enrollment data with filters',
+                'filters' => ['department', 'course', 'status', 'year']
+            ],
+            'departments' => [
+                'title' => 'Department Report',
+                'icon' => '🏛️',
+                'description' => 'Export department statistics',
+                'filters' => ['department']
+            ],
+            'risk' => [
+                'title' => 'Risk Analysis Report',
+                'icon' => '⚠️',
+                'description' => 'Export at-risk students with filters',
+                'filters' => ['department', 'risk_level', 'attendance_below']
+            ],
+            'health' => [
+                'title' => 'Academic Health Report',
+                'icon' => '💚',
+                'description' => 'Export Academic Health Scores',
+                'filters' => ['department', 'year', 'score_below']
+            ],
+            'semester' => [
+                'title' => 'Semester Summary',
+                'icon' => '📅',
+                'description' => 'Export complete semester summary',
+                'filters' => ['academic_year', 'semester', 'format']
+            ],
+        ];
+
+        if (!isset($reportConfigs[$type])) {
+            return redirect()->route('admin.reports')->with('error', 'Invalid report type.');
+        }
+
+        $config = $reportConfigs[$type];
+
+        // Get departments and courses for filters
+        $departments = Department::orderBy('name')->get();
+        $courses = Course::orderBy('course_code')->get();
+
+        return view('admin.reports.detail', [
+            'reportType' => $type,
+            'reportTitle' => $config['title'],
+            'reportIcon' => $config['icon'],
+            'reportDescription' => $config['description'],
+            'availableFilters' => $config['filters'],
+            'departments' => $departments,
+            'courses' => $courses,
+        ]);
+    }
+
+    /**
+     * Export reports based on type
+     */
+    public function exportReport(Request $request, $type)
+    {
+        $format = $request->input('format', 'csv');
+
+        switch ($type) {
+            case 'students':
+                return $this->exportStudents($format, $request);
+            case 'attendance':
+                return $this->exportAttendance($format, $request);
+            case 'enrollments':
+                return $this->exportEnrollments($format, $request);
+            case 'departments':
+                return $this->exportDepartments($format, $request);
+            case 'risk':
+                return $this->exportRiskAnalysis($format, $request);
+            case 'health':
+                return $this->exportAcademicHealth($format, $request);
+            case 'semester':
+                return $this->exportSemesterSummary($format, $request);
+            default:
+                return back()->with('error', 'Invalid report type.');
+        }
+    }
+
+    /**
+     * Export Students Report with filters
+     */
+    private function exportStudents($format, $request)
+    {
+        $query = User::where('role_id', 3)
+            ->with(['department', 'enrollments.course']);
+
+        // Apply filters
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
+        if ($request->filled('year')) {
+            $query->where('current_year', $request->year);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status === 'active');
+        }
+
+        $students = $query->get();
+
+        $filename = 'students_report_' . Carbon::now()->format('Y-m-d') . '.csv';
+
+        if ($format === 'csv') {
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
+
+            $callback = function() use ($students) {
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, [
+                    'Student ID',
+                    'Name',
+                    'Email',
+                    'Department',
+                    'Current Year',
+                    'Total Enrollments',
+                    'Attendance %',
+                    'Eligibility Status',
+                    'Created At'
+                ]);
+
+                foreach ($students as $student) {
+                    $totalEnrollments = $student->enrollments()->count();
+                    $avgAttendance = $student->enrollments()->avg('attendance_percentage') ?? 0;
+                    $eligibilityStatus = $student->enrollments()->first()->eligibility_status ?? 'N/A';
+
+                    fputcsv($file, [
+                        $student->student_id ?? 'N/A',
+                        $student->name,
+                        $student->email,
+                        $student->department->name ?? 'N/A',
+                        $student->current_year ?? 'N/A',
+                        $totalEnrollments,
+                        round($avgAttendance, 2) . '%',
+                        $eligibilityStatus,
+                        $student->created_at->format('Y-m-d'),
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return back()->with('error', 'Only CSV format is supported for this report.');
+    }
+
+    /**
+     * Export Attendance Report with filters
+     */
+    private function exportAttendance($format, $request)
+    {
+        $query = AttendanceRecord::with(['session.course', 'student']);
+
+        // Apply filters
+        if ($request->filled('department_id')) {
+            $query->whereHas('session.course', function($q) use ($request) {
+                $q->where('department_id', $request->department_id);
+            });
+        }
+
+        if ($request->filled('course_id')) {
+            $query->whereHas('session', function($q) use ($request) {
+                $q->where('course_id', $request->course_id);
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $attendanceRecords = $query->orderBy('created_at', 'desc')->get();
+
+        $filename = 'attendance_report_' . Carbon::now()->format('Y-m-d') . '.csv';
+
+        if ($format === 'csv') {
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
+
+            $callback = function() use ($attendanceRecords) {
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, [
+                    'Student Name',
+                    'Student ID',
+                    'Course',
+                    'Session Date',
+                    'Status',
+                    'Check-in Time',
+                ]);
+
+                foreach ($attendanceRecords as $record) {
+                    fputcsv($file, [
+                        $record->student->name ?? 'N/A',
+                        $record->student->student_id ?? 'N/A',
+                        $record->session->course->course_code ?? 'N/A',
+                        $record->session->session_date ?? 'N/A',
+                        $record->status ?? 'N/A',
+                        $record->check_in_time ?? 'N/A',
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return back()->with('error', 'Only CSV format is supported for this report.');
+    }
+
+    /**
+     * Export Enrollments Report with filters
+     */
+    private function exportEnrollments($format, $request)
+    {
+        $query = Enrollment::with(['student', 'course.department']);
+
+        // Apply filters
+        if ($request->filled('department_id')) {
+            $query->whereHas('course', function($q) use ($request) {
+                $q->where('department_id', $request->department_id);
+            });
+        }
+
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->course_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('year')) {
+            $query->whereHas('student', function($q) use ($request) {
+                $q->where('current_year', $request->year);
+            });
+        }
+
+        $enrollments = $query->orderBy('created_at', 'desc')->get();
+
+        $filename = 'enrollments_report_' . Carbon::now()->format('Y-m-d') . '.csv';
+
+        if ($format === 'csv') {
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
+
+            $callback = function() use ($enrollments) {
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, [
+                    'Student Name',
+                    'Student ID',
+                    'Course Code',
+                    'Course Name',
+                    'Department',
+                    'Status',
+                    'Enrollment Date',
+                    'Attendance %',
+                    'Roll Call Mark',
+                    'Eligibility'
+                ]);
+
+                foreach ($enrollments as $enrollment) {
+                    fputcsv($file, [
+                        $enrollment->student->name ?? 'N/A',
+                        $enrollment->student->student_id ?? 'N/A',
+                        $enrollment->course->course_code ?? 'N/A',
+                        $enrollment->course->course_name ?? 'N/A',
+                        $enrollment->course->department->name ?? 'N/A',
+                        $enrollment->status ?? 'N/A',
+                        $enrollment->created_at->format('Y-m-d'),
+                        $enrollment->attendance_percentage ?? 0,
+                        $enrollment->roll_call_mark ?? 0,
+                        $enrollment->eligibility_status ?? 'N/A',
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return back()->with('error', 'Only CSV format is supported for this report.');
+    }
+
+    /**
+     * Export Departments Report with filters
+     */
+    private function exportDepartments($format, $request)
+    {
+        $query = Department::withCount([
+            'users as student_count' => function($q) {
+                $q->where('role_id', 3);
+            },
+            'users as lecturer_count' => function($q) {
+                $q->where('role_id', 2);
+            },
+            'courses',
+            'enrollments'
+        ]);
+
+        if ($request->filled('department_id')) {
+            $query->where('id', $request->department_id);
+        }
+
+        $departments = $query->get();
+
+        $filename = 'departments_report_' . Carbon::now()->format('Y-m-d') . '.csv';
+
+        if ($format === 'csv') {
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
+
+            $callback = function() use ($departments) {
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, [
+                    'Department Code',
+                    'Department Name',
+                    'Head of Department',
+                    'Total Students',
+                    'Total Lecturers',
+                    'Total Courses',
+                    'Total Enrollments',
+                ]);
+
+                foreach ($departments as $dept) {
+                    fputcsv($file, [
+                        $dept->code ?? 'N/A',
+                        $dept->name ?? 'N/A',
+                        $dept->head_of_department ?? 'N/A',
+                        $dept->student_count ?? 0,
+                        $dept->lecturer_count ?? 0,
+                        $dept->courses_count ?? 0,
+                        $dept->enrollments_count ?? 0,
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return back()->with('error', 'Only CSV format is supported for this report.');
+    }
+
+    /**
+     * Export Risk Analysis Report with filters
+     */
+    private function exportRiskAnalysis($format, $request)
+    {
+        $query = User::where('role_id', 3)
+            ->with(['department', 'enrollments'])
+            ->whereHas('enrollments', function($q) {
+                $q->where('attendance_percentage', '<', 75)
+                  ->orWhere('eligibility_status', 'not_eligible')
+                  ->orWhere('eligibility_status', 'warning');
+            });
+
+        // Apply filters
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
+        $students = $query->get();
+
+        $filename = 'risk_analysis_report_' . Carbon::now()->format('Y-m-d') . '.csv';
+
+        if ($format === 'csv') {
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
+
+            $callback = function() use ($students, $request) {
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, [
+                    'Student Name',
+                    'Student ID',
+                    'Department',
+                    'Current Year',
+                    'Attendance %',
+                    'Eligibility Status',
+                    'Risk Level',
+                ]);
+
+                foreach ($students as $student) {
+                    $avgAttendance = $student->enrollments()->avg('attendance_percentage') ?? 0;
+                    $eligibility = $student->enrollments()->first()->eligibility_status ?? 'eligible';
+
+                    // Apply attendance filter
+                    if ($request->filled('attendance_below') && $avgAttendance >= $request->attendance_below) {
+                        continue;
+                    }
+
+                    $riskLevel = $avgAttendance < 60 ? 'Critical' : ($avgAttendance < 75 ? 'Moderate' : 'Low');
+
+                    // Apply risk level filter
+                    if ($request->filled('risk_level')) {
+                        $filterRisk = strtolower($request->risk_level);
+                        $studentRisk = strtolower($riskLevel);
+                        if ($filterRisk !== $studentRisk) {
+                            continue;
+                        }
+                    }
+
+                    fputcsv($file, [
+                        $student->name,
+                        $student->student_id ?? 'N/A',
+                        $student->department->name ?? 'N/A',
+                        $student->current_year ?? 'N/A',
+                        round($avgAttendance, 2) . '%',
+                        $eligibility,
+                        $riskLevel,
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return back()->with('error', 'Only CSV format is supported for this report.');
+    }
+
+    /**
+     * Export Academic Health Report with filters
+     */
+    private function exportAcademicHealth($format, $request)
+    {
+        $query = User::where('role_id', 3)
+            ->with(['department', 'enrollments']);
+
+        // Apply filters
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
+        if ($request->filled('year')) {
+            $query->where('current_year', $request->year);
+        }
+
+        $students = $query->get();
+
+        $filename = 'academic_health_report_' . Carbon::now()->format('Y-m-d') . '.csv';
+
+        if ($format === 'csv') {
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
+
+            $callback = function() use ($students, $request) {
+                $file = fopen('php://output', 'w');
+
+                fputcsv($file, [
+                    'Student Name',
+                    'Student ID',
+                    'Department',
+                    'Year',
+                    'Total Enrollments',
+                    'Approved Enrollments',
+                    'Attendance %',
+                    'Roll Call Mark',
+                    'Eligibility',
+                    'Health Score',
+                ]);
+
+                foreach ($students as $student) {
+                    $enrollments = $student->enrollments;
+                    $totalEnrollments = $enrollments->count();
+                    $approvedEnrollments = $enrollments->where('status', 'approved')->count();
+                    $avgAttendance = $enrollments->avg('attendance_percentage') ?? 0;
+                    $avgRollCall = $enrollments->avg('roll_call_mark') ?? 0;
+                    $eligibility = $enrollments->first()->eligibility_status ?? 'N/A';
+
+                    // Calculate health score
+                    $healthScore = ($avgAttendance * 0.5) + ($avgRollCall * 0.3) + (($approvedEnrollments / max($totalEnrollments, 1)) * 20);
+
+                    // Apply health score filter
+                    if ($request->filled('score_below') && $healthScore >= $request->score_below) {
+                        continue;
+                    }
+
+                    fputcsv($file, [
+                        $student->name,
+                        $student->student_id ?? 'N/A',
+                        $student->department->name ?? 'N/A',
+                        $student->current_year ?? 'N/A',
+                        $totalEnrollments,
+                        $approvedEnrollments,
+                        round($avgAttendance, 2) . '%',
+                        round($avgRollCall, 2),
+                        $eligibility,
+                        round($healthScore, 2),
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return back()->with('error', 'Only CSV format is supported for this report.');
+    }
+
+    /**
+     * Export Semester Summary with filters
+     */
+    private function exportSemesterSummary($format, $request)
+    {
+        $filename = 'semester_summary_' . Carbon::now()->format('Y-m-d') . '.csv';
+
+        if ($format === 'csv') {
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
+
+            $callback = function() use ($request) {
+                $file = fopen('php://output', 'w');
+
+                // Header
+                fputcsv($file, ['Semester Summary Report']);
+                fputcsv($file, ['Generated on:', Carbon::now()->format('Y-m-d H:i:s')]);
+
+                // Filter info
+                if ($request->filled('academic_year')) {
+                    fputcsv($file, ['Academic Year:', $request->academic_year]);
+                }
+                if ($request->filled('semester')) {
+                    fputcsv($file, ['Semester:', $request->semester]);
+                }
+                fputcsv($file, []);
+
+                // Statistics
+                $query = Enrollment::query();
+                if ($request->filled('academic_year')) {
+                    $query->whereHas('course', function($q) use ($request) {
+                        $q->where('academic_year', $request->academic_year);
+                    });
+                }
+                if ($request->filled('semester')) {
+                    $query->whereHas('course', function($q) use ($request) {
+                        $q->where('semester', $request->semester);
+                    });
+                }
+
+                fputcsv($file, ['Summary Statistics']);
+                fputcsv($file, ['Total Students:', User::where('role_id', 3)->count()]);
+                fputcsv($file, ['Total Lecturers:', User::where('role_id', 2)->count()]);
+                fputcsv($file, ['Total Courses:', Course::count()]);
+                fputcsv($file, ['Total Enrollments:', $query->count()]);
+                fputcsv($file, ['Active Enrollments:', (clone $query)->where('status', 'approved')->count()]);
+                fputcsv($file, ['Pending Enrollments:', (clone $query)->where('status', 'pending')->count()]);
+                fputcsv($file, ['Rejected Enrollments:', (clone $query)->where('status', 'rejected')->count()]);
+                fputcsv($file, ['Dropped Enrollments:', (clone $query)->where('status', 'dropped')->count()]);
+                fputcsv($file, []);
+
+                // Department breakdown
+                fputcsv($file, ['Department Breakdown']);
+                fputcsv($file, ['Department', 'Students', 'Lecturers', 'Courses', 'Enrollments']);
+
+                $departments = Department::withCount(['students', 'lecturers', 'courses', 'enrollments'])->get();
+                foreach ($departments as $dept) {
+                    fputcsv($file, [
+                        $dept->name,
+                        $dept->students_count ?? 0,
+                        $dept->lecturers_count ?? 0,
+                        $dept->courses_count ?? 0,
+                        $dept->enrollments_count ?? 0,
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        return back()->with('error', 'Only CSV format is supported for this report.');
     }
 
     /**
