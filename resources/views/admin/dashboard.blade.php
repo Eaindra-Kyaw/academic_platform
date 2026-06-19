@@ -200,14 +200,14 @@
 
         <!-- Stats Row 1 -->
         <div class="stats-grid">
-            <a href="{{ route('admin.users') }}" class="link-card">
+            <a href="{{ route('admin.users.index') }}" class="link-card">
                 <div class="stat-card">
                     <div class="stat-value">{{ number_format($totalStudents) }}</div>
                     <div class="stat-label">Total Students</div>
                     <small>+{{ rand(50, 150) }} from last sem</small>
                 </div>
             </a>
-            <a href="{{ route('admin.users') }}" class="link-card">
+            <a href="{{ route('admin.users.index') }}" class="link-card">
                 <div class="stat-card">
                     <div class="stat-value">{{ $totalLecturers }}</div>
                     <div class="stat-label">Total Lecturers</div>
@@ -408,7 +408,7 @@
                     <small>{{ \App\Models\Enrollment::where('status', 'pending')->count() }} pending</small>
                 </div>
             </a>
-            <a href="{{ route('admin.users') }}" class="link-card">
+            <a href="{{ route('admin.users.index') }}" class="link-card">
                 <div class="stat-card" style="text-align: center;">
                     <i class="bi bi-people" style="font-size: 2rem; color: #3b82f6;"></i>
                     <div class="stat-label">User Management</div>

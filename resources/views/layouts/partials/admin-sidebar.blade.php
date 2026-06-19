@@ -1,3 +1,5 @@
+{{-- resources/views/layouts/partials/admin-sidebar.blade.php --}}
+
 <div class="nav-label">Main</div>
 <a href="{{ route('admin.dashboard') }}" class="nav-item @if (request()->routeIs('admin.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
@@ -27,7 +29,7 @@
 <a href="#" class="nav-item">
     <i class="bi bi-exclamation-triangle"></i><span>Risk Analysis</span>
 </a>
-<a href="{{ route('admin.reports') }}" class="nav-item">
+<a href="{{ route('admin.reports') }}" class="nav-item @if (request()->routeIs('admin.reports')) active @endif">
     <i class="bi bi-file-earmark-text"></i><span>Reports</span>
 </a>
 

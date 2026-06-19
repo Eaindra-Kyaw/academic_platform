@@ -5,6 +5,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Enrollment extends Model
 {
@@ -18,13 +19,25 @@ class Enrollment extends Model
         'attendance_percentage',
         'roll_call_mark',
         'eligibility_status',
+        'approved_at',
+        'dropped_at',
+        'rejection_reason',
+        'rejected_at',
     ];
 
     protected $casts = [
-        'enrollment_date' => 'datetime',
+        'enrollment_date' => 'date',
+        'approved_at' => 'datetime',
+        'dropped_at' => 'datetime',
+        'rejected_at' => 'datetime',
+        'attendance_percentage' => 'decimal:2',
+        'roll_call_mark' => 'decimal:2',
     ];
 
-    // Relationships
+    // ============================================================
+    // RELATIONSHIPS
+    // ============================================================
+
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id');
@@ -35,35 +48,147 @@ class Enrollment extends Model
         return $this->belongsTo(Course::class);
     }
 
-    // Status constants
-    const STATUS_PENDING = 'pending';
-    const STATUS_APPROVED = 'approved';
-    const STATUS_REJECTED = 'rejected';
-    const STATUS_DROPPED = 'dropped';
+    // ============================================================
+    // SCOPES
+    // ============================================================
 
-    const ELIGIBILITY_ELIGIBLE = 'eligible';
-    const ELIGIBILITY_WARNING = 'warning';
-    const ELIGIBILITY_NOT_ELIGIBLE = 'not_eligible';
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
 
-    // Scopes
     public function scopeApproved($query)
     {
-        return $query->where('status', self::STATUS_APPROVED);
+        return $query->where('status', 'approved');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
+    }
+
+    public function scopeDropped($query)
+    {
+        return $query->where('status', 'dropped');
     }
 
     public function scopeEligible($query)
     {
-        return $query->where('eligibility_status', self::ELIGIBILITY_ELIGIBLE);
+        return $query->where('eligibility_status', 'eligible');
     }
 
-    // Get eligibility label with color
-    public function getEligibilityLabelAttribute()
+    public function scopeByYear($query, $year)
+    {
+        return $query->whereHas('student', function($q) use ($year) {
+            $q->where('current_year', $year);
+        });
+    }
+
+    // ============================================================
+    // ATTRIBUTES
+    // ============================================================
+
+    public function getStatusBadgeClassAttribute()
+    {
+        return match($this->status) {
+            'pending' => 'status-pending',
+            'approved' => 'status-approved',
+            'rejected' => 'status-rejected',
+            'dropped' => 'status-dropped',
+            default => '',
+        };
+    }
+
+    public function getStatusIconAttribute()
+    {
+        return match($this->status) {
+            'pending' => 'bi-clock-history',
+            'approved' => 'bi-check-circle',
+            'rejected' => 'bi-x-circle',
+            'dropped' => 'bi-dash-circle',
+            default => '',
+        };
+    }
+
+    public function getEligibilityBadgeClassAttribute()
     {
         return match($this->eligibility_status) {
-            self::ELIGIBILITY_ELIGIBLE => ['label' => 'Eligible', 'class' => 'success'],
-            self::ELIGIBILITY_WARNING => ['label' => 'Warning', 'class' => 'warning'],
-            self::ELIGIBILITY_NOT_ELIGIBLE => ['label' => 'Not Eligible', 'class' => 'danger'],
-            default => ['label' => 'Unknown', 'class' => 'secondary'],
+            'eligible' => 'badge-eligible',
+            'warning' => 'badge-warning',
+            'not_eligible' => 'badge-not-eligible',
+            default => '',
         };
+    }
+
+    // ============================================================
+    // HELPER METHODS
+    // ============================================================
+
+    public function isPending()
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isApproved()
+    {
+        return $this->status === 'approved';
+    }
+
+    public function isRejected()
+    {
+        return $this->status === 'rejected';
+    }
+
+    public function isDropped()
+    {
+        return $this->status === 'dropped';
+    }
+
+    public function canBeProcessed()
+    {
+        return $this->isPending();
+    }
+
+    public function approve()
+    {
+        if (!$this->canBeProcessed()) {
+            return false;
+        }
+
+        $this->update([
+            'status' => 'approved',
+            'approved_at' => Carbon::now(),
+        ]);
+
+        return true;
+    }
+
+    public function reject($reason)
+    {
+        if (!$this->canBeProcessed()) {
+            return false;
+        }
+
+        $this->update([
+            'status' => 'rejected',
+            'rejection_reason' => $reason,
+            'rejected_at' => Carbon::now(),
+        ]);
+
+        return true;
+    }
+
+    public function drop()
+    {
+        if (!$this->isApproved()) {
+            return false;
+        }
+
+        $this->update([
+            'status' => 'dropped',
+            'dropped_at' => Carbon::now(),
+        ]);
+
+        return true;
     }
 }

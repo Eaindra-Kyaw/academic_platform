@@ -315,3 +315,10 @@ $courses\040=\040App\134Models\134Course::whereNotNull('lecturer_name')->whereNu
 $lecturers\040=\040App\134Models\134User::where('role_id',\0402)->where('department_id',\0405)->get();
 //\040Check\040all\040lecturers\040and\040their\040department_id
 $lecturers\040=\040App\134Models\134User::where('role_id',\0402)->get(['id',\040'name',\040'department_id',\040'email']);
+App\134Models\134Course::where('year',\040'First\040Year')->update(['year'\040=>\040'1']);
+pp\134Models\134Course::where('year',\040'Second\040Year')->update(['year'\040=>\040'2']);
+App\134Models\134Course::where('year',\040'Third\040Year')->update(['year'\040=>\040'3']);
+pp\134Models\134Course::where('year',\040'Fourth\040Year')->update(['year'\040=>\040'4']);
+App\134Models\134Course::where('year',\040'Fifth\040Year')->update(['year'\040=>\040'5']);
+pp\134Models\134Course::where('year',\040'Sixth\040Year')->update(['year'\040=>\040'6']);
+$courses\040=\040App\134Models\134Course::where('department_id',\0405)->get();
