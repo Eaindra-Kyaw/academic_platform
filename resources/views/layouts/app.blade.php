@@ -444,7 +444,6 @@
                     <div class="brand-icon">Uni</div>
                     <div class="brand-text">
                         <h2>Academic Portal</h2>
-                        <p>MTU System</p>
                     </div>
                 </div>
             </div>

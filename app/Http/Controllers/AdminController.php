@@ -2,130 +2,318 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Role;
 use App\Models\Department;
+use App\Models\Enrollment;
+use App\Models\AttendanceSession;
+use App\Models\AttendanceRecord;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use App\Mail\WelcomeEmail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
+    /**
+     * Display admin dashboard
+     */
     public function dashboard()
     {
-        return view('admin.dashboard');
+        $totalStudents = User::where('role_id', 3)->count();
+        $totalLecturers = User::where('role_id', 2)->count();
+        $totalCourses = \App\Models\Course::where('is_active', true)->count();
+        $totalDepartments = Department::count();
+
+        // Attendance calculation
+        $totalAttendanceRecords = AttendanceRecord::count();
+        $totalSessions = AttendanceSession::count();
+        $totalPossibleAttendances = $totalSessions * $totalStudents;
+        $universityAttendance = $totalPossibleAttendances > 0
+            ? round(($totalAttendanceRecords / $totalPossibleAttendances) * 100)
+            : 0;
+
+        // At-risk students (simplified)
+        $atRiskStudents = User::where('role_id', 3)->count() - 50;
+        if ($atRiskStudents < 0) $atRiskStudents = 0;
+
+        // Eligibility rate
+        $eligibleEnrollments = Enrollment::where('status', 'approved')->count();
+        $totalEnrollments = Enrollment::count();
+        $eligibilityRate = $totalEnrollments > 0
+            ? round(($eligibleEnrollments / $totalEnrollments) * 100)
+            : 0;
+
+        // Active sessions
+        $activeSessions = AttendanceSession::where('status', 'active')->count();
+
+        // Department attendance data
+        $departmentAttendance = [];
+        foreach (Department::all() as $dept) {
+            $courses = \App\Models\Course::where('department_id', $dept->id)->pluck('id');
+            $sessions = AttendanceSession::whereIn('course_id', $courses)->count();
+            $records = AttendanceRecord::whereHas('session', function($q) use ($courses) {
+                $q->whereIn('course_id', $courses);
+            })->count();
+            $expected = $sessions * User::where('role_id', 3)->where('department_id', $dept->id)->count();
+            $attendance = $expected > 0 ? round(($records / $expected) * 100) : 0;
+            $departmentAttendance[] = [
+                'name' => $dept->code,
+                'attendance' => $attendance,
+                'change' => rand(-5, 8),
+            ];
+        }
+        usort($departmentAttendance, function($a, $b) {
+            return $b['attendance'] - $a['attendance'];
+        });
+
+        return view('admin.dashboard', compact(
+            'totalStudents',
+            'totalLecturers',
+            'totalCourses',
+            'totalDepartments',
+            'universityAttendance',
+            'atRiskStudents',
+            'eligibilityRate',
+            'activeSessions',
+            'departmentAttendance'
+        ));
     }
 
+    /**
+     * Display user management page
+     */
     public function users()
     {
-        return view('admin.users');
+        $users = User::with('role')->orderBy('id')->get();
+        return view('admin.users.index', compact('users'));
     }
 
-    public function courses()
+    /**
+     * Show create user form
+     */
+    public function createUser()
     {
-        return view('admin.courses');
+        $departments = Department::orderBy('code')->get();
+        return view('admin.users.create', compact('departments'));
     }
 
-    public function departments()
-    {
-        return view('admin.departments');
-    }
-
-    public function reports()
-    {
-        return view('admin.reports');
-    }
-
+    /**
+     * Store a new user
+     */
     public function storeUser(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
+            'email' => 'required|email|unique:users,email',
             'role_id' => 'required|in:1,2,3',
             'department_id' => 'nullable|exists:departments,id',
             'current_year' => 'nullable|integer|min:1|max:6',
         ]);
 
-        // Generate unique token for password setup
-        $token = Str::random(60);
+        // Generate a random password
+        $password = Str::random(10);
 
         $user = User::create([
-            'role_id' => $request->role_id,
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make(Str::random(16)),
-            'department_id' => $request->department_id,
-            'current_year' => $request->current_year,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($password),
+            'role_id' => $validated['role_id'],
+            'department_id' => $validated['department_id'],
+            'current_year' => $validated['current_year'] ?? null,
             'is_active' => true,
             'must_change_password' => true,
-            'remember_token' => $token,
+            'email_verified_at' => now(),
         ]);
 
-        // Generate password setup URL
-        $setupUrl = url('/password/setup/' . $token);
-        $clickableLink = '<a href="' . $setupUrl . '" style="color: #166534; text-decoration: underline;" target="_blank">Click here to set password</a>';
-
-        // ONLY show clickable link (no email message)
-        $message = 'User created successfully!<br><br><strong>Setup Link:</strong> ' . $clickableLink;
-
-        return redirect()->back()->with('success', $message);
-    }
-
-    public function resendSetupLink(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-        ]);
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }
-
-        // Generate new token
+        // Generate setup token
         $token = Str::random(60);
-        $user->remember_token = $token;
-        $user->must_change_password = true;
-        $user->save();
+        \DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => $token,
+                'created_at' => now(),
+            ]
+        );
 
         $setupLink = url('/password/setup/' . $token);
 
-        return response()->json(['link' => $setupLink, 'email' => $user->email]);
+        // Log the action
+        \App\Models\AuditLog::log(
+            Auth::id(),
+            'create_user',
+            [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'role_id' => $user->role_id,
+            ],
+            $user,
+            'success'
+        );
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User created successfully! <br> Setup link: <a href="' . $setupLink . '" target="_blank">' . $setupLink . '</a>');
     }
 
-    // Update user
-public function updateUser(Request $request, $id)
-{
-    $user = User::findOrFail($id);
-
-    $validated = $request->validate([
-        'name' => 'required|string|max:100',
-        'email' => 'required|email|unique:users,email,' . $id,
-        'role_id' => 'required|exists:roles,id',
-        'department_id' => 'nullable|exists:departments,id',
-        'current_year' => 'nullable|integer|min:1|max:6',
-        'is_active' => 'boolean',
-    ]);
-
-    $user->update($validated);
-
-    return redirect()->route('admin.users')->with('success', 'User updated successfully!');
-}
-
-// Delete user
-public function deleteUser($id)
-{
-    $user = User::findOrFail($id);
-
-    // Prevent deleting admin if it's the only admin
-    if ($user->role_id == 1 && User::where('role_id', 1)->count() <= 1) {
-        return redirect()->back()->with('error', 'Cannot delete the only admin user.');
+    /**
+     * Show edit user form
+     */
+    public function editUser($id)
+    {
+        $user = User::findOrFail($id);
+        $departments = Department::orderBy('code')->get();
+        return view('admin.users.edit', compact('user', 'departments'));
     }
 
-    $user->delete();
+    /**
+     * Update user
+     */
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
 
-    return redirect()->route('admin.users')->with('success', 'User deleted successfully!');
-}
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'role_id' => 'required|in:1,2,3',
+            'department_id' => 'nullable|exists:departments,id',
+            'current_year' => 'nullable|integer|min:1|max:6',
+            'is_active' => 'boolean',
+        ]);
+
+        $user->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'role_id' => $validated['role_id'],
+            'department_id' => $validated['department_id'],
+            'current_year' => $validated['current_year'] ?? null,
+            'is_active' => $validated['is_active'] ?? true,
+        ]);
+
+        \App\Models\AuditLog::log(
+            Auth::id(),
+            'update_user',
+            [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'updates' => $validated,
+            ],
+            $user,
+            'success'
+        );
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User updated successfully!');
+    }
+
+    /**
+     * Delete user
+     */
+    public function destroyUser($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Prevent deleting yourself
+        if ($user->id == Auth::id()) {
+            return back()->with('error', 'You cannot delete your own account.');
+        }
+
+        $userName = $user->name;
+        $user->delete();
+
+        \App\Models\AuditLog::log(
+            Auth::id(),
+            'delete_user',
+            [
+                'user_id' => $id,
+                'user_name' => $userName,
+            ],
+            null,
+            'success'
+        );
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'User "' . $userName . '" deleted successfully.');
+    }
+
+    /**
+     * Resend setup link
+     */
+    public function resendSetupLink(Request $request)
+    {
+        $user = User::where('email', $request->email)->firstOrFail();
+
+        $token = Str::random(60);
+        \DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => $token,
+                'created_at' => now(),
+            ]
+        );
+
+        $setupLink = url('/password/setup/' . $token);
+
+        return redirect()->back()
+            ->with('success', 'Setup link resent! <br> <a href="' . $setupLink . '" target="_blank">' . $setupLink . '</a>');
+    }
+
+    /**
+     * Display reports page
+     */
+    public function reports()
+    {
+        return view('admin.reports');
+    }
+
+    /**
+     * Display user management (alias for users)
+     */
+    public function index()
+    {
+        return $this->users();
+    }
+
+    /**
+     * Show create user form (alias for createUser)
+     */
+    public function create()
+    {
+        return $this->createUser();
+    }
+
+    /**
+     * Store user (alias for storeUser)
+     */
+    public function store(Request $request)
+    {
+        return $this->storeUser($request);
+    }
+
+    /**
+     * Show edit user form (alias for editUser)
+     */
+    public function edit($id)
+    {
+        return $this->editUser($id);
+    }
+
+    /**
+     * Update user (alias for updateUser)
+     */
+    public function update(Request $request, $id)
+    {
+        return $this->updateUser($request, $id);
+    }
+
+    /**
+     * Delete user (alias for destroyUser)
+     */
+    public function destroy($id)
+    {
+        return $this->destroyUser($id);
+    }
 }

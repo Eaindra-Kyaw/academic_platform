@@ -1,5 +1,3 @@
-{{-- resources/views/layouts/partials/student-sidebar.blade.php --}}
-
 <div class="nav-label">Main</div>
 <a href="{{ route('student.dashboard') }}" class="nav-item @if (request()->routeIs('student.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>

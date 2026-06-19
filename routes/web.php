@@ -101,9 +101,7 @@ Route::middleware(['auth', 'must.change.password'])->group(function () {
 });
 
 // ============================================================
-// ============================================================
 // ADMIN ROUTES
-// ============================================================
 // ============================================================
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
 
@@ -113,11 +111,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
     // ============================================================
-    // USER MANAGEMENT
+    // USER MANAGEMENT ROUTES (Admin)
     // ============================================================
-    Route::get('/users', [AdminController::class, 'users'])->name('users');
-    Route::post('/users/store', [AdminController::class, 'storeUser'])->name('users.store');
-    Route::post('/users/resend-link', [AdminController::class, 'resendSetupLink'])->name('admin.users.resendLink');
+    Route::get('/users', [AdminController::class, 'index'])->name('users.index');
+    Route::get('/users/create', [AdminController::class, 'create'])->name('users.create');
+    Route::post('/users', [AdminController::class, 'store'])->name('users.store');
+    Route::get('/users/{id}/edit', [AdminController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{id}', [AdminController::class, 'update'])->name('users.update');
+    Route::delete('/users/{id}', [AdminController::class, 'destroy'])->name('users.destroy');
 
     // ============================================================
     // REPORTS
@@ -141,36 +142,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/messages/{message}/read', [AdminMessageController::class, 'markAsRead'])->name('messages.read');
 
     // ============================================================
-    // DEPARTMENT ROUTES (Main CRUD + Nested Routes)
+    // DEPARTMENT ROUTES
     // ============================================================
     Route::resource('departments', DepartmentController::class);
 
     // Nested routes under departments
     Route::prefix('departments/{department}')->group(function () {
+        Route::get('/year/{year}/students', [DepartmentController::class, 'studentsByYear'])->name('departments.year.students');
+        Route::get('/year/{year}/students/export', [DepartmentController::class, 'exportStudents'])->name('departments.year.students.export');
+        Route::get('/year/{year}/courses', [DepartmentController::class, 'coursesByYear'])->name('departments.year.courses');
 
-        // Students by year within department
-        Route::get('/year/{year}/students', [DepartmentController::class, 'studentsByYear'])
-            ->name('departments.year.students');
-
-        // Export students by year
-        Route::get('/year/{year}/students/export', [DepartmentController::class, 'exportStudents'])
-            ->name('departments.year.students.export');
-
-        // Courses by year within department
-        Route::get('/year/{year}/courses', [DepartmentController::class, 'coursesByYear'])
-            ->name('departments.year.courses');
-
-        // Course CRUD (nested under departments)
-        Route::resource('/courses', CourseController::class)
-            ->names([
-                'index' => 'departments.courses.index',
-                'create' => 'departments.courses.create',
-                'store' => 'departments.courses.store',
-                'show' => 'departments.courses.show',
-                'edit' => 'departments.courses.edit',
-                'update' => 'departments.courses.update',
-                'destroy' => 'departments.courses.destroy',
-            ]);
+        Route::resource('/courses', CourseController::class)->names([
+            'index' => 'departments.courses.index',
+            'create' => 'departments.courses.create',
+            'store' => 'departments.courses.store',
+            'show' => 'departments.courses.show',
+            'edit' => 'departments.courses.edit',
+            'update' => 'departments.courses.update',
+            'destroy' => 'departments.courses.destroy',
+        ]);
     });
 
     // ============================================================
@@ -182,7 +172,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/enrollments/batch', [EnrollmentController::class, 'batchEnroll'])->name('enrollments.batch');
 
     // ============================================================
-    // LECTURER MANAGEMENT ROUTES (FULL CRUD)
+    // LECTURER MANAGEMENT ROUTES
     // ============================================================
     Route::get('/lecturers', [AdminLecturerController::class, 'index'])->name('lecturers.index');
     Route::get('/lecturers/create', [AdminLecturerController::class, 'create'])->name('lecturers.create');
