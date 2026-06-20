@@ -1,3 +1,5 @@
+{{-- resources/views/layouts/partials/admin-sidebar.blade.php --}}
+
 <div class="nav-label">Main</div>
 <a href="{{ route('admin.dashboard') }}" class="nav-item @if (request()->routeIs('admin.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
@@ -18,7 +20,7 @@
 </a>
 
 <div class="nav-label">Analytics</div>
-<a href="#" class="nav-item">
+<a href="{{ route('admin.attendance.analytics') }}" class="nav-item @if (request()->routeIs('admin.attendance*')) active @endif">
     <i class="bi bi-calendar-check"></i><span>Attendance</span>
 </a>
 <a href="#" class="nav-item">

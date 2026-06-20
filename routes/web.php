@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\LecturerController as AdminLecturerController;
 use App\Http\Controllers\Admin\MessageController as AdminMessageController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\SemesterController;
+use App\Http\Controllers\Admin\AttendanceAnalyticsController;
 use App\Http\Controllers\Lecturer\MessageController as LecturerMessageController;
 use App\Http\Controllers\Student\MessageController as StudentMessageController;
 use App\Http\Controllers\Auth\RoleLoginController;
@@ -156,6 +157,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/year/{year}/students/export', [DepartmentController::class, 'exportStudents'])->name('departments.year.students.export');
         Route::get('/year/{year}/courses', [DepartmentController::class, 'coursesByYear'])->name('departments.year.courses');
 
+        // Semester courses route
+        Route::get('/semester/{semester}/courses', [DepartmentController::class, 'semesterCourses'])->name('departments.semester.courses');
+
         Route::resource('/courses', CourseController::class)->names([
             'index' => 'departments.courses.index',
             'create' => 'departments.courses.create',
@@ -200,7 +204,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // ============================================================
-    // SEMESTER ROUTES (Admin) - ADD THIS SECTION
+    // SEMESTER ROUTES (Admin)
     // ============================================================
     Route::prefix('semesters')->name('semesters.')->group(function () {
         Route::get('/', [SemesterController::class, 'index'])->name('index');
@@ -213,6 +217,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{id}/toggle', [SemesterController::class, 'toggleStatus'])->name('toggle');
         Route::get('/{id}/set-current', [SemesterController::class, 'setCurrent'])->name('set-current');
         Route::get('/generate', [SemesterController::class, 'generate'])->name('generate');
+    });
+
+    // ============================================================
+    // ATTENDANCE ROUTES (Admin) - ADD THIS SECTION
+    // ============================================================
+    Route::prefix('attendance')->name('attendance.')->group(function () {
+        // Temporary coming soon page
+        Route::get('/', function() {
+            return view('admin.attendance.coming-soon');
+        })->name('index');
+
+        // Full analytics (for later)
+        Route::get('/analytics', [AttendanceAnalyticsController::class, 'index'])->name('analytics');
+        Route::get('/chart-data', [AttendanceAnalyticsController::class, 'chartData'])->name('chart-data');
     });
 
     // ============================================================
