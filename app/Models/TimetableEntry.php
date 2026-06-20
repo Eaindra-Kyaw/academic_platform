@@ -4,58 +4,87 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TimetableEntry extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'course_id',
-        'room',
+        'lecturer_id',
+        'department_id',
+        'academic_year',
+        'semester',
+        'year_level',
+        'section',
         'day_of_week',
         'start_time',
         'end_time',
-        'lecturer_name',
-        'academic_year',
-        'semester',
+        'room',
+        'building',
+        'session_type',
+        'is_alternate_week',
+        'alternate_week_type',
+        'notes',
     ];
 
     protected $casts = [
-        'start_time' => 'datetime:H:i:s',
-        'end_time' => 'datetime:H:i:s',
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
+        'is_alternate_week' => 'boolean',
     ];
 
+    // Relationships
     public function course()
     {
         return $this->belongsTo(Course::class);
     }
 
-    public function getDayNameAttribute()
+    public function lecturer()
     {
-        $days = [
-            1 => 'Monday',
-            2 => 'Tuesday',
-            3 => 'Wednesday',
-            4 => 'Thursday',
-            5 => 'Friday',
-            6 => 'Saturday',
-            7 => 'Sunday',
-        ];
-        return $days[$this->day_of_week] ?? 'Unknown';
+        return $this->belongsTo(User::class, 'lecturer_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    // Accessors
+    public function getTimeRangeAttribute()
+    {
+        return $this->start_time->format('h:i A') . ' - ' . $this->end_time->format('h:i A');
     }
 
     public function getDurationAttribute()
     {
-        $start = Carbon::parse($this->start_time);
-        $end = Carbon::parse($this->end_time);
-        return $end->diffInMinutes($start);
+        return $this->start_time->diffInMinutes($this->end_time);
     }
 
-    public function isActiveNow()
+    // Scopes
+    public function scopeForLecturer($query, $lecturerId)
     {
-        $now = Carbon::now();
-        return $this->day_of_week == $now->dayOfWeek &&
-               $now->between(Carbon::parse($this->start_time), Carbon::parse($this->end_time));
+        return $query->where('lecturer_id', $lecturerId);
+    }
+
+    public function scopeForDay($query, $day)
+    {
+        return $query->where('day_of_week', $day);
+    }
+
+    public function scopeForAcademicYear($query, $year)
+    {
+        return $query->where('academic_year', $year);
+    }
+
+    public function scopeForSemester($query, $semester)
+    {
+        return $query->where('semester', $semester);
+    }
+
+    public function scopeForDepartment($query, $departmentId)
+    {
+        return $query->where('department_id', $departmentId);
     }
 }

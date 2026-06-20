@@ -125,6 +125,19 @@
             gap: 1rem;
         }
 
+        .section-divider {
+            border-top: 1px solid #e9edf4;
+            margin: 1.5rem 0 1rem 0;
+            padding-top: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1a2332;
+            margin-bottom: 1rem;
+        }
+
         @media (max-width: 768px) {
             .grid-2col {
                 grid-template-columns: 1fr;
@@ -281,7 +294,86 @@
                 @enderror
             </div>
 
-            <!-- Buttons -->
+            <!-- ========================================== -->
+            <!-- ✅ TIMETABLE SCHEDULE SECTION (Auto-Insert) -->
+            <!-- ========================================== -->
+            <div class="section-divider"></div>
+            <div class="section-title">
+                <i class="bi bi-calendar-week" style="color: #800000;"></i> Timetable Schedule
+                <span style="font-weight: 400; color: #6b7a8f; font-size: 0.7rem; display: block; margin-top: 2px;">
+                    This data will automatically appear in the lecturer's timetable
+                </span>
+            </div>
+
+            <div class="grid-2col">
+                <!-- Schedule Day -->
+                <div class="form-group">
+                    <label>Day</label>
+                    <select name="schedule_day">
+                        <option value="">-- Select Day --</option>
+                        <option value="Monday"
+                            {{ old('schedule_day', $course->schedule_day) == 'Monday' ? 'selected' : '' }}>Monday</option>
+                        <option value="Tuesday"
+                            {{ old('schedule_day', $course->schedule_day) == 'Tuesday' ? 'selected' : '' }}>Tuesday
+                        </option>
+                        <option value="Wednesday"
+                            {{ old('schedule_day', $course->schedule_day) == 'Wednesday' ? 'selected' : '' }}>Wednesday
+                        </option>
+                        <option value="Thursday"
+                            {{ old('schedule_day', $course->schedule_day) == 'Thursday' ? 'selected' : '' }}>Thursday
+                        </option>
+                        <option value="Friday"
+                            {{ old('schedule_day', $course->schedule_day) == 'Friday' ? 'selected' : '' }}>Friday</option>
+                        <option value="Saturday"
+                            {{ old('schedule_day', $course->schedule_day) == 'Saturday' ? 'selected' : '' }}>Saturday
+                        </option>
+                        <option value="Sunday"
+                            {{ old('schedule_day', $course->schedule_day) == 'Sunday' ? 'selected' : '' }}>Sunday</option>
+                    </select>
+                    <div class="help-text">When this course is taught</div>
+                    @error('schedule_day')
+                        <div class="error">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- Room -->
+                <div class="form-group">
+                    <label>Room</label>
+                    <input type="text" name="room" value="{{ old('room', $course->room) }}"
+                        placeholder="e.g., 1-3-7">
+                    @error('room')
+                        <div class="error">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <div class="grid-2col">
+                <!-- Start Time -->
+                <div class="form-group">
+                    <label>Start Time</label>
+                    <input type="time" name="schedule_time" value="{{ old('schedule_time', $course->schedule_time) }}"
+                        step="60">
+                    <div class="help-text">e.g., 08:00 for 8:00 AM</div>
+                    @error('schedule_time')
+                        <div class="error">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <!-- End Time -->
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input type="time" name="schedule_end_time"
+                        value="{{ old('schedule_end_time', $course->schedule_end_time) }}" step="60">
+                    <div class="help-text">e.g., 08:50 for 8:50 AM (50-minute classes)</div>
+                    @error('schedule_end_time')
+                        <div class="error">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- BUTTONS -->
+            <!-- ========================================== -->
             <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem; justify-content: flex-end;">
                 <!-- Cancel: Back to Department Courses -->
                 <a href="{{ route('admin.departments.courses.index', $department) }}" class="btn-cancel">Cancel</a>

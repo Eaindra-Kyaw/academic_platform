@@ -11,17 +11,143 @@
 
 @section('content')
     <style>
+        /* ============================================
+                   STATS CARDS
+                   ============================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 14px 18px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .label {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-card .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 2px 0;
+        }
+
+        .stat-card .sub {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* ============================================
+                   NEXT CLASS WIDGET
+                   ============================================ */
+        .next-class-widget {
+            background: linear-gradient(135deg, #800000, #5f0000);
+            color: white;
+            border-radius: 12px;
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            box-shadow: 0 4px 16px rgba(128, 0, 0, 0.25);
+        }
+
+        .next-class-widget .info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .next-class-widget .info .icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .next-class-widget .info .label {
+            font-size: 11px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .next-class-widget .info .name {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .next-class-widget .info .meta {
+            font-size: 14px;
+            opacity: 0.9;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .next-class-widget .info .meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .next-class-widget .countdown {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .next-class-widget .countdown .label {
+            font-size: 11px;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+
+        .next-class-widget .countdown .time {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        /* ============================================
+                   TIMETABLE CONTAINER
+                   ============================================ */
         .timetable-container {
             background: white;
             border-radius: 12px;
             border: 1px solid #e5e7eb;
             overflow: hidden;
-            margin-top: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
         .timetable-header {
             padding: 16px 20px;
-            background: #fafafa;
+            background: #f9fafb;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
@@ -30,20 +156,52 @@
             gap: 12px;
         }
 
-        .timetable-header h5 {
+        .timetable-header .left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .timetable-header .left h5 {
             margin: 0;
             font-size: 16px;
             font-weight: 600;
             color: #1f2937;
         }
 
-        .timetable-header .week-range {
+        .timetable-header .left .week-range {
             color: #6b7280;
             font-size: 14px;
         }
 
-        .timetable-header .btn-today {
+        .timetable-header .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-manage {
             background: #800000;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-manage:hover {
+            background: #5f0000;
+            color: white;
+        }
+
+        .btn-today {
+            background: #6b7280;
             color: white;
             border: none;
             padding: 6px 16px;
@@ -53,11 +211,13 @@
             transition: all 0.2s;
         }
 
-        .timetable-header .btn-today:hover {
-            background: #6b0000;
+        .btn-today:hover {
+            background: #4b5563;
         }
 
-        /* Timetable Grid */
+        /* ============================================
+                   CALENDAR GRID
+                   ============================================ */
         .timetable-grid {
             overflow-x: auto;
             padding: 0;
@@ -66,30 +226,33 @@
         .timetable-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 700px;
+            min-width: 800px;
+            font-size: 13px;
+            table-layout: fixed;
         }
 
         .timetable-table th {
-            padding: 12px 16px;
+            padding: 12px 8px;
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             color: #6b7280;
             text-transform: uppercase;
             background: #f9fafb;
             border-bottom: 2px solid #e5e7eb;
+            width: 14%;
         }
 
         .timetable-table th .day-label {
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 15px;
+            font-weight: 700;
             color: #1f2937;
             display: block;
         }
 
         .timetable-table th .day-date {
-            font-size: 11px;
-            color: #6b7280;
+            font-size: 12px;
+            color: #9ca3af;
             font-weight: 400;
         }
 
@@ -101,18 +264,25 @@
             color: #800000;
         }
 
+        .timetable-table th.weekend {
+            background: #f3f4f6;
+            opacity: 0.6;
+        }
+
         .timetable-table td {
-            padding: 8px;
+            padding: 4px;
             border-bottom: 1px solid #f3f4f6;
-            vertical-align: top;
-            height: 80px;
-            min-width: 120px;
+            vertical-align: middle;
+            height: 65px;
+            min-width: 100px;
+            background: white;
+            transition: all 0.2s;
         }
 
         .timetable-table td .time-slot {
             text-align: center;
-            font-size: 12px;
-            color: #6b7280;
+            font-size: 11px;
+            color: #9ca3af;
             font-weight: 500;
             padding: 4px 0;
         }
@@ -121,37 +291,61 @@
             background: #fafafa;
         }
 
-        /* Class Block */
+        .timetable-table td.weekend {
+            background: #f9fafb;
+        }
+
+        .timetable-table td .empty-slot {
+            color: #d1d5db;
+            font-size: 12px;
+            text-align: center;
+            padding: 18px 0;
+        }
+
+        /* ============================================
+                   CLASS BLOCK - With Rowspan Support
+                   ============================================ */
         .class-block {
             background: #fef2f2;
-            border-left: 3px solid #800000;
-            padding: 8px 10px;
+            border-left: 4px solid #800000;
+            padding: 6px 8px;
             border-radius: 6px;
             margin: 2px 0;
             transition: all 0.2s;
-            cursor: pointer;
+            cursor: default;
+            height: 100%;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 100%;
         }
 
         .class-block:hover {
-            transform: scale(1.02);
-            box-shadow: 0 2px 8px rgba(128, 0, 0, 0.1);
+            transform: scale(1.03);
+            box-shadow: 0 4px 16px rgba(128, 0, 0, 0.15);
+            z-index: 10;
+            position: relative;
         }
 
         .class-block .course-name {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 13px;
             color: #1f2937;
+            line-height: 1.2;
         }
 
         .class-block .course-code {
-            font-size: 11px;
+            font-size: 10px;
             color: #6b7280;
+            font-weight: 500;
+            margin-top: 1px;
         }
 
         .class-block .class-meta {
             display: flex;
-            gap: 8px;
-            font-size: 11px;
+            gap: 6px;
+            font-size: 10px;
             color: #6b7280;
             margin-top: 4px;
             flex-wrap: wrap;
@@ -168,114 +362,117 @@
         }
 
         .class-block .class-time {
-            font-size: 11px;
+            font-size: 10px;
             color: #800000;
-            font-weight: 500;
-        }
-
-        .empty-slot {
-            color: #d1d5db;
-            font-size: 12px;
-            text-align: center;
-            padding: 16px 0;
-        }
-
-        /* Next Class Widget */
-        .next-class-widget {
-            background: #800000;
-            color: white;
-            border-radius: 10px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .next-class-widget .info {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .next-class-widget .info .label {
-            font-size: 12px;
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .next-class-widget .info .class-details .name {
-            font-size: 18px;
             font-weight: 600;
         }
 
-        .next-class-widget .info .class-details .meta {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .next-class-widget .countdown {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .next-class-widget .countdown .time {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        /* Empty State */
-        .empty-state {
+        /* ============================================
+                   NO SCHEDULE STATE
+                   ============================================ */
+        .no-schedule {
             text-align: center;
-            padding: 40px 20px;
-        }
-
-        .empty-state .icon {
-            font-size: 40px;
-            color: #d1d5db;
-            margin-bottom: 12px;
-        }
-
-        .empty-state h5 {
-            color: #1f2937;
-            margin-bottom: 4px;
-            font-size: 16px;
-        }
-
-        .empty-state p {
+            padding: 60px 20px;
             color: #6b7280;
+        }
+
+        .no-schedule .icon {
+            font-size: 48px;
+            color: #d1d5db;
+            margin-bottom: 16px;
+        }
+
+        .no-schedule h5 {
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .no-schedule .btn-primary {
+            background: #800000;
+            color: white;
+            padding: 8px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+
+        .no-schedule .btn-primary:hover {
+            background: #5f0000;
+        }
+
+        /* ============================================
+                   ALERT
+                   ============================================ */
+        .alert {
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-bottom: 12px;
             font-size: 13px;
         }
 
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* ============================================
+                   RESPONSIVE
+                   ============================================ */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
         @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
             .timetable-header {
                 flex-direction: column;
                 align-items: stretch;
             }
 
+            .timetable-header .left {
+                flex-wrap: wrap;
+            }
+
             .timetable-table td {
-                height: 60px;
-                min-width: 80px;
+                height: 50px;
+                min-width: 70px;
+                padding: 2px;
             }
 
             .class-block {
-                padding: 4px 6px;
+                padding: 3px 5px;
+                min-height: 40px;
             }
 
             .class-block .course-name {
-                font-size: 11px;
+                font-size: 10px;
+            }
+
+            .class-block .course-code {
+                font-size: 8px;
             }
 
             .class-block .class-meta {
-                font-size: 10px;
-                gap: 4px;
+                font-size: 8px;
+                gap: 3px;
+            }
+
+            .class-block .class-meta span:not(.class-time) {
+                display: none;
             }
 
             .next-class-widget {
@@ -287,100 +484,230 @@
             .next-class-widget .info {
                 justify-content: center;
             }
+
+            .timetable-table th .day-label {
+                font-size: 12px;
+            }
+
+            .timetable-table th .day-date {
+                font-size: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 10px 14px;
+            }
+
+            .stat-card .value {
+                font-size: 18px;
+            }
+
+            .timetable-table td {
+                height: 40px;
+                min-width: 55px;
+            }
         }
     </style>
 
-    <!-- Next Class Widget -->
-    @if ($nextClass ?? null)
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
+    <!-- ==========================================
+            STATS CARDS
+            ========================================== -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">Courses</div>
+            <div class="value">{{ $stats['total_courses'] ?? 0 }}</div>
+            <div class="sub">{{ $stats['departments'] ?? 0 }} departments</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="label">Weekly Hours</div>
+            <div class="value">{{ $stats['total_weekly_hours'] ?? 0 }}h</div>
+            <div class="sub">{{ $stats['total_classes'] ?? 0 }} classes</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="label">Years</div>
+            <div class="value">{{ $stats['year_levels'] ?? 0 }}</div>
+            <div class="sub">Courses</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="label">Busiest Day</div>
+            <div class="value">{{ $stats['busiest_day'] ?? 'N/A' }}</div>
+            <div class="sub">Most classes</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="label">Free Periods</div>
+            <div class="value">{{ $stats['free_periods'] ?? 0 }}</div>
+            <div class="sub">This week</div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+            NEXT CLASS WIDGET
+            ========================================== -->
+    @if ($nextClass)
         <div class="next-class-widget">
             <div class="info">
+                <div class="icon"><i class="bi bi-clock"></i></div>
                 <div>
-                    <div class="label">Next Class</div>
-                    <div class="class-details">
-                        <div class="name">{{ $nextClass['course_name'] ?? 'N/A' }}</div>
-                        <div class="meta">
-                            {{ $nextClass['course_code'] ?? '' }}
-                            @if ($nextClass['room'] ?? null)
-                                · Room {{ $nextClass['room'] }}
-                            @endif
-                            @if ($nextClass['time'] ?? null)
-                                · {{ $nextClass['time'] }}
-                            @endif
-                        </div>
+                    <div class="label">
+                        @if ($nextClass['is_tomorrow'] ?? false)
+                            Next Class (Tomorrow)
+                        @else
+                            Next Class
+                        @endif
+                    </div>
+                    <div class="name">{{ $nextClass['course_name'] ?? 'N/A' }}</div>
+                    <div class="meta">
+                        <span><i class="bi bi-code-square"></i> {{ $nextClass['course_code'] ?? 'N/A' }}</span>
+                        <span><i class="bi bi-clock"></i> {{ $nextClass['time'] ?? 'N/A' }}</span>
+                        <span><i class="bi bi-door-open"></i> Room {{ $nextClass['room'] ?? 'N/A' }}</span>
+                        <span><i class="bi bi-calendar"></i> {{ $nextClass['day'] ?? '' }}</span>
                     </div>
                 </div>
             </div>
             <div class="countdown">
-                Starts in <span class="time" id="countdownTimer">--:--</span>
+                <div class="label">Starts in</div>
+                <div class="time" id="countdownTimer">--:--:--</div>
+            </div>
+        </div>
+    @else
+        <div class="next-class-widget" style="background: #6b7280;">
+            <div class="info">
+                <div class="icon"><i class="bi bi-calendar-check"></i></div>
+                <div>
+                    <div class="label">No More Classes</div>
+                    <div class="name">Enjoy your free time! 🎉</div>
+                    <div class="meta">
+                        <span>No upcoming classes scheduled</span>
+                    </div>
+                </div>
             </div>
         </div>
     @endif
 
-    <!-- Timetable -->
+    <!-- ==========================================
+            TIMETABLE CALENDAR VIEW
+            ========================================== -->
     <div class="timetable-container">
         <div class="timetable-header">
-            <div>
-                <h5><i class="bi bi-calendar-week"></i> Weekly Timetable</h5>
-                <span class="week-range" id="weekRange">
-                    {{ $weekStart ?? now()->startOfWeek()->format('M d') }} –
-                    {{ $weekEnd ?? now()->endOfWeek()->format('M d, Y') }}
+            <div class="left">
+                <h5><i class="bi bi-calendar-week"></i> Timetable</h5>
+                <span class="week-range">
+                    {{ $weekStart->format('M d') }} – {{ $weekEnd->format('M d, Y') }}
                 </span>
             </div>
-            <button class="btn-today" onclick="goToday()">Today</button>
+            <div class="actions">
+                <a href="{{ route('lecturer.timetable.manage') }}" class="btn-manage">
+                    <i class="bi bi-gear"></i> Manage Timetable
+                </a>
+                <button class="btn-today" onclick="goToday()">Today</button>
+            </div>
         </div>
 
         <div class="timetable-grid">
-            <table class="timetable-table">
-                <thead>
-                    <tr>
-                        <th style="min-width: 60px; width: 60px;">Time</th>
-                        @foreach ($days as $day)
-                            <th class="{{ $day['is_today'] ? 'today' : '' }}">
-                                <span class="day-label">{{ $day['label'] }}</span>
-                                <span class="day-date">{{ $day['date'] }}</span>
-                            </th>
-                        @endforeach
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($timeSlots as $slot)
+            @php
+                $hasClasses = false;
+                foreach ($timetable as $day) {
+                    foreach ($day as $slot) {
+                        if ($slot !== null && $slot !== 'used') {
+                            $hasClasses = true;
+                            break 2;
+                        }
+                    }
+                }
+            @endphp
+
+            @if ($hasClasses)
+                <table class="timetable-table">
+                    <thead>
                         <tr>
-                            <td>
-                                <div class="time-slot">{{ $slot['time'] }}</div>
-                            </td>
-                            @foreach ($days as $dayIndex => $day)
-                                <td class="{{ $day['is_today'] ? 'today' : '' }}">
-                                    @php
-                                        $class = $timetable[$dayIndex][$slot['period']] ?? null;
-                                    @endphp
-                                    @if ($class)
-                                        <div class="class-block">
-                                            <div class="course-name">{{ $class['course_name'] ?? 'N/A' }}</div>
-                                            <div class="course-code">{{ $class['course_code'] ?? '' }}</div>
-                                            <div class="class-meta">
-                                                <span class="class-time"><i class="bi bi-clock"></i>
-                                                    {{ $class['time'] ?? '' }}</span>
-                                                @if ($class['room'] ?? null)
-                                                    <span><i class="bi bi-door-open"></i> {{ $class['room'] }}</span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @else
-                                        <div class="empty-slot">—</div>
-                                    @endif
-                                </td>
+                            <th style="min-width: 80px; width: 80px;">Time</th>
+                            @foreach ($days as $day)
+                                <th
+                                    class="{{ $day['is_today'] ? 'today' : '' }} {{ $day['is_weekend'] ? 'weekend' : '' }}">
+                                    <span class="day-label">{{ $day['short'] }}</span>
+                                    <span class="day-date">{{ $day['date'] }} {{ $day['month'] }}</span>
+                                </th>
                             @endforeach
                         </tr>
-                    @endforeach
-                </tbody>
+                    </thead>
+                    <tbody>
+                        @foreach ($timeSlots as $slotIndex => $slot)
+                            <tr>
+                                <td>
+                                    <div class="time-slot">{{ $slot['time'] }}</div>
+                                </td>
+                                @foreach ($days as $dayIndex => $day)
+                                    <td
+                                        class="{{ $day['is_today'] ? 'today' : '' }} {{ $day['is_weekend'] ? 'weekend' : '' }}">
+                                        @php
+                                            $class = $timetable[$dayIndex][$slot['period']] ?? null;
+                                            $rowspan = 0;
+                                            if (is_array($class) && isset($class['rowspan'])) {
+                                                $rowspan = $class['rowspan'];
+                                            }
+                                        @endphp
+                                        @if ($class && $class !== 'used')
+                                            @if ($rowspan > 1)
+                                    <td rowspan="{{ $rowspan }}" style="vertical-align: middle; padding: 4px;">
+                                @endif
+                                <div class="class-block">
+                                    <div class="course-name">{{ $class['course_name'] }}</div>
+                                    <div class="course-code">{{ $class['course_code'] }}</div>
+                                    <div class="class-meta">
+                                        <span class="class-time"><i class="bi bi-clock"></i> {{ $class['time'] }}</span>
+                                        <span><i class="bi bi-door-open"></i> {{ $class['room'] }}</span>
+                                        @if ($class['year'] ?? null)
+                                            <span><i class="bi bi-mortarboard"></i> {{ $class['year'] }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                @if ($rowspan > 1)
+                                    </td>
+                                @endif
+                            @else
+                                <div class="empty-slot">—</div>
+                        @endif
+                        </td>
+            @endforeach
+            </tr>
+            @endforeach
+            </tbody>
             </table>
+        @else
+            <div class="no-schedule">
+                <div class="icon"><i class="bi bi-calendar-plus"></i></div>
+                <h5>No Schedule Added Yet</h5>
+                <p>Click "Manage Timetable" to add your courses.</p>
+                <a href="{{ route('lecturer.timetable.manage') }}" class="btn-primary">
+                    <i class="bi bi-plus-circle"></i> Manage Timetable
+                </a>
+            </div>
+            @endif
         </div>
     </div>
 
     @push('scripts')
         <script>
             function goToday() {
-                const today = document.querySelector('td.today');
+                const today = document.querySelector('td.today, th.today');
                 if (today) {
                     today.scrollIntoView({
                         behavior: 'smooth',
@@ -389,8 +716,8 @@
                 }
             }
 
-            @if ($nextClass ?? null)
-                let countdownDate = new Date('{{ $nextClass['start_time'] ?? now()->addHours(2) }}').getTime();
+            @if ($nextClass && isset($nextClass['start_time']))
+                let countdownDate = new Date('{{ $nextClass['start_time'] }}').getTime();
                 setInterval(function() {
                     let now = new Date().getTime();
                     let distance = countdownDate - now;
@@ -406,7 +733,8 @@
 
                     document.getElementById('countdownTimer').innerHTML =
                         (hours > 0 ? hours + 'h ' : '') +
-                        minutes + 'm ' + seconds + 's';
+                        String(minutes).padStart(2, '0') + 'm ' +
+                        String(seconds).padStart(2, '0') + 's';
                 }, 1000);
             @endif
         </script>

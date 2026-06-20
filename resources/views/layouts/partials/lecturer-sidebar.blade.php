@@ -18,7 +18,7 @@
 <a href="{{ route('lecturer.students') }}" class="nav-item @if (request()->routeIs('lecturer.students')) active @endif">
     <i class="bi bi-people"></i><span>All Students</span>
 </a>
-<a href="{{ route('lecturer.timetable') }}" class="nav-item @if (request()->routeIs('lecturer.timetable')) active @endif">
+<a href="{{ route('lecturer.timetable.index') }}" class="nav-item @if (request()->routeIs('lecturer.timetable*')) active @endif">
     <i class="bi bi-calendar-week"></i><span>Timetable</span>
 </a>
 
