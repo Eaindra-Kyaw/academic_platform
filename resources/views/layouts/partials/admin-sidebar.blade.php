@@ -23,9 +23,15 @@
 <a href="{{ route('admin.attendance.analytics') }}" class="nav-item @if (request()->routeIs('admin.attendance*')) active @endif">
     <i class="bi bi-calendar-check"></i><span>Attendance</span>
 </a>
-<a href="#" class="nav-item">
-    <i class="bi bi-exclamation-triangle"></i><span>Risk Analysis</span>
-</a>
+@if (Route::has('admin.risk.index'))
+    <a href="{{ route('admin.risk.index') }}" class="nav-item @if (request()->routeIs('admin.risk*')) active @endif">
+        <i class="bi bi-exclamation-triangle"></i><span>Risk Analysis</span>
+    </a>
+@else
+    <a href="#" class="nav-item" onclick="event.preventDefault(); alert('Risk Analysis feature coming soon!');">
+        <i class="bi bi-exclamation-triangle"></i><span>Risk Analysis (Coming Soon)</span>
+    </a>
+@endif
 <a href="{{ route('admin.reports') }}" class="nav-item @if (request()->routeIs('admin.reports')) active @endif">
     <i class="bi bi-file-earmark-text"></i><span>Reports</span>
 </a>

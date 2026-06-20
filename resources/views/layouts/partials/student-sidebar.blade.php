@@ -1,3 +1,5 @@
+{{-- resources/views/layouts/partials/student-sidebar.blade.php --}}
+
 <div class="nav-label">Main</div>
 <a href="{{ route('student.dashboard') }}" class="nav-item @if (request()->routeIs('student.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
@@ -28,8 +30,8 @@
 </a>
 
 <div class="nav-label">Communication</div>
-{{-- In student-sidebar.blade.php --}}
-<a href="{{ route('student.announcements') }}" class="nav-item @if (request()->routeIs('student.announcements')) active @endif">
+{{-- FIXED: Changed from student.announcements to student.announcements.index --}}
+<a href="{{ route('student.announcements.index') }}" class="nav-item @if (request()->routeIs('student.announcements*')) active @endif">
     <i class="bi bi-megaphone"></i>
     <span>Announcements</span>
     <span id="studentAnnouncementBadge"

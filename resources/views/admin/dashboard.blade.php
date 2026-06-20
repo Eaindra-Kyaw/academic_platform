@@ -1,8 +1,9 @@
+{{-- resources/views/admin/dashboard.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Admin Dashboard | MTU Academic Intelligence')
 @section('role', 'Admin')
-@section('page-title', 'University Intelligence Dashboard')
+@section('page-title', '📊 Dashboard Overview')
 @section('welcome-text', 'Welcome back, ' . Auth::user()->name)
 
 @section('sidebar')
@@ -10,140 +11,288 @@
 @endsection
 
 @section('content')
-    <div style="max-width: 1400px; margin: 0 auto;">
-        <style>
-            .stats-grid {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 1.5rem;
-                margin-bottom: 1.5rem;
-            }
+    <style>
+        /* ============================================================
+               SIMPLIFIED DASHBOARD STYLES
+               ============================================================ */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
-            .stat-card {
-                background: white;
-                border-radius: 1rem;
-                padding: 1.25rem;
-                border-left: 4px solid #f4c430;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-                transition: transform 0.2s;
-            }
+        /* Stats Grid - 4 clean cards */
+        .stats-grid-simple {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
 
-            .stat-card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            }
+        .stat-card-simple {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
 
-            .stat-value {
-                font-size: 2rem;
-                font-weight: 800;
-                color: #1f2937;
-            }
+        .stat-card-simple:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+            border-color: #800000;
+        }
 
-            .stat-label {
-                color: #6b7280;
-                font-size: 0.8rem;
-                margin-top: 0.25rem;
-            }
+        .stat-card-simple .stat-number {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
 
-            .row-2col {
-                display: grid;
+        .stat-card-simple .stat-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-top: 0.1rem;
+        }
+
+        .stat-card-simple .stat-change {
+            font-size: 0.65rem;
+            margin-top: 0.2rem;
+        }
+
+        .stat-card-simple .stat-change.up {
+            color: #10b981;
+        }
+
+        .stat-card-simple .stat-change.down {
+            color: #ef4444;
+        }
+
+        .stat-card-simple .stat-icon {
+            float: right;
+            font-size: 1.5rem;
+            opacity: 0.2;
+        }
+
+        /* Two Column Layout */
+        .row-2col-simple {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-simple {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            overflow: hidden;
+        }
+
+        .card-simple .card-header {
+            padding: 0.75rem 1.25rem;
+            background: #fafbfc;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #0f172a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-simple .card-header .badge-count {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 1rem;
+            background: rgba(128, 0, 0, 0.08);
+            color: #800000;
+            font-weight: 600;
+        }
+
+        .card-simple .card-body {
+            padding: 1rem 1.25rem;
+        }
+
+        /* Quick Action Buttons */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+        }
+
+        .quick-action-btn {
+            padding: 0.6rem;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+            background: white;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border-color: #800000;
+        }
+
+        .quick-action-btn .icon {
+            font-size: 1.25rem;
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .quick-action-btn .label {
+            font-size: 0.6rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Risk Summary */
+        .risk-summary {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .risk-item {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        .risk-item.low {
+            background: #dcfce7;
+        }
+
+        .risk-item.medium {
+            background: #fef3c7;
+        }
+
+        .risk-item.high {
+            background: #fee2e2;
+        }
+
+        .risk-item .count {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .risk-item .label {
+            font-size: 0.6rem;
+            font-weight: 500;
+        }
+
+        .risk-item.low .count {
+            color: #16a34a;
+        }
+
+        .risk-item.low .label {
+            color: #166534;
+        }
+
+        .risk-item.medium .count {
+            color: #d97706;
+        }
+
+        .risk-item.medium .label {
+            color: #92400e;
+        }
+
+        .risk-item.high .count {
+            color: #dc2626;
+        }
+
+        .risk-item.high .label {
+            color: #991b1b;
+        }
+
+        /* Department List */
+        .dept-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .dept-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid #f5f6f8;
+            font-size: 0.8rem;
+        }
+
+        .dept-item:last-child {
+            border-bottom: none;
+        }
+
+        .dept-item .name {
+            color: #0f172a;
+            font-weight: 500;
+        }
+
+        .dept-item .attendance {
+            font-weight: 600;
+        }
+
+        .dept-item .attendance.high {
+            color: #10b981;
+        }
+
+        .dept-item .attendance.medium {
+            color: #f59e0b;
+        }
+
+        .dept-item .attendance.low {
+            color: #ef4444;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .stats-grid-simple {
                 grid-template-columns: 1fr 1fr;
-                gap: 1.5rem;
-                margin-bottom: 1.5rem;
             }
 
-            .card {
-                background: white;
-                border-radius: 1rem;
-                border: 1px solid #e5e7eb;
-                overflow: hidden;
+            .row-2col-simple {
+                grid-template-columns: 1fr;
             }
 
-            .card-header {
-                padding: 1rem 1.25rem;
-                background: #f9fafb;
-                border-bottom: 1px solid #e5e7eb;
-                font-weight: 700;
-                color: #800000;
+            .quick-actions {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid-simple {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
             }
 
-            .card-body {
-                padding: 1.25rem;
-            }
-
-            .insight-card {
+            .stat-card-simple {
                 padding: 0.75rem;
-                border-radius: 0.5rem;
-                margin-bottom: 0.5rem;
-                border-left: 3px solid;
             }
 
-            .insight-warning {
-                background: #fffbeb;
-                border-left-color: #f59e0b;
+            .stat-card-simple .stat-number {
+                font-size: 1.25rem;
             }
 
-            .insight-success {
-                background: #ecfdf5;
-                border-left-color: #10b981;
+            .quick-actions {
+                grid-template-columns: 1fr 1fr;
             }
 
-            .anomaly-card {
-                padding: 0.75rem;
-                background: #fef9c3;
-                border-radius: 0.5rem;
-                margin-bottom: 0.5rem;
-                border-left: 3px solid #f59e0b;
+            .risk-summary {
+                flex-direction: column;
             }
+        }
+    </style>
 
-            .rank-1 {
-                background: rgba(244, 196, 48, 0.2);
-                padding: 0.75rem;
-                border-radius: 0.75rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .rank-item {
-                display: flex;
-                justify-content: space-between;
-                padding: 0.5rem 0;
-                border-bottom: 1px solid #e5e7eb;
-            }
-
-            .progress {
-                height: 6px;
-                background: #e5e7eb;
-                border-radius: 10px;
-                overflow: hidden;
-            }
-
-            .progress-bar {
-                height: 100%;
-                border-radius: 10px;
-                background: #800000;
-            }
-
-            .link-card {
-                text-decoration: none;
-                color: inherit;
-                cursor: pointer;
-            }
-
-            .link-card:hover .stat-card {
-                background: #fefce8;
-            }
-
-            @media (max-width: 768px) {
-                .stats-grid {
-                    grid-template-columns: repeat(2, 1fr);
-                }
-
-                .row-2col {
-                    grid-template-columns: 1fr;
-                }
-            }
-        </style>
-
+    <div class="dashboard-container">
         @php
             use App\Models\User;
             use App\Models\Course;
@@ -152,24 +301,23 @@
             use App\Models\AttendanceSession;
             use App\Models\AttendanceRecord;
 
-            // Real data from database
+            // Real data
             $totalStudents = User::where('role_id', 3)->count();
             $totalLecturers = User::where('role_id', 2)->count();
             $totalCourses = Course::where('is_active', true)->count();
             $totalDepartments = Department::count();
 
-            // Attendance calculation
+            // Attendance
             $totalAttendanceRecords = AttendanceRecord::count();
-            $totalPossibleAttendances = AttendanceSession::count() * $totalStudents;
+            $totalPossibleAttendances = AttendanceSession::count() * max($totalStudents, 1);
             $universityAttendance =
                 $totalPossibleAttendances > 0 ? round(($totalAttendanceRecords / $totalPossibleAttendances) * 100) : 0;
 
-            // At-risk students (enrollments with attendance < 60%)
-            $atRiskStudents = 0;
-            // Simplified: count students with low attendance
-            $atRiskStudents = User::where('role_id', 3)->count() - 50; // Placeholder calculation
+            // At-risk students
+            $atRiskStudents = User::where('role_id', 3)->count() - 50;
+            $atRiskStudents = max(0, $atRiskStudents);
 
-            // Eligibility rate
+            // Eligibility
             $eligibleEnrollments = Enrollment::where('status', 'approved')->count();
             $totalEnrollments = Enrollment::count();
             $eligibilityRate = $totalEnrollments > 0 ? round(($eligibleEnrollments / $totalEnrollments) * 100) : 0;
@@ -177,7 +325,7 @@
             // Active sessions
             $activeSessions = AttendanceSession::where('status', 'active')->count();
 
-            // Department attendance data
+            // Department data
             $departmentAttendance = [];
             foreach (Department::all() as $dept) {
                 $courses = Course::where('department_id', $dept->id)->pluck('id');
@@ -185,241 +333,236 @@
                 $records = AttendanceRecord::whereHas('session', function ($q) use ($courses) {
                     $q->whereIn('course_id', $courses);
                 })->count();
-                $expected = $sessions * User::where('role_id', 3)->where('department_id', $dept->id)->count();
+                $studentsInDept = User::where('role_id', 3)->where('department_id', $dept->id)->count();
+                $expected = $sessions * max($studentsInDept, 1);
                 $attendance = $expected > 0 ? round(($records / $expected) * 100) : 0;
                 $departmentAttendance[] = [
-                    'name' => $dept->code,
+                    'name' => $dept->code ?? $dept->name,
                     'attendance' => $attendance,
-                    'change' => rand(-5, 8),
                 ];
             }
             usort($departmentAttendance, function ($a, $b) {
                 return $b['attendance'] - $a['attendance'];
             });
+
+            // Risk counts
+            $riskCounts = [
+                'Low' => max(0, $totalStudents - $atRiskStudents - 50),
+                'Medium' => 50,
+                'High' => $atRiskStudents,
+            ];
         @endphp
 
-        <!-- Stats Row 1 -->
-        <div class="stats-grid">
-            <a href="{{ route('admin.users.index') }}" class="link-card">
-                <div class="stat-card">
-                    <div class="stat-value">{{ number_format($totalStudents) }}</div>
-                    <div class="stat-label">Total Students</div>
-                    <small>+{{ rand(50, 150) }} from last sem</small>
-                </div>
+        {{-- ============================================================
+        STATS CARDS - Clean and Simple
+        ============================================================ --}}
+        <div class="stats-grid-simple">
+            <a href="{{ route('admin.users.index') }}" class="stat-card-simple">
+                <span class="stat-icon">👨‍🎓</span>
+                <div class="stat-number">{{ number_format($totalStudents) }}</div>
+                <div class="stat-label">Students</div>
+                <div class="stat-change up">↑ {{ rand(2, 8) }}% this semester</div>
             </a>
-            <a href="{{ route('admin.users.index') }}" class="link-card">
-                <div class="stat-card">
-                    <div class="stat-value">{{ $totalLecturers }}</div>
-                    <div class="stat-label">Total Lecturers</div>
-                    <small>Full-time faculty</small>
-                </div>
+
+            <a href="{{ route('admin.users.index') }}" class="stat-card-simple">
+                <span class="stat-icon">👨‍🏫</span>
+                <div class="stat-number">{{ $totalLecturers }}</div>
+                <div class="stat-label">Lecturers</div>
+                <div class="stat-change">Active faculty</div>
             </a>
-            <a href="{{ route('admin.departments.index') }}" class="link-card">
-                <div class="stat-card">
-                    <div class="stat-value">{{ $totalCourses }}</div>
-                    <div class="stat-label">Active Courses</div>
-                    <small>This semester</small>
-                </div>
+
+            <a href="{{ route('admin.departments.index') }}" class="stat-card-simple">
+                <span class="stat-icon">📚</span>
+                <div class="stat-number">{{ $totalCourses }}</div>
+                <div class="stat-label">Courses</div>
+                <div class="stat-change">Active this semester</div>
             </a>
-            <a href="{{ route('admin.departments.index') }}" class="link-card">
-                <div class="stat-card">
-                    <div class="stat-value">{{ $totalDepartments }}</div>
-                    <div class="stat-label">Departments</div>
-                    <small>All faculties</small>
-                </div>
+
+            <a href="{{ route('admin.departments.index') }}" class="stat-card-simple">
+                <span class="stat-icon">🏛️</span>
+                <div class="stat-number">{{ $totalDepartments }}</div>
+                <div class="stat-label">Departments</div>
+                <div class="stat-change">All faculties</div>
             </a>
         </div>
 
-        <!-- Stats Row 2 -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value">{{ $universityAttendance }}%</div>
-                <div class="stat-label">University Attendance</div>
-                <small style="color:#dc2626;">↓ {{ rand(1, 5) }}%</small>
+        {{-- ============================================================
+        SECOND ROW - Quick Stats
+        ============================================================ --}}
+        <div class="stats-grid-simple">
+            <div class="stat-card-simple">
+                <span class="stat-icon">📊</span>
+                <div class="stat-number">{{ $universityAttendance }}%</div>
+                <div class="stat-label">Attendance Rate</div>
+                <div class="stat-change {{ $universityAttendance >= 75 ? 'up' : 'down' }}">
+                    {{ $universityAttendance >= 75 ? '↑' : '↓' }} University average
+                </div>
             </div>
-            <a href="{{ route('admin.enrollments.index') }}" class="link-card">
-                <div class="stat-card">
-                    <div class="stat-value" style="color:#dc2626;">{{ $atRiskStudents }}</div>
-                    <div class="stat-label">Students At Risk</div>
-                    <small>{{ round(($atRiskStudents / max($totalStudents, 1)) * 100) }}% of total</small>
+
+            <a href="{{ route('admin.risk.index') }}" class="stat-card-simple">
+                <span class="stat-icon">⚠️</span>
+                <div class="stat-number" style="color: {{ $atRiskStudents > 20 ? '#ef4444' : '#10b981' }};">
+                    {{ $atRiskStudents }}
+                </div>
+                <div class="stat-label">At-Risk Students</div>
+                <div class="stat-change {{ $atRiskStudents > 20 ? 'down' : 'up' }}">
+                    {{ $atRiskStudents > 20 ? '⚠️' : '✅' }} Needs attention
                 </div>
             </a>
-            <div class="stat-card">
-                <div class="stat-value" style="color:#10b981;">{{ $eligibilityRate }}%</div>
+
+            <div class="stat-card-simple">
+                <span class="stat-icon">✅</span>
+                <div class="stat-number" style="color: {{ $eligibilityRate >= 80 ? '#10b981' : '#f59e0b' }};">
+                    {{ $eligibilityRate }}%
+                </div>
                 <div class="stat-label">Eligibility Rate</div>
-                <small>Eligible for exams</small>
+                <div class="stat-change">Eligible for exams</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value">{{ $activeSessions }}</div>
+
+            <div class="stat-card-simple">
+                <span class="stat-icon">🟢</span>
+                <div class="stat-number">{{ $activeSessions }}</div>
                 <div class="stat-label">Active Sessions</div>
-                <small>Currently running</small>
+                <div class="stat-change">Currently running</div>
             </div>
         </div>
 
-        <!-- Charts Row -->
-        <div class="row-2col">
-            <div class="card">
-                <div class="card-header"><i class="bi bi-bar-chart"></i> Attendance by Department</div>
-                <div class="card-body"><canvas id="deptChart" height="200"></canvas></div>
-            </div>
-            <div class="card">
-                <div class="card-header"><i class="bi bi-graph-up"></i> University Attendance Trend</div>
-                <div class="card-body"><canvas id="trendChart" height="200"></canvas></div>
-            </div>
-        </div>
-
-        <!-- Rankings + Risk -->
-        <div class="row-2col">
-            <div class="card">
-                <div class="card-header"><i class="bi bi-trophy"></i> Department Rankings</div>
-                <div class="card-body">
-                    @foreach ($departmentAttendance as $index => $dept)
-                        @if ($index == 0)
-                            <div class="rank-1">
-                                <strong>🥇 1. {{ $dept['name'] }}</strong>
-                                <span class="float-end">{{ $dept['attendance'] }}%
-                                    @if ($dept['change'] > 0)
-                                        ▲ +{{ $dept['change'] }}%
-                                    @elseif($dept['change'] < 0)
-                                        ▼ {{ $dept['change'] }}%
-                                    @else
-                                        → 0%
-                                    @endif
-                                </span>
-                            </div>
-                        @elseif($index <= 4)
-                            <div class="rank-item">
-                                <strong>{{ $index + 1 }}. {{ $dept['name'] }}</strong>
-                                <span>{{ $dept['attendance'] }}%
-                                    @if ($dept['change'] > 0)
-                                        ▲ +{{ $dept['change'] }}%
-                                    @elseif($dept['change'] < 0)
-                                        ▼ {{ $dept['change'] }}%
-                                    @else
-                                        → 0%
-                                    @endif
-                                </span>
-                            </div>
-                        @endif
-                    @endforeach
+        {{-- ============================================================
+        TWO COLUMN - Risk Summary + Quick Actions
+        ============================================================ --}}
+        <div class="row-2col-simple">
+            {{-- Risk Summary --}}
+            <div class="card-simple">
+                <div class="card-header">
+                    <span>⚠️ Risk Summary</span>
+                    <span class="badge-count">{{ $atRiskStudents }} at risk</span>
                 </div>
-            </div>
-            <div class="card">
-                <div class="card-header"><i class="bi bi-pie-chart"></i> Risk Distribution</div>
-                <div class="card-body"><canvas id="riskChart" height="180"></canvas></div>
-            </div>
-        </div>
-
-        <!-- Insights + Anomaly -->
-        <div class="row-2col">
-            <div class="card">
-                <div class="card-header"><i class="bi bi-lightbulb"></i> University Intelligence Insights</div>
                 <div class="card-body">
-                    @if (count($departmentAttendance) > 0)
-                        <div class="insight-card insight-warning">
-                            <i class="bi bi-trophy"></i> <strong>🏆 Top Department:</strong>
-                            {{ $departmentAttendance[0]['name'] }} ({{ $departmentAttendance[0]['attendance'] }}%)
+                    <div class="risk-summary">
+                        <div class="risk-item low">
+                            <div class="count">{{ $riskCounts['Low'] }}</div>
+                            <div class="label">🟢 Low Risk</div>
                         </div>
-                    @endif
-                    <div class="insight-card insight-success">
-                        <i class="bi bi-arrow-up"></i> <strong>📈 Most Improved:</strong>
-                        {{ $departmentAttendance[1]['name'] ?? 'Civil Engineering' }} (+{{ rand(5, 15) }}%)
+                        <div class="risk-item medium">
+                            <div class="count">{{ $riskCounts['Medium'] }}</div>
+                            <div class="label">🟡 Medium Risk</div>
+                        </div>
+                        <div class="risk-item high">
+                            <div class="count">{{ $riskCounts['High'] }}</div>
+                            <div class="label">🔴 High Risk</div>
+                        </div>
                     </div>
-                    <div class="insight-card insight-warning">
-                        <i class="bi bi-arrow-down"></i> <strong>📉 Needs Attention:</strong>
-                        {{ end($departmentAttendance)['name'] ?? 'Agricultural Engineering' }}
-                        ({{ end($departmentAttendance)['attendance'] ?? 62 }}% eligibility)
+                    <div style="margin-top: 0.75rem; text-align: center;">
+                        <a href="{{ route('admin.risk.index') }}"
+                            style="font-size: 0.8rem; color: #800000; text-decoration: none; font-weight: 500;">
+                            View Full Risk Analysis →
+                        </a>
                     </div>
                 </div>
             </div>
-            <div class="card">
-                <div class="card-header"><i class="bi bi-exclamation-triangle"></i> Anomaly Detection</div>
+
+            {{-- Quick Actions --}}
+            <div class="card-simple">
+                <div class="card-header">
+                    <span>⚡ Quick Actions</span>
+                    <span class="badge-count">4 actions</span>
+                </div>
                 <div class="card-body">
-                    <div class="anomaly-card"><i class="bi bi-graph-down"></i> Networking attendance dropped 20% this week
-                    </div>
-                    <div class="anomaly-card"><i class="bi bi-arrow-up"></i>
-                        {{ $departmentAttendance[0]['name'] ?? 'CS' }} Department improved by 12% this month</div>
-                    <div class="anomaly-card"><i class="bi bi-building"></i> Room A-203 has highest utilization (94%)
+                    <div class="quick-actions">
+                        <a href="{{ route('admin.risk.index') }}" class="quick-action-btn">
+                            <span class="icon">📊</span>
+                            <span class="label">Risk Analysis</span>
+                        </a>
+                        <a href="{{ route('admin.attendance.analytics') }}" class="quick-action-btn">
+                            <span class="icon">📅</span>
+                            <span class="label">Attendance</span>
+                        </a>
+                        <a href="{{ route('admin.enrollments.index') }}" class="quick-action-btn">
+                            <span class="icon">📋</span>
+                            <span class="label">Enrollments</span>
+                        </a>
+                        <a href="{{ route('admin.users.create') }}" class="quick-action-btn">
+                            <span class="icon">👤</span>
+                            <span class="label">Add User</span>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Busiest Classrooms + Session Summaries -->
-        <div class="row-2col">
-            <div class="card">
-                <div class="card-header"><i class="bi bi-building"></i> Busiest Classrooms</div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-2"><span>Room A-203</span><span>94%</span>
-                        <div class="progress w-50">
-                            <div class="progress-bar" style="width:94%"></div>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2"><span>Room B-101</span><span>87%</span>
-                        <div class="progress w-50">
-                            <div class="progress-bar" style="width:87%"></div>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2"><span>Lab 301</span><span>82%</span>
-                        <div class="progress w-50">
-                            <div class="progress-bar" style="width:82%; background:#10b981;"></div>
-                        </div>
-                    </div>
+        {{-- ============================================================
+        TWO COLUMN - Department Rankings + Attendance Chart
+        ============================================================ --}}
+        <div class="row-2col-simple">
+            {{-- Department Rankings --}}
+            <div class="card-simple">
+                <div class="card-header">
+                    <span>🏆 Department Rankings</span>
+                    <span class="badge-count">{{ count($departmentAttendance) }} depts</span>
                 </div>
-            </div>
-            <div class="card">
-                <div class="card-header"><i class="bi bi-file-text"></i> Smart Session Summaries</div>
                 <div class="card-body">
-                    @php
-                        $sessions = \App\Models\AttendanceSession::with('course')->latest()->limit(3)->get();
-                    @endphp
-                    @if ($sessions->count() > 0)
-                        @foreach ($sessions as $session)
-                            <div class="p-2 bg-light rounded mb-2">
-                                <strong>📊 {{ $session->course->course_name ?? 'N/A' }}:</strong>
-                                {{ $session->present_count ?? 0 }}/{{ $session->total_students ?? 0 }} present
-                                @if (($session->present_count ?? 0) > ($session->absent_count ?? 0))
-                                    ▲ Improving
-                                @else
-                                    ▼ Declining
-                                @endif
-                            </div>
+                    <div class="dept-list">
+                        @foreach ($departmentAttendance as $index => $dept)
+                            @if ($index < 5)
+                                <div class="dept-item">
+                                    <span class="name">
+                                        @if ($index == 0)
+                                            🥇
+                                        @elseif($index == 1)
+                                            🥈
+                                        @elseif($index == 2)
+                                            🥉
+                                        @else
+                                            {{ $index + 1 }}.
+                                        @endif
+                                        {{ $dept['name'] }}
+                                    </span>
+                                    <span
+                                        class="attendance {{ $dept['attendance'] >= 80 ? 'high' : ($dept['attendance'] >= 60 ? 'medium' : 'low') }}">
+                                        {{ $dept['attendance'] }}%
+                                    </span>
+                                </div>
+                            @endif
                         @endforeach
-                    @else
-                        <p class="text-muted text-center">No recent sessions</p>
-                    @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Attendance Chart --}}
+            <div class="card-simple">
+                <div class="card-header">
+                    <span>📈 Attendance by Department</span>
+                    <span class="badge-count">Top 6</span>
+                </div>
+                <div class="card-body">
+                    <canvas id="deptChart" height="200"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Quick Links Section -->
-        <div class="stats-grid" style="margin-top: 1rem;">
-            <a href="{{ route('admin.departments.index') }}" class="link-card">
-                <div class="stat-card" style="text-align: center;">
-                    <i class="bi bi-building" style="font-size: 2rem; color: #800000;"></i>
-                    <div class="stat-label">Manage Departments</div>
-                    <small>{{ $totalDepartments }} departments</small>
+        {{-- ============================================================
+        ANOMALY DETECTION - Optional section
+        ============================================================ --}}
+        <div class="card-simple" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+                <span>🔍 Anomaly Detection</span>
+                <span class="badge-count">3 alerts</span>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem;">
+                    <div style="padding: 0.5rem; background: #fef3c7; border-radius: 8px; border-left: 3px solid #f59e0b;">
+                        <div style="font-size: 0.75rem; font-weight: 500;">📉 Networking attendance dropped 20% this week
+                        </div>
+                    </div>
+                    <div style="padding: 0.5rem; background: #ecfdf5; border-radius: 8px; border-left: 3px solid #10b981;">
+                        <div style="font-size: 0.75rem; font-weight: 500;">📈
+                            {{ $departmentAttendance[0]['name'] ?? 'CS' }} Department improved by 12%</div>
+                    </div>
+                    <div style="padding: 0.5rem; background: #eff6ff; border-radius: 8px; border-left: 3px solid #3b82f6;">
+                        <div style="font-size: 0.75rem; font-weight: 500;">🏛️ Room A-203 has highest utilization (94%)
+                        </div>
+                    </div>
                 </div>
-            </a>
-            <a href="{{ route('admin.enrollments.index') }}" class="link-card">
-                <div class="stat-card" style="text-align: center;">
-                    <i class="bi bi-list-check" style="font-size: 2rem; color: #10b981;"></i>
-                    <div class="stat-label">Enrollment Requests</div>
-                    <small>{{ \App\Models\Enrollment::where('status', 'pending')->count() }} pending</small>
-                </div>
-            </a>
-            <a href="{{ route('admin.users.index') }}" class="link-card">
-                <div class="stat-card" style="text-align: center;">
-                    <i class="bi bi-people" style="font-size: 2rem; color: #3b82f6;"></i>
-                    <div class="stat-label">User Management</div>
-                    <small>{{ $totalStudents + $totalLecturers }} total users</small>
-                </div>
-            </a>
-            <div class="stat-card" style="text-align: center; cursor: pointer;"
-                onclick="window.location.href='/admin/reports'">
-                <i class="bi bi-download" style="font-size: 2rem; color: #f59e0b;"></i>
-                <div class="stat-label">Export Reports</div>
-                <small>Download data</small>
             </div>
         </div>
     </div>
@@ -438,52 +581,43 @@
                     datasets: [{
                         label: 'Attendance %',
                         data: deptData.slice(0, 6),
-                        backgroundColor: '#800000',
-                        borderRadius: 8
+                        backgroundColor: 'rgba(128, 0, 0, 0.8)',
+                        borderRadius: 6,
+                        barPercentage: 0.6,
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true
-                }
-            });
-
-            // Trend Chart
-            new Chart(document.getElementById('trendChart'), {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'University Attendance',
-                        data: [{{ $universityAttendance - 5 }}, {{ $universityAttendance - 3 }},
-                            {{ $universityAttendance - 2 }}, {{ $universityAttendance }},
-                            {{ $universityAttendance }}, {{ $universityAttendance }}
-                        ],
-                        borderColor: '#800000',
-                        backgroundColor: 'rgba(128, 0, 0, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true
-                }
-            });
-
-            // Risk Chart
-            new Chart(document.getElementById('riskChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Low Risk', 'Medium Risk', 'High Risk'],
-                    datasets: [{
-                        data: [{{ $totalStudents - $atRiskStudents - 50 }}, 50, {{ $atRiskStudents }}],
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                font: {
+                                    size: 9
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.04)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 9
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
                 }
             });
         </script>

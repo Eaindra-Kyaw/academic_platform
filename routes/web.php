@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\MessageController as AdminMessageController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\SemesterController;
 use App\Http\Controllers\Admin\AttendanceAnalyticsController;
+use App\Http\Controllers\Admin\RiskAnalysisController;
 use App\Http\Controllers\Lecturer\MessageController as LecturerMessageController;
 use App\Http\Controllers\Student\MessageController as StudentMessageController;
 use App\Http\Controllers\Auth\RoleLoginController;
@@ -220,17 +221,19 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // ============================================================
-    // ATTENDANCE ROUTES (Admin) - ADD THIS SECTION
+    // ATTENDANCE ANALYTICS ROUTES (Admin)
     // ============================================================
     Route::prefix('attendance')->name('attendance.')->group(function () {
-        // Temporary coming soon page
-        Route::get('/', function() {
-            return view('admin.attendance.coming-soon');
-        })->name('index');
-
-        // Full analytics (for later)
         Route::get('/analytics', [AttendanceAnalyticsController::class, 'index'])->name('analytics');
         Route::get('/chart-data', [AttendanceAnalyticsController::class, 'chartData'])->name('chart-data');
+    });
+
+    // ============================================================
+    // RISK ANALYSIS ROUTES (Admin)
+    // ============================================================
+    Route::prefix('risk')->name('risk.')->group(function () {
+        Route::get('/', [RiskAnalysisController::class, 'index'])->name('index');
+        Route::get('/export', [RiskAnalysisController::class, 'export'])->name('export');
     });
 
     // ============================================================

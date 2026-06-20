@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- ADD THIS META TAG FOR USER ROLE -->
     <meta name="user-role" content="{{ Auth::user()->role->name ?? 'student' }}">
-    <title>@yield('title', 'MTU Academic Intelligence System')</title>
+    <title>@yield('title', 'Academic Portal')</title>
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -469,7 +469,7 @@
                     <div class="brand-icon">Uni</div>
                     <div class="brand-text">
                         <h2>Academic Portal</h2>
-                        <p>Intelligence System</p>
+
                     </div>
                 </div>
             </div>
