@@ -180,7 +180,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/enrollments/bulk/reject', [EnrollmentController::class, 'bulkReject'])->name('enrollments.bulk.reject');
 
     // ============================================================
-    // ANNOUNCEMENT ROUTES (Admin) - FIXED
+    // ANNOUNCEMENT ROUTES (Admin)
     // ============================================================
     Route::prefix('announcements')->name('announcements.')->group(function () {
         Route::get('/', [AnnouncementController::class, 'index'])->name('index');
@@ -191,6 +191,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::put('/{id}', [AnnouncementController::class, 'update'])->name('update');
         Route::delete('/{id}', [AnnouncementController::class, 'destroy'])->name('destroy');
         Route::get('/{id}/toggle', [AnnouncementController::class, 'toggleStatus'])->name('toggle');
+        Route::get('/unread-count', [AnnouncementController::class, 'unreadCount'])->name('unread');
+        Route::post('/{id}/mark-read', [AnnouncementController::class, 'markAsRead'])->name('mark-read');
+        Route::get('/reset-unread', [AnnouncementController::class, 'resetUnread'])->name('reset-unread');
+        Route::get('/force-reset-all', [AnnouncementController::class, 'forceResetAll'])->name('force-reset-all');
+        Route::get('/check-unread', [AnnouncementController::class, 'checkUnread'])->name('check-unread');
     });
 
     // ============================================================
@@ -206,9 +211,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 // ============================================================
+// TEMPORARY TEST ROUTE - ADD THIS AT THE BOTTOM
+// ============================================================
+Route::get('/test-reset', function() {
+    $user = Auth::user();
+    if ($user) {
+        $sessionKey = 'read_announcements_' . $user->id;
+        session()->put($sessionKey, []);
+        return "✅ Reset complete for user: " . $user->name . " (ID: " . $user->id . ")";
+    }
+    return "❌ Please login first";
+})->middleware(['auth']);
+
 // ============================================================
 // LECTURER ROUTES
-// ============================================================
 // ============================================================
 Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->group(function () {
 
@@ -223,7 +239,14 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     Route::get('/students', [LecturerController::class, 'students'])->name('students');
     Route::get('/schedule', [LecturerController::class, 'schedule'])->name('schedule');
     Route::get('/reports', [LecturerController::class, 'reports'])->name('reports');
-    Route::get('/announcements', [LecturerController::class, 'announcements'])->name('announcements');
+
+    // ============================================================
+    // ANNOUNCEMENT ROUTES (Lecturer)
+    // ============================================================
+    Route::prefix('announcements')->name('announcements.')->group(function () {
+        Route::get('/', [LecturerController::class, 'announcements'])->name('index');
+        Route::get('/{id}', [LecturerController::class, 'showAnnouncement'])->name('show');
+    });
 
     // ============================================================
     // ENROLLMENT ROUTES (Lecturer)
@@ -266,12 +289,15 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     Route::post('/messages/send', [LecturerMessageController::class, 'send'])->name('messages.send');
     Route::get('/messages/{message}', [LecturerMessageController::class, 'show'])->name('messages.show');
     Route::get('/messages/unread/count', [LecturerMessageController::class, 'unreadCount'])->name('messages.unread');
+
+    // ============================================================
+    // ANNOUNCEMENT UNREAD COUNT ROUTE (Lecturer)
+    // ============================================================
+    Route::get('/announcements/unread-count', [AnnouncementController::class, 'unreadCount'])->name('announcements.unread');
 });
 
 // ============================================================
-// ============================================================
 // STUDENT ROUTES
-// ============================================================
 // ============================================================
 Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->group(function () {
 
@@ -305,6 +331,26 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::get('/scan/semester', [QRScanController::class, 'semesterScan'])->name('scan.semester');
 
     // ============================================================
+    // ANNOUNCEMENT ROUTES (Student)
+    // ============================================================
+    Route::prefix('announcements')->name('announcements.')->group(function () {
+        Route::get('/', [StudentController::class, 'announcements'])->name('index');
+        Route::get('/{id}', [StudentController::class, 'showAnnouncement'])->name('show');
+    });
+
+    // ============================================================
+    // ANNOUNCEMENT UNREAD COUNT ROUTE (Student)
+    // ============================================================
+    Route::get('/announcements/unread-count', [AnnouncementController::class, 'unreadCount'])->name('announcements.unread');
+
+    // ============================================================
+    // NOTIFICATIONS ROUTE (Student) - Temporary placeholder
+    // ============================================================
+    Route::get('/notifications', function() {
+        return view('student.notifications');
+    })->name('notifications');
+
+    // ============================================================
     // MESSAGE ROUTES (Student)
     // ============================================================
     Route::get('/messages', [StudentMessageController::class, 'inbox'])->name('messages.inbox');
@@ -313,9 +359,7 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
 });
 
 // ============================================================
-// ============================================================
 // DEFAULT LOGIN REDIRECT
-// ============================================================
 // ============================================================
 Route::get('/login', function () {
     if (auth()->check()) {
@@ -327,9 +371,7 @@ Route::get('/login', function () {
 Route::post('/login', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store']);
 
 // ============================================================
-// ============================================================
 // LOGOUT ROUTE
-// ============================================================
 // ============================================================
 Route::post('/logout', function () {
     Auth::logout();
@@ -337,25 +379,19 @@ Route::post('/logout', function () {
 })->name('logout');
 
 // ============================================================
-// ============================================================
 // FALLBACK ROUTE for 404
-// ============================================================
 // ============================================================
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
 
 // ============================================================
-// ============================================================
 // PASSWORD SETUP ROUTES
-// ============================================================
 // ============================================================
 Route::get('/password/setup/{token}', [App\Http\Controllers\Auth\PasswordSetupController::class, 'showSetupForm'])->name('password.setup.form');
 Route::post('/password/setup', [App\Http\Controllers\Auth\PasswordSetupController::class, 'setupPassword'])->name('password.setup');
 
 // ============================================================
-// ============================================================
 // AUTH ROUTES (Laravel Breeze)
-// ============================================================
 // ============================================================
 require __DIR__.'/auth.php';

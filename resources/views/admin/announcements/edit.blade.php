@@ -1,10 +1,10 @@
-{{-- resources/views/admin/announcements/create.blade.php --}}
+{{-- resources/views/admin/announcements/edit.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Create Announcement')
+@section('title', 'Edit Announcement')
 @section('role', 'Admin')
-@section('page-title', '📢 Create Announcement')
-@section('welcome-text', 'Create a new announcement')
+@section('page-title', '📢 Edit Announcement')
+@section('welcome-text', 'Update announcement details')
 
 @section('sidebar')
     @include('layouts.partials.admin-sidebar')
@@ -165,6 +165,30 @@
             font-size: 0.9rem;
         }
 
+        .status-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            background: #fafafa;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .status-toggle input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #800000;
+            cursor: pointer;
+        }
+
+        .status-toggle label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
         .form-actions {
             display: flex;
             gap: 0.75rem;
@@ -301,20 +325,21 @@
     <div class="form-wrapper">
         <div class="form-card">
             <h2 class="form-title">
-                <i class="bi bi-megaphone" style="color:#800000;"></i> Create New Announcement
+                <i class="bi bi-pencil-square" style="color:#800000;"></i> Edit Announcement
             </h2>
             <p class="form-subtitle">
-                Fill in the details below to create a new announcement
+                Update the announcement details below
             </p>
 
-            <form action="{{ route('admin.announcements.store') }}" method="POST">
+            <form action="{{ route('admin.announcements.update', $announcement->id) }}" method="POST">
                 @csrf
+                @method('PUT')
 
                 {{-- Title --}}
                 <div class="form-group">
                     <label for="title">Title <span class="required">*</span></label>
                     <input type="text" name="title" id="title" class="form-control @error('title') error @enderror"
-                        value="{{ old('title') }}" placeholder="Enter announcement title" required>
+                        value="{{ old('title', $announcement->title) }}" placeholder="Enter announcement title" required>
                     @error('title')
                         <div class="error-text">{{ $message }}</div>
                     @enderror
@@ -324,7 +349,7 @@
                 <div class="form-group">
                     <label for="content">Content <span class="required">*</span></label>
                     <textarea name="content" id="content" class="form-control @error('content') error @enderror" rows="6"
-                        placeholder="Enter announcement content" required>{{ old('content') }}</textarea>
+                        placeholder="Enter announcement content" required>{{ old('content', $announcement->content) }}</textarea>
                     @error('content')
                         <div class="error-text">{{ $message }}</div>
                     @enderror
@@ -336,10 +361,13 @@
                 {{-- Target Audience (Multi-select Checkboxes) --}}
                 <div class="form-group">
                     <label>Target Audience <span class="required">*</span></label>
+                    @php
+                        $selectedRoles = explode(',', $announcement->target_role);
+                    @endphp
                     <div class="checkbox-group">
                         <div class="checkbox-item">
                             <input type="checkbox" name="target_roles[]" id="role_all" value="all"
-                                {{ in_array('all', old('target_roles', [])) ? 'checked' : '' }}
+                                {{ in_array('all', old('target_roles', $selectedRoles)) ? 'checked' : '' }}
                                 onclick="toggleAllRoles(this)">
                             <label for="role_all">
                                 <span class="role-icon">👥</span> All Users
@@ -347,21 +375,24 @@
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" name="target_roles[]" id="role_admin" value="admin"
-                                class="role-checkbox" {{ in_array('admin', old('target_roles', [])) ? 'checked' : '' }}>
+                                class="role-checkbox"
+                                {{ in_array('admin', old('target_roles', $selectedRoles)) ? 'checked' : '' }}>
                             <label for="role_admin">
                                 <span class="role-icon">👤</span> Admins
                             </label>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" name="target_roles[]" id="role_lecturer" value="lecturer"
-                                class="role-checkbox" {{ in_array('lecturer', old('target_roles', [])) ? 'checked' : '' }}>
+                                class="role-checkbox"
+                                {{ in_array('lecturer', old('target_roles', $selectedRoles)) ? 'checked' : '' }}>
                             <label for="role_lecturer">
                                 <span class="role-icon">👨‍🏫</span> Lecturers
                             </label>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" name="target_roles[]" id="role_student" value="student"
-                                class="role-checkbox" {{ in_array('student', old('target_roles', [])) ? 'checked' : '' }}>
+                                class="role-checkbox"
+                                {{ in_array('student', old('target_roles', $selectedRoles)) ? 'checked' : '' }}>
                             <label for="role_student">
                                 <span class="role-icon">👨‍🎓</span> Students
                             </label>
@@ -379,19 +410,36 @@
                 <div class="form-group">
                     <label for="published_at">Publish Date</label>
                     <input type="datetime-local" name="published_at" id="published_at"
-                        class="form-control @error('published_at') error @enderror" value="{{ old('published_at') }}">
+                        class="form-control @error('published_at') error @enderror"
+                        value="{{ old('published_at', $announcement->published_at ? $announcement->published_at->format('Y-m-d\TH:i') : '') }}">
                     @error('published_at')
                         <div class="error-text">{{ $message }}</div>
                     @enderror
                     <div class="help-text">
-                        <i class="bi bi-clock"></i> Leave empty to publish immediately
+                        <i class="bi bi-clock"></i> Leave empty to keep current publish date
+                    </div>
+                </div>
+
+                {{-- Status --}}
+                <div class="form-group">
+                    <label>Status</label>
+                    <div class="status-toggle">
+                        <input type="checkbox" name="is_active" id="is_active" value="1"
+                            {{ old('is_active', $announcement->is_active) ? 'checked' : '' }}>
+                        <label for="is_active">
+                            <i class="bi {{ $announcement->is_active ? 'bi-eye' : 'bi-eye-slash' }}"></i>
+                            {{ $announcement->is_active ? 'Active' : 'Inactive' }}
+                        </label>
+                    </div>
+                    <div class="help-text">
+                        <i class="bi bi-info-circle"></i> Uncheck to deactivate this announcement
                     </div>
                 </div>
 
                 {{-- Form Actions --}}
                 <div class="form-actions">
                     <button type="submit" class="btn-submit">
-                        <i class="bi bi-send"></i> Publish Announcement
+                        <i class="bi bi-save"></i> Update Announcement
                     </button>
                     <a href="{{ route('admin.announcements.index') }}" class="btn-cancel">
                         <i class="bi bi-x-circle"></i> Cancel

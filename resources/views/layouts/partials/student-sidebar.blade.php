@@ -1,3 +1,5 @@
+{{-- resources/views/layouts/partials/student-sidebar.blade.php --}}
+
 <div class="nav-label">Main</div>
 <a href="{{ route('student.dashboard') }}" class="nav-item @if (request()->routeIs('student.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
@@ -27,7 +29,20 @@
     <i class="bi bi-graph-up"></i><span>My Progress</span>
 </a>
 
-<div class="nav-label">Messages</div>
+<div class="nav-label">Communication</div>
+<a href="{{ route('student.announcements.index') }}" class="nav-item @if (request()->routeIs('student.announcements*')) active @endif">
+    <i class="bi bi-megaphone"></i>
+    <span>Announcements</span>
+    @php
+        $unreadCount = \App\Models\Announcement::getUnreadCount(Auth::user());
+    @endphp
+    @if ($unreadCount > 0)
+        <span
+            style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto;">
+            {{ $unreadCount }}
+        </span>
+    @endif
+</a>
 <a href="{{ route('student.messages.inbox') }}" class="nav-item @if (request()->routeIs('student.messages*')) active @endif">
     <i class="bi bi-envelope"></i>
     <span>Messages</span>
@@ -38,7 +53,4 @@
 <div class="nav-label">Support</div>
 <a href="#" class="nav-item">
     <i class="bi bi-robot"></i><span>Uni Bot</span>
-</a>
-<a href="#" class="nav-item">
-    <i class="bi bi-bell"></i><span>Notifications</span>
 </a>

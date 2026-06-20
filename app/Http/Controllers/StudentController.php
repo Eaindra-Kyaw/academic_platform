@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Enrollment;
 use App\Models\Course;
 use App\Models\Department;
+use App\Models\Announcement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,6 @@ class StudentController extends Controller
     {
         $student = Auth::user();
 
-        // Get enrollment stats
         $enrollments = Enrollment::where('student_id', $student->id)
             ->where('status', 'approved')
             ->with('course')
@@ -32,16 +32,28 @@ class StudentController extends Controller
             'at_risk_courses' => $enrollments->where('eligibility_status', '!=', 'eligible')->count(),
         ];
 
-        return view('student.dashboard', compact('student', 'enrollments', 'stats'));
+        $announcements = Announcement::forRole('student')
+            ->where('is_active', true)
+            ->where(function($q) {
+                $q->whereNull('published_at')
+                  ->orWhere('published_at', '<=', now());
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        foreach ($announcements as $announcement) {
+            if (!$announcement->isReadBy($student->id)) {
+                $announcement->markAsRead($student->id);
+            }
+        }
+
+        return view('student.dashboard', compact('student', 'enrollments', 'stats', 'announcements'));
     }
 
-    /**
-     * Display student attendance
-     */
     public function attendance()
     {
         $student = Auth::user();
-
         $enrollments = Enrollment::where('student_id', $student->id)
             ->where('status', 'approved')
             ->with('course')
@@ -50,13 +62,9 @@ class StudentController extends Controller
         return view('student.attendance', compact('student', 'enrollments'));
     }
 
-    /**
-     * Display student timetable
-     */
     public function timetable()
     {
         $student = Auth::user();
-
         $enrollments = Enrollment::where('student_id', $student->id)
             ->where('status', 'approved')
             ->with('course')
@@ -65,13 +73,9 @@ class StudentController extends Controller
         return view('student.timetable', compact('student', 'enrollments'));
     }
 
-    /**
-     * Display student progress
-     */
     public function progress()
     {
         $student = Auth::user();
-
         $enrollments = Enrollment::where('student_id', $student->id)
             ->where('status', 'approved')
             ->with('course')
@@ -80,12 +84,8 @@ class StudentController extends Controller
         return view('student.progress', compact('student', 'enrollments'));
     }
 
-    /**
-     * Show a specific student profile (Admin view)
-     */
     public function show(User $student)
     {
-        // Ensure this is a student
         if ($student->role_id != 3) {
             abort(404, 'User is not a student');
         }
@@ -95,5 +95,56 @@ class StudentController extends Controller
         }]);
 
         return view('admin.students.show', compact('student'));
+    }
+
+    /**
+     * Display student announcements list
+     */
+    public function announcements()
+    {
+        $student = Auth::user();
+
+        $announcements = Announcement::forRole('student')
+            ->where('is_active', true)
+            ->where(function($q) {
+                $q->whereNull('published_at')
+                  ->orWhere('published_at', '<=', now());
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        foreach ($announcements as $announcement) {
+            if (!$announcement->isReadBy($student->id)) {
+                $announcement->markAsRead($student->id);
+            }
+        }
+
+        return view('student.announcements.index', compact('announcements', 'student'));
+    }
+
+    /**
+     * Display a single announcement detail
+     */
+    public function showAnnouncement($id)
+    {
+        try {
+            $student = Auth::user();
+
+            // Find the announcement or fail
+            $announcement = Announcement::with('creator')->findOrFail($id);
+
+            // Mark as read
+            if (!$announcement->isReadBy($student->id)) {
+                $announcement->markAsRead($student->id);
+            }
+
+            // Return the show view
+            return view('student.announcements.show', compact('announcement', 'student'));
+
+        } catch (\Exception $e) {
+            \Log::error('Error showing announcement: ' . $e->getMessage());
+            return redirect()->route('student.announcements.index')
+                ->with('error', 'Announcement not found.');
+        }
     }
 }

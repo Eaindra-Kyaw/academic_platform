@@ -23,23 +23,23 @@
 </a>
 
 <div class="nav-label">Analytics</div>
-<a href="#" class="nav-item">
-    <i class="bi bi-calendar-check"></i><span>Attendance</span>
-</a>
-<a href="#" class="nav-item">
-    <i class="bi bi-exclamation-triangle"></i><span>Risk Analysis</span>
-</a>
-<a href="{{ route('admin.reports') }}" class="nav-item @if (request()->routeIs('admin.reports')) active @endif">
+<a href="{{ route('admin.reports') }}" class="nav-item @if (request()->routeIs('admin.reports*')) active @endif">
     <i class="bi bi-file-earmark-text"></i><span>Reports</span>
 </a>
 
 <div class="nav-label">System</div>
-<a href="#" class="nav-item">
-    <i class="bi bi-calendar"></i><span>Semesters</span>
-</a>
-{{-- FIXED: Announcements link --}}
 <a href="{{ route('admin.announcements.index') }}" class="nav-item @if (request()->routeIs('admin.announcements*')) active @endif">
-    <i class="bi bi-megaphone"></i><span>Announcements</span>
+    <i class="bi bi-megaphone"></i>
+    <span>Announcements</span>
+    @php
+        $unreadCount = \App\Models\Announcement::getUnreadCount(Auth::user());
+    @endphp
+    @if ($unreadCount > 0)
+        <span
+            style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto;">
+            {{ $unreadCount }}
+        </span>
+    @endif
 </a>
 
 <div class="sidebar-note">

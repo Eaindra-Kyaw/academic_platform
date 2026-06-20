@@ -1,13 +1,13 @@
-{{-- resources/views/admin/announcements/show.blade.php --}}
+{{-- resources/views/lecturer/announcements/show.blade.php --}}
 @extends('layouts.app')
 
 @section('title', $announcement->title)
-@section('role', 'Admin')
+@section('role', 'Lecturer')
 @section('page-title', '📢 ' . $announcement->title)
 @section('welcome-text', 'Announcement details')
 
 @section('sidebar')
-    @include('layouts.partials.admin-sidebar')
+    @include('layouts.partials.lecturer-sidebar')
 @endsection
 
 @section('content')
@@ -66,15 +66,6 @@
             margin-top: 1rem;
         }
 
-        .announcement-detail .actions {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e5e7eb;
-        }
-
         .badge {
             display: inline-block;
             padding: 0.15rem 0.6rem;
@@ -88,19 +79,9 @@
             color: #374151;
         }
 
-        .badge-admin {
-            background: #fce7f3;
-            color: #9d174d;
-        }
-
         .badge-lecturer {
             background: #e0e7ff;
             color: #3730a3;
-        }
-
-        .badge-student {
-            background: #dbeafe;
-            color: #1e40af;
         }
 
         .badge-multiple {
@@ -113,59 +94,24 @@
             color: #166534;
         }
 
-        .badge-inactive {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
-
-        .btn-sm {
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
             padding: 0.3rem 0.8rem;
             border-radius: 0.3rem;
             font-size: 0.75rem;
             font-weight: 500;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-            transition: all 0.2s;
+            background: #f3f4f6;
+            color: #374151;
             text-decoration: none;
-        }
-
-        .btn-edit {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .btn-edit:hover {
-            background: #bfdbfe;
-        }
-
-        .btn-delete {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .btn-delete:hover {
-            background: #fecaca;
-        }
-
-        .btn-toggle {
-            background: #f3f4f6;
-            color: #374151;
-        }
-
-        .btn-toggle:hover {
-            background: #e5e7eb;
-        }
-
-        .btn-back {
-            background: #f3f4f6;
-            color: #374151;
+            transition: all 0.2s;
         }
 
         .btn-back:hover {
             background: #e5e7eb;
+            color: #374151;
+            text-decoration: none;
         }
 
         @media (max-width: 768px) {
@@ -181,18 +127,10 @@
                 flex-direction: column;
                 gap: 0.5rem;
             }
-
-            .announcement-detail .actions {
-                flex-direction: column;
-            }
-
-            .btn-sm {
-                justify-content: center;
-            }
         }
     </style>
 
-    <a href="{{ route('admin.announcements.index') }}" class="back-link">
+    <a href="{{ route('lecturer.announcements.index') }}" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to Announcements
     </a>
 
@@ -205,12 +143,6 @@
             </span>
             @if ($announcement->is_active)
                 <span class="badge badge-active">✅ Active</span>
-            @else
-                <span class="badge badge-inactive">❌ Inactive</span>
-            @endif
-            @if (!$announcement->isReadBy(Auth::id()))
-                <span class="badge badge-unread" style="background:#ef4444; color:white; animation:pulse 2s infinite;">●
-                    New</span>
             @endif
         </div>
 
@@ -238,47 +170,5 @@
                 Audience: {{ $announcement->audience_label ?? 'All Users' }}
             </span>
         </div>
-
-        <div class="actions">
-            <a href="{{ route('admin.announcements.edit', $announcement->id) }}" class="btn-sm btn-edit">
-                <i class="bi bi-pencil"></i> Edit
-            </a>
-            <a href="{{ route('admin.announcements.toggle', $announcement->id) }}" class="btn-sm btn-toggle"
-                onclick="return confirm('Toggle announcement status?')">
-                @if ($announcement->is_active)
-                    <i class="bi bi-eye-slash"></i> Deactivate
-                @else
-                    <i class="bi bi-eye"></i> Activate
-                @endif
-            </a>
-            <form action="{{ route('admin.announcements.destroy', $announcement->id) }}" method="POST"
-                style="display:inline;" onsubmit="return confirm('Delete this announcement?')">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn-sm btn-delete">
-                    <i class="bi bi-trash"></i> Delete
-                </button>
-            </form>
-            <a href="{{ route('admin.announcements.index') }}" class="btn-sm btn-back">
-                <i class="bi bi-arrow-left"></i> Back to List
-            </a>
-        </div>
     </div>
-
-    {{-- Add pulse animation for unread badge --}}
-    <style>
-        @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-
-            100% {
-                opacity: 1;
-            }
-        }
-    </style>
 @endsection

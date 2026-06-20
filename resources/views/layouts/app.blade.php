@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- ADD THIS META TAG FOR USER ROLE -->
+    <meta name="user-role" content="{{ Auth::user()->role->name ?? 'student' }}">
     <title>@yield('title', 'MTU Academic Intelligence System')</title>
 
     <!-- Google Fonts -->
@@ -522,6 +524,67 @@
             if (!dropdown.contains(event.target)) {
                 document.getElementById('dropdownMenu').classList.remove('show');
                 document.getElementById('dropdownArrow').style.transform = 'rotate(0deg)';
+            }
+        });
+
+        // ============================================================
+        // ANNOUNCEMENT UNREAD COUNT - SIMPLE VERSION
+        // ============================================================
+        function updateAnnouncementBadge() {
+            const userRole = document.querySelector('meta[name="user-role"]')?.content || 'student';
+
+            let url = '';
+            if (userRole === 'admin') {
+                url = '/admin/announcements/unread-count';
+            } else if (userRole === 'lecturer') {
+                url = '/lecturer/announcements/unread-count';
+            } else {
+                url = '/student/announcements/unread-count';
+            }
+
+            fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    cache: 'no-cache'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Find all announcement badges in sidebar with the specific style
+                    const badges = document.querySelectorAll('.nav-item span[style*="background:#ef4444"]');
+                    badges.forEach(badge => {
+                        if (data.count && data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.style.display = 'inline-block';
+                            badge.style.background = '#ef4444';
+                            badge.style.color = 'white';
+                            badge.style.fontSize = '0.55rem';
+                            badge.style.padding = '0.05rem 0.4rem';
+                            badge.style.borderRadius = '1rem';
+                            badge.style.minWidth = '1.2rem';
+                            badge.style.textAlign = 'center';
+                            badge.style.marginLeft = 'auto';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    });
+                })
+                .catch(() => {});
+        }
+
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(updateAnnouncementBadge, 500);
+        });
+
+        // Refresh every 30 seconds
+        setInterval(updateAnnouncementBadge, 30000);
+
+        // Refresh when page becomes visible again
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                setTimeout(updateAnnouncementBadge, 200);
             }
         });
     </script>

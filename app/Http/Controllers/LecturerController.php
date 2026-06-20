@@ -8,13 +8,12 @@ use App\Models\Course;
 use App\Models\AttendanceSession;
 use App\Models\User;
 use App\Models\Enrollment;
+use App\Models\Announcement;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class LecturerController extends Controller
 {
-    // Remove the constructor entirely - middleware is defined in routes
-
     public function dashboard()
     {
         $lecturerId = Auth::id();
@@ -39,7 +38,6 @@ class LecturerController extends Controller
         $expiresIn = 0;
 
         if ($activeSession) {
-            // Prepare data for QR code
             $qrData = json_encode([
                 'session_id' => $activeSession->id,
                 'course_id' => $activeSession->course_id,
@@ -48,18 +46,33 @@ class LecturerController extends Controller
                 'expires_at' => $activeSession->expires_at ? $activeSession->expires_at->toIso8601String() : null
             ]);
 
-            // Generate QR code using our helper
             $qrCode = QrCodeHelper::generate($qrData, 120);
 
-            // Calculate seconds remaining
             if ($activeSession->expires_at) {
                 $expiresIn = max(0, now()->diffInSeconds($activeSession->expires_at, false));
                 if ($expiresIn <= 0) {
-                    // Session expired, close it
                     $activeSession->update(['status' => 'ended', 'ended_at' => now()]);
                     $activeSession = null;
                     $qrCode = null;
                 }
+            }
+        }
+
+        // Get announcements for lecturer dashboard
+        $announcements = Announcement::forRole('lecturer')
+            ->where('is_active', true)
+            ->where(function($q) {
+                $q->whereNull('published_at')
+                  ->orWhere('published_at', '<=', now());
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // Mark announcements as read when viewed on dashboard
+        foreach ($announcements as $announcement) {
+            if (!$announcement->isReadBy(Auth::id())) {
+                $announcement->markAsRead(Auth::id());
             }
         }
 
@@ -86,10 +99,9 @@ class LecturerController extends Controller
                                        ->where('status', 'approved')
                                        ->count();
 
-            // FIXED: Changed from attendanceRecords() to records()
             $presentCount = $activeSession->records()->where('status', 'present')->count();
             $lateCount = $activeSession->records()->where('status', 'late')->count();
-            $presentCount += $lateCount; // Late students are also present
+            $presentCount += $lateCount;
             $absentCount = max(0, $totalInSession - $presentCount);
 
             if ($totalInSession > 0) {
@@ -98,7 +110,6 @@ class LecturerController extends Controller
                 $latePercent = round(($lateCount / $totalInSession) * 100, 1);
             }
 
-            // FIXED: Changed from attendanceRecords() to records()
             $lateStudents = $activeSession->records()
                                          ->where('status', 'late')
                                          ->with('student')
@@ -112,11 +123,9 @@ class LecturerController extends Controller
                                       ->count();
             $totalStudents += $enrolledCount;
 
-            // Calculate average attendance for this course
             $sessions = AttendanceSession::where('course_id', $course->id)->get();
             $totalAttendance = 0;
             foreach ($sessions as $session) {
-                // FIXED: Changed from attendanceRecords() to records()
                 $totalAttendance += $session->records()->count();
             }
             if ($sessions->count() > 0 && $enrolledCount > 0) {
@@ -159,7 +168,7 @@ class LecturerController extends Controller
             'totalStudents', 'atRiskStudents', 'avgAttendance', 'courseEngagement',
             'lowAlerts', 'activeSessions', 'presentCount', 'absentCount', 'lateCount',
             'presentPercent', 'absentPercent', 'latePercent', 'totalInSession',
-            'lateStudents', 'atRiskList'
+            'lateStudents', 'atRiskList', 'announcements'
         ));
     }
 
@@ -168,7 +177,6 @@ class LecturerController extends Controller
         $totalSessions = AttendanceSession::where('course_id', $courseId)->count();
         if ($totalSessions == 0) return 100;
 
-        // FIXED: Changed from attendanceRecords to records
         $presentSessions = AttendanceSession::where('course_id', $courseId)
             ->whereHas('records', function($q) use ($studentId) {
                 $q->where('student_id', $studentId)
@@ -186,7 +194,6 @@ class LecturerController extends Controller
             'room' => 'nullable|string|max:255'
         ]);
 
-        // Check if there's already an active session
         $existingSession = AttendanceSession::where('lecturer_id', Auth::id())
                                             ->where('status', 'active')
                                             ->first();
@@ -201,7 +208,6 @@ class LecturerController extends Controller
             return redirect()->back()->with('error', 'You already have an active session. Please end it first.');
         }
 
-        // Generate random manual code (6 characters)
         $manualCode = strtoupper(substr(md5(uniqid() . time() . rand()), 0, 6));
 
         $session = AttendanceSession::create([
@@ -216,7 +222,6 @@ class LecturerController extends Controller
             'session_token' => bin2hex(random_bytes(32))
         ]);
 
-        // Prepare QR data
         $qrData = json_encode([
             'session_id' => $session->id,
             'course_id' => $session->course_id,
@@ -225,7 +230,6 @@ class LecturerController extends Controller
             'expires_at' => $session->expires_at->toIso8601String()
         ]);
 
-        // Generate QR code
         $qrCode = QrCodeHelper::generate($qrData, 120);
 
         if ($request->ajax()) {
@@ -267,7 +271,6 @@ class LecturerController extends Controller
                                     ->where('status', 'active')
                                     ->firstOrFail();
 
-        // Generate new manual code
         $newManualCode = strtoupper(substr(md5(uniqid() . time() . rand()), 0, 6));
         $newToken = bin2hex(random_bytes(32));
 
@@ -276,12 +279,10 @@ class LecturerController extends Controller
             'session_token' => $newToken
         ]);
 
-        // Extend expiry if needed
         if ($session->expires_at && $session->expires_at->isPast()) {
             $session->update(['expires_at' => now()->addMinutes($session->duration)]);
         }
 
-        // Generate new QR code
         $qrData = json_encode([
             'session_id' => $session->id,
             'course_id' => $session->course_id,
@@ -306,17 +307,14 @@ class LecturerController extends Controller
 
     public function sessionStats($sessionId)
     {
-        // FIXED: Changed from attendanceRecords to records
         $session = AttendanceSession::with(['course', 'records.student'])
                                    ->where('lecturer_id', Auth::id())
                                    ->findOrFail($sessionId);
 
-        // FIXED: Changed from attendanceRecords to records
         $presentCount = $session->records->whereIn('status', ['present', 'late'])->count();
         $totalStudents = Enrollment::where('course_id', $session->course_id)
                                    ->where('status', 'approved')
                                    ->count();
-        // FIXED: Changed from attendanceRecords to records
         $lateCount = $session->records->where('status', 'late')->count();
 
         return response()->json([
@@ -325,7 +323,6 @@ class LecturerController extends Controller
             'total' => $totalStudents,
             'percentage' => $totalStudents > 0 ? round(($presentCount / $totalStudents) * 100, 1) : 0,
             'late' => $lateCount,
-            // FIXED: Changed from attendanceRecords to records
             'records' => $session->records->map(function($record) {
                 return [
                     'student_name' => $record->student->name,
@@ -337,7 +334,6 @@ class LecturerController extends Controller
         ]);
     }
 
-    // Keep your existing methods
     public function students()
     {
         $courses = Course::where('lecturer_id', Auth::id())->get();
@@ -358,8 +354,52 @@ class LecturerController extends Controller
         return view('lecturer.reports');
     }
 
-    public function announcements()
-    {
-        return view('lecturer.announcements');
+   /**
+ * Display lecturer announcements page
+ */
+public function announcements()
+{
+    $user = Auth::user();
+
+    $announcements = Announcement::forRole('lecturer')
+        ->where('is_active', true)
+        ->where(function($q) {
+            $q->whereNull('published_at')
+              ->orWhere('published_at', '<=', now());
+        })
+        ->orderBy('created_at', 'desc')
+        ->paginate(15);
+
+    foreach ($announcements as $announcement) {
+        if (!$announcement->isReadBy($user->id)) {
+            $announcement->markAsRead($user->id);
+        }
     }
+
+    $courses = Course::where('lecturer_id', Auth::id())
+        ->where('is_active', true)
+        ->get();
+
+    return view('lecturer.announcements.index', compact('announcements', 'courses'));
+}
+
+/**
+ * Display a single announcement detail
+ */
+public function showAnnouncement($id)
+{
+    $user = Auth::user();
+
+    $announcement = Announcement::findOrFail($id);
+
+    if (!$announcement->isReadBy($user->id)) {
+        $announcement->markAsRead($user->id);
+    }
+
+    $courses = Course::where('lecturer_id', Auth::id())
+        ->where('is_active', true)
+        ->get();
+
+    return view('lecturer.announcements.show', compact('announcement', 'user', 'courses'));
+}
 }

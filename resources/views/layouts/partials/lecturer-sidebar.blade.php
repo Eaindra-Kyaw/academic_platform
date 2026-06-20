@@ -1,3 +1,5 @@
+{{-- resources/views/layouts/partials/lecturer-sidebar.blade.php --}}
+
 <div class="nav-label">Main</div>
 <a href="{{ route('lecturer.dashboard') }}" class="nav-item @if (request()->routeIs('lecturer.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
@@ -29,11 +31,21 @@
     <span id="lecturerUnreadBadge"
         style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto; display:none;">0</span>
 </a>
+<a href="{{ route('lecturer.announcements.index') }}" class="nav-item @if (request()->routeIs('lecturer.announcements*')) active @endif">
+    <i class="bi bi-megaphone"></i>
+    <span>Announcements</span>
+    @php
+        $unreadCount = \App\Models\Announcement::getUnreadCount(Auth::user());
+    @endphp
+    @if ($unreadCount > 0)
+        <span
+            style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto;">
+            {{ $unreadCount }}
+        </span>
+    @endif
+</a>
 
 <div class="nav-label">Reports</div>
 <a href="{{ route('lecturer.reports') }}" class="nav-item @if (request()->routeIs('lecturer.reports')) active @endif">
     <i class="bi bi-file-earmark-text"></i><span>Export Reports</span>
-</a>
-<a href="{{ route('lecturer.announcements') }}" class="nav-item @if (request()->routeIs('lecturer.announcements')) active @endif">
-    <i class="bi bi-megaphone"></i><span>Announcements</span>
 </a>

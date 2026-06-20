@@ -1,13 +1,13 @@
-{{-- resources/views/admin/announcements/index.blade.php --}}
+{{-- resources/views/lecturer/announcements/index.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Announcements')
-@section('role', 'Admin')
+@section('role', 'Lecturer')
 @section('page-title', '📢 Announcements')
-@section('welcome-text', 'Manage system announcements')
+@section('welcome-text', 'View system announcements')
 
 @section('sidebar')
-    @include('layouts.partials.admin-sidebar')
+    @include('layouts.partials.lecturer-sidebar')
 @endsection
 
 @section('content')
@@ -19,6 +19,7 @@
             padding: 1.25rem;
             transition: all 0.3s ease;
             margin-bottom: 1rem;
+            cursor: pointer;
             position: relative;
         }
 
@@ -35,7 +36,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 5;
+            z-index: 10;
             display: block;
             text-indent: -9999px;
             overflow: hidden;
@@ -48,14 +49,12 @@
             pointer-events: none;
         }
 
-        /* But we want links and buttons inside to still work, so we give them pointer-events: auto */
+        /* But we want links inside to still work, so we give them pointer-events: auto */
         .announcement-card .card-content a,
-        .announcement-card .card-content .actions a,
-        .announcement-card .card-content .actions button,
         .announcement-card .card-content .read-more {
             pointer-events: auto;
             position: relative;
-            z-index: 6;
+            z-index: 2;
         }
 
         .announcement-card .header {
@@ -79,7 +78,7 @@
             text-decoration: none;
             pointer-events: auto;
             position: relative;
-            z-index: 6;
+            z-index: 2;
         }
 
         .announcement-card .title a:hover {
@@ -91,7 +90,7 @@
             font-size: 0.85rem;
             color: #4b5563;
             margin: 0.5rem 0;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         .announcement-card .meta {
@@ -113,7 +112,7 @@
             font-weight: 600;
             pointer-events: auto;
             position: relative;
-            z-index: 6;
+            z-index: 2;
         }
 
         .badge-all {
@@ -121,19 +120,9 @@
             color: #374151;
         }
 
-        .badge-admin {
-            background: #fce7f3;
-            color: #9d174d;
-        }
-
         .badge-lecturer {
             background: #e0e7ff;
             color: #3730a3;
-        }
-
-        .badge-student {
-            background: #dbeafe;
-            color: #1e40af;
         }
 
         .badge-multiple {
@@ -144,11 +133,6 @@
         .badge-active {
             background: #dcfce7;
             color: #166534;
-        }
-
-        .badge-inactive {
-            background: #f3f4f6;
-            color: #6b7280;
         }
 
         .badge-unread {
@@ -173,73 +157,6 @@
             }
         }
 
-        .btn-sm {
-            padding: 0.2rem 0.6rem;
-            border-radius: 0.3rem;
-            font-size: 0.7rem;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.2rem;
-            transition: all 0.2s;
-            text-decoration: none;
-            pointer-events: auto;
-            position: relative;
-            z-index: 6;
-        }
-
-        .btn-edit {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .btn-edit:hover {
-            background: #bfdbfe;
-        }
-
-        .btn-delete {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .btn-delete:hover {
-            background: #fecaca;
-        }
-
-        .btn-toggle {
-            background: #f3f4f6;
-            color: #374151;
-        }
-
-        .btn-toggle:hover {
-            background: #e5e7eb;
-        }
-
-        .btn-view {
-            background: #e0e7ff;
-            color: #3730a3;
-        }
-
-        .btn-view:hover {
-            background: #bfdbfe;
-        }
-
-        .actions {
-            display: flex;
-            gap: 0.3rem;
-            flex-wrap: wrap;
-            pointer-events: none;
-        }
-
-        .actions a,
-        .actions button {
-            pointer-events: auto;
-            position: relative;
-            z-index: 6;
-        }
-
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
@@ -261,76 +178,6 @@
             font-size: 0.85rem;
         }
 
-        .alert {
-            padding: 0.6rem 1rem;
-            border-radius: 0.75rem;
-            margin-bottom: 1rem;
-            font-size: 0.85rem;
-        }
-
-        .alert-success {
-            background: #dcfce7;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }
-
-        .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        .alert-dismissible {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .btn-close-alert {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: inherit;
-            padding: 0 0.3rem;
-            opacity: 0.7;
-        }
-
-        .btn-close-alert:hover {
-            opacity: 1;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-
-        .btn-create {
-            background: #800000;
-            color: white;
-            padding: 0.5rem 1.2rem;
-            border-radius: 0.5rem;
-            border: none;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-
-        .btn-create:hover {
-            background: #5f0000;
-            transform: translateY(-1px);
-            color: white;
-        }
-
         .pagination-wrapper {
             margin-top: 1rem;
             display: flex;
@@ -344,9 +191,11 @@
             color: #800000;
             font-size: 0.8rem;
             font-weight: 500;
+            display: inline-block;
+            margin-top: 0.2rem;
             pointer-events: auto;
             position: relative;
-            z-index: 6;
+            z-index: 2;
         }
 
         .read-more:hover {
@@ -358,15 +207,6 @@
                 flex-direction: column;
             }
 
-            .top-bar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .btn-create {
-                justify-content: center;
-            }
-
             .pagination-wrapper {
                 flex-direction: column;
                 text-align: center;
@@ -374,44 +214,24 @@
         }
     </style>
 
-    {{-- Alerts --}}
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible">
-            <i class="bi bi-check-circle"></i> {{ session('success') }}
-            <button class="btn-close-alert" onclick="this.parentElement.remove()">&times;</button>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible">
-            <i class="bi bi-exclamation-triangle"></i> {{ session('error') }}
-            <button class="btn-close-alert" onclick="this.parentElement.remove()">&times;</button>
-        </div>
-    @endif
-
-    {{-- Top Bar --}}
-    <div class="top-bar">
-        <div>
-            <span class="text-muted" style="font-size:0.85rem;">
-                Total: {{ $announcements->total() }} announcements
-            </span>
-        </div>
-        <a href="{{ route('admin.announcements.create') }}" class="btn-create">
-            <i class="bi bi-plus-circle"></i> New Announcement
-        </a>
+    <div class="mb-4">
+        <h5 style="color: #6b7280; font-size: 0.85rem; font-weight: 400;">
+            <i class="bi bi-info-circle"></i>
+            Showing announcements from administrators
+        </h5>
     </div>
 
     {{-- Announcements List --}}
     @forelse($announcements as $announcement)
         <div class="announcement-card">
             {{-- Full card clickable link - covers the entire card --}}
-            <a href="{{ route('admin.announcements.show', $announcement->id) }}" class="card-link"></a>
+            <a href="{{ route('lecturer.announcements.show', $announcement->id) }}" class="card-link"></a>
 
             <div class="card-content">
                 <div class="header">
                     <div>
                         <h5 class="title">
-                            <a href="{{ route('admin.announcements.show', $announcement->id) }}">
+                            <a href="{{ route('lecturer.announcements.show', $announcement->id) }}">
                                 {{ $announcement->title }}
                             </a>
                         </h5>
@@ -421,45 +241,22 @@
                             </span>
                             @if ($announcement->is_active)
                                 <span class="badge badge-active">✅ Active</span>
-                            @else
-                                <span class="badge badge-inactive">❌ Inactive</span>
                             @endif
                             @if (!$announcement->isReadBy(Auth::id()))
                                 <span class="badge badge-unread">● New</span>
                             @endif
                         </div>
                     </div>
-                    <div class="actions">
-                        <a href="{{ route('admin.announcements.show', $announcement->id) }}" class="btn-sm btn-view">
-                            <i class="bi bi-eye"></i> View
-                        </a>
-                        <a href="{{ route('admin.announcements.edit', $announcement->id) }}" class="btn-sm btn-edit">
-                            <i class="bi bi-pencil"></i> Edit
-                        </a>
-                        <a href="{{ route('admin.announcements.toggle', $announcement->id) }}" class="btn-sm btn-toggle"
-                            onclick="return confirm('Toggle announcement status?')">
-                            @if ($announcement->is_active)
-                                <i class="bi bi-eye-slash"></i> Deactivate
-                            @else
-                                <i class="bi bi-eye"></i> Activate
-                            @endif
-                        </a>
-                        <form action="{{ route('admin.announcements.destroy', $announcement->id) }}" method="POST"
-                            style="display:inline;" onsubmit="return confirm('Delete this announcement?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn-sm btn-delete">
-                                <i class="bi bi-trash"></i> Delete
-                            </button>
-                        </form>
-                    </div>
+                    <small style="color:#9ca3af; font-size:0.7rem; white-space:nowrap;">
+                        {{ $announcement->created_at->diffForHumans() }}
+                    </small>
                 </div>
 
                 <div class="content-preview">
-                    {{ Str::limit($announcement->content, 200) }}
-                    @if (strlen($announcement->content) > 200)
-                        <a href="{{ route('admin.announcements.show', $announcement->id) }}" class="read-more">
-                            Read more
+                    {{ Str::limit($announcement->content, 150) }}
+                    @if (strlen($announcement->content) > 150)
+                        <a href="{{ route('lecturer.announcements.show', $announcement->id) }}" class="read-more">
+                            Read more →
                         </a>
                     @endif
                 </div>
@@ -486,10 +283,7 @@
         <div class="empty-state">
             <i class="bi bi-megaphone"></i>
             <h4>No Announcements</h4>
-            <p>No announcements have been created yet.</p>
-            <a href="{{ route('admin.announcements.create') }}" class="btn-create" style="margin-top:1rem;">
-                <i class="bi bi-plus-circle"></i> Create First Announcement
-            </a>
+            <p>No announcements have been published for you yet.</p>
         </div>
     @endforelse
 
