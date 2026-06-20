@@ -14,18 +14,18 @@ class AuditLog extends Model
         'action',
         'model_type',
         'model_id',
-        'module',
-        'description',  // Changed from 'details' to 'description'
+        'details',        // ✅ Uses 'details' column from your database
         'ip_address',
         'user_agent',
+        'status',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'details' => 'array',
     ];
 
-    // Relationships
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -57,28 +57,57 @@ class AuditLog extends Model
         return $query->where('status', 'failed');
     }
 
-    // Helper method to log actions
+    // Main logging method
     public static function log($userId, $action, $details = null, $model = null, $status = 'success')
     {
-        // Convert details to JSON string if it's an array
-        $description = is_array($details) ? json_encode($details) : $details;
-
-        // Determine module name from model
-        $module = null;
-        if ($model) {
-            $module = class_basename($model);
-        }
+        $detailsData = is_array($details) ? json_encode($details) : $details;
 
         return self::create([
             'user_id' => $userId,
             'action' => $action,
             'model_type' => $model ? get_class($model) : null,
             'model_id' => $model ? $model->id : null,
-            'module' => $module,
-            'description' => $description,
+            'details' => $detailsData,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'status' => $status,
         ]);
+    }
+
+    // Accessors
+    public function getDetailsArrayAttribute()
+    {
+        return json_decode($this->details, true) ?? [];
+    }
+
+    public function getActionLabelAttribute()
+    {
+        $labels = [
+            'login' => 'Login',
+            'logout' => 'Logout',
+            'create' => 'Create',
+            'update' => 'Update',
+            'delete' => 'Delete',
+            'create_session' => 'Create Session',
+            'end_session' => 'End Session',
+            'refresh_qr' => 'Refresh QR',
+            'regenerate_semester_qr' => 'Regenerate Semester QR',
+            'manual_attendance' => 'Manual Attendance',
+            'manual_attendance_failed' => 'Manual Attendance Failed',
+        ];
+
+        return $labels[$this->action] ?? ucfirst(str_replace('_', ' ', $this->action));
+    }
+
+    public function getStatusBadgeAttribute()
+    {
+        $colors = [
+            'success' => 'success',
+            'failed' => 'danger',
+            'warning' => 'warning',
+            'info' => 'info',
+        ];
+
+        return $colors[$this->status] ?? 'secondary';
     }
 }

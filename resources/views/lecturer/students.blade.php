@@ -331,7 +331,7 @@
                             <td><strong>{{ $student->name }}</strong></td>
                             <td>{{ $student->email }}</td>
                             <td>{{ $student->student_id ?? 'N/A' }}</td>
-                            <td>Year {{ $student->current_year }}</td>
+                            <td> {{ $student->current_year }}th year</td>
                             <td>
                                 {{ $student->attendance_percentage ?? 0 }}%
                                 <div class="progress-bar"

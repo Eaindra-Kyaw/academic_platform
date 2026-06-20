@@ -349,57 +349,292 @@ class LecturerController extends Controller
         return view('lecturer.schedule');
     }
 
+    /**
+     * Reports Page - Updated with data
+     */
     public function reports()
     {
-        return view('lecturer.reports');
+        $lecturer = Auth::user();
+
+        // Get lecturer's courses
+        $courses = Course::where('lecturer_id', $lecturer->id)
+            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+            ->where('is_active', true)
+            ->get();
+
+        // Get all sessions for reports
+        $sessions = AttendanceSession::where('lecturer_id', $lecturer->id)
+            ->with(['course', 'records'])
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get();
+
+        // Statistics
+        $totalSessions = AttendanceSession::where('lecturer_id', $lecturer->id)->count();
+        $activeSessions = AttendanceSession::where('lecturer_id', $lecturer->id)
+            ->where('status', 'active')
+            ->count();
+
+        // Calculate overall attendance
+        $totalStudents = 0;
+        $totalPresent = 0;
+        $totalLate = 0;
+        $totalAbsent = 0;
+
+        foreach ($sessions as $session) {
+            $present = $session->records->where('status', 'present')->count();
+            $late = $session->records->where('status', 'late')->count();
+            $absent = $session->records->where('status', 'absent')->count();
+
+            $totalPresent += $present;
+            $totalLate += $late;
+            $totalAbsent += $absent;
+            $totalStudents += ($present + $late + $absent);
+        }
+
+        $averageAttendance = $totalStudents > 0 ? round(($totalPresent / $totalStudents) * 100) : 0;
+
+        // Course-specific statistics
+        $courseStats = [];
+        foreach ($courses as $course) {
+            $courseSessions = AttendanceSession::where('course_id', $course->id)
+                ->with('records')
+                ->get();
+
+            $coursePresent = 0;
+            $courseTotal = 0;
+            $courseLate = 0;
+            $courseAbsent = 0;
+
+            foreach ($courseSessions as $session) {
+                $present = $session->records->where('status', 'present')->count();
+                $late = $session->records->where('status', 'late')->count();
+                $absent = $session->records->where('status', 'absent')->count();
+
+                $coursePresent += $present;
+                $courseLate += $late;
+                $courseAbsent += $absent;
+                $courseTotal += ($present + $late + $absent);
+            }
+
+            $courseStats[$course->id] = [
+                'name' => $course->course_name,
+                'code' => $course->course_code,
+                'sessions' => $courseSessions->count(),
+                'attendance' => $courseTotal > 0 ? round(($coursePresent / $courseTotal) * 100) : 0,
+                'students' => Enrollment::where('course_id', $course->id)->where('status', 'approved')->count(),
+                'present' => $coursePresent,
+                'late' => $courseLate,
+                'absent' => $courseAbsent,
+                'total' => $courseTotal,
+            ];
+        }
+
+        return view('lecturer.reports', compact(
+            'courses',
+            'sessions',
+            'courseStats',
+            'totalSessions',
+            'activeSessions',
+            'averageAttendance',
+            'totalStudents',
+            'totalPresent',
+            'totalLate',
+            'totalAbsent'
+        ));
     }
 
-   /**
- * Display lecturer announcements page
- */
-public function announcements()
-{
-    $user = Auth::user();
+    /**
+     * Display lecturer announcements page
+     */
+    public function announcements()
+    {
+        $user = Auth::user();
 
-    $announcements = Announcement::forRole('lecturer')
-        ->where('is_active', true)
-        ->where(function($q) {
-            $q->whereNull('published_at')
-              ->orWhere('published_at', '<=', now());
-        })
-        ->orderBy('created_at', 'desc')
-        ->paginate(15);
+        $announcements = Announcement::forRole('lecturer')
+            ->where('is_active', true)
+            ->where(function($q) {
+                $q->whereNull('published_at')
+                  ->orWhere('published_at', '<=', now());
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
-    foreach ($announcements as $announcement) {
+        foreach ($announcements as $announcement) {
+            if (!$announcement->isReadBy($user->id)) {
+                $announcement->markAsRead($user->id);
+            }
+        }
+
+        $courses = Course::where('lecturer_id', Auth::id())
+            ->where('is_active', true)
+            ->get();
+
+        return view('lecturer.announcements.index', compact('announcements', 'courses'));
+    }
+
+    /**
+     * Display a single announcement detail
+     */
+    public function showAnnouncement($id)
+    {
+        $user = Auth::user();
+
+        $announcement = Announcement::findOrFail($id);
+
         if (!$announcement->isReadBy($user->id)) {
             $announcement->markAsRead($user->id);
         }
+
+        $courses = Course::where('lecturer_id', Auth::id())
+            ->where('is_active', true)
+            ->get();
+
+        return view('lecturer.announcements.show', compact('announcement', 'user', 'courses'));
     }
 
-    $courses = Course::where('lecturer_id', Auth::id())
-        ->where('is_active', true)
-        ->get();
-
-    return view('lecturer.announcements.index', compact('announcements', 'courses'));
-}
-
-/**
- * Display a single announcement detail
+    /**
+ * Display lecturer timetable
  */
-public function showAnnouncement($id)
+public function timetable()
 {
-    $user = Auth::user();
+    $lecturer = Auth::user();
 
-    $announcement = Announcement::findOrFail($id);
-
-    if (!$announcement->isReadBy($user->id)) {
-        $announcement->markAsRead($user->id);
-    }
-
-    $courses = Course::where('lecturer_id', Auth::id())
+    // Get lecturer's courses
+    $courses = Course::where('lecturer_id', $lecturer->id)
+        ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
         ->where('is_active', true)
         ->get();
 
-    return view('lecturer.announcements.show', compact('announcement', 'user', 'courses'));
+    // ============================================
+    // SAMPLE TIMETABLE DATA (Replace with your actual data)
+    // ============================================
+
+    // Days of the week
+    $days = [];
+    $today = now();
+    $weekStart = $today->copy()->startOfWeek();
+    $weekEnd = $today->copy()->endOfWeek();
+
+    $dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    foreach ($dayNames as $index => $name) {
+        $date = $weekStart->copy()->addDays($index);
+        $days[] = [
+            'label' => $name,
+            'date' => $date->format('d'),
+            'is_today' => $date->isToday(),
+        ];
+    }
+
+    // Time slots
+    $timeSlots = [];
+    $timeRanges = [
+        ['time' => '8:00 - 9:00', 'period' => 1],
+        ['time' => '9:00 - 10:00', 'period' => 2],
+        ['time' => '10:00 - 11:00', 'period' => 3],
+        ['time' => '11:00 - 12:00', 'period' => 4],
+        ['time' => '12:00 - 1:00', 'period' => 5],
+        ['time' => '1:00 - 2:00', 'period' => 6],
+        ['time' => '2:00 - 3:00', 'period' => 7],
+        ['time' => '3:00 - 4:00', 'period' => 8],
+        ['time' => '4:00 - 5:00', 'period' => 9],
+    ];
+
+    foreach ($timeRanges as $range) {
+        $timeSlots[] = [
+            'time' => $range['time'],
+            'period' => $range['period'],
+        ];
+    }
+
+    // ============================================
+    // SAMPLE CLASS DATA (Replace with your actual database data)
+    // ============================================
+
+    // Example: If you have a timetable table in your database,
+    // you would query it here.
+    // For now, we'll use sample data:
+
+    $sampleTimetable = [
+        // Monday (index 0)
+        [
+            1 => ['course_name' => 'Machine Learning', 'course_code' => 'CEIT-52033', 'room' => '1-3-7', 'time' => '8:00-9:00', 'students' => 45],
+            2 => ['course_name' => 'Data Science', 'course_code' => 'CEIT-52034', 'room' => '1-3-8', 'time' => '9:00-10:00', 'students' => 38],
+        ],
+        // Tuesday (index 1)
+        [
+            3 => ['course_name' => 'Web Development', 'course_code' => 'CEIT-52035', 'room' => '2-1-5', 'time' => '10:00-11:00', 'students' => 42],
+            4 => ['course_name' => 'Machine Learning', 'course_code' => 'CEIT-52033', 'room' => '1-3-7', 'time' => '11:00-12:00', 'students' => 45],
+        ],
+        // Wednesday (index 2)
+        [
+            1 => ['course_name' => 'Database Systems', 'course_code' => 'CEIT-52036', 'room' => '1-3-9', 'time' => '8:00-9:00', 'students' => 40],
+            5 => ['course_name' => 'Web Development', 'course_code' => 'CEIT-52035', 'room' => '2-1-5', 'time' => '12:00-1:00', 'students' => 42],
+        ],
+        // Thursday (index 3)
+        [
+            2 => ['course_name' => 'Data Science', 'course_code' => 'CEIT-52034', 'room' => '1-3-8', 'time' => '9:00-10:00', 'students' => 38],
+            6 => ['course_name' => 'Database Systems', 'course_code' => 'CEIT-52036', 'room' => '1-3-9', 'time' => '1:00-2:00', 'students' => 40],
+        ],
+        // Friday (index 4)
+        [
+            3 => ['course_name' => 'Machine Learning', 'course_code' => 'CEIT-52033', 'room' => '1-3-7', 'time' => '10:00-11:00', 'students' => 45],
+            7 => ['course_name' => 'Data Science', 'course_code' => 'CEIT-52034', 'room' => '1-3-8', 'time' => '2:00-3:00', 'students' => 38],
+        ],
+        // Saturday (index 5) - No classes
+        [],
+        // Sunday (index 6) - No classes
+        [],
+    ];
+
+    // Build the timetable array
+    $timetable = [];
+    for ($day = 0; $day < 7; $day++) {
+        $timetable[$day] = [];
+        foreach ($timeRanges as $range) {
+            $period = $range['period'];
+            $timetable[$day][$period] = $sampleTimetable[$day][$period] ?? null;
+        }
+    }
+
+    // Find next class
+    $nextClass = null;
+    $now = now();
+    $currentDay = $now->dayOfWeek; // 0=Sunday, 1=Monday, etc.
+    $currentHour = $now->hour;
+    $currentMinute = $now->minute;
+    $currentTime = $currentHour + ($currentMinute / 60);
+
+    // Check today's remaining classes
+    $dayIndex = $currentDay == 0 ? 6 : $currentDay - 1; // Convert to our 0=Monday format
+    foreach ($timeRanges as $range) {
+        $period = $range['period'];
+        if (isset($sampleTimetable[$dayIndex][$period])) {
+            // Parse time
+            $timeParts = explode('-', $range['time']);
+            $startTime = trim($timeParts[0]);
+            $startHour = (int)explode(':', $startTime)[0];
+            $startMinute = (int)explode(':', $startTime)[1];
+            $classStartTime = $startHour + ($startMinute / 60);
+
+            if ($classStartTime > $currentTime) {
+                $class = $sampleTimetable[$dayIndex][$period];
+                $class['start_time'] = now()->setTime($startHour, $startMinute);
+                $class['time'] = $range['time'];
+                $nextClass = $class;
+                break;
+            }
+        }
+    }
+
+    return view('lecturer.timetable', compact(
+        'courses',
+        'days',
+        'timeSlots',
+        'timetable',
+        'weekStart',
+        'weekEnd',
+        'nextClass'
+    ));
 }
 }

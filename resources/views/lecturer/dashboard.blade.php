@@ -517,28 +517,29 @@
                 _token: '{{ csrf_token() }}'
             };
 
-            fetch('{{ route('lecturer.generateQr') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(formData)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    hideLoading();
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert(data.message || 'Error creating session');
-                    }
-                })
-                .catch(error => {
-                    hideLoading();
-                    console.error('Error:', error);
-                    alert('Error creating session. Please try again.');
-                });
+            fetch('{{ route('lecturer.attendance.generate.qr') }}
+                ', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(formData)
+            })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Error creating session');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Error creating session. Please try again.');
+        });
         });
 
         // End session

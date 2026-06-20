@@ -82,16 +82,6 @@
             margin-bottom: 10px;
         }
 
-        .recent-sessions {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .session-item {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
         .countdown {
             font-size: 14px;
             margin-top: 10px;
@@ -168,8 +158,7 @@
                                 <button type="submit" class="btn-custom" style="background: #f59e0b;">⟳ Regenerate
                                     QR</button>
                             </form>
-                            <form method="POST"
-                                action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
+                            <form method="POST" action="{{ route('lecturer.attendance.session.end', $activeSession->id) }}"
                                 style="display: inline;">
                                 @csrf
                                 <button type="submit" class="btn-custom" style="background: #dc2626;">⏹ End
@@ -205,17 +194,17 @@
                             <p><strong>Course:</strong> {{ $activeSession->course->course_name ?? 'N/A' }}</p>
                             <p><strong>Room:</strong> {{ $activeSession->room ?? 'Not specified' }}</p>
                             <p><strong>Manual Code:</strong></p>
-                            <div class="manual-code">{{ $activeSession->session_code }}</div>
+                            <div class="manual-code">{{ $activeSession->manual_code }}</div>
                             <div class="countdown"><span id="countdownTimer"></span></div>
                         </div>
                         <div style="margin-top: 15px;">
                             <form method="POST"
-                                action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
+                                action="{{ route('lecturer.attendance.session.end', $activeSession->id) }}"
                                 style="display: inline;">
                                 @csrf
                                 <button type="submit" class="btn-custom" style="background: #dc2626;">End Session</button>
                             </form>
-                            <a href="{{ route('lecturer.attendance.sessions.refresh', $activeSession->id) }}"
+                            <a href="{{ route('lecturer.attendance.session.refresh', $activeSession->id) }}"
                                 class="btn-custom" style="background: #f59e0b;">Refresh QR</a>
                         </div>
                     </div>
@@ -330,29 +319,22 @@
                 </form>
             </div>
 
-            <!-- Recent Sessions -->
-            <div class="mode-selector">
-                <h5><i class="bi bi-clock-history"></i> Recent Sessions</h5>
-                <div class="recent-sessions">
-                    @if ($recentSessions && $recentSessions->count() > 0)
-                        @foreach ($recentSessions as $session)
-                            <div class="session-item">
-                                <strong>{{ $session->course->course_name ?? 'N/A' }}</strong><br>
-                                <small>{{ \Carbon\Carbon::parse($session->created_at)->format('M d, Y H:i') }} |
-                                    {{ $session->present_count }}/{{ $session->total_students ?? 0 }} present</small>
-                            </div>
-                        @endforeach
-                    @else
-                        <p class="text-muted">No recent sessions</p>
-                    @endif
-                </div>
+            <!-- Link to Session History -->
+            <div class="mode-selector" style="text-align: center; background: #f8fafc;">
+                <a href="{{ route('lecturer.attendance.sessions') }}" class="btn btn-outline-primary"
+                    style="width: 100%;">
+                    <i class="bi bi-clock-history"></i> View Full Session History
+                </a>
+                <small class="text-muted" style="display: block; margin-top: 8px;">
+                    View all past sessions, attendance statistics, and detailed reports
+                </small>
             </div>
         </div>
     </div>
 
     <script>
-        @if ($activeSession && $activeSession->qr_expires_at && $activeSession->course->qr_mode == 'session')
-            let expiresAt = new Date('{{ $activeSession->qr_expires_at }}').getTime();
+        @if ($activeSession && $activeSession->expires_at && $activeSession->course->qr_mode == 'session')
+            let expiresAt = new Date('{{ $activeSession->expires_at }}').getTime();
             setInterval(function() {
                 let now = new Date().getTime();
                 let distance = expiresAt - now;

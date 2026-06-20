@@ -15,28 +15,19 @@ class AttendanceSession extends Model
         'course_id',
         'lecturer_id',
         'session_token',
-        'session_code',
         'manual_code',
         'room',
         'duration',
         'status',
         'started_at',
-        'start_time',
-        'session_date',
         'expires_at',
-        'qr_expires_at',
-        'total_students',
-        'present_count',
-        'late_count',
-        'absent_count',
+        'ended_at',
     ];
 
     protected $casts = [
-        'qr_expires_at' => 'datetime',
-        'session_date' => 'date',
-        'start_time' => 'datetime',
         'started_at' => 'datetime',
         'expires_at' => 'datetime',
+        'ended_at' => 'datetime',
         'deleted_at' => 'datetime',
     ];
 
@@ -58,12 +49,12 @@ class AttendanceSession extends Model
     public function scopeActive($query)
     {
         return $query->where('status', 'active')
-                     ->where('qr_expires_at', '>', now());
+                     ->where('expires_at', '>', now());
     }
 
     public function isExpired()
     {
-        return $this->qr_expires_at && now()->gt($this->qr_expires_at);
+        return $this->expires_at && now()->gt($this->expires_at);
     }
 
     public function isActive()
@@ -71,14 +62,7 @@ class AttendanceSession extends Model
         return $this->status === 'active' && !$this->isExpired();
     }
 
-    public function getAttendancePercentageAttribute()
-    {
-        $total = $this->total_students ?? 0;
-        if ($total == 0) return 0;
-        $present = $this->present_count ?? 0;
-        return round(($present / $total) * 100);
-    }
-
+    // Generate SHA-256 token for QR
     public static function generateSessionToken()
     {
         do {
@@ -87,17 +71,50 @@ class AttendanceSession extends Model
         return $token;
     }
 
+    // Generate 6-character manual code
     public static function generateSessionCode()
     {
         do {
             $code = strtoupper(substr(Str::random(6), 0, 6));
-        } while (self::where('session_code', $code)->exists());
+        } while (self::where('manual_code', $code)->exists());
         return $code;
     }
 
+    // Get QR URL for scanning
     public function getQRUrl()
     {
-        $baseUrl = 'https://192.168.1.16:8443';
+        $baseUrl = config('app.url');
         return $baseUrl . '/student/scan/process?token=' . $this->session_token . '&session=' . $this->id;
+    }
+
+    // Get attendance statistics from records
+    public function getPresentCountAttribute()
+    {
+        return $this->records()->where('status', 'present')->count();
+    }
+
+    public function getLateCountAttribute()
+    {
+        return $this->records()->where('status', 'late')->count();
+    }
+
+    public function getAbsentCountAttribute()
+    {
+        return $this->records()->where('status', 'absent')->count();
+    }
+
+    public function getTotalStudentsAttribute()
+    {
+        return Enrollment::where('course_id', $this->course_id)
+            ->where('status', 'approved')
+            ->count();
+    }
+
+    public function getAttendancePercentageAttribute()
+    {
+        $total = $this->total_students;
+        if ($total == 0) return 0;
+        $present = $this->present_count;
+        return round(($present / $total) * 100);
     }
 }

@@ -18,8 +18,8 @@
 <a href="{{ route('lecturer.students') }}" class="nav-item @if (request()->routeIs('lecturer.students')) active @endif">
     <i class="bi bi-people"></i><span>All Students</span>
 </a>
-<a href="{{ route('lecturer.schedule') }}" class="nav-item @if (request()->routeIs('lecturer.schedule')) active @endif">
-    <i class="bi bi-calendar"></i><span>Schedule</span>
+<a href="{{ route('lecturer.timetable') }}" class="nav-item @if (request()->routeIs('lecturer.timetable')) active @endif">
+    <i class="bi bi-calendar-week"></i><span>Timetable</span>
 </a>
 
 <div class="nav-label">Communication</div>
@@ -29,7 +29,6 @@
     <span id="lecturerUnreadBadge"
         style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto; display:none;">0</span>
 </a>
-{{-- In lecturer-sidebar.blade.php --}}
 <a href="{{ route('lecturer.announcements') }}" class="nav-item @if (request()->routeIs('lecturer.announcements')) active @endif">
     <i class="bi bi-megaphone"></i>
     <span>Announcements</span>
@@ -39,5 +38,5 @@
 
 <div class="nav-label">Reports</div>
 <a href="{{ route('lecturer.reports') }}" class="nav-item @if (request()->routeIs('lecturer.reports')) active @endif">
-    <i class="bi bi-file-earmark-text"></i><span>Export Reports</span>
+    <i class="bi bi-file-earmark-text"></i><span> Reports</span>
 </a>
