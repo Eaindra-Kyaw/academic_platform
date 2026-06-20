@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\User;
 use App\Models\Course;
+use App\Models\Semester;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -126,13 +127,19 @@ class DepartmentController extends Controller
             ->pluck('current_year')
             ->toArray();
 
+        // Get all semesters
+        $semesters = Semester::orderBy('year')
+            ->orderBy('semester')
+            ->get();
+
         return view('admin.departments.show', compact(
             'department',
             'studentsByYear',
             'coursesByYear',
             'lecturers',
             'stats',
-            'availableYears'
+            'availableYears',
+            'semesters'
         ));
     }
 
@@ -181,6 +188,27 @@ class DepartmentController extends Controller
             'yearLabel',
             'courses'
         ));
+    }
+
+    /**
+     * Show courses for a specific semester in a department
+     */
+    public function semesterCourses(Department $department, $semesterId)
+    {
+        $semester = Semester::findOrFail($semesterId);
+
+        $courses = Course::where('department_id', $department->id)
+            ->where('year', $semester->year_name)
+            ->where('semester', $semester->semester_name)
+            ->with(['lecturer', 'students'])
+            ->get()
+            ->map(function($course) {
+                $course->student_count = $course->student_count;
+                $course->avg_attendance = $course->average_attendance;
+                return $course;
+            });
+
+        return view('admin.departments.semester-courses', compact('department', 'semester', 'courses'));
     }
 
     /**

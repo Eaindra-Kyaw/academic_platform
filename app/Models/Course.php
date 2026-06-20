@@ -15,6 +15,7 @@ class Course extends Model
         'course_code',
         'course_name',
         'department_id',
+        'semester_id',        // ADD THIS
         'lecturer_id',
         'lecturer_name',
         'credits',
@@ -68,6 +69,12 @@ class Course extends Model
         return $this->belongsTo(Department::class);
     }
 
+    // ADD THIS RELATIONSHIP
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
+    }
+
     public function lecturer()
     {
         return $this->belongsTo(User::class, 'lecturer_id');
@@ -119,6 +126,11 @@ class Course extends Model
     public function scopeByDepartment($query, $departmentId)
     {
         return $query->where('department_id', $departmentId);
+    }
+
+    public function scopeBySemester($query, $semesterId)
+    {
+        return $query->where('semester_id', $semesterId);
     }
 
     // Get student count (approved only)
@@ -175,6 +187,12 @@ class Course extends Model
     public function getSemesterLabelAttribute()
     {
         return $this->semester ?? 'N/A';
+    }
+
+    // Get semester full name from relationship
+    public function getSemesterFullNameAttribute()
+    {
+        return $this->semester ? $this->semester->full_name : 'No Semester';
     }
 
     // Check if student is enrolled

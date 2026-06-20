@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\DepartmentController;
 use App\Http\Controllers\Admin\LecturerController as AdminLecturerController;
 use App\Http\Controllers\Admin\MessageController as AdminMessageController;
 use App\Http\Controllers\Admin\AnnouncementController;
+use App\Http\Controllers\Admin\SemesterController;
 use App\Http\Controllers\Lecturer\MessageController as LecturerMessageController;
 use App\Http\Controllers\Student\MessageController as StudentMessageController;
 use App\Http\Controllers\Auth\RoleLoginController;
@@ -199,6 +200,22 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // ============================================================
+    // SEMESTER ROUTES (Admin) - ADD THIS SECTION
+    // ============================================================
+    Route::prefix('semesters')->name('semesters.')->group(function () {
+        Route::get('/', [SemesterController::class, 'index'])->name('index');
+        Route::get('/create', [SemesterController::class, 'create'])->name('create');
+        Route::post('/', [SemesterController::class, 'store'])->name('store');
+        Route::get('/{id}', [SemesterController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [SemesterController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [SemesterController::class, 'update'])->name('update');
+        Route::delete('/{id}', [SemesterController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/toggle', [SemesterController::class, 'toggleStatus'])->name('toggle');
+        Route::get('/{id}/set-current', [SemesterController::class, 'setCurrent'])->name('set-current');
+        Route::get('/generate', [SemesterController::class, 'generate'])->name('generate');
+    });
+
+    // ============================================================
     // LECTURER MANAGEMENT ROUTES
     // ============================================================
     Route::get('/lecturers', [AdminLecturerController::class, 'index'])->name('lecturers.index');
@@ -209,19 +226,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/lecturers/{lecturer}', [AdminLecturerController::class, 'update'])->name('lecturers.update');
     Route::delete('/lecturers/{lecturer}', [AdminLecturerController::class, 'destroy'])->name('lecturers.destroy');
 });
-
-// ============================================================
-// TEMPORARY TEST ROUTE - ADD THIS AT THE BOTTOM
-// ============================================================
-Route::get('/test-reset', function() {
-    $user = Auth::user();
-    if ($user) {
-        $sessionKey = 'read_announcements_' . $user->id;
-        session()->put($sessionKey, []);
-        return "✅ Reset complete for user: " . $user->name . " (ID: " . $user->id . ")";
-    }
-    return "❌ Please login first";
-})->middleware(['auth']);
 
 // ============================================================
 // LECTURER ROUTES

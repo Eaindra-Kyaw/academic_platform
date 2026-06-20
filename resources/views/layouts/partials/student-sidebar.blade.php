@@ -1,5 +1,3 @@
-{{-- resources/views/layouts/partials/student-sidebar.blade.php --}}
-
 <div class="nav-label">Main</div>
 <a href="{{ route('student.dashboard') }}" class="nav-item @if (request()->routeIs('student.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
@@ -30,23 +28,23 @@
 </a>
 
 <div class="nav-label">Communication</div>
-<a href="{{ route('student.announcements.index') }}" class="nav-item @if (request()->routeIs('student.announcements*')) active @endif">
+{{-- In student-sidebar.blade.php --}}
+<a href="{{ route('student.announcements') }}" class="nav-item @if (request()->routeIs('student.announcements')) active @endif">
     <i class="bi bi-megaphone"></i>
     <span>Announcements</span>
-    @php
-        $unreadCount = \App\Models\Announcement::getUnreadCount(Auth::user());
-    @endphp
-    @if ($unreadCount > 0)
-        <span
-            style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto;">
-            {{ $unreadCount }}
-        </span>
-    @endif
+    <span id="studentAnnouncementBadge"
+        style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto; display:none;">0</span>
 </a>
 <a href="{{ route('student.messages.inbox') }}" class="nav-item @if (request()->routeIs('student.messages*')) active @endif">
     <i class="bi bi-envelope"></i>
     <span>Messages</span>
     <span id="unreadBadge"
+        style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto; display:none;">0</span>
+</a>
+<a href="{{ route('student.notifications') }}" class="nav-item @if (request()->routeIs('student.notifications')) active @endif">
+    <i class="bi bi-bell"></i>
+    <span>Notifications</span>
+    <span id="notificationBadge"
         style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto; display:none;">0</span>
 </a>
 
