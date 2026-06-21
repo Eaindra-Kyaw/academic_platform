@@ -18,7 +18,7 @@ use App\Http\Controllers\Admin\MessageController as AdminMessageController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\SemesterController;
 use App\Http\Controllers\Admin\AttendanceAnalyticsController;
-use App\Http\Controllers\Admin\RiskController;
+use App\Http\Controllers\Admin\RiskAnalysisController;
 use App\Http\Controllers\Lecturer\MessageController as LecturerMessageController;
 use App\Http\Controllers\Student\MessageController as StudentMessageController;
 use App\Http\Controllers\Auth\RoleLoginController;
@@ -221,26 +221,23 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // ============================================================
-    // ATTENDANCE ROUTES (Admin) - ADD THIS SECTION
+    // ATTENDANCE ROUTES (Admin)
     // ============================================================
     Route::prefix('attendance')->name('attendance.')->group(function () {
-        // Temporary coming soon page
         Route::get('/', function() {
             return view('admin.attendance.coming-soon');
         })->name('index');
-
-        // Full analytics (for later)
         Route::get('/analytics', [AttendanceAnalyticsController::class, 'index'])->name('analytics');
         Route::get('/chart-data', [AttendanceAnalyticsController::class, 'chartData'])->name('chart-data');
     });
 
     // ============================================================
-// RISK ANALYSIS ROUTES (Admin)
-// ============================================================
-Route::prefix('risk')->name('risk.')->group(function () {
-    Route::get('/', [RiskAnalysisController::class, 'index'])->name('index');
-    Route::get('/export', [RiskAnalysisController::class, 'export'])->name('export');
-});
+    // RISK ANALYSIS ROUTES (Admin)
+    // ============================================================
+    Route::prefix('risk')->name('risk.')->group(function () {
+        Route::get('/', [RiskAnalysisController::class, 'index'])->name('index');
+        Route::get('/export', [RiskAnalysisController::class, 'export'])->name('export');
+    });
 
     // ============================================================
     // LECTURER MANAGEMENT ROUTES
@@ -265,19 +262,30 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     Route::get('/dashboard', [LecturerController::class, 'dashboard'])->name('dashboard');
 
     // ============================================================
+    // TIMETABLE ROUTES (Lecturer)
+    // ============================================================
+    Route::prefix('timetable')->name('timetable.')->group(function () {
+        Route::get('/', [LecturerController::class, 'timetable'])->name('index');
+        Route::get('/manage', [LecturerController::class, 'manageTimetable'])->name('manage');
+        Route::post('/add', [LecturerController::class, 'addToTimetable'])->name('add');
+        Route::post('/{id}/remove', [LecturerController::class, 'removeFromTimetable'])->name('remove');
+        Route::post('/add-multiple', [LecturerController::class, 'addMultipleSessions'])->name('add.multiple');
+        Route::get('/export', [LecturerController::class, 'exportTimetable'])->name('export');
+        Route::get('/export-pdf', [LecturerController::class, 'exportTimetablePdf'])->name('export.pdf');
+    });
+
+    // ============================================================
+    // ANNOUNCEMENT ROUTES (Lecturer)
+    // ============================================================
+    Route::get('/announcements', [LecturerController::class, 'announcements'])->name('announcements');
+    Route::get('/announcements/{id}', [LecturerController::class, 'showAnnouncement'])->name('announcements.show');
+
+    // ============================================================
     // STUDENT MANAGEMENT
     // ============================================================
     Route::get('/students', [LecturerController::class, 'students'])->name('students');
     Route::get('/schedule', [LecturerController::class, 'schedule'])->name('schedule');
     Route::get('/reports', [LecturerController::class, 'reports'])->name('reports');
-
-    // ============================================================
-    // ANNOUNCEMENT ROUTES (Lecturer)
-    // ============================================================
-    Route::prefix('announcements')->name('announcements.')->group(function () {
-        Route::get('/', [LecturerController::class, 'announcements'])->name('index');
-        Route::get('/{id}', [LecturerController::class, 'showAnnouncement'])->name('show');
-    });
 
     // ============================================================
     // ENROLLMENT ROUTES (Lecturer)
@@ -304,6 +312,9 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     Route::post('/end-session/{id}', [AttendanceController::class, 'endSessionAjax'])->name('endSession');
     Route::post('/refresh-qr/{id}', [AttendanceController::class, 'refreshQrAjax'])->name('refreshQr');
     Route::get('/session-stats/{id}', [AttendanceController::class, 'getSessionStats'])->name('sessionStats');
+
+    // Alias for dashboard
+    Route::post('/attendance/generate-qr', [AttendanceController::class, 'generateQr'])->name('attendance.generate.qr');
 
     // ============================================================
     // SEMESTER QR ROUTES

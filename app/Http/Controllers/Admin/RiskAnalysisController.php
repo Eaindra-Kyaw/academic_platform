@@ -144,6 +144,7 @@ class RiskAnalysisController extends Controller
                 'roll_call' => 0,
                 'consecutive_absences' => 0,
                 'trend' => 'Stable',
+                'enrollments_count' => 0,
             ];
         }
 
@@ -249,9 +250,10 @@ class RiskAnalysisController extends Controller
 
         $consecutive = 0;
         foreach ($sessions as $session) {
-            $record = AttendanceRecord::where('session_id', $session->id)
+            // ✅ FIXED: Use attendance_session_id instead of session_id
+            $record = AttendanceRecord::where('attendance_session_id', $session->id)
                 ->where('student_id', $studentId)
-                ->whereIn('status', ['absent'])
+                ->where('status', 'absent')
                 ->first();
 
             if ($record) {
@@ -270,6 +272,7 @@ class RiskAnalysisController extends Controller
     private function getAttendanceTrend($studentId)
     {
         // Get attendance records grouped by month
+        // ✅ FIXED: Use attendance_session_id instead of session_id
         $records = AttendanceRecord::where('student_id', $studentId)
             ->whereIn('status', ['present', 'late'])
             ->select(DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as count'))
@@ -282,7 +285,6 @@ class RiskAnalysisController extends Controller
             return 'Stable';
         }
 
-        $trends = [];
         $months = $records->pluck('count')->toArray();
 
         if (count($months) >= 2) {

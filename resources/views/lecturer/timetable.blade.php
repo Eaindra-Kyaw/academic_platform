@@ -109,12 +109,6 @@
             flex-wrap: wrap;
         }
 
-        .next-class-widget .info .meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
         .next-class-widget .countdown {
             background: rgba(255, 255, 255, 0.12);
             padding: 10px 20px;
@@ -178,6 +172,7 @@
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .btn-manage {
@@ -213,6 +208,59 @@
 
         .btn-today:hover {
             background: #4b5563;
+        }
+
+        .filter-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-form select {
+            padding: 5px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 12px;
+            background: white;
+            color: #1f2937;
+            outline: none;
+        }
+
+        .filter-form select:focus {
+            border-color: #800000;
+        }
+
+        .filter-form .btn-apply {
+            background: #800000;
+            color: white;
+            border: none;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .filter-form .btn-apply:hover {
+            background: #5f0000;
+        }
+
+        .btn-export {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-export:hover {
+            background: #059669;
         }
 
         /* ============================================
@@ -272,8 +320,8 @@
         .timetable-table td {
             padding: 4px;
             border-bottom: 1px solid #f3f4f6;
-            vertical-align: middle;
-            height: 65px;
+            vertical-align: top;
+            height: 70px;
             min-width: 100px;
             background: white;
             transition: all 0.2s;
@@ -299,11 +347,11 @@
             color: #d1d5db;
             font-size: 12px;
             text-align: center;
-            padding: 18px 0;
+            padding: 20px 0;
         }
 
         /* ============================================
-                   CLASS BLOCK - With Rowspan Support
+                   CLASS BLOCK
                    ============================================ */
         .class-block {
             background: #fef2f2;
@@ -314,11 +362,10 @@
             transition: all 0.2s;
             cursor: default;
             height: 100%;
-            min-height: 50px;
+            min-height: 55px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            width: 100%;
         }
 
         .class-block:hover {
@@ -367,8 +414,41 @@
             font-weight: 600;
         }
 
+        .class-block .session-badge {
+            font-size: 8px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .session-badge.lecture {
+            background: #fef2f2;
+            color: #800000;
+        }
+
+        .session-badge.lab {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .session-badge.tutorial {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .session-badge.seminar {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .session-badge.workshop {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
         /* ============================================
-                   NO SCHEDULE STATE
+                   EMPTY STATE
                    ============================================ */
         .no-schedule {
             text-align: center;
@@ -447,8 +527,16 @@
                 flex-wrap: wrap;
             }
 
+            .timetable-header .actions {
+                flex-wrap: wrap;
+            }
+
+            .filter-form {
+                flex-wrap: wrap;
+            }
+
             .timetable-table td {
-                height: 50px;
+                height: 55px;
                 min-width: 70px;
                 padding: 2px;
             }
@@ -509,7 +597,7 @@
             }
 
             .timetable-table td {
-                height: 40px;
+                height: 45px;
                 min-width: 55px;
             }
         }
@@ -540,9 +628,9 @@
         </div>
 
         <div class="stat-card">
-            <div class="label">Years</div>
+            <div class="label">Year Levels</div>
             <div class="value">{{ $stats['year_levels'] ?? 0 }}</div>
-            <div class="sub">Courses</div>
+            <div class="sub">Different levels</div>
         </div>
 
         <div class="stat-card">
@@ -606,6 +694,7 @@
             TIMETABLE CALENDAR VIEW
             ========================================== -->
     <div class="timetable-container">
+        <!-- Header -->
         <div class="timetable-header">
             <div class="left">
                 <h5><i class="bi bi-calendar-week"></i> Timetable</h5>
@@ -614,19 +703,76 @@
                 </span>
             </div>
             <div class="actions">
+                <!-- Filters -->
+                <form method="GET" action="{{ route('lecturer.timetable.index') }}" class="filter-form">
+                    @if ($academicYears->isNotEmpty())
+                        <select name="academic_year">
+                            <option value="">All Years</option>
+                            @foreach ($academicYears as $year)
+                                <option value="{{ $year }}" {{ $academicYear == $year ? 'selected' : '' }}>
+                                    {{ $year }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @endif
+
+                    @if ($semesters->isNotEmpty())
+                        <select name="semester">
+                            <option value="">All Semesters</option>
+                            @foreach ($semesters as $sem)
+                                <option value="{{ $sem }}" {{ $semester == $sem ? 'selected' : '' }}>
+                                    {{ $sem }}
+                                </option>
+                            @endforeach
+                        </select>
+                    @endif
+
+                    <select name="session_type">
+                        <option value="">All Types</option>
+                        @foreach ($sessionTypes as $type)
+                            <option value="{{ $type }}" {{ $sessionType == $type ? 'selected' : '' }}>
+                                {{ ucfirst($type) }}
+                            </option>
+                        @endforeach
+                    </select>
+
+                    <button type="submit" class="btn-apply">Apply</button>
+                </form>
+
+                <!-- Export -->
+                <div class="btn-group">
+                    <button class="btn-export dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-download"></i> Export
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{{ route('lecturer.timetable.export', request()->query()) }}">
+                                <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item"
+                                href="{{ route('lecturer.timetable.export.pdf', request()->query()) }}">
+                                <i class="bi bi-file-earmark-pdf"></i> PDF
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
                 <a href="{{ route('lecturer.timetable.manage') }}" class="btn-manage">
-                    <i class="bi bi-gear"></i> Manage Timetable
+                    <i class="bi bi-gear"></i> Manage
                 </a>
                 <button class="btn-today" onclick="goToday()">Today</button>
             </div>
         </div>
 
+        <!-- Calendar Grid -->
         <div class="timetable-grid">
             @php
                 $hasClasses = false;
                 foreach ($timetable as $day) {
                     foreach ($day as $slot) {
-                        if ($slot !== null && $slot !== 'used') {
+                        if ($slot !== null) {
                             $hasClasses = true;
                             break 2;
                         }
@@ -649,7 +795,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($timeSlots as $slotIndex => $slot)
+                        @foreach ($timeSlots as $slot)
                             <tr>
                                 <td>
                                     <div class="time-slot">{{ $slot['time'] }}</div>
@@ -659,47 +805,44 @@
                                         class="{{ $day['is_today'] ? 'today' : '' }} {{ $day['is_weekend'] ? 'weekend' : '' }}">
                                         @php
                                             $class = $timetable[$dayIndex][$slot['period']] ?? null;
-                                            $rowspan = 0;
-                                            if (is_array($class) && isset($class['rowspan'])) {
-                                                $rowspan = $class['rowspan'];
-                                            }
                                         @endphp
-                                        @if ($class && $class !== 'used')
-                                            @if ($rowspan > 1)
-                                    <td rowspan="{{ $rowspan }}" style="vertical-align: middle; padding: 4px;">
-                                @endif
-                                <div class="class-block">
-                                    <div class="course-name">{{ $class['course_name'] }}</div>
-                                    <div class="course-code">{{ $class['course_code'] }}</div>
-                                    <div class="class-meta">
-                                        <span class="class-time"><i class="bi bi-clock"></i> {{ $class['time'] }}</span>
-                                        <span><i class="bi bi-door-open"></i> {{ $class['room'] }}</span>
-                                        @if ($class['year'] ?? null)
-                                            <span><i class="bi bi-mortarboard"></i> {{ $class['year'] }}</span>
+                                        @if ($class)
+                                            <div class="class-block">
+                                                <div class="course-name">{{ $class['course_name'] }}</div>
+                                                <div class="course-code">{{ $class['course_code'] }}</div>
+                                                <div class="class-meta">
+                                                    <span class="class-time"><i class="bi bi-clock"></i>
+                                                        {{ $class['time'] }}</span>
+                                                    <span><i class="bi bi-door-open"></i> {{ $class['room'] }}</span>
+                                                    @if ($class['session_type'] ?? null)
+                                                        <span class="session-badge {{ $class['session_type'] }}">
+                                                            {{ $class['session_type'] }}
+                                                        </span>
+                                                    @endif
+                                                    @if ($class['year'] ?? null)
+                                                        <span><i class="bi bi-mortarboard"></i>
+                                                            {{ $class['year'] }}</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="empty-slot">—</div>
                                         @endif
-                                    </div>
-                                </div>
-                                @if ($rowspan > 1)
                                     </td>
-                                @endif
-                            @else
-                                <div class="empty-slot">—</div>
-                        @endif
-                        </td>
-            @endforeach
-            </tr>
-            @endforeach
-            </tbody>
-            </table>
-        @else
-            <div class="no-schedule">
-                <div class="icon"><i class="bi bi-calendar-plus"></i></div>
-                <h5>No Schedule Added Yet</h5>
-                <p>Click "Manage Timetable" to add your courses.</p>
-                <a href="{{ route('lecturer.timetable.manage') }}" class="btn-primary">
-                    <i class="bi bi-plus-circle"></i> Manage Timetable
-                </a>
-            </div>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <div class="no-schedule">
+                    <div class="icon"><i class="bi bi-calendar-plus"></i></div>
+                    <h5>No Schedule Added Yet</h5>
+                    <p>Click "Manage Timetable" to add your courses.</p>
+                    <a href="{{ route('lecturer.timetable.manage') }}" class="btn-primary">
+                        <i class="bi bi-plus-circle"></i> Manage Timetable
+                    </a>
+                </div>
             @endif
         </div>
     </div>

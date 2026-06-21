@@ -27,12 +27,12 @@ class TimetableEntry extends Model
         'is_alternate_week',
         'alternate_week_type',
         'notes',
+        'is_active',
     ];
 
     protected $casts = [
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
         'is_alternate_week' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     // Relationships
@@ -54,18 +54,32 @@ class TimetableEntry extends Model
     // Accessors
     public function getTimeRangeAttribute()
     {
-        return $this->start_time->format('h:i A') . ' - ' . $this->end_time->format('h:i A');
+        return date('h:i A', strtotime($this->start_time)) . ' - ' .
+               date('h:i A', strtotime($this->end_time));
     }
 
-    public function getDurationAttribute()
+    public function getSessionTypeLabelAttribute()
     {
-        return $this->start_time->diffInMinutes($this->end_time);
+        $types = [
+            'lecture' => '📚 Lecture',
+            'tutorial' => '📝 Tutorial',
+            'lab' => '🔬 Lab',
+            'seminar' => '🎤 Seminar',
+            'workshop' => '🛠️ Workshop',
+            'other' => '📋 Other',
+        ];
+        return $types[$this->session_type] ?? $this->session_type;
     }
 
     // Scopes
     public function scopeForLecturer($query, $lecturerId)
     {
         return $query->where('lecturer_id', $lecturerId);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 
     public function scopeForDay($query, $day)
@@ -83,8 +97,8 @@ class TimetableEntry extends Model
         return $query->where('semester', $semester);
     }
 
-    public function scopeForDepartment($query, $departmentId)
+    public function scopeBySessionType($query, $type)
     {
-        return $query->where('department_id', $departmentId);
+        return $query->where('session_type', $type);
     }
 }

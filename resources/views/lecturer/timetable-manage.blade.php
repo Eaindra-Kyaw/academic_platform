@@ -165,13 +165,36 @@
             color: #6b7280;
         }
 
-        .schedule-item .info .invalid {
-            background: #fee2e2;
-            color: #991b1b;
+        .schedule-item .info .type {
+            font-size: 11px;
             padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 10px;
+            border-radius: 10px;
             font-weight: 600;
+        }
+
+        .type-lecture {
+            background: #fef2f2;
+            color: #800000;
+        }
+
+        .type-lab {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .type-tutorial {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .type-seminar {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .type-workshop {
+            background: #f3e8ff;
+            color: #6b21a8;
         }
 
         .schedule-item .actions {
@@ -284,6 +307,18 @@
                     <input type="text" name="room" placeholder="e.g., 1-3-7">
                 </div>
 
+                <div class="form-group">
+                    <label>Session Type</label>
+                    <select name="session_type">
+                        <option value="lecture">📚 Lecture</option>
+                        <option value="tutorial">📝 Tutorial</option>
+                        <option value="lab">🔬 Lab</option>
+                        <option value="seminar">🎤 Seminar</option>
+                        <option value="workshop">🛠️ Workshop</option>
+                        <option value="other">📋 Other</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn-primary">➕ Add to Timetable</button>
             </form>
         </div>
@@ -296,6 +331,7 @@
                     @foreach ($scheduledCourses as $course)
                         @php
                             $isInvalid = $course->schedule_time === $course->schedule_end_time;
+                            $sessionType = $course->session_type ?? 'lecture';
                         @endphp
                         <div class="schedule-item">
                             <div class="info">
@@ -308,6 +344,9 @@
                                 @if ($course->room)
                                     <span class="room">📍 {{ $course->room }}</span>
                                 @endif
+                                <span class="type type-{{ $sessionType }}">
+                                    {{ ucfirst($sessionType) }}
+                                </span>
                                 @if ($isInvalid)
                                     <span class="invalid">⚠️ Invalid (same time)</span>
                                 @endif
@@ -317,6 +356,7 @@
                                     style="display: inline-block;"
                                     onsubmit="return confirm('Remove this from timetable?');">
                                     @csrf
+                                    @method('DELETE')
                                     <button type="submit" class="btn-danger">🗑️ Remove</button>
                                 </form>
                             </div>

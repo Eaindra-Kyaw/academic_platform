@@ -9,8 +9,10 @@ use App\Models\AttendanceSession;
 use App\Models\User;
 use App\Models\Enrollment;
 use App\Models\Announcement;
+use App\Models\TimetableEntry;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LecturerController extends Controller
 {
@@ -436,9 +438,6 @@ class LecturerController extends Controller
         ));
     }
 
-    /**
-     * Display lecturer announcements page
-     */
     public function announcements()
     {
         $user = Auth::user();
@@ -465,9 +464,6 @@ class LecturerController extends Controller
         return view('lecturer.announcements.index', compact('announcements', 'courses'));
     }
 
-    /**
-     * Display a single announcement detail
-     */
     public function showAnnouncement($id)
     {
         $user = Auth::user();
@@ -489,345 +485,762 @@ class LecturerController extends Controller
     // TIMETABLE METHODS
     // ============================================
 
-    /**
-     * Display lecturer timetable - Calendar View
-     */
-   /**
- * Display lecturer timetable - Calendar View with merged multi-slot courses
- */
-// ============================================
-// TIMETABLE METHODS
-// ============================================
+    private function getDays()
+    {
+        $dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $dayShort = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-/**
- * Display lecturer timetable - Auto-loaded from course data
- */
-public function timetable()
-{
-    $lecturer = Auth::user();
-    $lecturerId = $lecturer->id;
+        $today = now();
+        $weekStart = $today->copy()->startOfWeek();
 
-    // ============================================
-    // AUTO-LOAD: Get all courses with schedule data
-    // ============================================
-    $courses = Course::where('lecturer_id', $lecturerId)
-        ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
-        ->where('is_active', true)
-        ->get();
-
-    // Get scheduled courses (auto-loaded from courses table)
-    $scheduledCourses = Course::where('lecturer_id', $lecturerId)
-        ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
-        ->where('is_active', true)
-        ->whereNotNull('schedule_day')
-        ->whereNotNull('schedule_time')
-        ->whereNotNull('schedule_end_time')
-        ->whereRaw('schedule_time != schedule_end_time')
-        ->orderBy('schedule_day')
-        ->orderBy('schedule_time')
-        ->get();
-
-    $availableCourses = $courses;
-
-    // Days
-    $dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    $dayShort = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-    $today = now();
-    $weekStart = $today->copy()->startOfWeek();
-    $weekEnd = $today->copy()->endOfWeek();
-
-    $days = [];
-    foreach ($dayNames as $index => $name) {
-        $date = $weekStart->copy()->addDays($index);
-        $days[] = [
-            'name' => $name,
-            'short' => $dayShort[$index],
-            'date' => $date->format('d'),
-            'month' => $date->format('M'),
-            'is_today' => $date->isToday(),
-            'is_weekend' => in_array($index, [5, 6]),
-        ];
-    }
-
-    // 50-minute class time slots
-    $timeSlots = [];
-    $morningSlots = [
-        ['start' => '08:00', 'end' => '08:50', 'label' => '08:00 - 08:50'],
-        ['start' => '09:00', 'end' => '09:50', 'label' => '09:00 - 09:50'],
-        ['start' => '10:00', 'end' => '10:50', 'label' => '10:00 - 10:50'],
-        ['start' => '11:00', 'end' => '11:50', 'label' => '11:00 - 11:50'],
-    ];
-    $afternoonSlots = [
-        ['start' => '13:00', 'end' => '13:50', 'label' => '01:00 - 01:50'],
-        ['start' => '14:00', 'end' => '14:50', 'label' => '02:00 - 02:50'],
-        ['start' => '15:00', 'end' => '15:50', 'label' => '03:00 - 03:50'],
-        ['start' => '16:00', 'end' => '16:50', 'label' => '04:00 - 04:50'],
-    ];
-    $allSlots = array_merge($morningSlots, $afternoonSlots);
-
-    foreach ($allSlots as $index => $slot) {
-        $timeSlots[] = [
-            'time' => $slot['label'],
-            'period' => $index + 1,
-            'start' => $slot['start'],
-            'end' => $slot['end'],
-        ];
-    }
-
-    // Build timetable grid with merged multi-slot courses
-    $timetable = [];
-    foreach ($days as $dayIndex => $day) {
-        $timetable[$dayIndex] = [];
-        foreach ($timeSlots as $slot) {
-            $timetable[$dayIndex][$slot['period']] = null;
+        $days = [];
+        foreach ($dayNames as $index => $name) {
+            $date = $weekStart->copy()->addDays($index);
+            $days[] = [
+                'name' => $name,
+                'short' => $dayShort[$index],
+                'date' => $date->format('d'),
+                'month' => $date->format('M'),
+                'is_today' => $date->isToday(),
+                'is_weekend' => in_array($index, [5, 6]),
+            ];
         }
+
+        return $days;
     }
 
-    // Place courses in the grid - auto-loaded from database
-    foreach ($scheduledCourses as $course) {
+    private function getTimeSlots()
+    {
+        $timeSlots = [];
+        $morningSlots = [
+            ['start' => '08:00', 'end' => '08:50', 'label' => '08:00 - 08:50'],
+            ['start' => '09:00', 'end' => '09:50', 'label' => '09:00 - 09:50'],
+            ['start' => '10:00', 'end' => '10:50', 'label' => '10:00 - 10:50'],
+            ['start' => '11:00', 'end' => '11:50', 'label' => '11:00 - 11:50'],
+        ];
+        $afternoonSlots = [
+            ['start' => '13:00', 'end' => '13:50', 'label' => '01:00 - 01:50'],
+            ['start' => '14:00', 'end' => '14:50', 'label' => '02:00 - 02:50'],
+            ['start' => '15:00', 'end' => '15:50', 'label' => '03:00 - 03:50'],
+            ['start' => '16:00', 'end' => '16:50', 'label' => '04:00 - 04:50'],
+        ];
+        $allSlots = array_merge($morningSlots, $afternoonSlots);
+
+        foreach ($allSlots as $index => $slot) {
+            $timeSlots[] = [
+                'time' => $slot['label'],
+                'period' => $index + 1,
+                'start' => $slot['start'],
+                'end' => $slot['end'],
+            ];
+        }
+
+        return $timeSlots;
+    }
+
+    private function calculateStats($courses, $scheduledCourses, $timetable)
+    {
+        $stats = [
+            'total_courses' => $courses->count(),
+            'total_weekly_hours' => 0,
+            'total_classes' => $scheduledCourses->count(),
+            'departments' => $courses->pluck('department.name')->unique()->filter()->count(),
+            'year_levels' => $courses->pluck('year')->unique()->filter()->count(),
+        ];
+
+        foreach ($scheduledCourses as $course) {
+            if ($course->schedule_time && $course->schedule_end_time) {
+                $start = strtotime($course->schedule_time);
+                $end = strtotime($course->schedule_end_time);
+                $stats['total_weekly_hours'] += ($end - $start) / 3600;
+            }
+        }
+        $stats['total_weekly_hours'] = round($stats['total_weekly_hours'], 1);
+
+        $dayCounts = [];
+        foreach ($scheduledCourses as $course) {
+            if ($course->schedule_day) {
+                $dayCounts[$course->schedule_day] = ($dayCounts[$course->schedule_day] ?? 0) + 1;
+            }
+        }
+        $stats['busiest_day'] = !empty($dayCounts) ? array_keys($dayCounts, max($dayCounts))[0] : 'N/A';
+
+        $totalSlots = 7 * 8;
+        $usedSlots = 0;
+        foreach ($timetable as $day) {
+            foreach ($day as $slot) {
+                if ($slot !== null) $usedSlots++;
+            }
+        }
+        $stats['free_periods'] = $totalSlots - $usedSlots;
+
+        return $stats;
+    }
+
+    public function timetable(Request $request)
+    {
+        $lecturer = Auth::user();
+        $lecturerId = $lecturer->id;
+
+        // Filters
+        $academicYear = $request->input('academic_year');
+        $semester = $request->input('semester');
+        $sessionType = $request->input('session_type');
+
+        // Get all courses
+        $courses = Course::where('lecturer_id', $lecturerId)
+            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+            ->where('is_active', true)
+            ->get();
+
+        // ============================================
+        // GET TIMETABLE ENTRIES (Primary source)
+        // ============================================
+        $timetableEntriesQuery = TimetableEntry::where('lecturer_id', $lecturerId)
+            ->where('is_active', true);
+
+        if ($academicYear) {
+            $timetableEntriesQuery->where('academic_year', $academicYear);
+        }
+
+        if ($semester) {
+            $timetableEntriesQuery->where('semester', $semester);
+        }
+
+        if ($sessionType) {
+            $timetableEntriesQuery->where('session_type', $sessionType);
+        }
+
+        $timetableEntries = $timetableEntriesQuery
+            ->with(['course', 'course.department'])
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
+
+        // ============================================
+        // FALLBACK: If no timetable entries, use courses table
+        // ============================================
+        if ($timetableEntries->isEmpty()) {
+            // Get scheduled courses from courses table
+            $scheduledCourses = Course::where('lecturer_id', $lecturerId)
+                ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+                ->where('is_active', true)
+                ->whereNotNull('schedule_day')
+                ->whereNotNull('schedule_time')
+                ->whereNotNull('schedule_end_time')
+                ->get();
+
+            // Convert courses to timetable entries format
+            $timetableEntries = $scheduledCourses->map(function($course) {
+                $entry = new TimetableEntry();
+                $entry->course_id = $course->id;
+                $entry->lecturer_id = $course->lecturer_id;
+                $entry->department_id = $course->department_id;
+                $entry->academic_year = $course->academic_year;
+                $entry->semester = $course->semester;
+                $entry->year_level = $course->year;
+                $entry->day_of_week = $course->schedule_day;
+                $entry->start_time = $course->schedule_time;
+                $entry->end_time = $course->schedule_end_time;
+                $entry->room = $course->room;
+                $entry->session_type = 'lecture';
+                $entry->is_active = true;
+                $entry->course = $course;
+                return $entry;
+            });
+
+            // Re-apply filters
+            if ($academicYear) {
+                $timetableEntries = $timetableEntries->filter(function($entry) use ($academicYear) {
+                    return $entry->academic_year === $academicYear;
+                });
+            }
+            if ($semester) {
+                $timetableEntries = $timetableEntries->filter(function($entry) use ($semester) {
+                    return $entry->semester === $semester;
+                });
+            }
+            if ($sessionType) {
+                $timetableEntries = $timetableEntries->filter(function($entry) use ($sessionType) {
+                    return $entry->session_type === $sessionType;
+                });
+            }
+        }
+
+        // Get scheduled courses (for stats and available courses)
+        $scheduledCourses = Course::where('lecturer_id', $lecturerId)
+            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+            ->where('is_active', true)
+            ->whereNotNull('schedule_day')
+            ->whereNotNull('schedule_time')
+            ->whereNotNull('schedule_end_time')
+            ->orderBy('schedule_day')
+            ->orderBy('schedule_time')
+            ->get();
+
+        $availableCourses = $courses;
+
+        // Days
+        $days = $this->getDays();
+        $timeSlots = $this->getTimeSlots();
+
+        $today = now();
+        $weekStart = $today->copy()->startOfWeek();
+        $weekEnd = $today->copy()->endOfWeek();
+
+        // Build timetable grid from timetable_entries
+        $timetable = [];
         foreach ($days as $dayIndex => $day) {
-            if (strtolower(trim($course->schedule_day)) === strtolower(trim($day['name']))) {
-                $courseStart = strtotime($course->schedule_time);
-                $courseEnd = strtotime($course->schedule_end_time);
+            $timetable[$dayIndex] = [];
+            foreach ($timeSlots as $slot) {
+                $matchedEntry = null;
+                foreach ($timetableEntries as $entry) {
+                    if ($entry->day_of_week && $entry->start_time && $entry->end_time) {
+                        if (strtolower(trim($entry->day_of_week)) === strtolower(trim($day['name']))) {
+                            $entryStart = strtotime($entry->start_time);
+                            $entryEnd = strtotime($entry->end_time);
+                            $slotStart = strtotime($slot['start']);
+                            $slotEnd = strtotime($slot['end']);
 
-                $coveredSlots = [];
-                foreach ($timeSlots as $slot) {
-                    $slotStart = strtotime($slot['start']);
-                    $slotEnd = strtotime($slot['end']);
-
-                    if (($courseStart >= $slotStart && $courseStart < $slotEnd) ||
-                        ($courseEnd > $slotStart && $courseEnd <= $slotEnd) ||
-                        ($courseStart <= $slotStart && $courseEnd >= $slotEnd)) {
-                        $coveredSlots[] = $slot['period'];
+                            if (($entryStart >= $slotStart && $entryStart < $slotEnd) ||
+                                ($entryEnd > $slotStart && $entryEnd <= $slotEnd) ||
+                                ($entryStart <= $slotStart && $entryEnd >= $slotEnd)) {
+                                $matchedEntry = $entry;
+                                break;
+                            }
+                        }
                     }
                 }
 
-                if (!empty($coveredSlots)) {
-                    $firstSlot = $coveredSlots[0];
-                    $rowspan = count($coveredSlots);
-
-                    $timetable[$dayIndex][$firstSlot] = [
-                        'course_name' => $course->course_name ?? 'Unknown',
-                        'course_code' => $course->course_code ?? 'N/A',
-                        'room' => $course->room ?? 'N/A',
-                        'time' => date('h:i A', strtotime($course->schedule_time)) . ' - ' .
-                                 date('h:i A', strtotime($course->schedule_end_time)),
-                        'year' => $course->year ?? '',
-                        'rowspan' => $rowspan,
+                if ($matchedEntry) {
+                    $timetable[$dayIndex][$slot['period']] = [
+                        'course_name' => $matchedEntry->course->course_name ?? 'Unknown',
+                        'course_code' => $matchedEntry->course->course_code ?? 'N/A',
+                        'room' => $matchedEntry->room ?? 'N/A',
+                        'time' => date('h:i A', strtotime($matchedEntry->start_time)) . ' - ' .
+                                 date('h:i A', strtotime($matchedEntry->end_time)),
+                        'year' => $matchedEntry->year_level ?? '',
+                        'session_type' => $matchedEntry->session_type ?? 'lecture',
+                        'entry_id' => $matchedEntry->id,
                     ];
+                } else {
+                    $timetable[$dayIndex][$slot['period']] = null;
+                }
+            }
+        }
 
-                    for ($i = 1; $i < count($coveredSlots); $i++) {
-                        $slotPeriod = $coveredSlots[$i];
-                        $timetable[$dayIndex][$slotPeriod] = 'used';
+        // Fallback: Merge from courses table if no timetable_entries
+        if ($timetableEntries->isEmpty()) {
+            foreach ($scheduledCourses as $course) {
+                foreach ($days as $dayIndex => $day) {
+                    if (strtolower(trim($course->schedule_day)) === strtolower(trim($day['name']))) {
+                        $courseStart = strtotime($course->schedule_time);
+                        $courseEnd = strtotime($course->schedule_end_time);
+
+                        $coveredSlots = [];
+                        foreach ($timeSlots as $slot) {
+                            $slotStart = strtotime($slot['start']);
+                            $slotEnd = strtotime($slot['end']);
+
+                            if (($courseStart >= $slotStart && $courseStart < $slotEnd) ||
+                                ($courseEnd > $slotStart && $courseEnd <= $slotEnd) ||
+                                ($courseStart <= $slotStart && $courseEnd >= $slotEnd)) {
+                                $coveredSlots[] = $slot['period'];
+                            }
+                        }
+
+                        if (!empty($coveredSlots)) {
+                            $firstSlot = $coveredSlots[0];
+                            $timetable[$dayIndex][$firstSlot] = [
+                                'course_name' => $course->course_name ?? 'Unknown',
+                                'course_code' => $course->course_code ?? 'N/A',
+                                'room' => $course->room ?? 'N/A',
+                                'time' => date('h:i A', strtotime($course->schedule_time)) . ' - ' .
+                                         date('h:i A', strtotime($course->schedule_end_time)),
+                                'year' => $course->year ?? '',
+                                'session_type' => 'lecture',
+                                'course_id' => $course->id,
+                            ];
+
+                            for ($i = 1; $i < count($coveredSlots); $i++) {
+                                $slotPeriod = $coveredSlots[$i];
+                                $timetable[$dayIndex][$slotPeriod] = 'used';
+                            }
+                        }
                     }
                 }
+            }
+
+            // Clean up 'used' slots
+            foreach ($days as $dayIndex => $day) {
+                foreach ($timeSlots as $slot) {
+                    if (isset($timetable[$dayIndex][$slot['period']]) && $timetable[$dayIndex][$slot['period']] === 'used') {
+                        $timetable[$dayIndex][$slot['period']] = null;
+                    }
+                }
+            }
+        }
+
+        // Next class
+        $nextClass = null;
+        $now = now();
+        $currentDayName = $now->format('l');
+        $currentTime = $now->format('H:i:s');
+
+        $todayEntries = $timetableEntries->filter(function ($entry) use ($currentDayName) {
+            return strtolower(trim($entry->day_of_week)) === strtolower(trim($currentDayName));
+        })->sortBy('start_time');
+
+        foreach ($todayEntries as $entry) {
+            if ($entry->start_time > $now) {
+                $nextClass = [
+                    'course_name' => $entry->course->course_name ?? 'Unknown',
+                    'course_code' => $entry->course->course_code ?? 'N/A',
+                    'room' => $entry->room ?? 'N/A',
+                    'time' => date('h:i A', strtotime($entry->start_time)) . ' - ' .
+                             date('h:i A', strtotime($entry->end_time)),
+                    'start_time' => $entry->start_time->toDateTimeString(),
+                    'day' => $entry->day_of_week,
+                ];
                 break;
             }
         }
-    }
 
-    // Clean up 'used' slots
-    foreach ($days as $dayIndex => $day) {
-        foreach ($timeSlots as $slot) {
-            if ($timetable[$dayIndex][$slot['period']] === 'used') {
-                $timetable[$dayIndex][$slot['period']] = null;
+        if (!$nextClass) {
+            $tomorrow = $now->copy()->addDay();
+            $tomorrowDayName = $tomorrow->format('l');
+            $tomorrowEntries = $timetableEntries->filter(function ($entry) use ($tomorrowDayName) {
+                return strtolower(trim($entry->day_of_week)) === strtolower(trim($tomorrowDayName));
+            })->sortBy('start_time');
+            if ($tomorrowEntries->isNotEmpty()) {
+                $entry = $tomorrowEntries->first();
+                $nextClass = [
+                    'course_name' => $entry->course->course_name ?? 'Unknown',
+                    'course_code' => $entry->course->course_code ?? 'N/A',
+                    'room' => $entry->room ?? 'N/A',
+                    'time' => date('h:i A', strtotime($entry->start_time)) . ' - ' .
+                             date('h:i A', strtotime($entry->end_time)),
+                    'start_time' => $entry->start_time->addDay()->toDateTimeString(),
+                    'day' => $entry->day_of_week,
+                    'is_tomorrow' => true,
+                ];
             }
         }
+
+        // Statistics
+        $stats = $this->calculateStats($courses, $scheduledCourses, $timetable);
+
+        // Filter options
+        $academicYears = TimetableEntry::where('lecturer_id', $lecturerId)
+            ->select('academic_year')
+            ->distinct()
+            ->pluck('academic_year')
+            ->filter()
+            ->values();
+
+        $semesters = TimetableEntry::where('lecturer_id', $lecturerId)
+            ->select('semester')
+            ->distinct()
+            ->pluck('semester')
+            ->filter()
+            ->values();
+
+        $sessionTypes = ['lecture', 'tutorial', 'lab', 'seminar', 'workshop', 'other'];
+
+        return view('lecturer.timetable', compact(
+            'courses',
+            'scheduledCourses',
+            'availableCourses',
+            'timetableEntries',
+            'timetable',
+            'days',
+            'timeSlots',
+            'weekStart',
+            'weekEnd',
+            'nextClass',
+            'stats',
+            'academicYears',
+            'semesters',
+            'sessionTypes',
+            'academicYear',
+            'semester',
+            'sessionType'
+        ));
     }
 
-    // Next class
-    $nextClass = null;
-    $now = now();
-    $currentDayName = $now->format('l');
-    $currentTime = $now->format('H:i:s');
+    public function manageTimetable()
+    {
+        $lecturer = Auth::user();
+        $lecturerId = $lecturer->id;
 
-    $todayCourses = $scheduledCourses->filter(function ($course) use ($currentDayName) {
-        return strtolower(trim($course->schedule_day)) === strtolower(trim($currentDayName));
-    })->sortBy('schedule_time');
+        $availableCourses = Course::where('lecturer_id', $lecturerId)
+            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+            ->where('is_active', true)
+            ->orderBy('course_code')
+            ->get();
 
-    foreach ($todayCourses as $course) {
-        if ($course->schedule_time > $currentTime) {
-            $nextClass = [
-                'course_name' => $course->course_name ?? 'Unknown',
-                'course_code' => $course->course_code ?? 'N/A',
-                'room' => $course->room ?? 'N/A',
-                'time' => date('h:i A', strtotime($course->schedule_time)) . ' - ' .
-                         date('h:i A', strtotime($course->schedule_end_time)),
-                'start_time' => now()->setTimeFromTimeString($course->schedule_time)->toDateTimeString(),
-                'day' => $course->schedule_day,
-            ];
-            break;
+        $scheduledCourses = Course::where('lecturer_id', $lecturerId)
+            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+            ->where('is_active', true)
+            ->whereNotNull('schedule_day')
+            ->whereNotNull('schedule_time')
+            ->whereRaw('schedule_time != schedule_end_time')
+            ->orderBy('schedule_day')
+            ->orderBy('schedule_time')
+            ->get();
+
+        // Get timetable entries OR fallback to courses
+        $timetableEntries = TimetableEntry::where('lecturer_id', $lecturerId)
+            ->where('is_active', true)
+            ->with(['course'])
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
+
+        // If no timetable entries, use courses
+        if ($timetableEntries->isEmpty()) {
+            $timetableEntries = $scheduledCourses->map(function($course) {
+                $entry = new TimetableEntry();
+                $entry->course_id = $course->id;
+                $entry->course_code = $course->course_code;
+                $entry->course_name = $course->course_name;
+                $entry->day_of_week = $course->schedule_day;
+                $entry->start_time = $course->schedule_time;
+                $entry->end_time = $course->schedule_end_time;
+                $entry->room = $course->room;
+                $entry->session_type = 'lecture';
+                $entry->year_level = $course->year;
+                $entry->course = $course;
+                return $entry;
+            });
         }
+
+        return view('lecturer.timetable-manage', compact('availableCourses', 'scheduledCourses', 'timetableEntries'));
     }
 
-    if (!$nextClass) {
-        $tomorrow = $now->copy()->addDay();
-        $tomorrowDayName = $tomorrow->format('l');
-        $tomorrowCourses = $scheduledCourses->filter(function ($course) use ($tomorrowDayName) {
-            return strtolower(trim($course->schedule_day)) === strtolower(trim($tomorrowDayName));
-        })->sortBy('schedule_time');
-        if ($tomorrowCourses->isNotEmpty()) {
-            $course = $tomorrowCourses->first();
-            $nextClass = [
-                'course_name' => $course->course_name ?? 'Unknown',
-                'course_code' => $course->course_code ?? 'N/A',
-                'room' => $course->room ?? 'N/A',
-                'time' => date('h:i A', strtotime($course->schedule_time)) . ' - ' .
-                         date('h:i A', strtotime($course->schedule_end_time)),
-                'start_time' => now()->setTimeFromTimeString($course->schedule_time)->addDay()->toDateTimeString(),
-                'day' => $course->schedule_day,
-                'is_tomorrow' => true,
-            ];
+    public function addToTimetable(Request $request)
+    {
+        $request->validate([
+            'course_id' => 'required|exists:courses,id',
+            'schedule_day' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'schedule_time' => 'required|date_format:H:i',
+            'schedule_end_time' => 'required|date_format:H:i|after:schedule_time',
+            'room' => 'nullable|string|max:50',
+            'session_type' => 'nullable|string|in:lecture,tutorial,lab,seminar,workshop,other',
+        ]);
+
+        if ($request->schedule_time === $request->schedule_end_time) {
+            return redirect()->back()->with('error', '⚠️ Start time and end time cannot be the same!');
         }
-    }
 
-    // Statistics
-    $stats = [
-        'total_courses' => $courses->count(),
-        'total_weekly_hours' => 0,
-        'total_classes' => $scheduledCourses->count(),
-        'departments' => $courses->pluck('department.name')->unique()->filter()->count(),
-        'year_levels' => $courses->pluck('year')->unique()->filter()->count(),
-    ];
-
-    foreach ($scheduledCourses as $course) {
-        if ($course->schedule_time && $course->schedule_end_time) {
-            $start = strtotime($course->schedule_time);
-            $end = strtotime($course->schedule_end_time);
-            $stats['total_weekly_hours'] += ($end - $start) / 3600;
-        }
-    }
-    $stats['total_weekly_hours'] = round($stats['total_weekly_hours'], 1);
-
-    $dayCounts = [];
-    foreach ($scheduledCourses as $course) {
-        if ($course->schedule_day) {
-            $dayCounts[$course->schedule_day] = ($dayCounts[$course->schedule_day] ?? 0) + 1;
-        }
-    }
-    $stats['busiest_day'] = !empty($dayCounts) ? array_keys($dayCounts, max($dayCounts))[0] : 'N/A';
-
-    $totalSlots = 7 * 8;
-    $usedSlots = 0;
-    foreach ($timetable as $day) {
-        foreach ($day as $slot) {
-            if ($slot !== null && $slot !== 'used') $usedSlots++;
-        }
-    }
-    $stats['free_periods'] = $totalSlots - $usedSlots;
-
-    return view('lecturer.timetable', compact(
-        'courses',
-        'scheduledCourses',
-        'availableCourses',
-        'timetable',
-        'days',
-        'timeSlots',
-        'weekStart',
-        'weekEnd',
-        'nextClass',
-        'stats'
-    ));
-}
-
-/**
- * Display timetable management page - For editing existing schedule
- */
-public function manageTimetable()
-{
-    $lecturer = Auth::user();
-    $lecturerId = $lecturer->id;
-
-    // All courses (for dropdown)
-    $availableCourses = Course::where('lecturer_id', $lecturerId)
-        ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
-        ->where('is_active', true)
-        ->orderBy('course_code')
-        ->get();
-
-    // Courses already scheduled (auto-loaded)
-    $scheduledCourses = Course::where('lecturer_id', $lecturerId)
-        ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
-        ->where('is_active', true)
-        ->whereNotNull('schedule_day')
-        ->whereNotNull('schedule_time')
-        ->whereNotNull('schedule_end_time')
-        ->whereRaw('schedule_time != schedule_end_time')
-        ->orderBy('schedule_day')
-        ->orderBy('schedule_time')
-        ->get();
-
-    return view('lecturer.timetable-manage', compact('availableCourses', 'scheduledCourses'));
-}
-
-/**
- * Add/Update course schedule - This should already be in your system
- * When a course is assigned to a lecturer, the schedule data should be set
- */
-public function addToTimetable(Request $request)
-{
-    $request->validate([
-        'course_id' => 'required|exists:courses,id',
-        'schedule_day' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
-        'schedule_time' => 'required|date_format:H:i',
-        'schedule_end_time' => 'required|date_format:H:i|after:schedule_time',
-        'room' => 'nullable|string|max:50',
-    ]);
-
-    // Prevent same start and end time
-    if ($request->schedule_time === $request->schedule_end_time) {
-        return redirect()->back()->with('error', '⚠️ Start time and end time cannot be the same!');
-    }
-
-    $course = Course::where(function($query) {
-        $query->where('lecturer_id', Auth::id())
-              ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%');
-    })->where('id', $request->course_id)->firstOrFail();
-
-    // Update the course schedule
-    $course->schedule_day = $request->schedule_day;
-    $course->schedule_time = $request->schedule_time;
-    $course->schedule_end_time = $request->schedule_end_time;
-    $course->room = $request->room ?? $course->room;
-    $course->save();
-
-    return redirect()->route('lecturer.timetable.manage')
-        ->with('success', '✅ ' . $course->course_code . ' schedule updated!');
-}
-
-/**
- * Remove course from timetable
- */
-public function removeFromTimetable($id)
-{
-    try {
         $course = Course::where(function($query) {
             $query->where('lecturer_id', Auth::id())
                   ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%');
-        })->where('id', $id)->first();
+        })->where('id', $request->course_id)->firstOrFail();
 
-        if (!$course) {
-            return redirect()->route('lecturer.timetable.manage')
-                ->with('error', '❌ Course not found!');
+        if ($course->schedule_day) {
+            return redirect()->back()->with('error', '⚠️ "' . $course->course_code . '" is already scheduled.');
         }
 
-        if (!$course->schedule_day) {
-            return redirect()->route('lecturer.timetable.manage')
-                ->with('error', '⚠️ "' . $course->course_code . '" is not scheduled.');
+        // Check conflicts
+        $conflict = Course::where(function($query) {
+            $query->where('lecturer_id', Auth::id())
+                  ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%');
+        })
+        ->where('id', '!=', $course->id)
+        ->where('schedule_day', $request->schedule_day)
+        ->where(function($q) use ($request) {
+            $q->where(function($sub) use ($request) {
+                $sub->where('schedule_time', '<=', $request->schedule_time)
+                    ->where('schedule_end_time', '>', $request->schedule_time);
+            })->orWhere(function($sub) use ($request) {
+                $sub->where('schedule_time', '<', $request->schedule_end_time)
+                    ->where('schedule_end_time', '>=', $request->schedule_end_time);
+            });
+        })
+        ->first();
+
+        if ($conflict) {
+            return redirect()->back()->with('error',
+                '⚠️ Time conflict with "' . $conflict->course_name . '" on ' . $request->schedule_day
+            );
         }
 
-        $course->schedule_day = null;
-        $course->schedule_time = null;
-        $course->schedule_end_time = null;
+        // Update courses table
+        $course->schedule_day = $request->schedule_day;
+        $course->schedule_time = $request->schedule_time;
+        $course->schedule_end_time = $request->schedule_end_time;
+        $course->room = $request->room ?? $course->room;
+        $course->save();
+
+        // Save to timetable_entries
+        TimetableEntry::updateOrCreate(
+            [
+                'course_id' => $course->id,
+                'lecturer_id' => Auth::id(),
+            ],
+            [
+                'department_id' => $course->department_id,
+                'academic_year' => $course->academic_year,
+                'semester' => $course->semester,
+                'year_level' => $course->year,
+                'day_of_week' => $request->schedule_day,
+                'start_time' => $request->schedule_time,
+                'end_time' => $request->schedule_end_time,
+                'room' => $request->room ?? $course->room,
+                'session_type' => $request->session_type ?? 'lecture',
+                'is_active' => true,
+            ]
+        );
+
+        return redirect()->route('lecturer.timetable.manage')
+            ->with('success', '✅ ' . $course->course_code . ' added to timetable!');
+    }
+
+    public function removeFromTimetable($id)
+    {
+        try {
+            $course = Course::where(function($query) {
+                $query->where('lecturer_id', Auth::id())
+                      ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%');
+            })->where('id', $id)->first();
+
+            if (!$course) {
+                return redirect()->route('lecturer.timetable.manage')
+                    ->with('error', '❌ Course not found!');
+            }
+
+            if (!$course->schedule_day) {
+                return redirect()->route('lecturer.timetable.manage')
+                    ->with('error', '⚠️ "' . $course->course_code . '" is not scheduled.');
+            }
+
+            // Remove from courses table
+            $course->schedule_day = null;
+            $course->schedule_time = null;
+            $course->schedule_end_time = null;
+            $course->save();
+
+            // Remove from timetable_entries
+            TimetableEntry::where('course_id', $course->id)
+                ->where('lecturer_id', Auth::id())
+                ->delete();
+
+            return redirect()->route('lecturer.timetable.manage')
+                ->with('success', '🗑️ "' . $course->course_code . '" removed from timetable!');
+
+        } catch (\Exception $e) {
+            return redirect()->route('lecturer.timetable.manage')
+                ->with('error', '❌ Error: ' . $e->getMessage());
+        }
+    }
+
+    public function addMultipleSessions(Request $request)
+    {
+        $request->validate([
+            'course_id' => 'required|exists:courses,id',
+            'sessions' => 'required|array|min:1',
+            'sessions.*.day_of_week' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'sessions.*.start_time' => 'required|date_format:H:i',
+            'sessions.*.end_time' => 'required|date_format:H:i|after:sessions.*.start_time',
+            'sessions.*.room' => 'nullable|string|max:50',
+            'sessions.*.session_type' => 'required|string|in:lecture,tutorial,lab,seminar,workshop,other',
+        ]);
+
+        $course = Course::where(function($query) {
+            $query->where('lecturer_id', Auth::id())
+                  ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%');
+        })->where('id', $request->course_id)->firstOrFail();
+
+        $created = [];
+
+        foreach ($request->sessions as $sessionData) {
+            $conflict = TimetableEntry::where('lecturer_id', Auth::id())
+                ->where('day_of_week', $sessionData['day_of_week'])
+                ->where(function($q) use ($sessionData) {
+                    $q->where(function($sub) use ($sessionData) {
+                        $sub->where('start_time', '<=', $sessionData['start_time'])
+                            ->where('end_time', '>', $sessionData['start_time']);
+                    })->orWhere(function($sub) use ($sessionData) {
+                        $sub->where('start_time', '<', $sessionData['end_time'])
+                            ->where('end_time', '>=', $sessionData['end_time']);
+                    });
+                })
+                ->first();
+
+            if ($conflict) {
+                return redirect()->back()->with('error',
+                    '⚠️ Time conflict with another session on ' . $sessionData['day_of_week']
+                );
+            }
+
+            $entry = TimetableEntry::create([
+                'course_id' => $course->id,
+                'lecturer_id' => Auth::id(),
+                'department_id' => $course->department_id,
+                'academic_year' => $course->academic_year,
+                'semester' => $course->semester,
+                'year_level' => $course->year,
+                'day_of_week' => $sessionData['day_of_week'],
+                'start_time' => $sessionData['start_time'],
+                'end_time' => $sessionData['end_time'],
+                'room' => $sessionData['room'] ?? $course->room,
+                'session_type' => $sessionData['session_type'],
+                'is_active' => true,
+            ]);
+
+            $created[] = $entry;
+        }
+
+        // Also update courses table with first session
+        $firstSession = $request->sessions[0];
+        $course->schedule_day = $firstSession['day_of_week'];
+        $course->schedule_time = $firstSession['start_time'];
+        $course->schedule_end_time = $firstSession['end_time'];
+        $course->room = $firstSession['room'] ?? $course->room;
         $course->save();
 
         return redirect()->route('lecturer.timetable.manage')
-            ->with('success', '🗑️ "' . $course->course_code . '" removed from timetable!');
-
-    } catch (\Exception $e) {
-        return redirect()->route('lecturer.timetable.manage')
-            ->with('error', '❌ Error: ' . $e->getMessage());
+            ->with('success', '✅ Added ' . count($created) . ' sessions for ' . $course->course_code);
     }
-}
+
+    public function exportTimetable(Request $request)
+    {
+        $lecturer = Auth::user();
+        $lecturerId = $lecturer->id;
+
+        $academicYear = $request->input('academic_year');
+        $semester = $request->input('semester');
+
+        $timetableEntries = TimetableEntry::where('lecturer_id', $lecturerId)
+            ->where('is_active', true)
+            ->when($academicYear, function($q) use ($academicYear) {
+                return $q->where('academic_year', $academicYear);
+            })
+            ->when($semester, function($q) use ($semester) {
+                return $q->where('semester', $semester);
+            })
+            ->with(['course', 'course.department'])
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
+
+        // If no timetable entries, use courses table
+        if ($timetableEntries->isEmpty()) {
+            $timetableEntries = Course::where('lecturer_id', $lecturerId)
+                ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+                ->where('is_active', true)
+                ->whereNotNull('schedule_day')
+                ->whereNotNull('schedule_time')
+                ->whereNotNull('schedule_end_time')
+                ->get();
+        }
+
+        $filename = 'timetable_' . $lecturer->name . '_' . now()->format('Y-m-d') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function() use ($timetableEntries) {
+            $file = fopen('php://output', 'w');
+            fwrite($file, "\xEF\xBB\xBF");
+
+            fputcsv($file, [
+                'Course Code',
+                'Course Name',
+                'Day',
+                'Start Time',
+                'End Time',
+                'Room',
+                'Session Type',
+                'Year Level',
+                'Semester',
+                'Academic Year',
+            ]);
+
+            foreach ($timetableEntries as $entry) {
+                // For Course objects from courses table
+                if ($entry instanceof Course) {
+                    fputcsv($file, [
+                        $entry->course_code ?? 'N/A',
+                        $entry->course_name ?? 'N/A',
+                        $entry->schedule_day ?? 'N/A',
+                        date('h:i A', strtotime($entry->schedule_time ?? '00:00:00')),
+                        date('h:i A', strtotime($entry->schedule_end_time ?? '00:00:00')),
+                        $entry->room ?? 'N/A',
+                        'lecture',
+                        $entry->year ?? 'N/A',
+                        $entry->semester ?? 'N/A',
+                        $entry->academic_year ?? 'N/A',
+                    ]);
+                } else {
+                    // For TimetableEntry objects
+                    fputcsv($file, [
+                        $entry->course->course_code ?? 'N/A',
+                        $entry->course->course_name ?? 'N/A',
+                        $entry->day_of_week ?? 'N/A',
+                        date('h:i A', strtotime($entry->start_time ?? '00:00:00')),
+                        date('h:i A', strtotime($entry->end_time ?? '00:00:00')),
+                        $entry->room ?? 'N/A',
+                        $entry->session_type ?? 'lecture',
+                        $entry->year_level ?? 'N/A',
+                        $entry->semester ?? 'N/A',
+                        $entry->academic_year ?? 'N/A',
+                    ]);
+                }
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function exportTimetablePdf(Request $request)
+    {
+        $lecturer = Auth::user();
+        $lecturerId = $lecturer->id;
+
+        $academicYear = $request->input('academic_year');
+        $semester = $request->input('semester');
+
+        $timetableEntries = TimetableEntry::where('lecturer_id', $lecturerId)
+            ->where('is_active', true)
+            ->when($academicYear, function($q) use ($academicYear) {
+                return $q->where('academic_year', $academicYear);
+            })
+            ->when($semester, function($q) use ($semester) {
+                return $q->where('semester', $semester);
+            })
+            ->with(['course'])
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
+
+        // If no timetable entries, use courses table
+        if ($timetableEntries->isEmpty()) {
+            $timetableEntries = Course::where('lecturer_id', $lecturerId)
+                ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+                ->where('is_active', true)
+                ->whereNotNull('schedule_day')
+                ->whereNotNull('schedule_time')
+                ->whereNotNull('schedule_end_time')
+                ->get();
+        }
+
+        $grid = [];
+        $dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        foreach ($dayNames as $day) {
+            $grid[$day] = $timetableEntries->filter(function($entry) use ($day) {
+                if ($entry instanceof Course) {
+                    return $entry->schedule_day === $day;
+                }
+                return $entry->day_of_week === $day;
+            })->values();
+        }
+
+        return view('lecturer.timetable-pdf', compact('grid', 'lecturer', 'academicYear', 'semester'));
+    }
 }

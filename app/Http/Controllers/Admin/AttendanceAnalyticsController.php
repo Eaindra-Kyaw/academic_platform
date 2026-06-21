@@ -176,7 +176,8 @@ class AttendanceAnalyticsController extends Controller
             // Get session IDs
             $sessionIds = $sessionQuery->pluck('id')->toArray();
 
-            $recordQuery = AttendanceRecord::whereIn('session_id', $sessionIds)
+            // ✅ FIXED: Use attendance_session_id instead of session_id
+            $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
                 ->whereIn('status', ['present', 'late']);
 
             $records = $recordQuery->count();
@@ -234,8 +235,8 @@ class AttendanceAnalyticsController extends Controller
         }
         $sessionIds = $sessionQuery->pluck('id')->toArray();
 
-        // Get all records
-        $recordQuery = AttendanceRecord::whereIn('session_id', $sessionIds)
+        // ✅ FIXED: Use attendance_session_id instead of session_id
+        $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
             ->whereIn('status', ['present', 'late']);
 
         if ($year) {
@@ -263,8 +264,9 @@ class AttendanceAnalyticsController extends Controller
             }
             $weekSessionIds = $weekSessionQuery->pluck('id')->toArray();
 
+            // ✅ FIXED: Use attendance_session_id instead of session_id
             $weekRecords = $records->filter(function($record) use ($weekSessionIds) {
-                return in_array($record->session_id, $weekSessionIds);
+                return in_array($record->attendance_session_id, $weekSessionIds);
             });
 
             $expected = $totalStudents * count($weekSessionIds);
@@ -312,7 +314,8 @@ class AttendanceAnalyticsController extends Controller
             $sessions = $sessionQuery->count();
             $sessionIds = $sessionQuery->pluck('id')->toArray();
 
-            $recordQuery = AttendanceRecord::whereIn('session_id', $sessionIds)
+            // ✅ FIXED: Use attendance_session_id instead of session_id
+            $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
                 ->whereIn('status', ['present', 'late']);
 
             $records = $recordQuery->count();

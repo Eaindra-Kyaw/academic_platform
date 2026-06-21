@@ -1,57 +1,42 @@
-{{-- resources/views/layouts/partials/admin-sidebar.blade.php --}}
-
 <div class="nav-label">Main</div>
-<a href="{{ route('admin.dashboard') }}" class="nav-item @if (request()->routeIs('admin.dashboard')) active @endif">
+<a href="{{ route('lecturer.dashboard') }}" class="nav-item @if (request()->routeIs('lecturer.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
 </a>
 
-<div class="nav-label">Management</div>
-<a href="{{ route('admin.departments.index') }}" class="nav-item @if (request()->routeIs('admin.departments*')) active @endif">
-    <i class="bi bi-building"></i><span>Departments</span>
+<div class="nav-label">Attendance</div>
+<a href="{{ route('lecturer.attendance.take') }}" class="nav-item @if (request()->routeIs('lecturer.attendance.take')) active @endif">
+    <i class="bi bi-qr-code"></i><span>Take Attendance</span>
 </a>
-<a href="{{ route('admin.users.index') }}" class="nav-item @if (request()->routeIs('admin.users*')) active @endif">
-    <i class="bi bi-people"></i><span>User Management</span>
-</a>
-<a href="{{ route('admin.enrollments.index') }}" class="nav-item @if (request()->routeIs('admin.enrollments*')) active @endif">
-    <i class="bi bi-list-check"></i><span>Enrollments</span>
-</a>
-<a href="{{ route('admin.semesters.index') }}" class="nav-item @if (request()->routeIs('admin.semesters*')) active @endif">
-    <i class="bi bi-calendar"></i><span>Semesters</span>
+<a href="{{ route('lecturer.attendance.sessions') }}" class="nav-item @if (request()->routeIs('lecturer.attendance.sessions')) active @endif">
+    <i class="bi bi-clock-history"></i><span>Session History</span>
 </a>
 
-<div class="nav-label">Analytics</div>
-<a href="{{ route('admin.attendance.analytics') }}" class="nav-item @if (request()->routeIs('admin.attendance*')) active @endif">
-    <i class="bi bi-calendar-check"></i><span>Attendance</span>
+<div class="nav-label">Management</div>
+<a href="{{ route('lecturer.enrollments.index') }}" class="nav-item @if (request()->routeIs('lecturer.enrollments*')) active @endif">
+    <i class="bi bi-list-check"></i><span>Enrollments</span>
 </a>
-@if (Route::has('admin.risk.index'))
-    <a href="{{ route('admin.risk.index') }}" class="nav-item @if (request()->routeIs('admin.risk*')) active @endif">
-        <i class="bi bi-exclamation-triangle"></i><span>Risk Analysis</span>
-    </a>
-@else
-    <a href="#" class="nav-item" onclick="event.preventDefault(); alert('Risk Analysis feature coming soon!');">
-        <i class="bi bi-exclamation-triangle"></i><span>Risk Analysis (Coming Soon)</span>
-    </a>
-@endif
-<a href="{{ route('admin.reports') }}" class="nav-item @if (request()->routeIs('admin.reports')) active @endif">
-    <i class="bi bi-file-earmark-text"></i><span>Reports</span>
+<a href="{{ route('lecturer.students') }}" class="nav-item @if (request()->routeIs('lecturer.students')) active @endif">
+    <i class="bi bi-people"></i><span>All Students</span>
+</a>
+<a href="{{ route('lecturer.timetable.index') }}" class="nav-item @if (request()->routeIs('lecturer.timetable*')) active @endif">
+    <i class="bi bi-calendar-week"></i><span>Timetable</span>
 </a>
 
 <div class="nav-label">Communication</div>
-<a href="{{ route('admin.messages.inbox') }}" class="nav-item @if (request()->routeIs('admin.messages*')) active @endif">
+<a href="{{ route('lecturer.messages.inbox') }}" class="nav-item @if (request()->routeIs('lecturer.messages*')) active @endif">
     <i class="bi bi-envelope"></i>
     <span>Messages</span>
-    <span id="adminUnreadBadge"
+    <span id="lecturerUnreadBadge"
         style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto; display:none;">0</span>
 </a>
-<a href="{{ route('admin.announcements.index') }}" class="nav-item @if (request()->routeIs('admin.announcements*')) active @endif">
+<a href="{{ route('lecturer.announcements') }}" class="nav-item @if (request()->routeIs('lecturer.announcements')) active @endif">
     <i class="bi bi-megaphone"></i>
     <span>Announcements</span>
-    <span id="adminAnnouncementBadge"
+    <span id="lecturerAnnouncementBadge"
         style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto; display:none;">0</span>
 </a>
 
-<div class="sidebar-note">
-    <strong>{{ \App\Models\Department::count() }} Depts</strong>
-    <p>{{ \App\Models\User::where('role_id', 3)->count() }} Students •
-        {{ \App\Models\User::where('role_id', 2)->count() }} Lecturers</p>
-</div>
+<div class="nav-label">Reports</div>
+<a href="{{ route('lecturer.reports') }}" class="nav-item @if (request()->routeIs('lecturer.reports')) active @endif">
+    <i class="bi bi-file-earmark-text"></i><span> Reports</span>
+</a>
