@@ -12,8 +12,8 @@
 @section('content')
     <style>
         /* ============================================
-               COMPACT PROFESSIONAL DESIGN
-               ============================================ */
+                   COMPACT PROFESSIONAL DESIGN
+                   ============================================ */
 
         /* Stats Row - Compact */
         .stats-grid {
@@ -75,8 +75,8 @@
         }
 
         /* ============================================
-               SESSION TABLE - Compact
-               ============================================ */
+                   SESSION TABLE - Compact
+                   ============================================ */
         .session-table-wrap {
             background: white;
             border-radius: 10px;
@@ -327,8 +327,8 @@
         }
 
         /* ============================================
-               PAGINATION - Compact
-               ============================================ */
+                   PAGINATION - Compact
+                   ============================================ */
         .pagination-wrap {
             padding: 12px 18px;
             border-top: 1px solid #e5e7eb;
@@ -374,8 +374,8 @@
         }
 
         /* ============================================
-               EMPTY STATE
-               ============================================ */
+                   EMPTY STATE
+                   ============================================ */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -417,8 +417,8 @@
         }
 
         /* ============================================
-               RESPONSIVE
-               ============================================ */
+                   RESPONSIVE
+                   ============================================ */
         @media (max-width: 992px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -494,8 +494,8 @@
     </style>
 
     <!-- ==========================================
-        STATISTICS - COMPACT
-        ========================================== -->
+            STATISTICS - COMPACT
+            ========================================== -->
     <div class="stats-grid">
         <div class="stat-box">
             <div class="label">Total Sessions</div>
@@ -525,8 +525,8 @@
     </div>
 
     <!-- ==========================================
-        SESSION TABLE
-        ========================================== -->
+            SESSION TABLE
+            ========================================== -->
     <div class="session-table-wrap">
         <div class="table-header">
             <h5><i class="bi bi-clock-history"></i> Sessions</h5>
@@ -609,7 +609,7 @@
                                     {{-- End Session Button (only for active sessions) --}}
                                     @if ($session->status == 'active')
                                         <form
-                                            action="{{ route('lecturer.attendance.session.end', ['id' => $session->id]) }}"
+                                            action="{{ route('lecturer.attendance.sessions.end', ['id' => $session->id]) }}"
                                             method="POST" style="display: inline-block;"
                                             onsubmit="return confirm('End this session?');">
                                             @csrf

@@ -388,8 +388,8 @@
         }
 
         /* ============================================
-                           UNI BOT MODAL - Enhanced Styles
-                           ============================================ */
+                                   UNI BOT MODAL - Enhanced Styles
+                                   ============================================ */
         #uniBotModal .chat-messages-popup {
             max-height: 280px;
             overflow-y: auto;
@@ -731,7 +731,7 @@
             <div class="course-list">
                 <div
                     style="padding: 0.75rem 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #800000;">
-                    <i class="bi bi-heart-fill"></i> Academic Health Score
+                    <i class="bi bi-heart-fill"></i> Academic Score
                 </div>
                 <div style="padding: 1rem; text-align: center;">
                     @php
@@ -917,7 +917,7 @@
         <!-- ============================================ -->
         <!-- MY COURSES - DYNAMIC                         -->
         <!-- ============================================ -->
-        <div class="course-list" style="margin-bottom: 1rem;">
+        {{-- <div class="course-list" style="margin-bottom: 1rem;">
             <div
                 style="padding: 0.75rem 1rem; background: #f9fafb; border-bottom: 1px solid #e5e7eb; font-weight: 700; color: #800000;">
                 <i class="bi bi-book-open"></i> My Courses
@@ -955,7 +955,7 @@
                     </a>
                 </div>
             @endforelse
-        </div>
+        </div> --}}
 
         <!-- ============================================ -->
         <!-- RECOMMENDATIONS - DYNAMIC                    -->

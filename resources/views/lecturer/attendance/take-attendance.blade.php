@@ -68,10 +68,12 @@
             padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .btn-custom:hover {
             background: #5f0000;
+            transform: translateY(-1px);
         }
 
         .form-control {
@@ -118,6 +120,21 @@
             background: #059669;
             color: white;
         }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .qr-box img {
+                width: 150px;
+                height: 150px;
+            }
+
+            .manual-code {
+                font-size: 18px;
+            }
+        }
     </style>
 
     <div class="row">
@@ -130,11 +147,10 @@
                         <p style="font-size: 12px;">Same QR for whole semester - put on PowerPoint once</p>
                         <div class="qr-box">
                             @php
-                                $baseUrl = config('app.url');
-
+                                // FIXED: Use route() helper instead of hardcoded URL
                                 $semesterQrText =
-                                    $baseUrl .
-                                    '/student/scan/semester?token=' .
+                                    route('student.scan.semester') .
+                                    '?token=' .
                                     $activeSession->course->semester_qr_token .
                                     '&course=' .
                                     $activeSession->course->id;
@@ -158,7 +174,8 @@
                                 <button type="submit" class="btn-custom" style="background: #f59e0b;">⟳ Regenerate
                                     QR</button>
                             </form>
-                            <form method="POST" action="{{ route('lecturer.attendance.session.end', $activeSession->id) }}"
+                            <form method="POST"
+                                action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
                                 style="display: inline;">
                                 @csrf
                                 <button type="submit" class="btn-custom" style="background: #dc2626;">⏹ End
@@ -174,11 +191,10 @@
                             minutes</p>
                         <div class="qr-box">
                             @php
-                                $baseUrl = config('app.url');
-
+                                // FIXED: Use route() helper instead of hardcoded URL
                                 $dynamicQrText =
-                                    $baseUrl .
-                                    '/student/scan/process?token=' .
+                                    route('student.scan.process') .
+                                    '?token=' .
                                     $activeSession->session_token .
                                     '&session=' .
                                     $activeSession->id;
@@ -199,13 +215,13 @@
                         </div>
                         <div style="margin-top: 15px;">
                             <form method="POST"
-                                action="{{ route('lecturer.attendance.session.end', $activeSession->id) }}"
+                                action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
                                 style="display: inline;">
                                 @csrf
                                 <button type="submit" class="btn-custom" style="background: #dc2626;">End Session</button>
                             </form>
-                            <a href="{{ route('lecturer.attendance.session.refresh', $activeSession->id) }}"
-                                class="btn-custom" style="background: #f59e0b;">Refresh QR</a>
+                            <a href="{{ route('lecturer.attendance.sessions.refresh', $activeSession->id) }}"
+                                class="btn-custom" style="background: #f59e0b; text-decoration: none;">Refresh QR</a>
                         </div>
                     </div>
                 @endif
@@ -224,7 +240,8 @@
                         </div>
                         <div>
                             <div class="stat-number" style="color:#ef4444;">
-                                {{ ($activeSession->total_students ?? 0) - ($activeSession->present_count ?? 0) }}</div>
+                                {{ ($activeSession->total_students ?? 0) - ($activeSession->present_count ?? 0) - ($activeSession->late_count ?? 0) }}
+                            </div>
                             <div class="stat-label">Absent</div>
                         </div>
                         <div>
@@ -263,7 +280,8 @@
 
                         <div id="durationField">
                             <select name="duration" class="form-control" required>
-                                <option value="30">30 minutes</option>
+                                <option value="15">15 minutes</option>
+                                <option value="30" selected>30 minutes</option>
                                 <option value="45">45 minutes</option>
                                 <option value="60">60 minutes</option>
                                 <option value="90">90 minutes</option>
@@ -322,10 +340,12 @@
             <!-- Link to Session History -->
             <div class="mode-selector" style="text-align: center; background: #f8fafc;">
                 <a href="{{ route('lecturer.attendance.sessions') }}" class="btn btn-outline-primary"
-                    style="width: 100%;">
+                    style="width: 100%; display: inline-block; padding: 8px; border: 1px solid #800000; color: #800000; border-radius: 6px; text-decoration: none; transition: all 0.2s;"
+                    onmouseover="this.style.background='#800000'; this.style.color='white';"
+                    onmouseout="this.style.background='transparent'; this.style.color='#800000';">
                     <i class="bi bi-clock-history"></i> View Full Session History
                 </a>
-                <small class="text-muted" style="display: block; margin-top: 8px;">
+                <small class="text-muted" style="display: block; margin-top: 8px; color: #6b7280; font-size: 12px;">
                     View all past sessions, attendance statistics, and detailed reports
                 </small>
             </div>
@@ -358,6 +378,14 @@
                     durationField.style.display = 'block';
                 }
             });
+        });
+
+        // Auto-select duration field visibility on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const selected = document.querySelector('input[name="qr_mode"]:checked');
+            if (selected && selected.value === 'semester') {
+                document.getElementById('durationField').style.display = 'none';
+            }
         });
     </script>
 @endsection

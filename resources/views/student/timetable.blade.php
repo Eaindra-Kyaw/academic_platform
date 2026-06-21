@@ -16,6 +16,7 @@
             border-radius: 12px;
             border: 1px solid #e5e7eb;
             overflow: hidden;
+            width: 100%;
         }
 
         .timetable-header {
@@ -44,13 +45,15 @@
         .timetable-grid {
             overflow-x: auto;
             padding: 0;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
         }
 
         .timetable-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 750px;
             font-size: 13px;
+            table-layout: fixed;
         }
 
         .timetable-table th {
@@ -62,7 +65,6 @@
             text-transform: uppercase;
             background: #f9fafb;
             border-bottom: 2px solid #e5e7eb;
-            width: 14%;
         }
 
         .timetable-table th .day-label {
@@ -91,7 +93,6 @@
             border-bottom: 1px solid #f3f4f6;
             vertical-align: top;
             height: 70px;
-            min-width: 110px;
         }
 
         .timetable-table td .time-slot {
@@ -121,6 +122,7 @@
             margin: 2px 0;
             transition: all 0.2s;
             cursor: default;
+            word-break: break-word;
         }
 
         .class-block .course-name {
@@ -195,24 +197,51 @@
             background: #5f0000;
         }
 
-        @media (max-width: 768px) {
+        /* ============================================
+               RESPONSIVE - FIXED
+               ============================================ */
+
+        /* Laptop / Desktop */
+        @media (max-width: 1200px) {
+            .timetable-table {
+                font-size: 12px;
+            }
+
+            .timetable-table th {
+                padding: 10px 10px;
+            }
+
+            .timetable-table th .day-label {
+                font-size: 13px;
+            }
+
             .timetable-table td {
-                height: 60px;
-                min-width: 80px;
+                height: 65px;
                 padding: 4px;
             }
 
             .class-block {
-                padding: 4px 6px;
+                padding: 4px 8px;
             }
 
             .class-block .course-name {
-                font-size: 11px;
+                font-size: 12px;
             }
 
             .class-block .class-meta {
                 font-size: 10px;
-                gap: 4px;
+            }
+        }
+
+        /* Tablet */
+        @media (max-width: 992px) {
+            .timetable-table {
+                font-size: 11px;
+                min-width: 700px;
+            }
+
+            .timetable-table th {
+                padding: 8px 8px;
             }
 
             .timetable-table th .day-label {
@@ -223,9 +252,320 @@
                 font-size: 10px;
             }
 
+            .timetable-table td {
+                height: 60px;
+                padding: 4px;
+            }
+
+            .class-block {
+                padding: 3px 6px;
+            }
+
+            .class-block .course-name {
+                font-size: 11px;
+            }
+
+            .class-block .course-code {
+                font-size: 10px;
+            }
+
+            .class-block .class-meta {
+                font-size: 10px;
+                gap: 4px;
+            }
+
+            .class-block .class-time {
+                font-size: 10px;
+            }
+
             .timetable-header {
+                padding: 12px 16px;
+            }
+
+            .timetable-header h5 {
+                font-size: 15px;
+            }
+        }
+
+        /* Mobile Landscape */
+        @media (max-width: 768px) {
+            .timetable-table {
+                font-size: 10px;
+                min-width: 600px;
+            }
+
+            .timetable-table th {
+                padding: 6px 6px;
+            }
+
+            .timetable-table th .day-label {
+                font-size: 11px;
+            }
+
+            .timetable-table th .day-date {
+                font-size: 9px;
+            }
+
+            .timetable-table td {
+                height: 55px;
+                padding: 3px;
+            }
+
+            .timetable-table td .time-slot {
+                font-size: 9px;
+                padding: 2px 0;
+            }
+
+            .class-block {
+                padding: 3px 5px;
+                border-left-width: 2px;
+            }
+
+            .class-block .course-name {
+                font-size: 10px;
+            }
+
+            .class-block .course-code {
+                font-size: 9px;
+            }
+
+            .class-block .class-meta {
+                font-size: 9px;
+                gap: 3px;
+                margin-top: 2px;
+            }
+
+            .class-block .class-meta span {
+                gap: 2px;
+            }
+
+            .class-block .class-meta i {
+                font-size: 8px;
+            }
+
+            .class-block .class-time {
+                font-size: 9px;
+            }
+
+            .timetable-table td .empty-slot {
+                font-size: 10px;
+                padding: 10px 0;
+            }
+
+            .timetable-header {
+                padding: 10px 14px;
                 flex-direction: column;
-                align-items: stretch;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .timetable-header .week-range {
+                font-size: 12px;
+            }
+
+            .timetable-header .btn-today {
+                align-self: flex-start;
+                font-size: 12px;
+                padding: 4px 14px;
+            }
+        }
+
+        /* Mobile Portrait */
+        @media (max-width: 480px) {
+            .timetable-table {
+                font-size: 9px;
+                min-width: 480px;
+            }
+
+            .timetable-table th {
+                padding: 4px 4px;
+            }
+
+            .timetable-table th .day-label {
+                font-size: 10px;
+            }
+
+            .timetable-table th .day-date {
+                font-size: 8px;
+            }
+
+            .timetable-table td {
+                height: 50px;
+                padding: 2px;
+            }
+
+            .timetable-table td .time-slot {
+                font-size: 8px;
+                padding: 1px 0;
+            }
+
+            .class-block {
+                padding: 2px 4px;
+                border-left-width: 2px;
+                border-radius: 4px;
+                margin: 1px 0;
+            }
+
+            .class-block .course-name {
+                font-size: 9px;
+            }
+
+            .class-block .course-code {
+                font-size: 8px;
+            }
+
+            .class-block .class-meta {
+                font-size: 8px;
+                gap: 2px;
+                margin-top: 1px;
+            }
+
+            .class-block .class-meta span {
+                gap: 1px;
+            }
+
+            .class-block .class-meta i {
+                font-size: 7px;
+            }
+
+            .class-block .class-time {
+                font-size: 8px;
+            }
+
+            .timetable-table td .empty-slot {
+                font-size: 8px;
+                padding: 6px 0;
+            }
+
+            .timetable-header {
+                padding: 8px 12px;
+            }
+
+            .timetable-header h5 {
+                font-size: 13px;
+            }
+
+            .timetable-header .week-range {
+                font-size: 11px;
+            }
+
+            .timetable-header .btn-today {
+                font-size: 11px;
+                padding: 3px 12px;
+            }
+
+            .timetable-container {
+                border-radius: 8px;
+            }
+
+            .no-schedule {
+                padding: 40px 16px;
+            }
+
+            .no-schedule .icon {
+                font-size: 36px;
+            }
+
+            .no-schedule h5 {
+                font-size: 16px;
+            }
+
+            .no-schedule p {
+                font-size: 13px;
+            }
+        }
+
+        /* Very Small Phones */
+        @media (max-width: 380px) {
+            .timetable-table {
+                font-size: 8px;
+                min-width: 380px;
+            }
+
+            .timetable-table th {
+                padding: 3px 2px;
+            }
+
+            .timetable-table th .day-label {
+                font-size: 9px;
+            }
+
+            .timetable-table th .day-date {
+                font-size: 7px;
+            }
+
+            .timetable-table td {
+                height: 40px;
+                padding: 1px;
+            }
+
+            .class-block .course-name {
+                font-size: 8px;
+            }
+
+            .class-block .course-code {
+                font-size: 7px;
+            }
+
+            .class-block .class-meta {
+                font-size: 7px;
+            }
+
+            .class-block .class-time {
+                font-size: 7px;
+            }
+
+            .timetable-table td .empty-slot {
+                font-size: 7px;
+                padding: 4px 0;
+            }
+
+            .timetable-header h5 {
+                font-size: 12px;
+            }
+
+            .timetable-header .week-range {
+                font-size: 10px;
+            }
+
+            .timetable-header .btn-today {
+                font-size: 10px;
+                padding: 2px 10px;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .btn-today {
+                display: none !important;
+            }
+
+            .timetable-container {
+                border: 1px solid #ddd;
+                border-radius: 0;
+            }
+
+            .timetable-header {
+                background: white !important;
+                border-bottom: 2px solid #ddd;
+            }
+
+            .class-block {
+                background: #f5f5f5 !important;
+                border-left-color: #333 !important;
+            }
+
+            .timetable-grid {
+                overflow: visible !important;
+            }
+
+            .timetable-table {
+                font-size: 10px !important;
+                min-width: 100% !important;
+            }
+
+            .timetable-table th {
+                background: #f5f5f5 !important;
             }
         }
     </style>
@@ -238,7 +578,7 @@
                     {{ $weekStart->format('M d') }} – {{ $weekEnd->format('M d, Y') }}
                 </span>
             </div>
-            <button class="btn-today" onclick="goToday()">Today</button>
+            <button class="btn-today" onclick="goToday()">📅 Today</button>
         </div>
 
         <div class="timetable-grid">
@@ -258,7 +598,7 @@
                 <table class="timetable-table">
                     <thead>
                         <tr>
-                            <th style="min-width: 80px; width: 80px;">Time</th>
+                            <th style="width: 70px; min-width: 60px;">Time</th>
                             @foreach ($days as $day)
                                 <th class="{{ $day['is_today'] ? 'today' : '' }}">
                                     <span class="day-label">{{ $day['short'] }}</span>
@@ -313,7 +653,8 @@
             if (today) {
                 today.scrollIntoView({
                     behavior: 'smooth',
-                    block: 'center'
+                    block: 'center',
+                    inline: 'center'
                 });
             }
         }

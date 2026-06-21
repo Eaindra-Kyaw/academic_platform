@@ -305,6 +305,7 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
 
     Route::post('/attendance/manual', [AttendanceController::class, 'manualAttendance'])->name('attendance.manual');
 
+
     // ============================================================
     // AJAX ROUTES (Lecturer)
     // ============================================================

@@ -1,60 +1,98 @@
 const https = require('https');
-const fs = require('fs');
 const http = require('http');
+const fs = require('fs');
+const url = require('url');
+const os = require('os');
 
-// Manually set your IP
-
-// const YOUR_IP = '192.168.1.12';
-const YOUR_IP = 'localhost';
-
-console.log(`📡 Using IP: ${YOUR_IP}`);
-
-const options = {
-//   key: fs.readFileSync(`${YOUR_IP}-key.pem`),
-//   cert: fs.readFileSync(`${YOUR_IP}.pem`)
-key: fs.readFileSync(`localhost-key.pem`),
-cert: fs.readFileSync(`localhost.pem`)
-};
-
-https.createServer(options, (req, res) => {
-  console.log('📱 Request:', req.method, req.url);
-
-  if (req.headers.host) {
-    req.headers.host = req.headers.host.replace(':8443', '');
-  }
-
-  const proxyReq = http.request({
-    host: '127.0.0.1',
-    port: 8000,
-    path: req.url,
-    method: req.method,
-    headers: req.headers
-  }, (proxyRes) => {
-    console.log('✅ Response:', proxyRes.statusCode);
-
-    if (proxyRes.headers.location) {
-      proxyRes.headers.location = proxyRes.headers.location
-        .replace('http://127.0.0.1:8000', `https://${YOUR_IP}:8443`)
-        .replace('http://localhost:8000', `https://${YOUR_IP}:8443`);
+// Get local IP
+function getLocalIP() {
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                return iface.address;
+            }
+        }
     }
+    return '192.168.1.12';
+}
 
-    res.writeHead(proxyRes.statusCode, proxyRes.headers);
-    proxyRes.pipe(res);
-  });
+const LOCAL_IP = getLocalIP();
+const TARGET_PORT = 8000;
 
-  proxyReq.on('error', (err) => {
-    console.error('❌ Error:', err.message);
-    res.writeHead(500);
-    res.end(`<h1>Proxy Error</h1><p>${err.message}</p>`);
-  });
+// Check if SSL certificates exist
+let sslOptions;
+try {
+    sslOptions = {
+        key: fs.readFileSync('./server.key'),
+        cert: fs.readFileSync('./server.cert'),
+    };
+    console.log('✅ SSL certificates loaded');
+} catch (err) {
+    console.error('❌ SSL certificates not found!');
+    console.error('Run: openssl req -x509 -newkey rsa:2048 -nodes -keyout server.key -out server.cert -days 365 -subj "/CN=localhost"');
+    process.exit(1);
+}
 
-  req.pipe(proxyReq);
-}).listen(8443, '0.0.0.0', () => {
-  console.log('');
-  console.log('═══════════════════════════════════════════════════');
-  console.log('✅ HTTPS PROXY RUNNING');
-  console.log(`📱 iPhone URL: https://${YOUR_IP}:8443/student/scan`);
-  console.log('⚠️  Tap "Show Details" → "Visit Website"');
-  console.log('═══════════════════════════════════════════════════');
-  console.log('');
+// Create HTTPS server
+const server = https.createServer(sslOptions, (req, res) => {
+    const parsedUrl = url.parse(req.url);
+    const path = parsedUrl.pathname;
+    const query = parsedUrl.query;
+
+    console.log(`📱 ${req.method} ${req.url}`);
+
+    // Build target URL
+    const targetUrl = `http://${LOCAL_IP}:${TARGET_PORT}${path}${query ? '?' + query : ''}`;
+
+    // Forward request to Laravel
+    const proxyReq = http.request(targetUrl, {
+        method: req.method,
+        headers: {
+            ...req.headers,
+            'Host': `${LOCAL_IP}:${TARGET_PORT}`,
+            'X-Forwarded-For': req.socket.remoteAddress,
+            'X-Forwarded-Proto': 'https',
+            'X-Forwarded-Host': `${LOCAL_IP}:8443`
+        }
+    }, (proxyRes) => {
+        // Set CORS headers for cross-origin requests
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-CSRF-TOKEN');
+
+        // Handle preflight
+        if (req.method === 'OPTIONS') {
+            res.writeHead(200);
+            res.end();
+            return;
+        }
+
+        res.writeHead(proxyRes.statusCode, proxyRes.headers);
+        proxyRes.pipe(res);
+        console.log(`✅ Response: ${proxyRes.statusCode}`);
+    });
+
+    proxyReq.on('error', (err) => {
+        console.error('❌ Proxy Error:', err.message);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            success: false,
+            message: 'Server error: ' + err.message
+        }));
+    });
+
+    req.pipe(proxyReq);
+});
+
+// Start server
+const PORT = 8443;
+server.listen(PORT, '0.0.0.0', () => {
+    console.log('\n═══════════════════════════════════════════════════');
+    console.log('✅ HTTPS PROXY RUNNING');
+    console.log(`📱 iPhone URL: https://${LOCAL_IP}:${PORT}/student/scan`);
+    console.log('⚠️  Tap "Show Details" → "Visit Website"');
+    console.log('═══════════════════════════════════════════════════\n');
+    console.log(`➡️ Proxying to: http://${LOCAL_IP}:${TARGET_PORT}`);
+    console.log('Press Ctrl+C to stop\n');
 });
