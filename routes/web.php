@@ -398,6 +398,12 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::get('/messages', [StudentMessageController::class, 'inbox'])->name('messages.inbox');
     Route::get('/messages/{message}', [StudentMessageController::class, 'show'])->name('messages.show');
     Route::get('/messages/unread/count', [StudentMessageController::class, 'unreadCount'])->name('messages.unread');
+
+     // ============================================================
+    // CHATBOT ROUTES
+    // ============================================================
+    Route::get('/chatbot', [StudentController::class, 'chatbot'])->name('chatbot');
+    Route::post('/chatbot/ask', [StudentController::class, 'askChatbot'])->name('chatbot.ask');
 });
 
 // ============================================================

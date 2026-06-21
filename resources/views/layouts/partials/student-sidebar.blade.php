@@ -51,6 +51,6 @@
 </a>
 
 <div class="nav-label">Support</div>
-<a href="#" class="nav-item">
-    <i class="bi bi-robot"></i><span>Uni Bot</span>
+<a href="{{ route('student.chatbot') }}" class="nav-item @if (request()->routeIs('student.chatbot')) active @endif">
+    <i class="bi bi-robot"></i><span>Academic Assistant</span>
 </a>
