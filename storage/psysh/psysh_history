@@ -322,3 +322,9 @@ pp\134Models\134Course::where('year',\040'Fourth\040Year')->update(['year'\040=>
 App\134Models\134Course::where('year',\040'Fifth\040Year')->update(['year'\040=>\040'5']);
 pp\134Models\134Course::where('year',\040'Sixth\040Year')->update(['year'\040=>\040'6']);
 $courses\040=\040App\134Models\134Course::where('department_id',\0405)->get();
+>>>\040$calculator\040=\040new\040App\134Services\134RollCallCalculator();
+>>>\040$result\040=\040$calculator->calculateStudentRollCall(32,\04026,\0406,\0402026);
+>>>\040print_r($result);$calculator\040=\040new\040App\134Services\134RollCallCalculator();
+$calculator\040=\040new\040App\134Services\134RollCallCalculator();
+$result\040=\040$calculator->calculateStudentRollCall(32,\04026,\0406,\0402026);
+print_r($result);

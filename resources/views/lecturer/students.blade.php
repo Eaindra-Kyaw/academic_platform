@@ -34,6 +34,27 @@
             color: #800000;
         }
 
+        .stat-number.green {
+            color: #10b981;
+        }
+
+        .stat-number.yellow {
+            color: #f59e0b;
+        }
+
+        .stat-number.red {
+            color: #ef4444;
+        }
+
+        .stat-number.blue {
+            color: #3b82f6;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #6b7280;
+        }
+
         .students-table {
             width: 100%;
             border-collapse: collapse;
@@ -59,6 +80,10 @@
             border-bottom: 1px solid #f0f2f4;
             font-size: 0.8rem;
             vertical-align: middle;
+        }
+
+        .students-table tbody tr:hover {
+            background: #fafafa;
         }
 
         .status-eligible {
@@ -88,6 +113,29 @@
             font-weight: 600;
         }
 
+        .risk-badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .risk-badge.low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .risk-badge.medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .risk-badge.high {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
         .search-bar {
             background: white;
             border-radius: 0.75rem;
@@ -106,13 +154,19 @@
             border: 1px solid #e5e7eb;
             border-radius: 2rem;
             font-size: 0.8rem;
+            min-width: 150px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #800000;
         }
 
         .btn-notify {
             background: #800000;
             color: white;
             border: none;
-            padding: 0.2rem 0.6rem;
+            padding: 0.25rem 0.75rem;
             border-radius: 0.4rem;
             font-size: 0.7rem;
             cursor: pointer;
@@ -122,6 +176,36 @@
         .btn-notify:hover {
             background: #a00000;
             transform: scale(1.05);
+        }
+
+        .btn-notify i {
+            margin-right: 0.2rem;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-bar .fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-bar .fill.green {
+            background: #10b981;
+        }
+
+        .progress-bar .fill.yellow {
+            background: #f59e0b;
+        }
+
+        .progress-bar .fill.red {
+            background: #ef4444;
         }
 
         /* ===== MESSAGE MODAL ===== */
@@ -285,70 +369,119 @@
             .students-table {
                 min-width: 700px;
             }
+
+            .stats-row {
+                flex-direction: column;
+            }
+
+            .stat-card {
+                min-width: unset;
+            }
+
+            .search-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 
     <div>
+        <!-- Stats Cards -->
         <div class="stats-row">
             <div class="stat-card">
-                <div class="stat-number">{{ $students->count() }}</div>
-                <div class="stat-label">Total Students</div>
+                <div class="stat-number blue">{{ $totalStudents ?? 0 }}</div>
+                <div class="stat-label">👨‍🎓 Total Students</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">{{ $students->where('status', 'At Risk')->count() }}</div>
-                <div class="stat-label">At Risk</div>
+                <div class="stat-number green">{{ $eligibleCount ?? 0 }}</div>
+                <div class="stat-label">✅ Eligible</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">{{ $students->where('status', 'Warning')->count() }}</div>
-                <div class="stat-label">Warning</div>
+                <div class="stat-number yellow">{{ $warningCount ?? 0 }}</div>
+                <div class="stat-label">⚠️ Warning</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">{{ $students->where('status', 'Eligible')->count() }}</div>
-                <div class="stat-label">Eligible</div>
+                <div class="stat-number red">{{ $atRiskCount ?? 0 }}</div>
+                <div class="stat-label">🚨 At Risk</div>
             </div>
         </div>
 
+        <!-- Search Bar -->
         <div class="search-bar">
             <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by student name or email...">
+            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <button class="btn-notify" onclick="filterTable()" style="background:#800000; padding:0.4rem 1rem;">
+                    <i class="bi bi-funnel"></i> Apply Filter
+                </button>
+                <button class="btn-notify" onclick="resetFilters()" style="background:#6b7280; padding:0.4rem 1rem;">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
+            </div>
         </div>
 
+        <!-- Students Table -->
         <div style="overflow-x: auto;">
             <table class="students-table" id="studentsTable">
                 <thead>
                     <tr>
+                        <th>#</th>
                         <th>Student Name</th>
                         <th>Email</th>
-                        <th>Student ID</th>
-                        <th>Year</th>
                         <th>Attendance</th>
-                        <th>Status</th>
+                        <th>Roll Call</th>
+                        <th>Eligibility</th>
+                        <th>Risk Level</th>
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @forelse($students as $student)
-                        <tr>
-                            <td><strong>{{ $student->name }}</strong></td>
-                            <td>{{ $student->email }}</td>
-                            <td>{{ $student->student_id ?? 'N/A' }}</td>
-                            <td> {{ $student->current_year }}th year</td>
+                <tbody id="studentTableBody">
+                    @forelse($students ?? [] as $student)
+                        @php
+                            $attendance = $student->attendance_percentage ?? 0;
+                            $rollCall = $student->roll_call_mark ?? 0;
+                            $status = $student->status ?? 'N/A';
+                            $badgeClass =
+                                $status == 'Eligible'
+                                    ? 'status-eligible'
+                                    : ($status == 'Warning'
+                                        ? 'status-warning'
+                                        : 'status-risk');
+                            $riskLevel = $status == 'Eligible' ? 'Low' : ($status == 'Warning' ? 'Medium' : 'High');
+                            $barColor = $attendance >= 75 ? 'green' : ($attendance >= 60 ? 'yellow' : 'red');
+                        @endphp
+                        <tr class="student-row" data-name="{{ strtolower($student->name) }}"
+                            data-email="{{ strtolower($student->email) }}">
+                            <td>{{ $loop->iteration }}</td>
                             <td>
-                                {{ $student->attendance_percentage ?? 0 }}%
-                                <div class="progress-bar"
-                                    style="height:4px; background:#e5e7eb; border-radius:4px; margin-top:4px;">
-                                    <div
-                                        style="width:{{ $student->attendance_percentage ?? 0 }}%; height:4px; background:#800000; border-radius:4px;">
+                                <strong>{{ $student->name }}</strong>
+                                <br>
+                                <small style="color: #6b7280; font-size: 0.65rem;">ID:
+                                    {{ $student->student_id ?? 'N/A' }}</small>
+                            </td>
+                            <td>{{ $student->email }}</td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:0.5rem;">
+                                    <span style="font-weight:600; font-size:0.9rem; min-width:45px;">
+                                        {{ number_format($attendance, 1) }}%
+                                    </span>
+                                    <div class="progress-bar" style="flex:1; min-width:60px;">
+                                        <div class="fill {{ $barColor }}"
+                                            style="width: {{ min($attendance, 100) }}%;"></div>
                                     </div>
                                 </div>
                             </td>
+                            <td style="text-align:center; font-weight:600; font-size:0.9rem;">
+                                {{ number_format($rollCall, 1) }}/10
+                            </td>
                             <td>
-                                @if (($student->attendance_percentage ?? 0) >= 75)
-                                    <span class="status-eligible">Eligible</span>
-                                @elseif(($student->attendance_percentage ?? 0) >= 60)
-                                    <span class="status-warning">Warning</span>
-                                @else
-                                    <span class="status-risk">At Risk</span>
-                                @endif
+                                <span class="{{ $badgeClass }}">
+                                    {{ $status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="risk-badge {{ strtolower($riskLevel) }}">
+                                    {{ $riskLevel }}
+                                </span>
                             </td>
                             <td>
                                 <button class="btn-notify"
@@ -359,7 +492,10 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="text-align:center; padding:2rem;">No students found</td>
+                            <td colspan="8" style="text-align:center; padding:2rem; color:#9ca3af;">
+                                <i class="bi bi-inbox" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
+                                No students enrolled in your courses.
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -394,14 +530,38 @@
         // ============================================================
         // SEARCH FUNCTIONALITY
         // ============================================================
-        document.getElementById('searchInput').addEventListener('keyup', function() {
-            const searchTerm = this.value.toLowerCase();
-            const rows = document.querySelectorAll('#studentsTable tbody tr');
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
-            });
+        document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                filterTable();
+            }
         });
+
+        function filterTable() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('#studentTableBody .student-row');
+
+            let visibleCount = 0;
+            rows.forEach(row => {
+                const name = row.dataset.name || '';
+                const email = row.dataset.email || '';
+                const text = name + ' ' + email;
+
+                if (!searchTerm || text.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            const rows = document.querySelectorAll('#studentTableBody .student-row');
+            rows.forEach(row => {
+                row.style.display = '';
+            });
+        }
 
         // ============================================================
         // MESSAGE MODAL

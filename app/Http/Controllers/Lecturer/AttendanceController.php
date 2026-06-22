@@ -29,7 +29,7 @@ class AttendanceController extends Controller
 
         $activeSession = AttendanceSession::where('lecturer_id', $lecturer->id)
             ->where('status', 'active')
-            ->with('course')
+            ->with(['course', 'records.student'])
             ->first();
 
         // If active session exists but qr_expires_at is NULL, set it
@@ -162,7 +162,7 @@ class AttendanceController extends Controller
             'room' => $request->room ?? $course->room,
             'status' => 'active',
             'expires_at' => $expiresAt,
-            'qr_expires_at' => $qrExpiresAt,  // FIXED: Added!
+            'qr_expires_at' => $qrExpiresAt,
             'qr_mode' => $request->qr_mode,
             'present_count' => 0,
             'late_count' => 0,
@@ -461,6 +461,9 @@ class AttendanceController extends Controller
         ]);
     }
 
+    /**
+     * Get session statistics for real-time display
+     */
     public function getSessionStats($id)
     {
         $session = AttendanceSession::findOrFail($id);
@@ -468,9 +471,11 @@ class AttendanceController extends Controller
         $presentCount = AttendanceRecord::where('attendance_session_id', $id)
             ->where('status', 'present')
             ->count();
+
         $lateCount = AttendanceRecord::where('attendance_session_id', $id)
             ->where('status', 'late')
             ->count();
+
         $absentCount = AttendanceRecord::where('attendance_session_id', $id)
             ->where('status', 'absent')
             ->count();
@@ -483,6 +488,7 @@ class AttendanceController extends Controller
 
         $records = AttendanceRecord::where('attendance_session_id', $id)
             ->with('student')
+            ->orderBy('created_at', 'asc')
             ->get();
 
         return response()->json([
@@ -495,9 +501,10 @@ class AttendanceController extends Controller
             'records' => $records->map(function($record) {
                 return [
                     'student_name' => $record->student->name ?? 'Unknown',
+                    'student_email' => $record->student->email ?? 'N/A',
                     'status' => $record->status,
-                    'scanned_at' => $record->scanned_at,
-                    'notes' => $record->notes,
+                    'scanned_at' => $record->scanned_at ? $record->scanned_at->toDateTimeString() : null,
+                    'is_manual' => $record->is_manual ?? false,
                 ];
             })
         ]);

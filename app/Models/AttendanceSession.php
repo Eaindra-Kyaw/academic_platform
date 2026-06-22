@@ -16,6 +16,7 @@ class AttendanceSession extends Model
         'lecturer_id',
         'session_token',
         'manual_code',
+        'session_date',
         'room',
         'duration',
         'status',

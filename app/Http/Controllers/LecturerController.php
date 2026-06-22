@@ -11,6 +11,7 @@ use App\Models\Enrollment;
 use App\Models\Announcement;
 use App\Models\TimetableEntry;
 use Illuminate\Support\Facades\Auth;
+use App\Models\AttendanceRecord;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -337,14 +338,103 @@ class LecturerController extends Controller
     }
 
     public function students()
-    {
-        $courses = Course::where('lecturer_id', Auth::id())->get();
-        $students = User::whereHas('enrollments', function($query) use ($courses) {
-            $query->whereIn('course_id', $courses->pluck('id'))->where('status', 'approved');
-        })->with('enrollments')->get();
+{
+    $lecturerId = Auth::id();
 
-        return view('lecturer.students', compact('students', 'courses'));
+    // Get lecturer's courses
+    $courses = Course::where('lecturer_id', $lecturerId)
+        ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%')
+        ->where('is_active', true)
+        ->get();
+
+    $courseIds = $courses->pluck('id')->toArray();
+
+    // Get all students enrolled in these courses
+    $students = User::whereHas('enrollments', function($query) use ($courseIds) {
+        $query->whereIn('course_id', $courseIds)
+              ->where('status', 'approved');
+    })->with(['enrollments' => function($query) use ($courseIds) {
+        $query->whereIn('course_id', $courseIds)
+              ->where('status', 'approved');
+    }])->get();
+
+    // Calculate attendance for each student
+    foreach ($students as $student) {
+        $totalAttendance = 0;
+        $totalCourses = 0;
+        $totalConductedSessions = 0;
+        $totalAttendedSessions = 0;
+
+        foreach ($student->enrollments as $enrollment) {
+            // Count conducted sessions (exclude cancelled)
+            $conducted = AttendanceSession::where('course_id', $enrollment->course_id)
+                ->where('status', 'ended')
+                ->where('is_cancelled', false)
+                ->count();
+
+            // Count attended sessions
+            $attended = AttendanceRecord::where('student_id', $student->id)
+                ->whereHas('session', function($q) use ($enrollment) {
+                    $q->where('course_id', $enrollment->course_id);
+                })
+                ->whereIn('status', ['present', 'late'])
+                ->count();
+
+            $totalConductedSessions += $conducted;
+            $totalAttendedSessions += $attended;
+            $totalCourses++;
+
+            // Calculate per-course attendance
+            $percentage = $conducted > 0 ? round(($attended / $conducted) * 100, 2) : 0;
+            $enrollment->attendance_percentage = $percentage;
+            $enrollment->roll_call_mark = $this->calculateRollCallMark($percentage);
+
+            // Determine eligibility
+            $enrollment->eligibility_status = $percentage >= 75 ? 'Eligible' : ($percentage >= 60 ? 'Warning' : 'At Risk');
+        }
+
+        // Calculate overall attendance percentage
+        $student->attendance_percentage = $totalConductedSessions > 0
+            ? round(($totalAttendedSessions / $totalConductedSessions) * 100, 2)
+            : 0;
+
+        // Determine overall status
+        $student->status = $student->attendance_percentage >= 75 ? 'Eligible'
+            : ($student->attendance_percentage >= 60 ? 'Warning' : 'At Risk');
     }
+
+    // Calculate stats
+    $totalStudents = $students->count();
+    $eligibleCount = $students->where('status', 'Eligible')->count();
+    $warningCount = $students->where('status', 'Warning')->count();
+    $atRiskCount = $students->where('status', 'At Risk')->count();
+
+    return view('lecturer.students', compact(
+        'students',
+        'courses',
+        'totalStudents',
+        'eligibleCount',
+        'warningCount',
+        'atRiskCount'
+    ));
+}
+
+/**
+ * Calculate roll call mark based on MTU system
+ */
+private function calculateRollCallMark($percentage)
+{
+    if ($percentage >= 95) return 10;
+    if ($percentage >= 90) return 9;
+    if ($percentage >= 85) return 8;
+    if ($percentage >= 80) return 7;
+    if ($percentage >= 75) return 6;
+    if ($percentage >= 70) return 5;
+    if ($percentage >= 65) return 4;
+    if ($percentage >= 60) return 3;
+    if ($percentage >= 55) return 2;
+    return 1;
+}
 
     public function schedule()
     {
@@ -820,7 +910,8 @@ class LecturerController extends Controller
                     'room' => $entry->room ?? 'N/A',
                     'time' => date('h:i A', strtotime($entry->start_time)) . ' - ' .
                              date('h:i A', strtotime($entry->end_time)),
-'start_time' => \Carbon\Carbon::parse($entry->start_time)->addDay()->toDateTimeString(),                    'day' => $entry->day_of_week,
+                    'start_time' => \Carbon\Carbon::parse($entry->start_time)->addDay()->toDateTimeString(),
+                    'day' => $entry->day_of_week,
                     'is_tomorrow' => true,
                 ];
             }
@@ -867,29 +958,31 @@ class LecturerController extends Controller
         ));
     }
 
+    /**
+     * Manage Timetable - FIXED: Only shows courses assigned to the lecturer
+     */
     public function manageTimetable()
-{
-    $lecturer = Auth::user();
+    {
+        $lecturer = Auth::user();
+        $lecturerId = $lecturer->id;
 
-    // Get all courses for the dropdown
-    $courses = Course::where('lecturer_id', $lecturer->id)
-        ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
-        ->where('is_active', true)
-        ->orderBy('course_code', 'asc')
-        ->get();
+        // Get ONLY courses assigned to this lecturer (by lecturer_id)
+        $courses = Course::where('lecturer_id', $lecturerId)
+            ->where('is_active', true)
+            ->orderBy('course_code', 'asc')
+            ->get();
 
-    // Get scheduled courses
-    $scheduledCourses = Course::where('lecturer_id', $lecturer->id)
-        ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
-        ->where('is_active', true)
-        ->whereNotNull('schedule_day')
-        ->whereNotNull('schedule_time')
-        ->orderBy('schedule_day', 'asc')
-        ->orderBy('schedule_time', 'asc')
-        ->get();
+        // Get scheduled courses (ONLY this lecturer's courses with schedule)
+        $scheduledCourses = Course::where('lecturer_id', $lecturerId)
+            ->where('is_active', true)
+            ->whereNotNull('schedule_day')
+            ->whereNotNull('schedule_time')
+            ->orderBy('schedule_day', 'asc')
+            ->orderBy('schedule_time', 'asc')
+            ->get();
 
-    return view('lecturer.timetable-manage', compact('courses', 'scheduledCourses'));
-}
+        return view('lecturer.timetable-manage', compact('courses', 'scheduledCourses'));
+    }
 
     public function addToTimetable(Request $request)
     {
@@ -906,32 +999,29 @@ class LecturerController extends Controller
             return redirect()->back()->with('error', '⚠️ Start time and end time cannot be the same!');
         }
 
-        $course = Course::where(function($query) {
-            $query->where('lecturer_id', Auth::id())
-                  ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%');
-        })->where('id', $request->course_id)->firstOrFail();
+        // Get the course - ensure it belongs to the lecturer
+        $course = Course::where('lecturer_id', Auth::id())
+            ->where('id', $request->course_id)
+            ->firstOrFail();
 
         if ($course->schedule_day) {
             return redirect()->back()->with('error', '⚠️ "' . $course->course_code . '" is already scheduled.');
         }
 
         // Check conflicts
-        $conflict = Course::where(function($query) {
-            $query->where('lecturer_id', Auth::id())
-                  ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%');
-        })
-        ->where('id', '!=', $course->id)
-        ->where('schedule_day', $request->schedule_day)
-        ->where(function($q) use ($request) {
-            $q->where(function($sub) use ($request) {
-                $sub->where('schedule_time', '<=', $request->schedule_time)
-                    ->where('schedule_end_time', '>', $request->schedule_time);
-            })->orWhere(function($sub) use ($request) {
-                $sub->where('schedule_time', '<', $request->schedule_end_time)
-                    ->where('schedule_end_time', '>=', $request->schedule_end_time);
-            });
-        })
-        ->first();
+        $conflict = Course::where('lecturer_id', Auth::id())
+            ->where('id', '!=', $course->id)
+            ->where('schedule_day', $request->schedule_day)
+            ->where(function($q) use ($request) {
+                $q->where(function($sub) use ($request) {
+                    $sub->where('schedule_time', '<=', $request->schedule_time)
+                        ->where('schedule_end_time', '>', $request->schedule_time);
+                })->orWhere(function($sub) use ($request) {
+                    $sub->where('schedule_time', '<', $request->schedule_end_time)
+                        ->where('schedule_end_time', '>=', $request->schedule_end_time);
+                });
+            })
+            ->first();
 
         if ($conflict) {
             return redirect()->back()->with('error',
@@ -973,10 +1063,9 @@ class LecturerController extends Controller
     public function removeFromTimetable($id)
     {
         try {
-            $course = Course::where(function($query) {
-                $query->where('lecturer_id', Auth::id())
-                      ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%');
-            })->where('id', $id)->first();
+            $course = Course::where('lecturer_id', Auth::id())
+                ->where('id', $id)
+                ->first();
 
             if (!$course) {
                 return redirect()->route('lecturer.timetable.manage')
@@ -1020,10 +1109,9 @@ class LecturerController extends Controller
             'sessions.*.session_type' => 'required|string|in:lecture,tutorial,lab,seminar,workshop,other',
         ]);
 
-        $course = Course::where(function($query) {
-            $query->where('lecturer_id', Auth::id())
-                  ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%');
-        })->where('id', $request->course_id)->firstOrFail();
+        $course = Course::where('lecturer_id', Auth::id())
+            ->where('id', $request->course_id)
+            ->firstOrFail();
 
         $created = [];
 

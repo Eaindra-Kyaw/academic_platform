@@ -121,6 +121,117 @@
             color: white;
         }
 
+        /* ============================================
+               REAL-TIME ATTENDANCE TABLE
+               ============================================ */
+        .live-attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .live-attendance-table thead {
+            background: #f8fafc;
+        }
+
+        .live-attendance-table th {
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #6b7280;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .live-attendance-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .live-attendance-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .live-attendance-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .live-attendance-table .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-badge.present {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.late {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.absent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .live-attendance-table .new-row {
+            animation: highlightRow 1.5s ease;
+        }
+
+        @keyframes highlightRow {
+            0% {
+                background: #fef3c7;
+            }
+
+            50% {
+                background: #fde68a;
+            }
+
+            100% {
+                background: transparent;
+            }
+        }
+
+        .live-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+            margin-right: 6px;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.8);
+            }
+        }
+
+        .attendance-counter {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .attendance-counter strong {
+            color: #1f2937;
+        }
+
         @media (max-width: 768px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -133,6 +244,15 @@
 
             .manual-code {
                 font-size: 18px;
+            }
+
+            .live-attendance-table {
+                font-size: 11px;
+            }
+
+            .live-attendance-table th,
+            .live-attendance-table td {
+                padding: 4px 6px;
             }
         }
     </style>
@@ -147,11 +267,9 @@
                         <p style="font-size: 12px;">Same QR for whole semester - put on PowerPoint once</p>
                         <div class="qr-box">
                             @php
-                                // FIXED: Use HTTPS base URL
-                                $baseUrl = config('app.url');
                                 $semesterQrText =
-                                    $baseUrl .
-                                    '/student/scan/semester?token=' .
+                                    route('student.scan.semester') .
+                                    '?token=' .
                                     $activeSession->course->semester_qr_token .
                                     '&course=' .
                                     $activeSession->course->id;
@@ -192,11 +310,9 @@
                             minutes</p>
                         <div class="qr-box">
                             @php
-                                // FIXED: Use config('app.url') which should be HTTPS
-                                $baseUrl = config('app.url');
                                 $dynamicQrText =
-                                    $baseUrl .
-                                    '/student/scan/process?token=' .
+                                    route('student.scan.process') .
+                                    '?token=' .
                                     $activeSession->session_token .
                                     '&session=' .
                                     $activeSession->id;
@@ -233,21 +349,27 @@
                     <h5><i class="bi bi-graph-up"></i> Live Attendance Statistics</h5>
                     <div class="stats-grid">
                         <div>
-                            <div class="stat-number" style="color:#10b981;">{{ $activeSession->present_count ?? 0 }}</div>
+                            <div class="stat-number" style="color:#10b981;" id="livePresentCount">
+                                {{ $activeSession->present_count ?? 0 }}
+                            </div>
                             <div class="stat-label">Present</div>
                         </div>
                         <div>
-                            <div class="stat-number" style="color:#f59e0b;">{{ $activeSession->late_count ?? 0 }}</div>
+                            <div class="stat-number" style="color:#f59e0b;" id="liveLateCount">
+                                {{ $activeSession->late_count ?? 0 }}
+                            </div>
                             <div class="stat-label">Late</div>
                         </div>
                         <div>
-                            <div class="stat-number" style="color:#ef4444;">
+                            <div class="stat-number" style="color:#ef4444;" id="liveAbsentCount">
                                 {{ ($activeSession->total_students ?? 0) - ($activeSession->present_count ?? 0) - ($activeSession->late_count ?? 0) }}
                             </div>
                             <div class="stat-label">Absent</div>
                         </div>
                         <div>
-                            <div class="stat-number" style="color:#800000;">{{ $activeSession->total_students ?? 0 }}</div>
+                            <div class="stat-number" style="color:#800000;" id="liveTotalCount">
+                                {{ $activeSession->total_students ?? 0 }}
+                            </div>
                             <div class="stat-label">Total</div>
                         </div>
                     </div>
@@ -327,7 +449,6 @@
                         <option value="absent">Absent</option>
                     </select>
 
-                    <!-- Notes Field -->
                     <div style="margin-top: 10px;">
                         <label style="font-size: 12px; color: #6b7280;">Notes (Optional)</label>
                         <textarea name="notes" class="form-control" rows="2"
@@ -354,7 +475,87 @@
         </div>
     </div>
 
+    <!-- ============================================================
+        REAL-TIME ATTENDANCE TABLE
+        ============================================================ -->
+    @if ($activeSession)
+        <div class="mode-selector" style="margin-top: 1rem;">
+            <h5>
+                <i class="bi bi-clock-history"></i> Real-Time Attendance
+                <span class="live-badge"></span>
+                <span class="attendance-counter">
+                    <strong id="totalScanned">0</strong> students scanned so far
+                </span>
+            </h5>
+            <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+                <table class="live-attendance-table" id="liveAttendanceTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th>Method</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceTableBody">
+                        @php
+                            $existingRecords = $activeSession->records ?? [];
+                            $counter = 0;
+                        @endphp
+                        @if ($existingRecords && $existingRecords->count() > 0)
+                            @foreach ($existingRecords as $record)
+                                @php
+                                    $counter++;
+                                    $statusClass = $record->status ?? 'absent';
+                                @endphp
+                                <tr id="attendance-row-{{ $record->id }}">
+                                    <td>{{ $counter }}</td>
+                                    <td>
+                                        <strong>{{ $record->student->name ?? 'Unknown' }}</strong>
+                                        <br>
+                                        <small
+                                            style="color: #6b7280; font-size: 10px;">{{ $record->student->email ?? 'N/A' }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge {{ $statusClass }}">
+                                            {{ ucfirst($statusClass) }}
+                                        </span>
+                                    </td>
+                                    <td style="font-size: 12px; color: #6b7280;">
+                                        {{ $record->scanned_at ? \Carbon\Carbon::parse($record->scanned_at)->format('h:i:s A') : 'N/A' }}
+                                    </td>
+                                    <td>
+                                        @if ($record->is_manual)
+                                            <span
+                                                style="font-size: 10px; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px;">Manual</span>
+                                        @else
+                                            <span
+                                                style="font-size: 10px; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px;">QR
+                                                Scan</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px; color: #9ca3af;">
+                                    <i class="bi bi-inbox"
+                                        style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                                    No students have scanned yet
+                                </td>
+                            </tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
     <script>
+        // ============================================================
+        // COUNTDOWN TIMER
+        // ============================================================
         @if ($activeSession && $activeSession->expires_at && $activeSession->course->qr_mode == 'session')
             let expiresAt = new Date('{{ $activeSession->expires_at }}').getTime();
             setInterval(function() {
@@ -370,7 +571,9 @@
             }, 1000);
         @endif
 
-        // Hide/show duration field based on QR mode selection
+        // ============================================================
+        // QR MODE TOGGLE
+        // ============================================================
         document.querySelectorAll('input[name="qr_mode"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 const durationField = document.getElementById('durationField');
@@ -382,12 +585,148 @@
             });
         });
 
-        // Auto-select duration field visibility on page load
         document.addEventListener('DOMContentLoaded', function() {
             const selected = document.querySelector('input[name="qr_mode"]:checked');
             if (selected && selected.value === 'semester') {
                 document.getElementById('durationField').style.display = 'none';
             }
         });
+
+        // ============================================================
+        // REAL-TIME POLLING
+        // ============================================================
+        @if ($activeSession)
+            const sessionId = {{ $activeSession->id }};
+            const pollInterval = 3000; // 3 seconds
+
+            function fetchLiveAttendance() {
+                fetch(`/lecturer/session-stats/${sessionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update stats
+                            document.getElementById('livePresentCount').innerText = data.present || 0;
+                            document.getElementById('liveLateCount').innerText = data.late || 0;
+                            document.getElementById('liveTotalCount').innerText = data.total || 0;
+                            const absent = (data.total || 0) - (data.present || 0) - (data.late || 0);
+                            document.getElementById('liveAbsentCount').innerText = absent;
+
+                            // Update table
+                            const tbody = document.getElementById('attendanceTableBody');
+                            if (data.records && data.records.length > 0) {
+                                let html = '';
+                                data.records.forEach((record, index) => {
+                                    const statusClass = record.status || 'absent';
+                                    const isManual = record.is_manual || false;
+                                    const methodLabel = isManual ? 'Manual' : 'QR Scan';
+                                    const methodClass = isManual ? 'bg-blue-100 text-blue-700' :
+                                        'bg-green-100 text-green-700';
+
+                                    html += `
+                                        <tr id="attendance-row-${index}" class="${index === data.records.length - 1 ? 'new-row' : ''}">
+                                            <td>${index + 1}</td>
+                                            <td>
+                                                <strong>${record.student_name || 'Unknown'}</strong>
+                                                <br>
+                                                <small style="color: #6b7280; font-size: 10px;">${record.student_email || 'N/A'}</small>
+                                            </td>
+                                            <td>
+                                                <span class="status-badge ${statusClass}">
+                                                    ${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}
+                                                </span>
+                                            </td>
+                                            <td style="font-size: 12px; color: #6b7280;">
+                                                ${record.scanned_at ? new Date(record.scanned_at).toLocaleTimeString() : 'N/A'}
+                                            </td>
+                                            <td>
+                                                <span style="font-size: 10px; background: ${isManual ? '#dbeafe' : '#dcfce7'}; color: ${isManual ? '#1e40af' : '#166534'}; padding: 2px 8px; border-radius: 4px;">
+                                                    ${methodLabel}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    `;
+                                });
+
+                                // Update or append
+                                if (tbody.querySelector('tr td[colspan]')) {
+                                    // If empty state, replace all
+                                    tbody.innerHTML = html;
+                                } else {
+                                    // Check if we need to update or append
+                                    const existingRows = tbody.querySelectorAll('tr');
+                                    if (data.records.length > existingRows.length) {
+                                        // New record added - append the new one
+                                        const newRecords = data.records.slice(existingRows.length);
+                                        let newHtml = '';
+                                        newRecords.forEach((record, idx) => {
+                                            const globalIndex = existingRows.length + idx;
+                                            const statusClass = record.status || 'absent';
+                                            const isManual = record.is_manual || false;
+                                            const methodLabel = isManual ? 'Manual' : 'QR Scan';
+                                            newHtml += `
+                                                <tr class="new-row">
+                                                    <td>${globalIndex + 1}</td>
+                                                    <td>
+                                                        <strong>${record.student_name || 'Unknown'}</strong>
+                                                        <br>
+                                                        <small style="color: #6b7280; font-size: 10px;">${record.student_email || 'N/A'}</small>
+                                                    </td>
+                                                    <td>
+                                                        <span class="status-badge ${statusClass}">
+                                                            ${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}
+                                                        </span>
+                                                    </td>
+                                                    <td style="font-size: 12px; color: #6b7280;">
+                                                        ${record.scanned_at ? new Date(record.scanned_at).toLocaleTimeString() : 'N/A'}
+                                                    </td>
+                                                    <td>
+                                                        <span style="font-size: 10px; background: ${isManual ? '#dbeafe' : '#dcfce7'}; color: ${isManual ? '#1e40af' : '#166534'}; padding: 2px 8px; border-radius: 4px;">
+                                                            ${methodLabel}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            `;
+                                        });
+                                        tbody.insertAdjacentHTML('beforeend', newHtml);
+                                    } else {
+                                        // Update existing rows (reorder numbers)
+                                        const rows = tbody.querySelectorAll('tr');
+                                        rows.forEach((row, idx) => {
+                                            const td = row.querySelector('td:first-child');
+                                            if (td) td.textContent = idx + 1;
+                                        });
+                                    }
+                                }
+
+                                // Update counter
+                                document.getElementById('totalScanned').innerText = data.records.length;
+                            } else {
+                                // No records - show empty state
+                                tbody.innerHTML = `
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 20px; color: #9ca3af;">
+                                            <i class="bi bi-inbox" style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                                            No students have scanned yet
+                                        </td>
+                                    </tr>
+                                `;
+                                document.getElementById('totalScanned').innerText = 0;
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching live attendance:', error);
+                    });
+            }
+
+            // Start polling
+            fetchLiveAttendance();
+            setInterval(fetchLiveAttendance, pollInterval);
+
+            // Clean up on page unload
+            window.addEventListener('beforeunload', function() {
+                // Stop polling (no need to clear intervals, they'll stop on page unload)
+            });
+        @endif
     </script>
 @endsection

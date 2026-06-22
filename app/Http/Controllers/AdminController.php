@@ -9,66 +9,232 @@ use App\Models\Enrollment;
 use App\Models\Course;
 use App\Models\AttendanceSession;
 use App\Models\AttendanceRecord;
+use App\Models\RiskPrediction;
+use App\Models\AcademicHealthScore;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
     /**
-     * Display admin dashboard
+     * Display admin dashboard with real-time data
      */
     public function dashboard()
     {
+        // ============================================
+        // REAL-TIME STATISTICS
+        // ============================================
+
         $totalStudents = User::where('role_id', 3)->count();
         $totalLecturers = User::where('role_id', 2)->count();
-        $totalCourses = \App\Models\Course::where('is_active', true)->count();
+        $totalCourses = Course::where('is_active', true)->count();
         $totalDepartments = Department::count();
 
-        // Attendance calculation
+        // ============================================
+        // ATTENDANCE CALCULATIONS (REAL-TIME)
+        // ============================================
+
         $totalAttendanceRecords = AttendanceRecord::count();
         $totalSessions = AttendanceSession::count();
-        $totalPossibleAttendances = $totalSessions * $totalStudents;
-        $universityAttendance = $totalPossibleAttendances > 0
-            ? round(($totalAttendanceRecords / $totalPossibleAttendances) * 100)
+        $totalEnrolledStudents = Enrollment::where('status', 'approved')->distinct('student_id')->count('student_id');
+
+        // Calculate university attendance rate
+        if ($totalSessions > 0 && $totalEnrolledStudents > 0) {
+            $totalPossible = $totalSessions * $totalEnrolledStudents;
+            $universityAttendance = $totalPossible > 0
+                ? round(($totalAttendanceRecords / $totalPossible) * 100)
+                : 0;
+        } else {
+            $universityAttendance = 0;
+        }
+
+        // ============================================
+        // AT-RISK STUDENTS (REAL-TIME)
+        // ============================================
+
+        $atRiskStudentIds = Enrollment::where('status', 'approved')
+            ->where(function($q) {
+                $q->where('attendance_percentage', '<', 60)
+                  ->orWhere('eligibility_status', 'warning')
+                  ->orWhere('eligibility_status', 'not_eligible');
+            })
+            ->distinct('student_id')
+            ->pluck('student_id')
+            ->toArray();
+
+        $atRiskStudents = count($atRiskStudentIds);
+
+        // ============================================
+        // ELIGIBILITY RATE (REAL-TIME)
+        // ============================================
+
+        $eligibleEnrollments = Enrollment::where('status', 'approved')
+            ->where('eligibility_status', 'eligible')
+            ->count();
+        $totalApprovedEnrollments = Enrollment::where('status', 'approved')->count();
+        $eligibilityRate = $totalApprovedEnrollments > 0
+            ? round(($eligibleEnrollments / $totalApprovedEnrollments) * 100)
             : 0;
 
-        // At-risk students (simplified)
-        $atRiskStudents = User::where('role_id', 3)->count() - 50;
-        if ($atRiskStudents < 0) $atRiskStudents = 0;
+        // ============================================
+        // ACTIVE SESSIONS (REAL-TIME)
+        // ============================================
 
-        // Eligibility rate
-        $eligibleEnrollments = Enrollment::where('status', 'approved')->count();
-        $totalEnrollments = Enrollment::count();
-        $eligibilityRate = $totalEnrollments > 0
-            ? round(($eligibleEnrollments / $totalEnrollments) * 100)
-            : 0;
-
-        // Active sessions
         $activeSessions = AttendanceSession::where('status', 'active')->count();
 
-        // Department attendance data
+        // ============================================
+        // DEPARTMENT ATTENDANCE (REAL-TIME)
+        // ============================================
+
         $departmentAttendance = [];
-        foreach (Department::all() as $dept) {
-            $courses = \App\Models\Course::where('department_id', $dept->id)->pluck('id');
-            $sessions = AttendanceSession::whereIn('course_id', $courses)->count();
-            $records = AttendanceRecord::whereHas('session', function($q) use ($courses) {
-                $q->whereIn('course_id', $courses);
+        $departments = Department::all();
+
+        foreach ($departments as $dept) {
+            $courseIds = Course::where('department_id', $dept->id)->pluck('id')->toArray();
+
+            if (empty($courseIds)) {
+                continue;
+            }
+
+            $deptStudents = User::where('role_id', 3)
+                ->where('department_id', $dept->id)
+                ->count();
+
+            $deptSessions = AttendanceSession::whereIn('course_id', $courseIds)->count();
+
+            $deptRecords = AttendanceRecord::whereHas('session', function($q) use ($courseIds) {
+                $q->whereIn('course_id', $courseIds);
             })->count();
-            $expected = $sessions * User::where('role_id', 3)->where('department_id', $dept->id)->count();
-            $attendance = $expected > 0 ? round(($records / $expected) * 100) : 0;
+
+            $expected = $deptSessions * $deptStudents;
+            $attendance = $expected > 0 ? round(($deptRecords / $expected) * 100) : 0;
+
+            // Calculate change from previous month
+            $lastMonthRecords = AttendanceRecord::whereHas('session', function($q) use ($courseIds) {
+                $q->whereIn('course_id', $courseIds)
+                  ->whereBetween('created_at', [Carbon::now()->subMonth(), Carbon::now()]);
+            })->count();
+
+            $previousMonthExpected = $deptSessions * $deptStudents;
+            $previousAttendance = $previousMonthExpected > 0 ? round(($lastMonthRecords / $previousMonthExpected) * 100) : 0;
+
+            $change = $previousAttendance > 0 ? round($attendance - $previousAttendance) : 0;
+
             $departmentAttendance[] = [
+                'id' => $dept->id,
                 'name' => $dept->code,
+                'full_name' => $dept->name,
                 'attendance' => $attendance,
-                'change' => rand(-5, 8),
+                'change' => $change,
+                'students' => $deptStudents,
+                'sessions' => $deptSessions,
+                'records' => $deptRecords,
             ];
         }
+
         usort($departmentAttendance, function($a, $b) {
             return $b['attendance'] - $a['attendance'];
         });
+
+        // ============================================
+        // RISK DISTRIBUTION (REAL-TIME)
+        // ============================================
+
+        $riskDistribution = [
+            'Low' => 0,
+            'Medium' => 0,
+            'High' => 0,
+        ];
+
+        $students = User::where('role_id', 3)->get();
+        foreach ($students as $student) {
+            $avgAttendance = Enrollment::where('student_id', $student->id)
+                ->where('status', 'approved')
+                ->avg('attendance_percentage') ?? 0;
+
+            if ($avgAttendance >= 75) {
+                $riskDistribution['Low']++;
+            } elseif ($avgAttendance >= 60) {
+                $riskDistribution['Medium']++;
+            } elseif ($avgAttendance > 0) {
+                $riskDistribution['High']++;
+            }
+        }
+
+        // ============================================
+        // RECENT SESSIONS (REAL-TIME)
+        // ============================================
+
+        $recentSessions = AttendanceSession::with(['course', 'records'])
+            ->orderBy('created_at', 'desc')
+            ->limit(3)
+            ->get()
+            ->map(function($session) {
+                $present = $session->records->where('status', 'present')->count();
+                $total = $session->records->count();
+                return [
+                    'course_name' => $session->course->course_name ?? 'N/A',
+                    'present' => $present,
+                    'total' => $total,
+                    'status' => $present > ($total / 2) ? 'Improving' : 'Declining',
+                ];
+            });
+
+        // ============================================
+        // BUSIEST CLASSROOMS (REAL-TIME)
+        // ============================================
+
+        $classroomUsage = AttendanceSession::where('room', '!=', '')
+            ->select('room', DB::raw('COUNT(*) as usage_count'))
+            ->groupBy('room')
+            ->orderBy('usage_count', 'desc')
+            ->limit(3)
+            ->get()
+            ->map(function($item) {
+                $totalSessions = AttendanceSession::count();
+                return [
+                    'room' => $item->room,
+                    'usage' => $totalSessions > 0 ? min(100, round(($item->usage_count / $totalSessions) * 100 * 2)) : 0,
+                ];
+            });
+
+        // ============================================
+        // PENDING ENROLLMENTS (REAL-TIME)
+        // ============================================
+
+        $pendingEnrollments = Enrollment::where('status', 'pending')->count();
+
+        // ============================================
+        // ATTENDANCE TREND DATA (LAST 6 MONTHS)
+        // ============================================
+
+        $trendData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i);
+            $monthStart = $month->copy()->startOfMonth();
+            $monthEnd = $month->copy()->endOfMonth();
+
+            $monthRecords = AttendanceRecord::whereBetween('created_at', [$monthStart, $monthEnd])->count();
+            $monthSessions = AttendanceSession::whereBetween('created_at', [$monthStart, $monthEnd])->count();
+            $monthStudents = User::where('role_id', 3)->count();
+
+            $monthExpected = $monthSessions * $monthStudents;
+            $monthAttendance = $monthExpected > 0 ? round(($monthRecords / $monthExpected) * 100) : 0;
+
+            $trendData[] = [
+                'month' => $month->format('M'),
+                'attendance' => $monthAttendance,
+            ];
+        }
+
+        // ============================================
+        // MAKE SURE ALL VARIABLES ARE PASSED
+        // ============================================
 
         return view('admin.dashboard', compact(
             'totalStudents',
@@ -79,7 +245,12 @@ class AdminController extends Controller
             'atRiskStudents',
             'eligibilityRate',
             'activeSessions',
-            'departmentAttendance'
+            'departmentAttendance',
+            'riskDistribution',
+            'recentSessions',
+            'classroomUsage',
+            'pendingEnrollments',
+            'trendData'
         ));
     }
 
@@ -497,9 +668,9 @@ class AdminController extends Controller
                         $record->student->name ?? 'N/A',
                         $record->student->student_id ?? 'N/A',
                         $record->session->course->course_code ?? 'N/A',
-                        $record->session->session_date ?? 'N/A',
+                        $record->session->created_at->format('Y-m-d') ?? 'N/A',
                         $record->status ?? 'N/A',
-                        $record->check_in_time ?? 'N/A',
+                        $record->scanned_at ? $record->scanned_at->format('H:i:s') : 'N/A',
                     ]);
                 }
 

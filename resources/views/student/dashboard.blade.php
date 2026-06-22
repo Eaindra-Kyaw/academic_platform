@@ -388,8 +388,8 @@
         }
 
         /* ============================================
-                                   UNI BOT MODAL - Enhanced Styles
-                                   ============================================ */
+                                       UNI BOT MODAL - Enhanced Styles
+                                       ============================================ */
         #uniBotModal .chat-messages-popup {
             max-height: 280px;
             overflow-y: auto;
@@ -697,7 +697,7 @@
 
             <div class="stat-card">
                 <div class="stat-number">{{ $healthScore ?? 0 }}</div>
-                <div class="stat-label">Health Score</div>
+                <div class="stat-label">Academic Score</div>
                 <div class="stat-label">
                     @php
                         $cat = $healthCategory ?? 'Stable';
