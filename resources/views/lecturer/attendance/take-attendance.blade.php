@@ -147,10 +147,11 @@
                         <p style="font-size: 12px;">Same QR for whole semester - put on PowerPoint once</p>
                         <div class="qr-box">
                             @php
-                                // FIXED: Use route() helper instead of hardcoded URL
+                                // FIXED: Use HTTPS base URL
+                                $baseUrl = config('app.url');
                                 $semesterQrText =
-                                    route('student.scan.semester') .
-                                    '?token=' .
+                                    $baseUrl .
+                                    '/student/scan/semester?token=' .
                                     $activeSession->course->semester_qr_token .
                                     '&course=' .
                                     $activeSession->course->id;
@@ -191,10 +192,11 @@
                             minutes</p>
                         <div class="qr-box">
                             @php
-                                // FIXED: Use route() helper instead of hardcoded URL
+                                // FIXED: Use config('app.url') which should be HTTPS
+                                $baseUrl = config('app.url');
                                 $dynamicQrText =
-                                    route('student.scan.process') .
-                                    '?token=' .
+                                    $baseUrl .
+                                    '/student/scan/process?token=' .
                                     $activeSession->session_token .
                                     '&session=' .
                                     $activeSession->id;

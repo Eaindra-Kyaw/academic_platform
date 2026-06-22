@@ -14,10 +14,9 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
             $table->enum('status', ['present', 'absent', 'late'])->default('present');
             $table->timestamp('scanned_at')->nullable();
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
-            $table->string('device_info')->nullable();
+            $table->boolean('is_manual')->default(false);  // ADDED
             $table->string('ip_address')->nullable();
+            $table->text('notes')->nullable();  // ADDED
             $table->softDeletes();
             $table->timestamps();
 

@@ -869,54 +869,26 @@ class LecturerController extends Controller
     }
 
     public function manageTimetable()
-    {
-        $lecturer = Auth::user();
-        $lecturerId = $lecturer->id;
+{
+    $lecturer = Auth::user();
 
-        $availableCourses = Course::where('lecturer_id', $lecturerId)
-            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
-            ->where('is_active', true)
-            ->orderBy('course_code')
-            ->get();
+    // Get courses for the dropdown
+    $courses = Course::where('lecturer_id', $lecturer->id)
+        ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+        ->where('is_active', true)
+        ->orderBy('course_code', 'asc')
+        ->get();
 
-        $scheduledCourses = Course::where('lecturer_id', $lecturerId)
-            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
-            ->where('is_active', true)
-            ->whereNotNull('schedule_day')
-            ->whereNotNull('schedule_time')
-            ->whereRaw('schedule_time != schedule_end_time')
-            ->orderBy('schedule_day')
-            ->orderBy('schedule_time')
-            ->get();
+    // Get existing timetable entries
+    $entries = TimetableEntry::where('lecturer_id', $lecturer->id)
+        ->where('is_active', true)
+        ->with('course')
+        ->orderBy('day_of_week', 'asc')
+        ->orderBy('start_time', 'asc')
+        ->get();
 
-        // Get timetable entries OR fallback to courses
-        $timetableEntries = TimetableEntry::where('lecturer_id', $lecturerId)
-            ->where('is_active', true)
-            ->with(['course'])
-            ->orderBy('day_of_week')
-            ->orderBy('start_time')
-            ->get();
-
-        // If no timetable entries, use courses
-        if ($timetableEntries->isEmpty()) {
-            $timetableEntries = $scheduledCourses->map(function($course) {
-                $entry = new TimetableEntry();
-                $entry->course_id = $course->id;
-                $entry->course_code = $course->course_code;
-                $entry->course_name = $course->course_name;
-                $entry->day_of_week = $course->schedule_day;
-                $entry->start_time = $course->schedule_time;
-                $entry->end_time = $course->schedule_end_time;
-                $entry->room = $course->room;
-                $entry->session_type = 'lecture';
-                $entry->year_level = $course->year;
-                $entry->course = $course;
-                return $entry;
-            });
-        }
-
-        return view('lecturer.timetable-manage', compact('availableCourses', 'scheduledCourses', 'timetableEntries'));
-    }
+    return view('lecturer.timetable-manage', compact('courses', 'entries'));
+}
 
     public function addToTimetable(Request $request)
     {

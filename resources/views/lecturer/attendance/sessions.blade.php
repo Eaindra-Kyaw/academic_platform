@@ -83,6 +83,10 @@
             font-weight: 500;
         }
 
+        .btn-filter:hover {
+            background: #5f0000;
+        }
+
         .btn-sm {
             padding: 0.3rem 0.8rem;
             border-radius: 0.4rem;
@@ -183,6 +187,16 @@
                 <div class="session-header"><i class="bi bi-qr-code"></i> Active QR Sessions</div>
                 <div class="session-body">
                     @foreach ($activeSessions as $session)
+                        @php
+                            // FIXED: Use config('app.url') for HTTPS
+                            $baseUrl = config('app.url');
+                            $qrText =
+                                $baseUrl .
+                                '/student/scan/process?token=' .
+                                $session->session_token .
+                                '&session=' .
+                                $session->id;
+                        @endphp
                         <div style="border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
                             <div
                                 style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
@@ -223,8 +237,9 @@
                         </div>
 
                         <script>
+                            // Generate QR code with the HTTPS URL
                             new QRCode(document.getElementById("qrcode-{{ $session->id }}"), {
-                                text: "{{ route('student.scan.process') }}?token={{ $session->session_token }}&session={{ $session->id }}",
+                                text: "{{ $qrText }}",
                                 width: 180,
                                 height: 180
                             });
@@ -250,6 +265,9 @@
                             }
                             setInterval(updateTimer{{ $session->id }}, 1000);
                             updateTimer{{ $session->id }}();
+
+                            // Log the QR URL for debugging
+                            console.log('QR URL for session {{ $session->id }}: {{ $qrText }}');
                         </script>
                     @endforeach
                 </div>

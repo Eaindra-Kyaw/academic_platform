@@ -268,8 +268,7 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
         Route::get('/', [LecturerController::class, 'timetable'])->name('index');
         Route::get('/manage', [LecturerController::class, 'manageTimetable'])->name('manage');
         Route::post('/add', [LecturerController::class, 'addToTimetable'])->name('add');
-        Route::post('/{id}/remove', [LecturerController::class, 'removeFromTimetable'])->name('remove');
-        Route::post('/add-multiple', [LecturerController::class, 'addMultipleSessions'])->name('add.multiple');
+Route::match(['post', 'delete'], '/{id}/remove', [LecturerController::class, 'removeFromTimetable'])->name('remove');        Route::post('/add-multiple', [LecturerController::class, 'addMultipleSessions'])->name('add.multiple');
         Route::get('/export', [LecturerController::class, 'exportTimetable'])->name('export');
         Route::get('/export-pdf', [LecturerController::class, 'exportTimetablePdf'])->name('export.pdf');
     });

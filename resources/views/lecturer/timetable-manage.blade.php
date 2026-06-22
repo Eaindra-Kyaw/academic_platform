@@ -352,12 +352,10 @@
                                 @endif
                             </div>
                             <div class="actions">
-                                <form action="{{ route('lecturer.timetable.remove', $course->id) }}" method="POST"
-                                    style="display: inline-block;"
-                                    onsubmit="return confirm('Remove this from timetable?');">
+                                <form method="POST" action="{{ route('lecturer.timetable.remove', $entry->id) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-danger">🗑️ Remove</button>
+                                    <button type="submit">🗑️ Remove</button>
                                 </form>
                             </div>
                         </div>

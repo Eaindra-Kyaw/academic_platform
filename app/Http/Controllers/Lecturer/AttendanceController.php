@@ -32,13 +32,19 @@ class AttendanceController extends Controller
             ->with('course')
             ->first();
 
+        // If active session exists but qr_expires_at is NULL, set it
+        if ($activeSession && is_null($activeSession->qr_expires_at)) {
+            $activeSession->qr_expires_at = Carbon::now()->addMinutes($activeSession->duration ?? 30);
+            $activeSession->save();
+        }
+
         $courseIds = $courses->pluck('id');
         $students = User::whereHas('enrollments', function($q) use ($courseIds) {
             $q->whereIn('course_id', $courseIds)->where('status', 'approved');
         })->get();
 
-        $expiresIn = $activeSession && $activeSession->expires_at
-            ? Carbon::now()->diffInSeconds($activeSession->expires_at)
+        $expiresIn = $activeSession && $activeSession->qr_expires_at
+            ? Carbon::now()->diffInSeconds($activeSession->qr_expires_at)
             : 0;
 
         return view('lecturer.attendance.take-attendance', compact(
@@ -89,7 +95,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Create a new attendance session
+     * Create a new attendance session - FULLY FIXED
      */
     public function createSession(Request $request)
     {
@@ -103,6 +109,7 @@ class AttendanceController extends Controller
         $lecturer = Auth::user();
         $course = Course::findOrFail($request->course_id);
 
+        // End any existing active session for this course
         $existingSession = AttendanceSession::where('course_id', $course->id)
             ->where('status', 'active')
             ->first();
@@ -132,6 +139,7 @@ class AttendanceController extends Controller
         if ($request->qr_mode == 'semester') {
             $duration = 480;
             $expiresAt = Carbon::now()->addHours(8);
+            $qrExpiresAt = Carbon::now()->addHours(8);
 
             if (!$course->semester_qr_token) {
                 $course->semester_qr_token = $sessionToken;
@@ -140,6 +148,7 @@ class AttendanceController extends Controller
         } else {
             $duration = (int) $request->duration;
             $expiresAt = Carbon::now()->addMinutes($duration);
+            $qrExpiresAt = Carbon::now()->addMinutes($duration);
         }
 
         $session = AttendanceSession::create([
@@ -147,11 +156,19 @@ class AttendanceController extends Controller
             'lecturer_id' => $lecturer->id,
             'session_token' => $sessionToken,
             'manual_code' => $sessionCode,
+            'session_code' => $sessionCode,
             'duration' => $duration,
             'started_at' => Carbon::now(),
             'room' => $request->room ?? $course->room,
             'status' => 'active',
             'expires_at' => $expiresAt,
+            'qr_expires_at' => $qrExpiresAt,  // FIXED: Added!
+            'qr_mode' => $request->qr_mode,
+            'present_count' => 0,
+            'late_count' => 0,
+            'total_students' => Enrollment::where('course_id', $course->id)
+                ->where('status', 'approved')
+                ->count(),
         ]);
 
         AuditLog::log(
@@ -230,6 +247,7 @@ class AttendanceController extends Controller
             ->firstOrFail();
 
         $newExpiry = Carbon::now()->addMinutes(5);
+        $session->qr_expires_at = $newExpiry;
         $session->expires_at = $newExpiry;
         $session->save();
 
@@ -321,6 +339,13 @@ class AttendanceController extends Controller
             'notes' => $request->notes,
         ]);
 
+        // Update session counts
+        if ($request->status == 'present') {
+            $session->increment('present_count');
+        } elseif ($request->status == 'late') {
+            $session->increment('late_count');
+        }
+
         AuditLog::log(
             Auth::id(),
             'manual_attendance',
@@ -364,6 +389,7 @@ class AttendanceController extends Controller
         $course = Course::findOrFail($request->course_id);
         $duration = (int) $request->duration;
         $expiresAt = Carbon::now()->addMinutes($duration);
+        $qrExpiresAt = Carbon::now()->addMinutes($duration);
 
         $sessionToken = AttendanceSession::generateSessionToken();
         $sessionCode = AttendanceSession::generateSessionCode();
@@ -373,11 +399,19 @@ class AttendanceController extends Controller
             'lecturer_id' => $lecturer->id,
             'session_token' => $sessionToken,
             'manual_code' => $sessionCode,
+            'session_code' => $sessionCode,
             'duration' => $duration,
             'started_at' => Carbon::now(),
             'room' => $request->room ?? $course->room,
             'status' => 'active',
             'expires_at' => $expiresAt,
+            'qr_expires_at' => $qrExpiresAt,
+            'qr_mode' => 'session',
+            'present_count' => 0,
+            'late_count' => 0,
+            'total_students' => Enrollment::where('course_id', $course->id)
+                ->where('status', 'approved')
+                ->count(),
         ]);
 
         $qrUrl = route('student.scan.process') . '?token=' . $session->session_token . '&session=' . $session->id;
@@ -411,6 +445,7 @@ class AttendanceController extends Controller
             ->firstOrFail();
 
         $newExpiry = Carbon::now()->addMinutes(5);
+        $session->qr_expires_at = $newExpiry;
         $session->expires_at = $newExpiry;
         $session->save();
 
@@ -500,8 +535,8 @@ class AttendanceController extends Controller
                 'manual_code' => $activeSession->manual_code,
                 'room' => $activeSession->room,
                 'started_at' => $activeSession->started_at,
-                'expires_at' => $activeSession->expires_at,
-                'expires_in' => $activeSession->expires_at ? Carbon::now()->diffInSeconds($activeSession->expires_at) : 0,
+                'qr_expires_at' => $activeSession->qr_expires_at,
+                'expires_in' => $activeSession->qr_expires_at ? Carbon::now()->diffInSeconds($activeSession->qr_expires_at) : 0,
                 'statistics' => [
                     'present' => $present,
                     'late' => $late,
