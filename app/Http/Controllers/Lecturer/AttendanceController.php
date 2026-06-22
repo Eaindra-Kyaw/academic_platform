@@ -9,6 +9,7 @@ use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\User;
 use App\Models\AuditLog;
+use App\Models\TimetableEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -32,7 +33,6 @@ class AttendanceController extends Controller
             ->with(['course', 'records.student'])
             ->first();
 
-        // If active session exists but qr_expires_at is NULL, set it
         if ($activeSession && is_null($activeSession->qr_expires_at)) {
             $activeSession->qr_expires_at = Carbon::now()->addMinutes($activeSession->duration ?? 30);
             $activeSession->save();
@@ -109,7 +109,6 @@ class AttendanceController extends Controller
         $lecturer = Auth::user();
         $course = Course::findOrFail($request->course_id);
 
-        // End any existing active session for this course
         $existingSession = AttendanceSession::where('course_id', $course->id)
             ->where('status', 'active')
             ->first();
@@ -131,6 +130,15 @@ class AttendanceController extends Controller
                 $existingSession,
                 'success'
             );
+        }
+
+        // Get period count from timetable
+        $periodCount = 4;
+        $timetable = TimetableEntry::where('course_id', $course->id)
+            ->where('is_active', true)
+            ->first();
+        if ($timetable) {
+            $periodCount = $timetable->period_count ?? 4;
         }
 
         $sessionToken = AttendanceSession::generateSessionToken();
@@ -157,6 +165,9 @@ class AttendanceController extends Controller
             'session_token' => $sessionToken,
             'manual_code' => $sessionCode,
             'session_code' => $sessionCode,
+            'session_date' => Carbon::now()->toDateString(),
+            'period_count' => $periodCount,
+            'conducted_periods' => $periodCount,
             'duration' => $duration,
             'started_at' => Carbon::now(),
             'room' => $request->room ?? $course->room,
@@ -339,7 +350,6 @@ class AttendanceController extends Controller
             'notes' => $request->notes,
         ]);
 
-        // Update session counts
         if ($request->status == 'present') {
             $session->increment('present_count');
         } elseif ($request->status == 'late') {
@@ -374,9 +384,12 @@ class AttendanceController extends Controller
     }
 
     // ============================================
-    // AJAX METHODS
+    // AJAX METHODS - ONLY ONE generateQr() METHOD!
     // ============================================
 
+    /**
+     * Generate QR code for a session (AJAX)
+     */
     public function generateQr(Request $request)
     {
         $request->validate([
@@ -391,6 +404,15 @@ class AttendanceController extends Controller
         $expiresAt = Carbon::now()->addMinutes($duration);
         $qrExpiresAt = Carbon::now()->addMinutes($duration);
 
+        // Get period count from timetable
+        $periodCount = 4;
+        $timetable = TimetableEntry::where('course_id', $course->id)
+            ->where('is_active', true)
+            ->first();
+        if ($timetable) {
+            $periodCount = $timetable->period_count ?? 4;
+        }
+
         $sessionToken = AttendanceSession::generateSessionToken();
         $sessionCode = AttendanceSession::generateSessionCode();
 
@@ -400,6 +422,9 @@ class AttendanceController extends Controller
             'session_token' => $sessionToken,
             'manual_code' => $sessionCode,
             'session_code' => $sessionCode,
+            'session_date' => Carbon::now()->toDateString(),
+            'period_count' => $periodCount,
+            'conducted_periods' => $periodCount,
             'duration' => $duration,
             'started_at' => Carbon::now(),
             'room' => $request->room ?? $course->room,

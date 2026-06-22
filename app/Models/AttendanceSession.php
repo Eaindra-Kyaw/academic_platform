@@ -12,18 +12,28 @@ class AttendanceSession extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'course_id',
-        'lecturer_id',
-        'session_token',
-        'manual_code',
-        'session_date',
-        'room',
-        'duration',
-        'status',
-        'started_at',
-        'expires_at',
-        'ended_at',
-    ];
+    'course_id',
+    'lecturer_id',
+    'session_token',
+    'manual_code',
+    'session_code',
+    'session_date',
+    'period_count',
+    'conducted_periods',
+    'is_cancelled',
+    'cancellation_reason',
+    'qr_mode',
+    'room',
+    'duration',
+    'status',
+    'started_at',
+    'expires_at',
+    'qr_expires_at',
+    'ended_at',
+    'present_count',
+    'late_count',
+    'total_students',
+];
 
     protected $casts = [
         'started_at' => 'datetime',
