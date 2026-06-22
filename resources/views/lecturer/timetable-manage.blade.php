@@ -267,7 +267,7 @@
                     <label>Select Course</label>
                     <select name="course_id" required>
                         <option value="">-- Choose a course --</option>
-                        @foreach ($availableCourses as $course)
+                        @foreach ($courses as $course)
                             <option value="{{ $course->id }}">
                                 {{ $course->course_code }} - {{ $course->course_name }}
                                 @if ($course->schedule_day)
@@ -348,14 +348,15 @@
                                     {{ ucfirst($sessionType) }}
                                 </span>
                                 @if ($isInvalid)
-                                    <span class="invalid">⚠️ Invalid (same time)</span>
+                                    <span style="color:#ef4444; font-size:11px;">⚠️ Invalid (same time)</span>
                                 @endif
                             </div>
                             <div class="actions">
-                                <form method="POST" action="{{ route('lecturer.timetable.remove', $entry->id) }}">
+                                <form method="POST" action="{{ route('lecturer.timetable.remove', $course->id) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit">🗑️ Remove</button>
+                                    <button type="submit" class="btn-danger"
+                                        onclick="return confirm('Remove this entry?')">🗑️ Remove</button>
                                 </form>
                             </div>
                         </div>

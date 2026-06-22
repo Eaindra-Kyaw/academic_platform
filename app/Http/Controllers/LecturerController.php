@@ -820,8 +820,7 @@ class LecturerController extends Controller
                     'room' => $entry->room ?? 'N/A',
                     'time' => date('h:i A', strtotime($entry->start_time)) . ' - ' .
                              date('h:i A', strtotime($entry->end_time)),
-                    'start_time' => $entry->start_time->addDay()->toDateTimeString(),
-                    'day' => $entry->day_of_week,
+'start_time' => \Carbon\Carbon::parse($entry->start_time)->addDay()->toDateTimeString(),                    'day' => $entry->day_of_week,
                     'is_tomorrow' => true,
                 ];
             }
@@ -872,22 +871,24 @@ class LecturerController extends Controller
 {
     $lecturer = Auth::user();
 
-    // Get courses for the dropdown
+    // Get all courses for the dropdown
     $courses = Course::where('lecturer_id', $lecturer->id)
         ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
         ->where('is_active', true)
         ->orderBy('course_code', 'asc')
         ->get();
 
-    // Get existing timetable entries
-    $entries = TimetableEntry::where('lecturer_id', $lecturer->id)
+    // Get scheduled courses
+    $scheduledCourses = Course::where('lecturer_id', $lecturer->id)
+        ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
         ->where('is_active', true)
-        ->with('course')
-        ->orderBy('day_of_week', 'asc')
-        ->orderBy('start_time', 'asc')
+        ->whereNotNull('schedule_day')
+        ->whereNotNull('schedule_time')
+        ->orderBy('schedule_day', 'asc')
+        ->orderBy('schedule_time', 'asc')
         ->get();
 
-    return view('lecturer.timetable-manage', compact('courses', 'entries'));
+    return view('lecturer.timetable-manage', compact('courses', 'scheduledCourses'));
 }
 
     public function addToTimetable(Request $request)
