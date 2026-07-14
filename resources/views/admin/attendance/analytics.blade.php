@@ -12,6 +12,27 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --purple: #8b5cf6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -20,17 +41,18 @@
         }
 
         .stat-card {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             text-align: center;
-            transition: all 0.2s;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
         }
 
         .stat-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-number {
@@ -40,28 +62,28 @@
         }
 
         .stat-number.green {
-            color: #10b981;
+            color: var(--success);
         }
 
         .stat-number.yellow {
-            color: #f59e0b;
+            color: var(--warning);
         }
 
         .stat-number.red {
-            color: #ef4444;
+            color: var(--danger);
         }
 
         .stat-number.blue {
-            color: #3b82f6;
+            color: var(--info);
         }
 
         .stat-number.purple {
-            color: #8b5cf6;
+            color: var(--purple);
         }
 
         .stat-label {
             font-size: 0.65rem;
-            color: #6b7280;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-top: 0.15rem;
@@ -71,12 +93,13 @@
             display: flex;
             gap: 0.75rem;
             flex-wrap: wrap;
-            background: white;
+            background: var(--white);
             padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             margin-bottom: 1.5rem;
             align-items: center;
+            box-shadow: var(--shadow);
         }
 
         .filter-bar .filter-group {
@@ -88,49 +111,52 @@
         .filter-bar .filter-group label {
             font-size: 0.7rem;
             font-weight: 600;
-            color: #4b5563;
+            color: var(--text-dark);
         }
 
         .filter-bar .filter-group select,
         .filter-bar .filter-group input {
             padding: 0.3rem 0.6rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.4rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 6px;
             font-size: 0.8rem;
-            background: #f9fafb;
+            background: #fafbfc;
+            transition: var(--transition);
         }
 
         .filter-bar .filter-group select:focus,
         .filter-bar .filter-group input:focus {
             outline: none;
-            border-color: #800000;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .filter-bar .btn-filter {
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             border: none;
             padding: 0.3rem 1rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.8rem;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .filter-bar .btn-filter:hover {
-            background: #5f0000;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.2);
         }
 
         .filter-bar .btn-reset {
             background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #e5e7eb;
+            color: var(--text-dark);
+            border: 1px solid rgba(10, 36, 99, 0.1);
             padding: 0.3rem 1rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.8rem;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .filter-bar .btn-reset:hover {
@@ -145,19 +171,25 @@
         }
 
         .chart-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .chart-card:hover {
+            box-shadow: var(--shadow-hover);
         }
 
         .chart-card .card-header {
             padding: 0.75rem 1rem;
-            background: #fafafa;
-            border-bottom: 1px solid #e5e7eb;
+            background: #fafbfc;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             font-weight: 600;
             font-size: 0.85rem;
-            color: #1f2937;
+            color: var(--text-dark);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -183,14 +215,14 @@
             padding: 0.4rem 0.5rem;
             font-size: 0.6rem;
             text-transform: uppercase;
-            color: #6b7280;
+            color: var(--text-gray);
             font-weight: 600;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .ranking-table td {
             padding: 0.3rem 0.5rem;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
         }
 
         .ranking-table tr:last-child td {
@@ -199,14 +231,14 @@
 
         .ranking-table .rank-num {
             font-weight: 700;
-            color: #9ca3af;
+            color: var(--text-gray);
             font-size: 0.7rem;
             width: 24px;
             text-align: center;
         }
 
         .ranking-table .rank-1 {
-            color: #f59e0b;
+            color: var(--accent);
         }
 
         .ranking-table .rank-2 {
@@ -233,15 +265,15 @@
         }
 
         .attendance-bar .fill.high {
-            background: #10b981;
+            background: var(--success);
         }
 
         .attendance-bar .fill.medium {
-            background: #f59e0b;
+            background: var(--warning);
         }
 
         .attendance-bar .fill.low {
-            background: #ef4444;
+            background: var(--danger);
         }
 
         .dept-card-grid {
@@ -252,17 +284,17 @@
         }
 
         .dept-card {
-            background: #fafafa;
-            border-radius: 0.5rem;
+            background: #fafbfc;
+            border-radius: 8px;
             padding: 0.6rem 0.8rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             text-align: center;
         }
 
         .dept-card .dept-code {
             font-weight: 600;
             font-size: 0.75rem;
-            color: #1f2937;
+            color: var(--text-dark);
         }
 
         .dept-card .dept-attendance {
@@ -280,17 +312,17 @@
         }
 
         .risk-high {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
         }
 
         .risk-medium {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
         }
 
         .risk-low {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
@@ -305,14 +337,14 @@
             padding: 0.3rem 0.5rem;
             font-size: 0.6rem;
             text-transform: uppercase;
-            color: #6b7280;
+            color: var(--text-gray);
             font-weight: 600;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .risk-table td {
             padding: 0.3rem 0.5rem;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
         }
 
         .risk-table tr:last-child td {
@@ -410,7 +442,7 @@
                 <option value="">All Courses</option>
                 @foreach ($courses as $course)
                     <option value="{{ $course->id }}" {{ $courseId == $course->id ? 'selected' : '' }}>
-                        {{ $course->course_code }}
+                        {{ $course->course_code }} - {{ $course->course_name }}
                     </option>
                 @endforeach
             </select>
@@ -451,11 +483,10 @@
 
     {{-- Charts --}}
     <div class="chart-grid">
-        {{-- Weekly Trend Chart --}}
         <div class="chart-card">
             <div class="card-header">
                 <span>📈 Weekly Attendance Trend</span>
-                <span style="font-size:0.65rem; color:#6b7280;">Last 12 weeks</span>
+                <span style="font-size:0.65rem; color:var(--text-gray);">Last 12 weeks</span>
             </div>
             <div class="card-body">
                 <div class="chart-container">
@@ -464,11 +495,10 @@
             </div>
         </div>
 
-        {{-- Department Ranking --}}
         <div class="chart-card">
             <div class="card-header">
                 <span>🏛️ Department Attendance</span>
-                <span style="font-size:0.65rem; color:#6b7280;">Ranking</span>
+                <span style="font-size:0.65rem; color:var(--text-gray);">Ranking</span>
             </div>
             <div class="card-body" style="max-height: 300px; overflow-y: auto;">
                 @if (count($departmentAttendance) > 0)
@@ -487,14 +517,14 @@
                                 <div class="dept-attendance" style="color:{{ $color }};">
                                     {{ $dept['attendance'] }}%
                                 </div>
-                                <div style="font-size:0.55rem; color:#9ca3af;">
+                                <div style="font-size:0.55rem; color:var(--text-gray);">
                                     {{ $dept['total_students'] }} students
                                 </div>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <div style="text-align:center; padding:1rem; color:#9ca3af;">
+                    <div style="text-align:center; padding:1rem; color:var(--text-gray);">
                         No department data available
                     </div>
                 @endif
@@ -506,7 +536,7 @@
     <div class="chart-card" style="margin-bottom:1.5rem;">
         <div class="card-header">
             <span>📚 Course Attendance Ranking</span>
-            <span style="font-size:0.65rem; color:#6b7280;">Top 20 courses</span>
+            <span style="font-size:0.65rem; color:var(--text-gray);">Top 20 courses</span>
         </div>
         <div class="card-body" style="padding:0;">
             @if (count($courseRanking) > 0)
@@ -544,14 +574,14 @@
                             <tr>
                                 <td class="rank-num {{ $rankClass }}">{{ $index + 1 }}</td>
                                 <td>
-                                    <div style="font-weight:600; font-size:0.8rem; color:#1f2937;">
+                                    <div style="font-weight:600; font-size:0.8rem; color:var(--text-dark);">
                                         {{ $course['course_code'] }}
                                     </div>
-                                    <div style="font-size:0.65rem; color:#6b7280;">
+                                    <div style="font-size:0.65rem; color:var(--text-gray);">
                                         {{ Str::limit($course['course_name'], 25) }}
                                     </div>
                                 </td>
-                                <td style="font-size:0.7rem; color:#6b7280;">{{ $course['department'] }}</td>
+                                <td style="font-size:0.7rem; color:var(--text-gray);">{{ $course['department'] }}</td>
                                 <td style="text-align:center; font-size:0.75rem;">{{ $course['students'] }}</td>
                                 <td style="text-align:center; font-size:0.75rem;">{{ $course['sessions'] }}</td>
                                 <td style="text-align:center; font-weight:600; font-size:0.85rem;">
@@ -568,7 +598,7 @@
                     </tbody>
                 </table>
             @else
-                <div style="text-align:center; padding:2rem; color:#9ca3af;">
+                <div style="text-align:center; padding:2rem; color:var(--text-gray);">
                     No course data available
                 </div>
             @endif
@@ -579,7 +609,7 @@
     <div class="chart-card" style="margin-bottom:1.5rem;">
         <div class="card-header">
             <span>⚠️ Students At Risk</span>
-            <span style="font-size:0.65rem; color:#6b7280;">
+            <span style="font-size:0.65rem; color:var(--text-gray);">
                 {{ count($atRiskStudents) }} students at risk
             </span>
         </div>
@@ -599,15 +629,15 @@
                         @foreach ($atRiskStudents as $student)
                             <tr>
                                 <td>
-                                    <div style="font-weight:600; font-size:0.8rem; color:#1f2937;">
+                                    <div style="font-weight:600; font-size:0.8rem; color:var(--text-dark);">
                                         {{ $student['student']->name }}
                                     </div>
-                                    <div style="font-size:0.65rem; color:#6b7280;">
+                                    <div style="font-size:0.65rem; color:var(--text-gray);">
                                         {{ $student['student']->email }}
                                     </div>
                                 </td>
-                                <td style="font-size:0.75rem; color:#6b7280;">{{ $student['department'] }}</td>
-                                <td style="font-size:0.75rem; color:#6b7280;">{{ $student['year'] }}</td>
+                                <td style="font-size:0.75rem; color:var(--text-gray);">{{ $student['department'] }}</td>
+                                <td style="font-size:0.75rem; color:var(--text-gray);">{{ $student['year'] }}</td>
                                 <td style="text-align:center; font-weight:600; font-size:0.85rem;">
                                     {{ $student['attendance'] }}%
                                 </td>
@@ -621,9 +651,9 @@
                     </tbody>
                 </table>
             @else
-                <div style="text-align:center; padding:2rem; color:#9ca3af;">
+                <div style="text-align:center; padding:2rem; color:var(--text-gray);">
                     <i class="bi bi-check-circle"
-                        style="font-size:2rem; color:#10b981; display:block; margin-bottom:0.5rem;"></i>
+                        style="font-size:2rem; color:var(--success); display:block; margin-bottom:0.5rem;"></i>
                     No students at risk! All students have good attendance.
                 </div>
             @endif
@@ -633,7 +663,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Weekly Chart
             const weeklyData = @json($weeklyTrend);
             const ctx = document.getElementById('weeklyChart').getContext('2d');
 
@@ -644,12 +673,12 @@
                     datasets: [{
                         label: 'Attendance %',
                         data: weeklyData.map(item => item.attendance),
-                        borderColor: '#800000',
-                        backgroundColor: 'rgba(128, 0, 0, 0.1)',
+                        borderColor: '#0A2463',
+                        backgroundColor: 'rgba(10, 36, 99, 0.08)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: '#800000',
+                        pointBackgroundColor: '#0A2463',
                         pointBorderColor: 'white',
                         pointBorderWidth: 2,
                         pointRadius: 4,
@@ -705,5 +734,4 @@
             });
         });
     </script>
-
 @endsection

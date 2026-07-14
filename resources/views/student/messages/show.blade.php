@@ -10,29 +10,46 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .message-detail-box {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
+            background: var(--white);
             border-radius: 0.75rem;
-            border: 1px solid #e9edf4;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            box-shadow: var(--shadow);
         }
 
         .message-detail-box .back-link {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            color: #6b7a8f;
+            color: var(--text-gray);
             text-decoration: none;
             font-size: 0.8rem;
             margin-bottom: 1.25rem;
-            transition: color 0.2s;
+            transition: var(--transition);
         }
 
         .message-detail-box .back-link:hover {
-            color: #800000;
+            color: var(--primary);
         }
 
         .message-detail-box .header {
@@ -47,19 +64,19 @@
         .message-detail-box .header h3 {
             font-size: 1.15rem;
             font-weight: 700;
-            color: #1a2332;
+            color: var(--text-dark);
             margin: 0;
         }
 
         .message-detail-box .header .meta {
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
             text-align: right;
         }
 
         .message-detail-box .header .meta .badge-new {
-            background: #3b82f6;
-            color: white;
+            background: var(--info);
+            color: var(--white);
             font-size: 0.55rem;
             padding: 0.1rem 0.6rem;
             border-radius: 1rem;
@@ -72,7 +89,7 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.6rem 1rem;
-            background: #fafbfc;
+            background: var(--bg-main);
             border-radius: 0.5rem;
             margin-bottom: 1.5rem;
         }
@@ -81,8 +98,8 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #800000, #a00000);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -94,12 +111,12 @@
         .message-detail-box .sender-info .name {
             font-weight: 600;
             font-size: 0.9rem;
-            color: #1a2332;
+            color: var(--text-dark);
         }
 
         .message-detail-box .sender-info .email {
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .message-detail-box .body {
@@ -111,7 +128,7 @@
 
         .message-detail-box .body p {
             font-size: 0.95rem;
-            color: #1a2332;
+            color: var(--text-dark);
             line-height: 1.7;
             white-space: pre-wrap;
             margin: 0;
@@ -132,7 +149,7 @@
             font-size: 0.8rem;
             text-decoration: none;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .message-detail-box .actions .btn-back:hover {
@@ -155,12 +172,10 @@
     </style>
 
     <div class="message-detail-box">
-        <!-- Back Link -->
         <a href="{{ route('student.messages.inbox') }}" class="back-link">
             <i class="bi bi-arrow-left"></i> Back to Inbox
         </a>
 
-        <!-- Header -->
         <div class="header">
             <h3>{{ $message->subject ?? 'No Subject' }}</h3>
             <div class="meta">
@@ -171,7 +186,6 @@
             </div>
         </div>
 
-        <!-- Sender Info -->
         @php
             $sender = $message->sender;
             $senderName = $sender->name ?? 'Unknown';
@@ -185,10 +199,14 @@
             </div>
         </div>
 
-        <!-- Message Body -->
         <div class="body">
             <p>{{ $message->message }}</p>
         </div>
 
-
-    @endsection
+        <div class="actions">
+            <a href="{{ route('student.messages.inbox') }}" class="btn-back">
+                <i class="bi bi-arrow-left"></i> Back to Inbox
+            </a>
+        </div>
+    </div>
+@endsection

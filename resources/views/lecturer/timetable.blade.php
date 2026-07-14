@@ -12,8 +12,8 @@
 @section('content')
     <style>
         /* ============================================
-                   STATS CARDS
-                   ============================================ */
+                       STATS CARDS
+                       ============================================ */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -30,8 +30,9 @@
         }
 
         .stat-card:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.12);
             transform: translateY(-2px);
+            border-color: #0A2463;
         }
 
         .stat-card .label {
@@ -45,7 +46,7 @@
         .stat-card .value {
             font-size: 22px;
             font-weight: 700;
-            color: #1f2937;
+            color: #0A2463;
             margin: 2px 0;
         }
 
@@ -55,10 +56,10 @@
         }
 
         /* ============================================
-                   NEXT CLASS WIDGET
-                   ============================================ */
+                       NEXT CLASS WIDGET
+                       ============================================ */
         .next-class-widget {
-            background: linear-gradient(135deg, #800000, #5f0000);
+            background: linear-gradient(135deg, #0A2463, #061840);
             color: white;
             border-radius: 12px;
             padding: 18px 24px;
@@ -68,7 +69,7 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 16px;
-            box-shadow: 0 4px 16px rgba(128, 0, 0, 0.25);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.3);
         }
 
         .next-class-widget .info {
@@ -109,6 +110,10 @@
             flex-wrap: wrap;
         }
 
+        .next-class-widget .info .meta i {
+            margin-right: 3px;
+        }
+
         .next-class-widget .countdown {
             background: rgba(255, 255, 255, 0.12);
             padding: 10px 20px;
@@ -129,8 +134,8 @@
         }
 
         /* ============================================
-                   TIMETABLE CONTAINER
-                   ============================================ */
+                       TIMETABLE CONTAINER
+                       ============================================ */
         .timetable-container {
             background: white;
             border-radius: 12px;
@@ -163,6 +168,11 @@
             color: #1f2937;
         }
 
+        .timetable-header .left h5 i {
+            color: #0A2463;
+            margin-right: 6px;
+        }
+
         .timetable-header .left .week-range {
             color: #6b7280;
             font-size: 14px;
@@ -176,7 +186,7 @@
         }
 
         .btn-manage {
-            background: #800000;
+            background: #0A2463;
             color: white;
             border: none;
             padding: 6px 16px;
@@ -191,12 +201,14 @@
         }
 
         .btn-manage:hover {
-            background: #5f0000;
+            background: #061840;
             color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.25);
         }
 
         .btn-today {
-            background: #6b7280;
+            background: #C5A020;
             color: white;
             border: none;
             padding: 6px 16px;
@@ -207,7 +219,7 @@
         }
 
         .btn-today:hover {
-            background: #4b5563;
+            background: #b08a1a;
         }
 
         .filter-form {
@@ -225,28 +237,31 @@
             background: white;
             color: #1f2937;
             outline: none;
+            transition: all 0.2s;
         }
 
         .filter-form select:focus {
-            border-color: #800000;
+            border-color: #0A2463;
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.1);
         }
 
         .filter-form .btn-apply {
-            background: #800000;
+            background: #0A2463;
             color: white;
             border: none;
             padding: 5px 14px;
             border-radius: 6px;
             font-size: 12px;
             cursor: pointer;
+            transition: all 0.2s;
         }
 
         .filter-form .btn-apply:hover {
-            background: #5f0000;
+            background: #061840;
         }
 
         .btn-export {
-            background: #10b981;
+            background: #059669;
             color: white;
             border: none;
             padding: 5px 14px;
@@ -257,15 +272,17 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            transition: all 0.2s;
         }
 
         .btn-export:hover {
-            background: #059669;
+            background: #047857;
+            color: white;
         }
 
         /* ============================================
-                   CALENDAR GRID
-                   ============================================ */
+                       CALENDAR GRID
+                       ============================================ */
         .timetable-grid {
             overflow-x: auto;
             padding: 0;
@@ -305,11 +322,11 @@
         }
 
         .timetable-table th.today {
-            background: #fef2f2;
+            background: #e3f2fd;
         }
 
         .timetable-table th.today .day-label {
-            color: #800000;
+            color: #0A2463;
         }
 
         .timetable-table th.weekend {
@@ -336,7 +353,7 @@
         }
 
         .timetable-table td.today {
-            background: #fafafa;
+            background: #f5f9ff;
         }
 
         .timetable-table td.weekend {
@@ -351,11 +368,11 @@
         }
 
         /* ============================================
-                   CLASS BLOCK
-                   ============================================ */
+                       CLASS BLOCK
+                       ============================================ */
         .class-block {
-            background: #fef2f2;
-            border-left: 4px solid #800000;
+            background: #e3f2fd;
+            border-left: 4px solid #0A2463;
             padding: 6px 8px;
             border-radius: 6px;
             margin: 2px 0;
@@ -370,7 +387,7 @@
 
         .class-block:hover {
             transform: scale(1.03);
-            box-shadow: 0 4px 16px rgba(128, 0, 0, 0.15);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.18);
             z-index: 10;
             position: relative;
         }
@@ -410,7 +427,7 @@
 
         .class-block .class-time {
             font-size: 10px;
-            color: #800000;
+            color: #0A2463;
             font-weight: 600;
         }
 
@@ -423,8 +440,8 @@
         }
 
         .session-badge.lecture {
-            background: #fef2f2;
-            color: #800000;
+            background: #e3f2fd;
+            color: #0A2463;
         }
 
         .session-badge.lab {
@@ -448,8 +465,8 @@
         }
 
         /* ============================================
-                   EMPTY STATE
-                   ============================================ */
+                       EMPTY STATE
+                       ============================================ */
         .no-schedule {
             text-align: center;
             padding: 60px 20px;
@@ -468,7 +485,7 @@
         }
 
         .no-schedule .btn-primary {
-            background: #800000;
+            background: #0A2463;
             color: white;
             padding: 8px 24px;
             border-radius: 6px;
@@ -479,12 +496,15 @@
         }
 
         .no-schedule .btn-primary:hover {
-            background: #5f0000;
+            background: #061840;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.25);
         }
 
         /* ============================================
-                   ALERT
-                   ============================================ */
+                       ALERT
+                       ============================================ */
         .alert {
             padding: 10px 14px;
             border-radius: 6px;
@@ -505,8 +525,8 @@
         }
 
         /* ============================================
-                   RESPONSIVE
-                   ============================================ */
+                       RESPONSIVE
+                       ============================================ */
         @media (max-width: 1024px) {
             .stats-grid {
                 grid-template-columns: repeat(3, 1fr);
@@ -600,6 +620,10 @@
                 height: 45px;
                 min-width: 55px;
             }
+
+            .next-class-widget .countdown .time {
+                font-size: 22px;
+            }
         }
     </style>
 
@@ -612,8 +636,8 @@
     @endif
 
     <!-- ==========================================
-            STATS CARDS
-            ========================================== -->
+                STATS CARDS
+                ========================================== -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="label">Courses</div>
@@ -647,8 +671,8 @@
     </div>
 
     <!-- ==========================================
-            NEXT CLASS WIDGET
-            ========================================== -->
+                NEXT CLASS WIDGET
+                ========================================== -->
     @if ($nextClass)
         <div class="next-class-widget">
             <div class="info">
@@ -687,12 +711,16 @@
                     </div>
                 </div>
             </div>
+            <a href="{{ route('lecturer.timetable.manage') }}" class="btn-manage"
+                style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); text-decoration: none;">
+                <i class="bi bi-plus-circle"></i> Add Schedule
+            </a>
         </div>
     @endif
 
     <!-- ==========================================
-            TIMETABLE CALENDAR VIEW
-            ========================================== -->
+                TIMETABLE CALENDAR VIEW
+                ========================================== -->
     <div class="timetable-container">
         <!-- Header -->
         <div class="timetable-header">

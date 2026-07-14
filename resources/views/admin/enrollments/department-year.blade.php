@@ -12,7 +12,6 @@
 
 @section('content')
     @php
-        // Map for numeric to full year names
         $yearDisplayMap = [
             '1' => 'First Year',
             '2' => 'Second Year',
@@ -21,43 +20,62 @@
             '5' => 'Fifth Year',
             '6' => 'Sixth Year',
         ];
-
-        // Get the display name for the current year
         $currentYearDisplay = $yearDisplayMap[$year] ?? 'Courses';
     @endphp
 
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #800000;
+            color: var(--primary);
             text-decoration: none;
             font-weight: 500;
             margin-bottom: 1rem;
             padding: 0.5rem 1rem;
-            background: #fef7f7;
-            border-radius: 0.5rem;
-            border: 1px solid #fde2e2;
-            transition: all 0.2s;
+            background: rgba(212, 160, 23, 0.08);
+            border-radius: var(--radius);
+            border: 1px solid rgba(212, 160, 23, 0.15);
+            transition: var(--transition);
         }
 
         .back-link:hover {
-            background: #fde2e2;
+            background: rgba(212, 160, 23, 0.15);
             text-decoration: none;
-            color: #800000;
+            color: var(--primary-dark);
         }
 
         .breadcrumb-bar {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 0.75rem 1.25rem;
             margin-bottom: 1.5rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             align-items: center;
             gap: 0.75rem;
             flex-wrap: wrap;
+            box-shadow: var(--shadow);
         }
 
         .breadcrumb-bar .breadcrumb-item {
@@ -65,11 +83,11 @@
             align-items: center;
             gap: 0.5rem;
             font-size: 0.85rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .breadcrumb-bar .breadcrumb-item a {
-            color: #800000;
+            color: var(--primary);
             text-decoration: none;
             font-weight: 500;
         }
@@ -83,7 +101,7 @@
         }
 
         .breadcrumb-bar .breadcrumb-item.active {
-            color: #1f2937;
+            color: var(--text-dark);
             font-weight: 600;
         }
 
@@ -95,11 +113,18 @@
         }
 
         .stat-card {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-number {
@@ -109,24 +134,24 @@
         }
 
         .stat-number.courses {
-            color: #6366f1;
+            color: var(--info);
         }
 
         .stat-number.students {
-            color: #10b981;
+            color: var(--success);
         }
 
         .stat-number.pending {
-            color: #d97706;
+            color: var(--warning);
         }
 
         .stat-number.total {
-            color: #800000;
+            color: var(--primary);
         }
 
         .stat-label {
             font-size: 0.65rem;
-            color: #6b7280;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-top: 0.15rem;
@@ -136,23 +161,24 @@
             display: flex;
             gap: 0.5rem;
             margin-bottom: 1.5rem;
-            background: white;
+            background: var(--white);
             padding: 0.75rem;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             flex-wrap: wrap;
+            box-shadow: var(--shadow);
         }
 
         .year-tab {
             padding: 0.5rem 1.5rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             border: 2px solid transparent;
             background: #f3f4f6;
             font-weight: 600;
             font-size: 0.85rem;
             cursor: pointer;
-            transition: all 0.2s;
-            color: #6b7280;
+            transition: var(--transition);
+            color: var(--text-gray);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -161,15 +187,15 @@
 
         .year-tab:hover {
             background: #e5e7eb;
-            color: #374151;
+            color: var(--text-dark);
             text-decoration: none;
             transform: translateY(-1px);
         }
 
         .year-tab.active {
-            background: #800000;
-            color: white;
-            border-color: #800000;
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
         }
 
         .year-tab .badge-count {
@@ -186,7 +212,7 @@
 
         .year-tab:not(.active) .badge-count {
             background: #d1d5db;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .course-grid {
@@ -196,16 +222,17 @@
         }
 
         .course-card {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1.25rem;
-            border: 2px solid #e5e7eb;
-            transition: all 0.3s ease;
+            border: 2px solid rgba(10, 36, 99, 0.06);
+            transition: var(--transition);
             text-decoration: none;
             color: inherit;
             display: block;
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .course-card::before {
@@ -215,15 +242,15 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: #800000;
+            background: var(--primary);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: var(--transition);
         }
 
         .course-card:hover {
-            border-color: #800000;
+            border-color: var(--primary);
             transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(128, 0, 0, 0.1);
+            box-shadow: var(--shadow-hover);
             text-decoration: none;
             color: inherit;
         }
@@ -235,13 +262,13 @@
         .course-card .course-code {
             font-weight: 700;
             font-size: 1rem;
-            color: #800000;
+            color: var(--primary);
             display: block;
         }
 
         .course-card .course-name {
             font-size: 0.85rem;
-            color: #374151;
+            color: var(--text-dark);
             margin-top: 0.2rem;
             display: block;
         }
@@ -251,13 +278,13 @@
             gap: 1rem;
             margin-top: 0.75rem;
             padding-top: 0.75rem;
-            border-top: 1px solid #f3f4f6;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
             flex-wrap: wrap;
         }
 
         .course-card .course-meta span {
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
@@ -265,15 +292,15 @@
 
         .course-card .course-meta .num {
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
         }
 
         .course-card .course-meta .num.pending {
-            color: #d97706;
+            color: var(--warning);
         }
 
         .course-card .course-meta .num.approved {
-            color: #10b981;
+            color: var(--success);
         }
 
         .course-card .click-hint {
@@ -281,9 +308,9 @@
             bottom: 0.5rem;
             right: 0.75rem;
             font-size: 0.6rem;
-            color: #9ca3af;
+            color: var(--text-gray);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: var(--transition);
         }
 
         .course-card:hover .click-hint {
@@ -296,17 +323,17 @@
             padding: 0.1rem 0.6rem;
             border-radius: 1rem;
             font-size: 0.6rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-top: 0.25rem;
         }
 
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
-            color: #9ca3af;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            color: var(--text-gray);
         }
 
         .empty-state i {
@@ -315,7 +342,7 @@
         }
 
         .empty-state h4 {
-            color: #374151;
+            color: var(--text-dark);
             margin-top: 1rem;
             margin-bottom: 0.5rem;
         }
@@ -326,21 +353,21 @@
 
         .alert {
             padding: 0.6rem 1rem;
-            border-radius: 0.75rem;
+            border-radius: var(--radius);
             margin-bottom: 1rem;
             font-size: 0.85rem;
         }
 
         .alert-success {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
-            border: 1px solid #bbf7d0;
+            border: 1px solid #a7f3d0;
         }
 
         .alert-danger {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
-            border: 1px solid #fecaca;
+            border: 1px solid #fca5a5;
         }
 
         .alert-dismissible {

@@ -12,33 +12,52 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #800000;
+            color: var(--primary);
             text-decoration: none;
             font-weight: 500;
             margin-bottom: 1rem;
             padding: 0.5rem 1rem;
-            background: #fef7f7;
-            border-radius: 0.5rem;
-            border: 1px solid #fde2e2;
-            transition: all 0.2s;
+            background: rgba(10, 36, 99, 0.05);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            transition: var(--transition);
         }
 
         .back-link:hover {
-            background: #fde2e2;
+            background: rgba(10, 36, 99, 0.08);
             text-decoration: none;
-            color: #800000;
+            color: var(--primary);
         }
 
         .detail-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 2rem;
             margin-bottom: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
         }
 
         .detail-card .header {
@@ -52,7 +71,7 @@
         .detail-card .title {
             font-size: 1.3rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
             margin: 0;
         }
 
@@ -62,20 +81,20 @@
             gap: 1rem;
             margin-top: 1rem;
             padding-top: 1rem;
-            border-top: 1px solid #f3f4f6;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .detail-card .info-item .label {
             font-size: 0.7rem;
             font-weight: 600;
-            color: #6b7280;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
 
         .detail-card .info-item .value {
             font-size: 0.95rem;
-            color: #1f2937;
+            color: var(--text-dark);
             font-weight: 500;
         }
 
@@ -88,23 +107,23 @@
         }
 
         .badge-current {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
         .badge-active {
-            background: #dbeafe;
-            color: #1e40af;
+            background: var(--info-light);
+            color: var(--info);
         }
 
         .badge-inactive {
             background: #f3f4f6;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .btn-sm {
             padding: 0.2rem 0.6rem;
-            border-radius: 0.3rem;
+            border-radius: 8px;
             font-size: 0.7rem;
             font-weight: 500;
             border: none;
@@ -112,13 +131,14 @@
             display: inline-flex;
             align-items: center;
             gap: 0.2rem;
-            transition: all 0.2s;
+            transition: var(--transition);
             text-decoration: none;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-edit {
-            background: #dbeafe;
-            color: #1e40af;
+            background: var(--info-light);
+            color: var(--info);
         }
 
         .btn-edit:hover {
@@ -127,7 +147,7 @@
 
         .btn-back {
             background: #f3f4f6;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         .btn-back:hover {
@@ -149,11 +169,30 @@
             justify-content: space-between;
             align-items: center;
             padding: 0.5rem 0;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .course-item:last-child {
             border-bottom: none;
+        }
+
+        .course-item .course-code {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .course-item .course-name {
+            color: var(--text-gray);
+            font-size: 0.85rem;
+            margin-left: 0.5rem;
+        }
+
+        .course-item .dept-badge {
+            background: #e5e7eb;
+            color: var(--text-gray);
+            padding: 0.1rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.6rem;
         }
 
         @media (max-width: 768px) {
@@ -180,7 +219,7 @@
                         class="badge badge-{{ $semester->is_current ? 'current' : ($semester->is_active ? 'active' : 'inactive') }}">
                         {{ $semester->is_current ? '⭐ Current' : ($semester->is_active ? '✅ Active' : '❌ Inactive') }}
                     </span>
-                    <span class="badge" style="background:#e5e7eb; color:#374151;">
+                    <span class="badge" style="background:#e5e7eb; color:var(--text-dark);">
                         {{ $semester->code }}
                     </span>
                 </div>
@@ -231,7 +270,7 @@
 
     {{-- Courses in this semester --}}
     <div class="detail-card">
-        <h3 style="font-size:1rem; font-weight:600; margin:0 0 1rem 0;">
+        <h3 style="font-size:1rem; font-weight:600; margin:0 0 1rem 0; color:var(--text-dark);">
             📚 Courses in this Semester
         </h3>
 
@@ -240,12 +279,11 @@
                 @foreach ($courses as $course)
                     <div class="course-item">
                         <div>
-                            <strong>{{ $course->course_code }}</strong>
-                            <span
-                                style="color:#6b7280; font-size:0.85rem; margin-left:0.5rem;">{{ $course->course_name }}</span>
+                            <span class="course-code">{{ $course->course_code }}</span>
+                            <span class="course-name">{{ $course->course_name }}</span>
                         </div>
                         <div>
-                            <span class="badge" style="background:#e5e7eb; color:#374151;">
+                            <span class="dept-badge">
                                 {{ $course->department->name ?? 'N/A' }}
                             </span>
                         </div>
@@ -253,7 +291,7 @@
                 @endforeach
             </div>
         @else
-            <div style="text-align:center; padding:2rem; color:#9ca3af;">
+            <div style="text-align:center; padding:2rem; color:var(--text-gray);">
                 <i class="bi bi-book" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
                 No courses found in this semester.
             </div>

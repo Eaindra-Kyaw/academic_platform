@@ -12,111 +12,46 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --purple: #8b5cf6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #800000;
+            color: var(--primary);
             text-decoration: none;
             font-weight: 500;
             margin-bottom: 1rem;
             padding: 0.5rem 1rem;
-            background: #fef7f7;
-            border-radius: 0.5rem;
-            border: 1px solid #fde2e2;
-            transition: all 0.2s;
+            background: rgba(212, 160, 23, 0.08);
+            border-radius: var(--radius);
+            border: 1px solid rgba(212, 160, 23, 0.15);
+            transition: var(--transition);
         }
 
         .back-link:hover {
-            background: #fde2e2;
+            background: rgba(212, 160, 23, 0.15);
             text-decoration: none;
-            color: #800000;
-        }
-
-        .breadcrumb-bar {
-            background: white;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1.25rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        .breadcrumb-bar .breadcrumb-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-            color: #6b7280;
-        }
-
-        .breadcrumb-bar .breadcrumb-item a {
-            color: #800000;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .breadcrumb-bar .breadcrumb-item a:hover {
-            text-decoration: underline;
-        }
-
-        .breadcrumb-bar .breadcrumb-item .separator {
-            color: #d1d5db;
-        }
-
-        .breadcrumb-bar .breadcrumb-item.active {
-            color: #1f2937;
-            font-weight: 600;
-        }
-
-        .breadcrumb-bar .badge-filter {
-            background: #800000;
-            color: white;
-            padding: 0.2rem 0.7rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .course-header {
-            background: white;
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            border: 1px solid #e5e7eb;
-            margin-bottom: 1.5rem;
-        }
-
-        .course-header .title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-        .course-header .code {
-            color: #800000;
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .course-header .meta {
-            display: flex;
-            gap: 1.5rem;
-            margin-top: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .course-header .meta span {
-            font-size: 0.8rem;
-            color: #6b7280;
-        }
-
-        .course-header .meta strong {
-            color: #1f2937;
+            color: var(--primary-dark);
         }
 
         .stats-grid {
@@ -127,11 +62,18 @@
         }
 
         .stat-card {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-number {
@@ -141,34 +83,35 @@
         }
 
         .stat-number.pending {
-            color: #d97706;
+            color: var(--warning);
         }
 
         .stat-number.approved {
-            color: #10b981;
+            color: var(--success);
         }
 
         .stat-number.rejected {
-            color: #ef4444;
+            color: var(--danger);
         }
 
         .stat-number.total {
-            color: #6366f1;
+            color: var(--info);
         }
 
         .stat-label {
             font-size: 0.65rem;
-            color: #6b7280;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-top: 0.15rem;
         }
 
         .table-wrapper {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .table-scroll {
@@ -183,8 +126,8 @@
         }
 
         .student-table thead {
-            background: #fafafa;
-            border-bottom: 2px solid #e5e7eb;
+            background: #fafbfc;
+            border-bottom: 2px solid rgba(10, 36, 99, 0.06);
         }
 
         .student-table th {
@@ -193,19 +136,19 @@
             font-size: 0.65rem;
             font-weight: 700;
             text-transform: uppercase;
-            color: #6b7280;
+            color: var(--text-gray);
             letter-spacing: 0.5px;
             white-space: nowrap;
         }
 
         .student-table td {
             padding: 0.6rem 1rem;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
             vertical-align: middle;
         }
 
         .student-table tbody tr:hover {
-            background: #fafafa;
+            background: #fafbfc;
         }
 
         .student-table tbody tr:last-child td {
@@ -214,18 +157,18 @@
 
         .student-cell .name {
             font-weight: 600;
-            color: #1f2937;
+            color: var(--text-dark);
             font-size: 0.9rem;
         }
 
         .student-cell .email {
-            color: #9ca3af;
+            color: var(--text-gray);
             font-size: 0.7rem;
             display: block;
         }
 
         .student-cell .student-id {
-            color: #6b7280;
+            color: var(--text-gray);
             font-size: 0.65rem;
             display: block;
         }
@@ -236,7 +179,7 @@
             padding: 0.05rem 0.5rem;
             border-radius: 1rem;
             font-size: 0.6rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-top: 0.2rem;
         }
 
@@ -252,17 +195,17 @@
         }
 
         .status-pending {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
         }
 
         .status-approved {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
         .status-rejected {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
         }
 
@@ -274,7 +217,7 @@
 
         .btn-sm {
             padding: 0.25rem 0.6rem;
-            border-radius: 0.3rem;
+            border-radius: 6px;
             font-size: 0.7rem;
             font-weight: 500;
             cursor: pointer;
@@ -282,14 +225,14 @@
             display: inline-flex;
             align-items: center;
             gap: 0.2rem;
-            transition: all 0.15s;
+            transition: var(--transition);
             text-decoration: none;
             white-space: nowrap;
         }
 
         .btn-approve {
-            background: #10b981;
-            color: white;
+            background: var(--success);
+            color: var(--white);
         }
 
         .btn-approve:hover {
@@ -297,27 +240,27 @@
         }
 
         .btn-reject {
-            background: #ef4444;
-            color: white;
+            background: var(--danger);
+            color: var(--white);
         }
 
         .btn-reject:hover {
-            background: #dc2626;
+            background: #b91c1c;
         }
 
         .btn-view {
-            background: #eff6ff;
-            color: #2563eb;
+            background: var(--info-light);
+            color: var(--info);
         }
 
         .btn-view:hover {
-            background: #dbeafe;
+            background: #bfdbfe;
         }
 
         .row-number {
             text-align: center;
             font-weight: 500;
-            color: #9ca3af;
+            color: var(--text-gray);
             font-size: 0.75rem;
             width: 30px;
         }
@@ -329,18 +272,18 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 0.5rem;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .pagination-wrapper .info {
             font-size: 0.75rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .empty-state {
             text-align: center;
             padding: 3rem 2rem;
-            color: #9ca3af;
+            color: var(--text-gray);
         }
 
         .empty-state i {
@@ -355,21 +298,21 @@
 
         .alert {
             padding: 0.6rem 1rem;
-            border-radius: 0.75rem;
+            border-radius: var(--radius);
             margin-bottom: 1rem;
             font-size: 0.85rem;
         }
 
         .alert-success {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
-            border: 1px solid #bbf7d0;
+            border: 1px solid #a7f3d0;
         }
 
         .alert-danger {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
-            border: 1px solid #fecaca;
+            border: 1px solid #fca5a5;
         }
 
         .alert-dismissible {
@@ -392,7 +335,6 @@
             opacity: 1;
         }
 
-        /* ===== MODALS ===== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -412,14 +354,27 @@
         }
 
         .modal-content {
-            background: white;
-            border-radius: 1rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1.5rem;
             max-width: 600px;
             width: 92%;
             max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.25s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         .modal-header {
@@ -428,12 +383,12 @@
             align-items: center;
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .modal-header h4 {
             margin: 0;
-            color: #800000;
+            color: var(--primary);
             font-size: 1.1rem;
         }
 
@@ -442,14 +397,14 @@
             border: none;
             font-size: 1.4rem;
             cursor: pointer;
-            color: #9ca3af;
+            color: var(--text-gray);
             padding: 0 0.3rem;
-            transition: color 0.2s;
+            transition: var(--transition);
             line-height: 1;
         }
 
         .modal-close:hover {
-            color: #1f2937;
+            color: var(--text-dark);
         }
 
         .modal-buttons {
@@ -457,24 +412,24 @@
             gap: 0.75rem;
             margin-top: 1.5rem;
             padding-top: 1rem;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .modal-btn {
             flex: 1;
             padding: 0.5rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             border: none;
             text-align: center;
-            transition: all 0.2s;
+            transition: var(--transition);
             font-size: 0.85rem;
         }
 
         .modal-btn-cancel {
             background: #f3f4f6;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         .modal-btn-cancel:hover {
@@ -482,8 +437,8 @@
         }
 
         .modal-btn-danger {
-            background: #dc2626;
-            color: white;
+            background: var(--danger);
+            color: var(--white);
         }
 
         .modal-btn-danger:hover {
@@ -493,26 +448,27 @@
         .reject-textarea {
             width: 100%;
             padding: 0.6rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 8px;
             font-size: 0.85rem;
             margin: 0.75rem 0;
             resize: vertical;
-            font-family: inherit;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
         }
 
         .reject-textarea:focus {
             outline: none;
-            border-color: #800000;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .profile-avatar {
             width: 72px;
             height: 72px;
             border-radius: 50%;
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -530,7 +486,7 @@
 
         .profile-email {
             text-align: center;
-            color: #6b7280;
+            color: var(--text-gray);
             font-size: 0.8rem;
             margin-bottom: 0.75rem;
         }
@@ -546,18 +502,18 @@
             text-align: center;
             padding: 0.5rem;
             background: #f9fafb;
-            border-radius: 0.5rem;
+            border-radius: 8px;
         }
 
         .profile-stat .number {
             font-size: 1.1rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
         }
 
         .profile-stat .label {
             font-size: 0.6rem;
-            color: #6b7280;
+            color: var(--text-gray);
             display: block;
             margin-top: 0.1rem;
             text-transform: uppercase;
@@ -574,14 +530,14 @@
         .detail-item .label {
             font-size: 0.65rem;
             font-weight: 600;
-            color: #6b7280;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
 
         .detail-item .value {
             font-size: 0.85rem;
-            color: #1f2937;
+            color: var(--text-dark);
             word-break: break-word;
         }
 
@@ -593,15 +549,6 @@
 
             .stat-number {
                 font-size: 1.4rem;
-            }
-
-            .course-header .meta {
-                gap: 0.75rem;
-                flex-direction: column;
-            }
-
-            .breadcrumb-bar {
-                font-size: 0.75rem;
             }
 
             .pagination-wrapper {
@@ -641,59 +588,9 @@
         </div>
     @endif
 
-    {{-- Back Link --}}
     <a href="{{ route('admin.enrollments.department', ['departmentId' => $course->department_id]) }}" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to {{ $course->department->name ?? 'Department' }}
     </a>
-
-    {{-- Breadcrumb --}}
-    {{-- <div class="breadcrumb-bar">
-        <span class="breadcrumb-item">
-            <i class="bi bi-house-door"></i>
-            <a href="{{ route('admin.enrollments.index') }}">Enrollments</a>
-        </span>
-        <span class="breadcrumb-item">
-            <span class="separator">/</span>
-            <a href="{{ route('admin.enrollments.department', ['departmentId' => $course->department_id]) }}">
-                {{ $course->department->name ?? 'Department' }}
-            </a>
-        </span>
-        <span class="breadcrumb-item">
-            <span class="separator">/</span>
-            <span class="badge-filter">{{ $course->course_code }}</span>
-        </span>
-        <span class="breadcrumb-item active" style="margin-left:auto;">
-            {{ $enrollments->total() }} student(s)
-        </span>
-    </div> --}}
-
-    {{-- Course Header --}}
-    {{-- <div class="course-header">
-        <div>
-            <span class="code">{{ $course->course_code }}</span>
-            <span class="title">{{ $course->course_name }}</span>
-            @if (!empty($course->year))
-                <span class="badge-filter" style="margin-left:0.5rem; font-size:0.7rem;">
-                    📅 Year {{ $course->year }}
-                </span>
-            @endif
-        </div>
-        <div class="meta">
-            @if (!empty($course->credits))
-                <span>📚 <strong>{{ $course->credits }}</strong> Credits</span>
-            @endif
-            <span>🏛️ <strong>{{ $course->department->name ?? 'N/A' }}</strong></span>
-            @if (!empty($course->lecturer_name))
-                <span>👨‍🏫 <strong>{{ $course->lecturer_name }}</strong></span>
-            @endif
-            @if (!empty($course->semester))
-                <span>📖 <strong>{{ $course->semester }}</strong></span>
-            @endif
-            @if (!empty($course->academic_year))
-                <span>📅 <strong>{{ $course->academic_year }}</strong></span>
-            @endif
-        </div>
-    </div> --}}
 
     {{-- Stats --}}
     <div class="stats-grid">
@@ -761,7 +658,7 @@
                                     <span class="status-badge status-rejected"><i class="bi bi-x-circle"></i>
                                         Rejected</span>
                                 @else
-                                    <span class="status-badge" style="background:#f3f4f6; color:#6b7280;">
+                                    <span class="status-badge" style="background:#f3f4f6; color:var(--text-gray);">
                                         <i class="bi bi-dash-circle"></i> {{ ucfirst($enrollment->status) }}
                                     </span>
                                 @endif
@@ -792,7 +689,7 @@
                                 <div class="empty-state">
                                     <i class="bi bi-people"></i>
                                     <p>No students enrolled in this course</p>
-                                    <small style="color:#9ca3af;">No enrollment requests found for
+                                    <small style="color:var(--text-gray);">No enrollment requests found for
                                         {{ $course->course_code }}</small>
                                 </div>
                             </td>
@@ -841,10 +738,10 @@
     <div id="rejectModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 style="color: #dc2626;"><i class="bi bi-exclamation-triangle"></i> Reject Enrollment</h4>
+                <h4 style="color: var(--danger);"><i class="bi bi-exclamation-triangle"></i> Reject Enrollment</h4>
                 <button class="modal-close" onclick="closeModal('rejectModal')">&times;</button>
             </div>
-            <p id="rejectModalMessage" style="font-size: 0.85rem; color: #6b7280;"></p>
+            <p id="rejectModalMessage" style="font-size: 0.85rem; color: var(--text-gray);"></p>
             <textarea id="rejectionReason" class="reject-textarea" rows="3"
                 placeholder="Please provide a reason for rejection..."></textarea>
             <div class="modal-buttons">
@@ -932,7 +829,7 @@
                         <div class="text-center py-4 text-danger">
                             <i class="bi bi-exclamation-triangle" style="font-size: 2rem;"></i>
                             <p style="margin-top:0.5rem;">Failed to load student profile.</p>
-                            <small style="color:#6b7280;">${error.message}</small>
+                            <small style="color:var(--text-gray);">${error.message}</small>
                         </div>
                     `;
                     console.error('Error loading student profile:', error);

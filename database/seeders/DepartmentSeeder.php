@@ -42,7 +42,7 @@ class DepartmentSeeder extends Seeder
                 'description' => 'Electronic Engineering Department'
             ],
             [
-                'code' => 'CS',
+                'code' => 'CEIT',
                 'name' => 'Department of Computer Engineering and Information Technology',
                 'head_of_department' => 'Dr. Phyo Thu Zar Tun',
                 'description' => 'Computer Engineering and Information Technology Department'

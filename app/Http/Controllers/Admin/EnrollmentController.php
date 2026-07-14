@@ -214,56 +214,29 @@ class EnrollmentController extends Controller
     /**
      * Approve an enrollment
      */
-    public function approve($id)
-    {
-        try {
-            $enrollment = Enrollment::with(['student', 'course'])->findOrFail($id);
+    // In approve method
+public function approve($id)
+{
+    $enrollment = Enrollment::findOrFail($id);
+    $enrollment->status = 'approved';
+    $enrollment->approved_at = Carbon::now();  // ✅ Set approved date
+    $enrollment->rejected_at = null;
+    $enrollment->save();
 
-            if ($enrollment->status !== 'pending') {
-                return back()->with('error', 'This enrollment has already been processed.');
-            }
+    return redirect()->back()->with('success', 'Enrollment approved successfully!');
+}
 
-            $enrollment->update([
-                'status' => 'approved',
-                'approved_at' => Carbon::now(),
-            ]);
+// In reject method
+public function reject(Request $request, $id)
+{
+    $enrollment = Enrollment::findOrFail($id);
+    $enrollment->status = 'rejected';
+    $enrollment->rejected_at = Carbon::now();  // ✅ Set rejected date
+    $enrollment->approved_at = null;
+    $enrollment->save();
 
-            return back()->with('success', "Enrollment approved for {$enrollment->student->name} in {$enrollment->course->course_code}.");
-
-        } catch (\Exception $e) {
-            return back()->with('error', 'Failed to approve enrollment: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Reject an enrollment
-     */
-    public function reject(Request $request, $id)
-    {
-        $request->validate([
-            'rejection_reason' => 'required|string|min:5|max:500',
-        ]);
-
-        try {
-            $enrollment = Enrollment::with(['student', 'course'])->findOrFail($id);
-
-            if ($enrollment->status !== 'pending') {
-                return back()->with('error', 'This enrollment has already been processed.');
-            }
-
-            $enrollment->update([
-                'status' => 'rejected',
-                'rejection_reason' => $request->rejection_reason,
-                'rejected_at' => Carbon::now(),
-            ]);
-
-            return back()->with('success', "Enrollment rejected for {$enrollment->student->name} in {$enrollment->course->course_code}.");
-
-        } catch (\Exception $e) {
-            return back()->with('error', 'Failed to reject enrollment: ' . $e->getMessage());
-        }
-    }
-
+    return redirect()->back()->with('success', 'Enrollment rejected successfully!');
+}
     /**
      * Bulk approve enrollments
      */

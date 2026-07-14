@@ -15,7 +15,7 @@ class Course extends Model
         'course_code',
         'course_name',
         'department_id',
-        'semester_id',        // ADD THIS
+        'semester_id',
         'lecturer_id',
         'lecturer_name',
         'credits',
@@ -69,7 +69,6 @@ class Course extends Model
         return $this->belongsTo(Department::class);
     }
 
-    // ADD THIS RELATIONSHIP
     public function semester()
     {
         return $this->belongsTo(Semester::class);
@@ -110,6 +109,23 @@ class Course extends Model
     public function attendanceRecords()
     {
         return $this->hasManyThrough(AttendanceRecord::class, AttendanceSession::class);
+    }
+
+    /**
+     * Relationship to attendance evaluations (KG+12 roll call & risk)
+     */
+    public function evaluations()
+    {
+        return $this->hasMany(AttendanceEvaluation::class, 'course_id');
+    }
+
+    /**
+     * Get the latest evaluation for this course (for quick stats)
+     */
+    public function latestEvaluation()
+    {
+        return $this->hasOne(AttendanceEvaluation::class, 'course_id')
+            ->latest('evaluation_date');
     }
 
     // Scopes

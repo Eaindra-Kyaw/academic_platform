@@ -10,20 +10,27 @@
 
 @section('content')
     <style>
-        /* ============================================================
-                               MODERN DESIGN SYSTEM
-                               ============================================================ */
         :root {
-            --gradient-primary: linear-gradient(135deg, #800000, #a00000);
-            --shadow-premium: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
-            --shadow-premium-hover: 0 8px 40px rgba(128, 0, 0, 0.10), 0 2px 8px rgba(128, 0, 0, 0.06);
-            --radius-premium: 16px;
-            --transition-premium: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --purple: #8b5cf6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ============================================================
-                               BREADCRUMB
-                               ============================================================ */
         .breadcrumb-premium {
             background: transparent;
             padding: 0;
@@ -35,20 +42,20 @@
         }
 
         .breadcrumb-premium .breadcrumb-item a {
-            color: #6b7a8f;
+            color: var(--text-gray);
             text-decoration: none;
-            transition: var(--transition-premium);
+            transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
         }
 
         .breadcrumb-premium .breadcrumb-item a:hover {
-            color: #800000;
+            color: var(--primary);
         }
 
         .breadcrumb-premium .breadcrumb-item.active {
-            color: #800000;
+            color: var(--primary);
             font-weight: 600;
         }
 
@@ -58,9 +65,6 @@
             font-size: 1.2rem;
         }
 
-        /* ============================================================
-                               HEADER ACTIONS (Left-aligned with Back, Right-aligned with Export)
-                               ============================================================ */
         .header-actions {
             display: flex;
             justify-content: space-between;
@@ -84,45 +88,42 @@
 
         .btn-premium {
             padding: 0.4rem 1.2rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             font-size: 0.8rem;
             font-weight: 500;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            transition: var(--transition-premium);
+            transition: var(--transition);
             border: none;
             cursor: pointer;
         }
 
         .btn-premium-primary {
-            background: var(--gradient-primary);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
         }
 
         .btn-premium-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(128, 0, 0, 0.3);
-            color: white;
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.25);
+            color: var(--white);
         }
 
         .btn-premium-outline {
             background: transparent;
-            color: #6b7a8f;
-            border: 1px solid #e9edf4;
+            color: var(--text-gray);
+            border: 1px solid rgba(10, 36, 99, 0.1);
         }
 
         .btn-premium-outline:hover {
-            border-color: #800000;
-            color: #800000;
-            background: #fef3c7;
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(212, 160, 23, 0.08);
             transform: translateY(-2px);
         }
 
-        /* ============================================================
-                               STATS CARDS - PREMIUM
-                               ============================================================ */
         .stats-premium-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -131,12 +132,12 @@
         }
 
         .stat-premium-card {
-            background: white;
-            border-radius: var(--radius-premium);
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1.25rem 1.5rem;
-            border: 1px solid #f0f0f0;
-            box-shadow: var(--shadow-premium);
-            transition: var(--transition-premium);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 1rem;
@@ -155,25 +156,25 @@
         }
 
         .stat-premium-card.blue::before {
-            background: #3b82f6;
+            background: var(--info);
         }
 
         .stat-premium-card.green::before {
-            background: #10b981;
+            background: var(--success);
         }
 
         .stat-premium-card.yellow::before {
-            background: #f59e0b;
+            background: var(--warning);
         }
 
         .stat-premium-card.red::before {
-            background: #ef4444;
+            background: var(--danger);
         }
 
         .stat-premium-card:hover {
             transform: translateY(-4px);
-            box-shadow: var(--shadow-premium-hover);
-            border-color: #800000;
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary);
         }
 
         .stat-premium-card .icon {
@@ -188,23 +189,23 @@
         }
 
         .stat-premium-card .icon.blue {
-            background: #eff6ff;
-            color: #3b82f6;
+            background: var(--info-light);
+            color: var(--info);
         }
 
         .stat-premium-card .icon.green {
-            background: #ecfdf5;
-            color: #10b981;
+            background: var(--success-light);
+            color: var(--success);
         }
 
         .stat-premium-card .icon.yellow {
-            background: #fffbeb;
-            color: #f59e0b;
+            background: var(--warning-light);
+            color: var(--warning);
         }
 
         .stat-premium-card .icon.red {
-            background: #fef2f2;
-            color: #ef4444;
+            background: var(--danger-light);
+            color: var(--danger);
         }
 
         .stat-premium-card .info {
@@ -214,44 +215,41 @@
         .stat-premium-card .info .number {
             font-size: 1.5rem;
             font-weight: 800;
-            color: #1a2332;
+            color: var(--text-dark);
             line-height: 1.2;
         }
 
         .stat-premium-card .info .number.green {
-            color: #10b981;
+            color: var(--success);
         }
 
         .stat-premium-card .info .number.yellow {
-            color: #f59e0b;
+            color: var(--warning);
         }
 
         .stat-premium-card .info .number.red {
-            color: #ef4444;
+            color: var(--danger);
         }
 
         .stat-premium-card .info .label {
             font-size: 0.65rem;
-            color: #6b7a8f;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        /* ============================================================
-                               TABLE - PREMIUM
-                               ============================================================ */
         .table-premium-wrapper {
-            background: white;
-            border-radius: var(--radius-premium);
-            border: 1px solid #f0f0f0;
-            box-shadow: var(--shadow-premium);
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
             overflow: hidden;
         }
 
         .table-premium-header {
             padding: 1rem 1.5rem;
             background: #fafbfc;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -262,19 +260,19 @@
         .table-premium-header .title {
             font-size: 0.85rem;
             font-weight: 600;
-            color: #1a2332;
+            color: var(--text-dark);
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .table-premium-header .title i {
-            color: #800000;
+            color: var(--primary);
         }
 
         .table-premium-header .title .count-badge {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             font-size: 0.6rem;
             padding: 0.05rem 0.6rem;
             border-radius: 1rem;
@@ -289,16 +287,16 @@
         .toolbar .search-box {
             display: flex;
             align-items: center;
-            background: white;
-            border: 1px solid #e9edf4;
-            border-radius: 0.5rem;
+            background: var(--white);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            border-radius: 8px;
             padding: 0.2rem 0.6rem;
-            transition: var(--transition-premium);
+            transition: var(--transition);
         }
 
         .toolbar .search-box:focus-within {
-            border-color: #800000;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .toolbar .search-box input {
@@ -306,7 +304,7 @@
             outline: none;
             padding: 0.3rem 0.4rem;
             font-size: 0.75rem;
-            color: #1a2332;
+            color: var(--text-dark);
             background: transparent;
             width: 150px;
         }
@@ -330,22 +328,22 @@
             padding: 0.6rem 1rem;
             text-align: left;
             font-weight: 600;
-            color: #6b7a8f;
+            color: var(--text-gray);
             font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             background: #fafbfc;
         }
 
         .table-premium tbody td {
             padding: 0.6rem 1rem;
-            border-bottom: 1px solid #f5f6f8;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
             vertical-align: middle;
         }
 
         .table-premium tbody tr {
-            transition: var(--transition-premium);
+            transition: var(--transition);
         }
 
         .table-premium tbody tr:hover {
@@ -356,12 +354,11 @@
             border-bottom: none;
         }
 
-        /* ===== TABLE BADGES ===== */
         .badge-id {
             background: #f1f5f9;
-            color: #6b7a8f;
+            color: var(--text-gray);
             padding: 0.1rem 0.6rem;
-            border-radius: 0.3rem;
+            border-radius: 6px;
             font-size: 0.65rem;
             font-weight: 600;
             font-family: monospace;
@@ -376,18 +373,18 @@
         }
 
         .badge-risk-premium.low {
-            background: #ecfdf5;
-            color: #10b981;
+            background: var(--success-light);
+            color: #166534;
         }
 
         .badge-risk-premium.medium {
-            background: #fffbeb;
-            color: #f59e0b;
+            background: var(--warning-light);
+            color: #92400e;
         }
 
         .badge-risk-premium.high {
-            background: #fef2f2;
-            color: #ef4444;
+            background: var(--danger-light);
+            color: #991b1b;
         }
 
         .attendance-pill-premium {
@@ -399,30 +396,29 @@
         }
 
         .attendance-pill-premium.high {
-            background: #ecfdf5;
-            color: #10b981;
+            background: var(--success-light);
+            color: #166534;
         }
 
         .attendance-pill-premium.medium {
-            background: #fffbeb;
-            color: #f59e0b;
+            background: var(--warning-light);
+            color: #92400e;
         }
 
         .attendance-pill-premium.low {
-            background: #fef2f2;
-            color: #ef4444;
+            background: var(--danger-light);
+            color: #991b1b;
         }
 
-        /* ===== ACTION BUTTONS ===== */
         .btn-action-premium {
             padding: 0.2rem 0.5rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.65rem;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
-            transition: var(--transition-premium);
+            transition: var(--transition);
             border: none;
             cursor: pointer;
         }
@@ -432,17 +428,16 @@
         }
 
         .btn-view-premium {
-            background: #eff6ff;
-            color: #3b82f6;
+            background: var(--info-light);
+            color: var(--info);
         }
 
         .btn-view-premium:hover {
-            background: #dbeafe;
-            color: #2563eb;
+            background: #bfdbfe;
         }
 
         .btn-message-premium {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
         }
 
@@ -450,12 +445,9 @@
             background: #fde68a;
         }
 
-        /* ============================================================
-                               PAGINATION - PREMIUM
-                               ============================================================ */
         .pagination-premium-wrapper {
             padding: 1rem 1.5rem;
-            border-top: 1px solid #f0f0f0;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -466,11 +458,11 @@
 
         .pagination-premium-wrapper .info {
             font-size: 0.75rem;
-            color: #6b7a8f;
+            color: var(--text-gray);
         }
 
         .pagination-premium-wrapper .info strong {
-            color: #1a2332;
+            color: var(--text-dark);
         }
 
         .pagination-premium-wrapper .pagination {
@@ -480,22 +472,22 @@
 
         .pagination-premium-wrapper .pagination .page-link {
             border: none;
-            color: #6b7a8f;
+            color: var(--text-gray);
             font-size: 0.75rem;
             padding: 0.3rem 0.7rem;
-            border-radius: 0.4rem;
-            transition: var(--transition-premium);
+            border-radius: 6px;
+            transition: var(--transition);
             background: transparent;
         }
 
         .pagination-premium-wrapper .pagination .page-link:hover {
-            background: #fef3c7;
-            color: #800000;
+            background: rgba(212, 160, 23, 0.1);
+            color: var(--primary);
         }
 
         .pagination-premium-wrapper .pagination .active .page-link {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
         }
 
         .pagination-premium-wrapper .pagination .disabled .page-link {
@@ -503,9 +495,6 @@
             cursor: not-allowed;
         }
 
-        /* ============================================================
-                               CONFIRM DIALOG
-                               ============================================================ */
         .confirm-overlay {
             display: none;
             position: fixed;
@@ -524,8 +513,8 @@
         }
 
         .confirm-box {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 2rem;
             max-width: 420px;
             width: 90%;
@@ -548,7 +537,7 @@
         .confirm-box .icon {
             text-align: center;
             font-size: 2.5rem;
-            color: #10b981;
+            color: var(--success);
             margin-bottom: 0.5rem;
         }
 
@@ -556,14 +545,14 @@
             text-align: center;
             font-size: 1.1rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
             margin: 0 0 0.3rem 0;
         }
 
         .confirm-box p {
             text-align: center;
             font-size: 0.85rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin: 0 0 1.5rem 0;
         }
 
@@ -575,14 +564,14 @@
 
         .confirm-box .btn-confirm-cancel {
             padding: 0.4rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.8rem;
             font-weight: 500;
-            border: 1px solid #e5e7eb;
-            background: white;
-            color: #374151;
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            background: var(--white);
+            color: var(--text-dark);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .confirm-box .btn-confirm-cancel:hover {
@@ -591,25 +580,22 @@
 
         .confirm-box .btn-confirm-export {
             padding: 0.4rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.8rem;
             font-weight: 500;
             border: none;
-            background: #10b981;
-            color: white;
+            background: var(--success);
+            color: var(--white);
             cursor: pointer;
             text-decoration: none;
             text-align: center;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .confirm-box .btn-confirm-export:hover {
             background: #059669;
         }
 
-        /* ============================================================
-                               MESSAGE MODAL
-                               ============================================================ */
         .message-modal-overlay {
             display: none;
             position: fixed;
@@ -628,8 +614,8 @@
         }
 
         .message-modal-box {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 2rem;
             max-width: 500px;
             width: 90%;
@@ -640,7 +626,7 @@
         .message-modal-box .icon {
             text-align: center;
             font-size: 2.5rem;
-            color: #3b82f6;
+            color: var(--info);
             margin-bottom: 0.5rem;
         }
 
@@ -648,66 +634,50 @@
             text-align: center;
             font-size: 1.1rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
             margin: 0 0 0.3rem 0;
         }
 
         .message-modal-box p {
             text-align: center;
             font-size: 0.85rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin: 0 0 1rem 0;
-        }
-
-        .message-modal-box #messageStatus {
-            display: none;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.4rem;
-            font-size: 0.8rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .message-modal-box #messageStatus.success {
-            display: block;
-            background: #ecfdf5;
-            color: #10b981;
-            border: 1px solid #a7f3d0;
-        }
-
-        .message-modal-box #messageStatus.error {
-            display: block;
-            background: #fef2f2;
-            color: #ef4444;
-            border: 1px solid #fca5a5;
         }
 
         .message-modal-box textarea {
             width: 100%;
             padding: 0.5rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.4rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 6px;
             font-size: 0.8rem;
             resize: vertical;
             min-height: 80px;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
         }
 
         .message-modal-box textarea:focus {
             outline: none;
-            border-color: #800000;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .message-modal-box input[type="text"] {
             width: 100%;
             padding: 0.5rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.4rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 6px;
             font-size: 0.8rem;
             margin-bottom: 0.5rem;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
         }
 
         .message-modal-box input[type="text"]:focus {
             outline: none;
-            border-color: #800000;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .message-modal-box .buttons {
@@ -719,18 +689,18 @@
 
         .message-modal-box .btn-send {
             padding: 0.4rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.8rem;
             font-weight: 500;
             border: none;
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .message-modal-box .btn-send:hover {
-            background: #a00000;
+            background: var(--primary-light);
         }
 
         .message-modal-box .btn-send:disabled {
@@ -740,23 +710,20 @@
 
         .message-modal-box .btn-close-modal {
             padding: 0.4rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.8rem;
             font-weight: 500;
-            border: 1px solid #e5e7eb;
-            background: white;
-            color: #374151;
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            background: var(--white);
+            color: var(--text-dark);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .message-modal-box .btn-close-modal:hover {
             background: #f3f4f6;
         }
 
-        /* ============================================================
-                               RESPONSIVE
-                               ============================================================ */
         @media (max-width: 1024px) {
             .stats-premium-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -850,9 +817,6 @@
         }
     </style>
 
-    <!-- ============================================================ -->
-    <!-- BREADCRUMB -->
-    <!-- ============================================================ -->
     <nav aria-label="breadcrumb" class="breadcrumb-premium">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}"><i class="bi bi-house"></i> Dashboard</a></li>
@@ -863,9 +827,6 @@
         </ol>
     </nav>
 
-    <!-- ============================================================ -->
-    <!-- HEADER ACTIONS (Back on left, Export on right) -->
-    <!-- ============================================================ -->
     <div class="header-actions">
         <div class="header-actions-left">
             <a href="{{ route('admin.departments.show', $department) }}" class="btn-premium btn-premium-outline">
@@ -879,9 +840,6 @@
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- STATS CARDS -->
-    <!-- ============================================================ -->
     <div class="stats-premium-grid">
         <div class="stat-premium-card blue">
             <div class="icon blue"><i class="bi bi-people"></i></div>
@@ -900,8 +858,9 @@
         <div class="stat-premium-card yellow">
             <div class="icon yellow"><i class="bi bi-graph-up"></i></div>
             <div class="info">
-                <div class="number" style="color:#f59e0b;">
-                    {{ number_format($students->avg('attendance_percentage') ?? 0, 1) }}%</div>
+                <div class="number" style="color:var(--warning);">
+                    {{ number_format($students->avg('attendance_percentage') ?? 0, 1) }}%
+                </div>
                 <div class="label">Avg Attendance</div>
             </div>
         </div>
@@ -916,9 +875,6 @@
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- STUDENT TABLE -->
-    <!-- ============================================================ -->
     <div class="table-premium-wrapper">
         <div class="table-premium-header">
             <div class="title">
@@ -970,15 +926,16 @@
                             <td>
                                 <div style="display:flex; align-items:center; gap:0.5rem;">
                                     <div
-                                        style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #800000, #a00000); color:white; display:flex; align-items:center; justify-content:center; font-weight:600; font-size:0.6rem; flex-shrink:0;">
+                                        style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:var(--white); display:flex; align-items:center; justify-content:center; font-weight:600; font-size:0.6rem; flex-shrink:0;">
                                         {{ $initials }}
                                     </div>
-                                    <span style="font-weight:500; color:#1a2332;">{{ $student->name }}</span>
+                                    <span style="font-weight:500; color:var(--text-dark);">{{ $student->name }}</span>
                                 </div>
                             </td>
-                            <td style="color:#6b7a8f; font-size:0.75rem;">{{ $student->email }}</td>
-                            <td style="text-align:center; font-weight:600; color:#1a2332; font-size:0.9rem;">
-                                {{ $coursesCount }}</td>
+                            <td style="color:var(--text-gray); font-size:0.75rem;">{{ $student->email }}</td>
+                            <td style="text-align:center; font-weight:600; color:var(--text-dark); font-size:0.9rem;">
+                                {{ $coursesCount }}
+                            </td>
                             <td style="text-align:center;">
                                 <span class="attendance-pill-premium {{ $attendanceClass }}">
                                     {{ number_format($attendance, 1) }}%
@@ -1003,7 +960,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="text-align:center; padding:2.5rem; color:#9ca3af;">
+                            <td colspan="7" style="text-align:center; padding:2.5rem; color:var(--text-gray);">
                                 <div style="font-size:2rem; margin-bottom:0.5rem;">📚</div>
                                 <p style="font-size:0.9rem; margin:0;">No students found in {{ $yearLabel }}</p>
                                 <p style="font-size:0.75rem; margin:0.2rem 0 0;">Students will appear here once enrolled</p>
@@ -1014,7 +971,6 @@
             </table>
         </div>
 
-        <!-- Pagination -->
         <div class="pagination-premium-wrapper">
             <div class="info">
                 <i class="bi bi-info-circle"></i>
@@ -1028,9 +984,6 @@
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- EXPORT CONFIRM DIALOG -->
-    <!-- ============================================================ -->
     <div class="confirm-overlay" id="exportConfirm">
         <div class="confirm-box">
             <div class="icon">📊</div>
@@ -1047,9 +1000,6 @@
         </div>
     </div>
 
-    <!-- ============================================================ -->
-    <!-- MESSAGE MODAL -->
-    <!-- ============================================================ -->
     <div class="message-modal-overlay" id="messageModal">
         <div class="message-modal-box">
             <div class="icon">✉️</div>
@@ -1071,9 +1021,7 @@
     </div>
 
     <script>
-        // ============================================================
-        // SEARCH FUNCTIONALITY
-        // ============================================================
+        // Search
         document.getElementById('searchStudent').addEventListener('keyup', function() {
             const searchTerm = this.value.toLowerCase();
             const rows = document.querySelectorAll('#studentTable tbody tr');
@@ -1084,9 +1032,7 @@
             });
         });
 
-        // ============================================================
-        // EXPORT CONFIRM
-        // ============================================================
+        // Export
         function showExportConfirm() {
             document.getElementById('exportConfirm').classList.add('show');
         }
@@ -1103,9 +1049,7 @@
             }
         });
 
-        // ============================================================
-        // MESSAGE MODAL (WITH AJAX)
-        // ============================================================
+        // Message
         function openMessageModal(studentName, studentId, studentEmail) {
             document.getElementById('recipientId').value = studentId;
             document.getElementById('messageRecipient').innerHTML = 'To: <strong>' + studentName + ' (' + studentEmail +
@@ -1139,14 +1083,11 @@
                 return;
             }
 
-            // Disable button and show loading
             sendBtn.disabled = true;
             sendBtn.innerHTML = '<i class="bi bi-hourglass"></i> Sending...';
 
-            // Get CSRF token
             const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-            // Send AJAX request
             fetch('{{ route('admin.messages.send') }}', {
                     method: 'POST',
                     headers: {
@@ -1169,7 +1110,6 @@
                         sendBtn.innerHTML = '<i class="bi bi-check"></i> Sent!';
                         sendBtn.disabled = true;
 
-                        // Close modal after 2 seconds
                         setTimeout(() => {
                             closeMessageModal();
                         }, 2000);
@@ -1204,5 +1144,4 @@
             }
         });
     </script>
-
 @endsection

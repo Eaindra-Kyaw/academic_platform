@@ -9,6 +9,7 @@ use App\Models\Enrollment;
 use App\Models\Course;
 use App\Models\AttendanceSession;
 use App\Models\AttendanceRecord;
+use App\Models\AttendanceEvaluation;
 use App\Models\RiskPrediction;
 use App\Models\AcademicHealthScore;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\DB;
 class AdminController extends Controller
 {
     /**
-     * Display admin dashboard with real-time data
+     * Display admin dashboard with real-time data (KG+12 full risk)
      */
     public function dashboard()
     {
@@ -54,31 +55,41 @@ class AdminController extends Controller
         }
 
         // ============================================
-        // AT-RISK STUDENTS (REAL-TIME)
+        // AT-RISK STUDENTS (from evaluations – full risk)
         // ============================================
 
-        $atRiskStudentIds = Enrollment::where('status', 'approved')
-            ->where(function($q) {
-                $q->where('attendance_percentage', '<', 60)
-                  ->orWhere('eligibility_status', 'warning')
-                  ->orWhere('eligibility_status', 'not_eligible');
-            })
-            ->distinct('student_id')
-            ->pluck('student_id')
-            ->toArray();
+        // Get latest evaluation date for each student
+        $latestEval = AttendanceEvaluation::select('student_id', DB::raw('MAX(evaluation_date) as latest_date'))
+            ->groupBy('student_id')
+            ->pluck('latest_date', 'student_id');
 
+        $atRiskStudentIds = [];
+        foreach ($latestEval as $studentId => $date) {
+            $eval = AttendanceEvaluation::where('student_id', $studentId)
+                ->where('evaluation_date', $date)
+                ->first();
+            if ($eval && ($eval->risk_level === 'Medium' || $eval->risk_level === 'High')) {
+                $atRiskStudentIds[] = $studentId;
+            }
+        }
         $atRiskStudents = count($atRiskStudentIds);
 
         // ============================================
-        // ELIGIBILITY RATE (REAL-TIME)
+        // ELIGIBILITY RATE (from evaluations)
         // ============================================
 
-        $eligibleEnrollments = Enrollment::where('status', 'approved')
+        $eligibleCount = AttendanceEvaluation::whereIn('student_id', function($q) {
+                $q->select('student_id')
+                  ->from('attendance_evaluations')
+                  ->groupBy('student_id')
+                  ->havingRaw('MAX(evaluation_date) = evaluation_date');
+            })
             ->where('eligibility_status', 'eligible')
             ->count();
-        $totalApprovedEnrollments = Enrollment::where('status', 'approved')->count();
-        $eligibilityRate = $totalApprovedEnrollments > 0
-            ? round(($eligibleEnrollments / $totalApprovedEnrollments) * 100)
+
+        $totalEvaluatedStudents = AttendanceEvaluation::distinct('student_id')->count();
+        $eligibilityRate = $totalEvaluatedStudents > 0
+            ? round(($eligibleCount / $totalEvaluatedStudents) * 100)
             : 0;
 
         // ============================================
@@ -142,27 +153,17 @@ class AdminController extends Controller
         });
 
         // ============================================
-        // RISK DISTRIBUTION (REAL-TIME)
+        // RISK DISTRIBUTION (from evaluations)
         // ============================================
 
-        $riskDistribution = [
-            'Low' => 0,
-            'Medium' => 0,
-            'High' => 0,
-        ];
+        $riskDistribution = ['Low' => 0, 'Medium' => 0, 'High' => 0];
 
-        $students = User::where('role_id', 3)->get();
-        foreach ($students as $student) {
-            $avgAttendance = Enrollment::where('student_id', $student->id)
-                ->where('status', 'approved')
-                ->avg('attendance_percentage') ?? 0;
-
-            if ($avgAttendance >= 75) {
-                $riskDistribution['Low']++;
-            } elseif ($avgAttendance >= 60) {
-                $riskDistribution['Medium']++;
-            } elseif ($avgAttendance > 0) {
-                $riskDistribution['High']++;
+        foreach ($latestEval as $studentId => $date) {
+            $eval = AttendanceEvaluation::where('student_id', $studentId)
+                ->where('evaluation_date', $date)
+                ->first();
+            if ($eval && isset($riskDistribution[$eval->risk_level])) {
+                $riskDistribution[$eval->risk_level]++;
             }
         }
 
@@ -273,7 +274,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Store a new user
+     * Store a new user (Admin creates user)
      */
     public function storeUser(Request $request)
     {
@@ -282,35 +283,47 @@ class AdminController extends Controller
             'email' => 'required|email|unique:users,email',
             'role_id' => 'required|in:1,2,3',
             'department_id' => 'nullable|exists:departments,id',
+            'student_id' => 'nullable|string|max:50',
             'current_year' => 'nullable|integer|min:1|max:6',
         ]);
 
-        // Generate a random password
-        $password = Str::random(10);
+        // Validate student ID for students
+        if ($validated['role_id'] == 3 && empty($validated['student_id'])) {
+            return back()->withErrors(['student_id' => 'Student ID is required for students.']);
+        }
+
+        // ✅ Set must_change_password based on role
+        // Admins: false (they already have password), Students/Lecturers: true (must set password)
+        $mustChangePassword = ($validated['role_id'] == 1) ? false : true;
+
+        // Generate a temporary password
+        $tempPassword = Str::random(10);
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make($password),
+            'password' => Hash::make($tempPassword),
             'role_id' => $validated['role_id'],
             'department_id' => $validated['department_id'],
+            'student_id' => $validated['student_id'] ?? null,
             'current_year' => $validated['current_year'] ?? null,
             'is_active' => true,
-            'must_change_password' => true,
+            'must_change_password' => $mustChangePassword,
             'email_verified_at' => now(),
         ]);
 
-        // Generate setup token
+        // ✅ Generate setup token (STORED AS PLAIN TEXT - NOT HASHED)
+        // We use plain text because we compare the token from URL directly
         $token = Str::random(60);
-        \DB::table('password_reset_tokens')->updateOrInsert(
+        DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
             [
-                'token' => $token,
+                'token' => $token, // ✅ Plain text - NOT hashed
                 'created_at' => now(),
             ]
         );
 
-        $setupLink = url('/password/setup/' . $token);
+        $setupLink = url('/password/setup/' . $token . '?email=' . $user->email);
 
         // Log the action
         \App\Models\AuditLog::log(
@@ -326,8 +339,108 @@ class AdminController extends Controller
             'success'
         );
 
+        // Return with enhanced success message and share buttons
         return redirect()->route('admin.users.index')
-            ->with('success', 'User created successfully! <br> Setup link: <a href="' . $setupLink . '" target="_blank">' . $setupLink . '</a>');
+            ->with('success', '
+                <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; border: 2px solid #10b981;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <span style="font-size: 24px;">✅</span>
+                        <strong style="font-size: 18px; color: #166534;">User Created Successfully!</strong>
+                    </div>
+
+                    <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #f59e0b;">
+                        <strong style="color: #92400e;">📋 User Details:</strong><br>
+                        <span style="color: #1f2937;">Name: <strong>' . $user->name . '</strong></span><br>
+                        <span style="color: #1f2937;">Email: <strong>' . $user->email . '</strong></span><br>
+                        <span style="color: #1f2937;">Role: <strong>' . ($user->role->name ?? 'N/A') . '</strong></span>
+                    </div>
+
+                    <div style="background: #ffffff; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #e5e7eb;">
+                        <strong style="color: #800000;">🔗 Password Setup Link:</strong><br>
+                        <input type="text" id="setupLink" value="' . $setupLink . '"
+                               style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;
+                                      background: #f9fafb; font-size: 13px; margin: 8px 0; color: #1f2937; font-family: monospace;" readonly>
+
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                            <button onclick="copyLink()" style="background: #800000; color: white; border: none;
+                                    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                📋 Copy Link
+                            </button>
+                            <button onclick="shareTelegram()" style="background: #0088cc; color: white; border: none;
+                                    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                📱 Telegram
+                            </button>
+                            <button onclick="shareWhatsApp()" style="background: #25D366; color: white; border: none;
+                                    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                📱 WhatsApp
+                            </button>
+                            <button onclick="printLink()" style="background: #6b7280; color: white; border: none;
+                                    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                🖨️ Print
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="background: #eff6ff; padding: 12px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #3b82f6;">
+                        <small style="color: #1e40af; display: block;">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Share Instructions:</strong><br>
+                            1. Click "Telegram" or "WhatsApp" to send the link directly to the user<br>
+                            2. Or copy the link and share via any communication channel<br>
+                            3. User will click the link to set their own password<br>
+                            4. Link expires in 48 hours for security
+                        </small>
+                    </div>
+                </div>
+            ')
+            ->with('user_name', $user->name)
+            ->with('user_email', $user->email)
+            ->with('setup_link', $setupLink);
+    }
+
+    /**
+     * Get setup link for a user (for AJAX requests)
+     */
+    public function getSetupLink($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Generate token if not exists
+        $tokenData = DB::table('password_reset_tokens')
+            ->where('email', $user->email)
+            ->first();
+
+        if (!$tokenData) {
+            $token = Str::random(60);
+            DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $user->email],
+                [
+                    'token' => $token, // ✅ Plain text - NOT hashed
+                    'created_at' => now(),
+                ]
+            );
+        } else {
+            // Regenerate new token
+            $token = Str::random(60);
+            DB::table('password_reset_tokens')
+                ->where('email', $user->email)
+                ->update([
+                    'token' => $token,
+                    'created_at' => now(),
+                ]);
+        }
+
+        $setupLink = url('/password/setup/' . $token . '?email=' . $user->email);
+
+        return response()->json([
+            'success' => true,
+            'link' => $setupLink,
+            'user' => [
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role->name ?? 'N/A'
+            ]
+        ]);
     }
 
     /**
@@ -419,15 +532,15 @@ class AdminController extends Controller
         $user = User::where('email', $request->email)->firstOrFail();
 
         $token = Str::random(60);
-        \DB::table('password_reset_tokens')->updateOrInsert(
+        DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
             [
-                'token' => $token,
+                'token' => $token, // ✅ Plain text - NOT hashed
                 'created_at' => now(),
             ]
         );
 
-        $setupLink = url('/password/setup/' . $token);
+        $setupLink = url('/password/setup/' . $token . '?email=' . $user->email);
 
         return redirect()->back()
             ->with('success', 'Setup link resent! <br> <a href="' . $setupLink . '" target="_blank">' . $setupLink . '</a>');

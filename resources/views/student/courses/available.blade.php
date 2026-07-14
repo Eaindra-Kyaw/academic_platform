@@ -11,28 +11,48 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .year-badge {
-            background: linear-gradient(135deg, #800000 0%, #6b0000 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
             padding: 0.5rem 1rem;
             border-radius: 2rem;
             display: inline-block;
             margin-bottom: 1.5rem;
         }
 
-        /* Search Filter Section */
         .filter-section {
-            background: white;
+            background: var(--white);
             border-radius: 1rem;
             padding: 1.25rem;
             margin-bottom: 1.5rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
         }
 
         .filter-title {
             font-size: 0.85rem;
             font-weight: 700;
-            color: #800000;
+            color: var(--primary);
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
@@ -49,38 +69,40 @@
         .filter-input {
             width: 100%;
             padding: 0.7rem 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.12);
             border-radius: 0.75rem;
             font-size: 0.85rem;
-            background: #f9fafb;
-            transition: all 0.2s;
+            background: var(--bg-main);
+            transition: var(--transition);
         }
 
         .filter-input:focus {
             outline: none;
-            border-color: #800000;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .filter-select {
             width: 100%;
             padding: 0.7rem 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.12);
             border-radius: 0.75rem;
             font-size: 0.85rem;
-            background: #f9fafb;
+            background: var(--bg-main);
             cursor: pointer;
+            transition: var(--transition);
         }
 
         .filter-select:focus {
             outline: none;
-            border-color: #800000;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .btn-filter {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             border: none;
             padding: 0.7rem 1.5rem;
             border-radius: 0.75rem;
@@ -89,18 +111,19 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-filter:hover {
-            background: #9a0000;
+            background: var(--primary-dark);
             transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.25);
         }
 
         .btn-reset {
             background: #f3f4f6;
-            color: #374151;
-            border: 1px solid #e5e7eb;
+            color: var(--text-dark);
+            border: 1px solid rgba(10, 36, 99, 0.1);
             padding: 0.7rem 1.5rem;
             border-radius: 0.75rem;
             font-weight: 600;
@@ -109,7 +132,7 @@
             align-items: center;
             gap: 0.5rem;
             text-decoration: none;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-reset:hover {
@@ -118,7 +141,7 @@
 
         .result-count {
             font-size: 0.8rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-bottom: 1rem;
         }
 
@@ -129,22 +152,23 @@
         }
 
         .course-card {
-            background: white;
+            background: var(--white);
             border-radius: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
         }
 
         .course-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-hover);
         }
 
         .course-header {
-            background: linear-gradient(135deg, #800000 0%, #6b0000 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             padding: 1rem;
-            color: white;
+            color: var(--white);
         }
 
         .course-code {
@@ -167,28 +191,30 @@
             gap: 1rem;
             margin-bottom: 0.75rem;
             font-size: 0.8rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .course-info i {
             width: 20px;
-            color: #800000;
+            color: var(--primary);
         }
 
         .btn-enroll {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             border: none;
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             cursor: pointer;
             width: 100%;
             font-weight: 600;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-enroll:hover {
-            background: #9a0000;
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.2);
         }
 
         .btn-pending {
@@ -203,7 +229,7 @@
         }
 
         .btn-enrolled {
-            background: #dcfce7;
+            background: #d1fae5;
             color: #166534;
             width: 100%;
             padding: 0.5rem 1rem;
@@ -216,11 +242,16 @@
         .empty-state {
             text-align: center;
             padding: 3rem;
-            background: white;
+            background: var(--white);
             border-radius: 1rem;
+            border: 1px solid rgba(10, 36, 99, 0.06);
         }
 
-        /* Modern Pagination Styles */
+        .empty-state i {
+            font-size: 3rem;
+            color: #d1d5db;
+        }
+
         .pagination-wrapper {
             margin-top: 2rem;
             display: flex;
@@ -256,56 +287,45 @@
             font-size: 0.85rem;
             font-weight: 500;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: var(--transition);
             cursor: pointer;
         }
 
         .pagination a {
-            background: white;
-            color: #4b5563;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            color: var(--text-dark);
+            border: 1px solid rgba(10, 36, 99, 0.1);
         }
 
         .pagination a:hover {
-            background: #fef3c7;
-            color: #800000;
-            border-color: #800000;
+            background: rgba(10, 36, 99, 0.05);
+            color: var(--primary);
+            border-color: var(--primary);
             transform: translateY(-2px);
-            box-shadow: 0 2px 8px rgba(128, 0, 0, 0.15);
+            box-shadow: 0 2px 8px rgba(10, 36, 99, 0.15);
         }
 
         .pagination .active span {
-            background: #800000;
-            color: white;
-            border: 1px solid #800000;
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.25);
+            background: var(--primary);
+            color: var(--white);
+            border: 1px solid var(--primary);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.25);
         }
 
         .pagination .disabled span {
-            background: #f9fafb;
+            background: var(--bg-main);
             color: #d1d5db;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             cursor: not-allowed;
             transform: none;
-        }
-
-        .pagination .disabled span:hover {
-            transform: none;
-            box-shadow: none;
-        }
-
-        .pagination a i,
-        .pagination span i {
-            font-size: 1rem;
-            font-weight: bold;
         }
 
         .pagination-info {
             text-align: center;
             font-size: 0.75rem;
-            color: #6b7280;
+            color: var(--text-gray);
             padding: 0.5rem 1rem;
-            background: #f9fafb;
+            background: var(--bg-main);
             border-radius: 2rem;
             display: inline-flex;
             align-items: center;
@@ -313,7 +333,7 @@
         }
 
         .pagination-info i {
-            color: #800000;
+            color: var(--primary);
             font-size: 0.8rem;
         }
 
@@ -355,7 +375,7 @@
 
         @if (session('success'))
             <div
-                style="background: #dcfce7; color: #166534; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                style="background: #d1fae5; color: #166534; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
                 <i class="bi bi-check-circle"></i> {{ session('success') }}
             </div>
         @endif
@@ -367,15 +387,14 @@
             </div>
         @endif
 
-        <!-- Search Filter Section -->
         <div class="filter-section">
-
+            <div class="filter-title"><i class="bi bi-funnel"></i> Filter Courses</div>
             <form method="GET" action="{{ route('student.courses.available') }}">
                 <div class="filter-grid">
                     <input type="text" name="search" class="filter-input"
                         placeholder="🔍 Search by course code, name, or lecturer..." value="{{ request('search') }}">
                     <select name="department" class="filter-select">
-                        <option value="">All Departments (within your year)</option>
+                        <option value="">All Departments</option>
                         @foreach (\App\Models\Department::orderBy('name')->get() as $dept)
                             <option value="{{ $dept->id }}" {{ request('department') == $dept->id ? 'selected' : '' }}>
                                 {{ $dept->code }} - {{ $dept->name }}
@@ -401,23 +420,22 @@
             </form>
         </div>
 
-        <!-- Result Count -->
         <div class="result-count">
             <i class="bi bi-info-circle"></i> Found <strong>{{ $availableCourses->total() }}</strong> courses
             @if (request('search') || request('department') || request('semester'))
-                <span style="color: #800000;">(filtered)</span>
-                <a href="{{ route('student.courses.available') }}" style="color: #800000; margin-left: 0.5rem;">Clear
+                <span style="color: var(--primary);">(filtered)</span>
+                <a href="{{ route('student.courses.available') }}"
+                    style="color: var(--primary); margin-left: 0.5rem;">Clear
                     filters</a>
             @endif
         </div>
 
-        <h3 style="color: #800000; margin-bottom: 1rem;">📚 Available Courses</h3>
+        <h3 style="color: var(--primary); margin-bottom: 1rem;">📚 Available Courses</h3>
 
         @if ($availableCourses->count() > 0)
             <div class="courses-grid">
                 @foreach ($availableCourses as $course)
                     @php
-                        // Check enrollment status for this specific course
                         $enrollment = App\Models\Enrollment::where('student_id', auth()->id())
                             ->where('course_id', $course->id)
                             ->first();
@@ -476,7 +494,6 @@
                 @endforeach
             </div>
 
-            <!-- Modern Pagination -->
             @if ($availableCourses->hasPages())
                 <div class="pagination-wrapper">
                     <ul class="pagination">
@@ -527,7 +544,7 @@
             @endif
         @else
             <div class="empty-state">
-                <i class="bi bi-book" style="font-size: 3rem; color: #9ca3af;"></i>
+                <i class="bi bi-book"></i>
                 <p>No courses available for your department and year.</p>
                 @if (request('search') || request('department') || request('semester'))
                     <a href="{{ route('student.courses.available') }}" class="btn-reset" style="margin-top: 1rem;">Clear
@@ -536,12 +553,4 @@
             </div>
         @endif
     </div>
-
-    <script>
-        function openUniBot() {
-            alert(
-                '🤖 Uni Bot: How can I help you?\n\n- What courses are available?\n- How to enroll?\n- What is my enrollment status?'
-            );
-        }
-    </script>
 @endsection

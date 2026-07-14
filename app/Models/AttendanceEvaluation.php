@@ -9,28 +9,29 @@ class AttendanceEvaluation extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'student_id',
-        'course_id',
-        'attendance_percentage',
-        'roll_call_score',
-        'eligibility_status',
-        'sessions_attended',
-        'total_sessions',
-        'consecutive_absences',
-        'current_streak',
-        'longest_streak',
-        'risk_score',
-        'risk_level',
-        'academic_health_score',
-        'recovery_status',
-        'evaluation_notes',
-        'evaluation_date',
-    ];
+   protected $fillable = [
+    'student_id',
+    'course_id',
+    'total_sessions',
+    'attended_sessions',
+    'attendance_percentage',
+    'consistency_marks',
+    'punctuality_marks',
+    'participation_marks',
+    'roll_call_total',
+    'eligibility_status',
+    'consecutive_absences',
+    'attendance_trend',
+    'risk_score',
+    'risk_level',
+    'risk_factors',
+    'evaluated_at',
+];
 
-    protected $casts = [
-        'evaluation_date' => 'date',
-    ];
+protected $casts = [
+    'risk_factors' => 'array',
+    'evaluated_at' => 'datetime',
+];
 
     // Relationships
     public function student()

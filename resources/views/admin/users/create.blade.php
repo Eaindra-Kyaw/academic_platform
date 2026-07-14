@@ -11,6 +11,23 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .create-wrapper {
             max-width: 700px;
             margin: 0 auto;
@@ -20,21 +37,21 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #6b7a8f;
+            color: var(--text-gray);
             text-decoration: none;
             font-size: 0.85rem;
             margin-bottom: 1.5rem;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .back-link:hover {
-            color: #800000;
+            color: var(--primary);
         }
 
         .create-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e9edf4;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 2rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
@@ -42,18 +59,22 @@
         .create-card .header {
             margin-bottom: 1.5rem;
             padding-bottom: 0.75rem;
-            border-bottom: 1px solid #e9edf4;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .create-card .header h2 {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #1a2332;
+            color: var(--text-dark);
             margin: 0;
         }
 
+        .create-card .header h2 i {
+            color: var(--primary);
+        }
+
         .create-card .header p {
-            color: #6b7280;
+            color: var(--text-gray);
             font-size: 0.85rem;
             margin: 0.1rem 0 0;
         }
@@ -66,29 +87,38 @@
             display: block;
             font-weight: 600;
             font-size: 0.8rem;
-            color: #1a2332;
+            color: var(--text-dark);
             margin-bottom: 0.2rem;
         }
 
         .form-group label .required {
-            color: #ef4444;
+            color: var(--danger);
+        }
+
+        .form-group label .field-hint {
+            font-weight: 400;
+            color: var(--text-gray);
+            font-size: 0.7rem;
         }
 
         .form-group input,
         .form-group select {
             width: 100%;
             padding: 0.5rem 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.4rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 8px;
             font-size: 0.85rem;
-            transition: all 0.2s;
+            transition: var(--transition);
+            background: #fafbfc;
+            font-family: 'Inter', sans-serif;
         }
 
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #800000;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .form-row {
@@ -97,54 +127,60 @@
             gap: 1rem;
         }
 
+        .help-text {
+            font-size: 0.65rem;
+            color: var(--text-gray);
+            margin-top: 0.2rem;
+        }
+
+        .error-text {
+            color: var(--danger);
+            font-size: 0.7rem;
+            margin-top: 0.2rem;
+        }
+
         .btn-submit {
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             border: none;
             padding: 0.5rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 8px;
             font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             width: 100%;
             margin-top: 0.5rem;
         }
 
         .btn-submit:hover {
-            background: #5f0000;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.25);
         }
 
         .btn-cancel {
             background: #f3f4f6;
-            color: #374151;
+            color: var(--text-dark);
             border: none;
             padding: 0.5rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 8px;
             font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
             text-align: center;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-cancel:hover {
             background: #e5e7eb;
         }
 
-        .help-text {
-            font-size: 0.65rem;
-            color: #6b7280;
-            margin-top: 0.2rem;
-        }
-
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
+                gap: 0;
             }
 
             .create-card {
@@ -160,9 +196,19 @@
 
         <div class="create-card">
             <div class="header">
-                <h2><i class="bi bi-person-plus" style="color:#800000;"></i> Create New User</h2>
+                <h2><i class="bi bi-person-plus"></i> Create New User</h2>
                 <p>Fill in the details to create a new user account</p>
             </div>
+
+            @if ($errors->any())
+                <div
+                    style="background:var(--danger-light); color:#991b1b; padding:12px; border-radius:8px; margin-bottom:1.5rem; border-left:4px solid var(--danger);">
+                    @foreach ($errors->all() as $error)
+                        <p style="margin:2px 0; font-size:0.85rem;"><i class="bi bi-exclamation-triangle-fill"></i>
+                            {{ $error }}</p>
+                    @endforeach
+                </div>
+            @endif
 
             <form method="POST" action="{{ route('admin.users.store') }}">
                 @csrf
@@ -173,7 +219,7 @@
                         <input type="text" name="name" placeholder="Enter full name" value="{{ old('name') }}"
                             required>
                         @error('name')
-                            <div style="color:#ef4444; font-size:0.7rem; margin-top:0.2rem;">{{ $message }}</div>
+                            <div class="error-text">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="form-group">
@@ -181,7 +227,7 @@
                         <input type="email" name="email" placeholder="Enter email address" value="{{ old('email') }}"
                             required>
                         @error('email')
-                            <div style="color:#ef4444; font-size:0.7rem; margin-top:0.2rem;">{{ $message }}</div>
+                            <div class="error-text">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
@@ -195,12 +241,12 @@
                             <option value="1" {{ old('role_id') == 1 ? 'selected' : '' }}>Admin</option>
                         </select>
                         @error('role_id')
-                            <div style="color:#ef4444; font-size:0.7rem; margin-top:0.2rem;">{{ $message }}</div>
+                            <div class="error-text">{{ $message }}</div>
                         @enderror
                     </div>
                     <div class="form-group">
-                        <label>Department</label>
-                        <select name="department_id">
+                        <label>Department <span class="required" id="deptRequired">*</span></label>
+                        <select name="department_id" id="departmentSelect">
                             <option value="">Select Department</option>
                             @foreach ($departments as $dept)
                                 <option value="{{ $dept->id }}"
@@ -210,7 +256,31 @@
                             @endforeach
                         </select>
                         @error('department_id')
-                            <div style="color:#ef4444; font-size:0.7rem; margin-top:0.2rem;">{{ $message }}</div>
+                            <div class="error-text">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div id="studentFields" style="display: {{ old('role_id', 3) == 3 ? 'block' : 'none' }};">
+                    <div class="form-group">
+                        <label>Student ID <span class="required">*</span></label>
+                        <input type="text" name="student_id" placeholder="Enter student ID (e.g., CS-2024-001)"
+                            value="{{ old('student_id') }}">
+                        <div class="help-text">Required for students - Format: Department-Year-Number</div>
+                        @error('student_id')
+                            <div class="error-text">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div id="lecturerFields" style="display: {{ old('role_id') == 2 ? 'block' : 'none' }};">
+                    <div class="form-group">
+                        <label>Specialization <span class="field-hint">(Optional)</span></label>
+                        <input type="text" name="specialization" placeholder="e.g., Computer Science, Mathematics"
+                            value="{{ old('specialization') }}">
+                        <div class="help-text">For lecturers</div>
+                        @error('specialization')
+                            <div class="error-text">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
@@ -229,14 +299,14 @@
                     </select>
                     <div class="help-text">Required for students</div>
                     @error('current_year')
-                        <div style="color:#ef4444; font-size:0.7rem; margin-top:0.2rem;">{{ $message }}</div>
+                        <div class="error-text">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div style="display:flex; gap:0.5rem; margin-top:1.5rem;">
                     <a href="{{ route('admin.users.index') }}" class="btn-cancel" style="flex:1;">Cancel</a>
                     <button type="submit" class="btn-submit" style="flex:2;">
-                        <i class="bi bi-envelope"></i> Create Account & Send Invitation
+                        <i class="bi bi-person-plus"></i> Create Account
                     </button>
                 </div>
             </form>
@@ -246,18 +316,42 @@
     <script>
         const roleSelect = document.getElementById('roleSelect');
         const yearField = document.getElementById('yearField');
+        const studentFields = document.getElementById('studentFields');
+        const lecturerFields = document.getElementById('lecturerFields');
+        const deptRequired = document.getElementById('deptRequired');
+        const departmentSelect = document.getElementById('departmentSelect');
 
-        function toggleYearField() {
-            if (roleSelect.value == '3') {
+        function toggleFields() {
+            const roleId = roleSelect.value;
+
+            yearField.style.display = 'none';
+            studentFields.style.display = 'none';
+            lecturerFields.style.display = 'none';
+
+            if (roleId == '3') {
                 yearField.style.display = 'block';
+                studentFields.style.display = 'block';
+                lecturerFields.style.display = 'none';
+                deptRequired.textContent = '*';
+                document.querySelector('label[for="departmentSelect"]')?.textContent = 'Department *';
+            } else if (roleId == '2') {
+                yearField.style.display = 'none';
+                studentFields.style.display = 'none';
+                lecturerFields.style.display = 'block';
+                deptRequired.textContent = '*';
+                document.querySelector('label[for="departmentSelect"]')?.textContent = 'Department *';
             } else {
                 yearField.style.display = 'none';
+                studentFields.style.display = 'none';
+                lecturerFields.style.display = 'none';
+                deptRequired.textContent = '';
+                document.querySelector('label[for="departmentSelect"]')?.textContent = 'Department';
             }
         }
 
         if (roleSelect) {
-            roleSelect.addEventListener('change', toggleYearField);
-            toggleYearField();
+            roleSelect.addEventListener('change', toggleFields);
+            toggleFields();
         }
     </script>
 @endsection

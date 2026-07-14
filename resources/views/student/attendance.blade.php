@@ -3,7 +3,7 @@
 @section('title', 'My Attendance')
 @section('role', 'Student')
 @section('page-title', '📊 My Attendance')
-@section('welcome-text', 'View your attendance records')
+@section('welcome-text', 'Track your attendance across all courses with roll call breakdown')
 
 @section('sidebar')
     @include('layouts.partials.student-sidebar')
@@ -11,6 +11,30 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -19,108 +43,133 @@
         }
 
         .stat-card {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary);
         }
 
         .stat-number {
             font-size: 1.8rem;
-            font-weight: 800;
+            font-weight: 700;
+            color: var(--primary);
         }
 
         .stat-number.green {
-            color: #10b981;
+            color: var(--success);
         }
 
         .stat-number.yellow {
-            color: #f59e0b;
+            color: var(--warning);
         }
 
         .stat-number.red {
-            color: #ef4444;
-        }
-
-        .stat-number.blue {
-            color: #3b82f6;
+            color: var(--danger);
         }
 
         .stat-label {
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .course-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+        .course-list {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             overflow: hidden;
-            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
         }
 
-        .course-card-header {
+        .course-list .header {
             padding: 0.75rem 1rem;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
+            background: var(--bg-main);
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
+            font-weight: 700;
+            color: var(--primary);
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .course-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
+            transition: var(--transition);
             flex-wrap: wrap;
             gap: 0.5rem;
         }
 
-        .course-card-header .course-code {
-            font-weight: 700;
-            color: #1f2937;
-            font-size: 1rem;
+        .course-item:last-child {
+            border-bottom: none;
         }
 
-        .course-card-header .course-name {
-            font-size: 0.85rem;
-            color: #6b7280;
+        .course-item:hover {
+            background: var(--bg-main);
         }
 
-        .course-card-body {
-            padding: 0.75rem 1rem;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.5rem;
-            text-align: center;
+        .course-item .course-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-dark);
         }
 
-        .course-stat {
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            background: #f8fafc;
+        .course-item .course-code {
+            font-size: 0.65rem;
+            color: var(--text-gray);
         }
 
-        .course-stat .value {
-            font-size: 1.2rem;
-            font-weight: 700;
+        .attendance-pill {
+            padding: 0.2rem 0.7rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
         }
 
-        .course-stat .label {
-            font-size: 0.6rem;
-            color: #6b7280;
-            text-transform: uppercase;
+        .attendance-pill.high {
+            background: var(--success-light);
+            color: #166534;
         }
 
-        .course-stat .value.green {
-            color: #10b981;
+        .attendance-pill.medium {
+            background: var(--warning-light);
+            color: #92400e;
         }
 
-        .course-stat .value.yellow {
-            color: #f59e0b;
+        .attendance-pill.low {
+            background: var(--danger-light);
+            color: #991b1b;
         }
 
-        .course-stat .value.red {
-            color: #ef4444;
+        .progress-bar-custom {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 0.25rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s ease;
         }
 
         .badge-eligible {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
             padding: 0.2rem 0.6rem;
             border-radius: 20px;
@@ -128,15 +177,15 @@
         }
 
         .badge-warning {
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--warning-light);
+            color: #854d0e;
             padding: 0.2rem 0.6rem;
             border-radius: 20px;
             font-size: 0.7rem;
         }
 
-        .badge-risk {
-            background: #fee2e2;
+        .badge-not_eligible {
+            background: var(--danger-light);
             color: #991b1b;
             padding: 0.2rem 0.6rem;
             border-radius: 20px;
@@ -144,7 +193,7 @@
         }
 
         .badge-low {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
             padding: 0.2rem 0.6rem;
             border-radius: 20px;
@@ -152,121 +201,48 @@
         }
 
         .badge-medium {
-            background: #fef3c7;
-            color: #92400e;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
+            background: var(--warning-light);
+            color: #854d0e;
         }
 
         .badge-high {
-            background: #fee2e2;
-            color: #991b1b;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-        }
-
-        .attendance-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-        }
-
-        .attendance-table th {
-            padding: 0.5rem 0.75rem;
-            text-align: left;
-            background: #f9fafb;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            color: #6b7280;
-            font-weight: 600;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .attendance-table td {
-            padding: 0.5rem 0.75rem;
-            border-bottom: 1px solid #f3f4f6;
-            vertical-align: middle;
-        }
-
-        .attendance-table tr:hover {
-            background: #fafafa;
-        }
-
-        .status-badge {
-            padding: 0.15rem 0.6rem;
-            border-radius: 12px;
-            font-size: 0.65rem;
-            font-weight: 600;
-        }
-
-        .status-badge.present {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .status-badge.late {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-badge.absent {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
         }
 
-        .status-badge.manual {
-            background: #dbeafe;
-            color: #1e40af;
+        .rollcall-mini {
+            display: flex;
+            gap: 0.3rem;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: var(--text-gray);
         }
 
-        .progress-bar {
-            height: 4px;
-            background: #e5e7eb;
-            border-radius: 4px;
-            overflow: hidden;
-            margin-top: 0.25rem;
+        .rollcall-mini span {
+            background: var(--gray-100);
+            padding: 0.05rem 0.4rem;
+            border-radius: 10px;
         }
 
-        .progress-bar .fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
+        .rollcall-mini .total {
+            background: rgba(10, 36, 99, 0.08);
+            font-weight: 700;
+            color: var(--primary);
         }
 
-        .progress-bar .fill.green {
-            background: #10b981;
-        }
-
-        .progress-bar .fill.yellow {
-            background: #f59e0b;
-        }
-
-        .progress-bar .fill.red {
-            background: #ef4444;
-        }
-
-        .overview-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
+        .empty-state {
             text-align: center;
+            padding: 2rem;
+            color: var(--text-gray);
         }
 
-        .overview-item .value {
-            font-size: 1.5rem;
-            font-weight: 800;
+        .empty-state i {
+            font-size: 2rem;
+            color: #d1d5db;
         }
 
-        .overview-item .label {
-            font-size: 0.7rem;
-            color: #6b7280;
+        .empty-state p {
+            font-size: 0.85rem;
         }
 
         @media (max-width: 768px) {
@@ -274,12 +250,10 @@
                 grid-template-columns: 1fr 1fr;
             }
 
-            .course-card-body {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .overview-card {
-                grid-template-columns: 1fr 1fr;
+            .course-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
             }
         }
 
@@ -287,226 +261,102 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-
-            .course-card-body {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .overview-card {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .course-card-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
         }
     </style>
 
-    <div>
-        <!-- Overall Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number blue">{{ $totalSessions ?? 0 }}</div>
-                <div class="stat-label">📋 Total Records</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number green">{{ $presentSessions ?? 0 }}</div>
-                <div class="stat-label">✅ Present</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number yellow">{{ $lateSessions ?? 0 }}</div>
-                <div class="stat-label">⏰ Late</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number red">{{ $absentSessions ?? 0 }}</div>
-                <div class="stat-label">❌ Absent</div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ $overallAttendance ?? 0 }}%</div>
+            <div class="stat-label">Overall Attendance</div>
+            <div class="progress-bar-custom mt-1">
+                @php
+                    $att = $overallAttendance ?? 0;
+                    $attClass = $att >= 75 ? 'success' : ($att >= 60 ? 'warning' : 'danger');
+                @endphp
+                <div class="progress-fill {{ $attClass }}" style="width:{{ $att }}%"></div>
             </div>
         </div>
 
-        <!-- Overall Attendance Overview -->
-        <div class="overview-card">
-            <div class="overview-item">
-                <div
-                    class="value {{ ($overallAttendance ?? 0) >= 75 ? 'green' : (($overallAttendance ?? 0) >= 60 ? 'yellow' : 'red') }}">
-                    {{ number_format($overallAttendance ?? 0, 1) }}%
-                </div>
-                <div class="label">Overall Attendance</div>
-                <div class="progress-bar">
-                    <div class="fill {{ ($overallAttendance ?? 0) >= 75 ? 'green' : (($overallAttendance ?? 0) >= 60 ? 'yellow' : 'red') }}"
-                        style="width: {{ min($overallAttendance ?? 0, 100) }}%;"></div>
-                </div>
-            </div>
-            <div class="overview-item">
-                <div class="value">{{ number_format($overallRollCall ?? 0, 1) }}/10</div>
-                <div class="label">Overall Roll Call</div>
-            </div>
-            <div class="overview-item">
-                <div class="value">
-                    @php
-                        $eligibilityStatus =
-                            ($overallAttendance ?? 0) >= 75
-                                ? '✅ Eligible'
-                                : (($overallAttendance ?? 0) >= 60
-                                    ? '⚠️ Warning'
-                                    : '❌ At Risk');
-                        $eligibilityClass =
-                            ($overallAttendance ?? 0) >= 75
-                                ? 'badge-eligible'
-                                : (($overallAttendance ?? 0) >= 60
-                                    ? 'badge-warning'
-                                    : 'badge-risk');
-                    @endphp
-                    <span class="{{ $eligibilityClass }}">{{ $eligibilityStatus }}</span>
-                </div>
-                <div class="label">Eligibility Status</div>
-            </div>
-            <div class="overview-item">
-                <div class="value">
-                    @php
-                        $riskLevel =
-                            ($overallAttendance ?? 0) >= 75
-                                ? 'Low'
-                                : (($overallAttendance ?? 0) >= 60
-                                    ? 'Medium'
-                                    : 'High');
-                        $riskClass = strtolower($riskLevel);
-                    @endphp
-                    <span class="badge-{{ $riskClass }}">{{ $riskLevel }} Risk</span>
-                </div>
-                <div class="label">Risk Level</div>
-            </div>
+        <div class="stat-card">
+            <div class="stat-number green">{{ $presentCount ?? 0 }}</div>
+            <div class="stat-label">✅ Present</div>
         </div>
 
-        <!-- Course Summary Cards -->
-        <h5 style="margin-bottom: 0.75rem; font-weight: 700; color: #1f2937;">📚 Course Summary</h5>
+        <div class="stat-card">
+            <div class="stat-number yellow">{{ $lateCount ?? 0 }}</div>
+            <div class="stat-label">⏰ Late</div>
+        </div>
 
-        @forelse($courseSummary ?? [] as $course)
-            <div class="course-card">
-                <div class="course-card-header">
+        <div class="stat-card">
+            <div class="stat-number red">{{ $absentCount ?? 0 }}</div>
+            <div class="stat-label">❌ Absent</div>
+        </div>
+    </div>
+
+    <!-- Course Attendance with Roll Call Breakdown -->
+    <div class="course-list">
+        <div class="header">
+            <span><i class="bi bi-book"></i> Course Attendance & Roll Call</span>
+            <span style="font-size:0.7rem; color:var(--text-gray); font-weight:400;">
+                {{ isset($courseData) ? count($courseData) : 0 }} courses
+            </span>
+        </div>
+
+        @if (isset($courseData) && count($courseData) > 0)
+            @foreach ($courseData as $data)
+                @php
+                    $attendance = $data['attendance'] ?? 0;
+                    $attClass = $attendance >= 75 ? 'high' : ($attendance >= 60 ? 'medium' : 'low');
+                    $color =
+                        $attendance >= 75 ? 'var(--success)' : ($attendance >= 60 ? 'var(--warning)' : 'var(--danger)');
+                    $eligibility = $data['eligibility'] ?? 'not_eligible';
+                    $eligLabels = [
+                        'eligible' => ['label' => 'Eligible', 'class' => 'eligible'],
+                        'warning' => ['label' => 'Warning', 'class' => 'warning'],
+                        'not_eligible' => ['label' => 'Not Eligible', 'class' => 'not_eligible'],
+                    ];
+                    $elig = $eligLabels[$eligibility] ?? $eligLabels['not_eligible'];
+                    $riskLevel = $data['risk_level'] ?? 'Low';
+                    $riskClass = strtolower($riskLevel);
+                    $course = $data['course'] ?? null;
+                @endphp
+                <div class="course-item">
                     <div>
-                        <span class="course-code">{{ $course->course_code }}</span>
-                        <span class="course-name">{{ $course->course_name }}</span>
+                        <div class="course-name">{{ $course->course_name ?? 'Unknown' }}</div>
+                        <div class="course-code">{{ $course->course_code ?? 'N/A' }}</div>
                     </div>
-                    <div>
-                        @php
-                            $eligStatus = $course->eligibility_status ?? 'N/A';
-                            $eligClass =
-                                $eligStatus == 'Eligible'
-                                    ? 'badge-eligible'
-                                    : ($eligStatus == 'Warning'
-                                        ? 'badge-warning'
-                                        : 'badge-risk');
-                        @endphp
-                        <span class="{{ $eligClass }}">{{ $eligStatus }}</span>
+
+                    <div style="text-align:center; min-width:100px;">
+                        <span class="attendance-pill {{ $attClass }}">
+                            {{ number_format($attendance, 1) }}%
+                        </span>
+                        <div class="progress-bar-custom mt-1">
+                            <div class="progress-fill {{ $attClass }}"
+                                style="width:{{ $attendance }}%; background:{{ $color }};"></div>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center; min-width:120px;">
+                        <span style="font-weight:700; font-size:0.9rem;">{{ $data['roll_call_total'] ?? 0 }}/10</span>
+                        <div class="rollcall-mini">
+                            <span>C:{{ $data['consistency'] ?? 0 }}</span>
+                            <span>P:{{ $data['punctuality'] ?? 0 }}</span>
+                            <span>R:{{ $data['participation'] ?? 0 }}</span>
+                            <span class="total">{{ $data['roll_call_total'] ?? 0 }}</span>
+                        </div>
+                    </div>
+
+                    <div style="text-align:center;">
+                        <span class="badge-{{ $elig['class'] }}">{{ $elig['label'] }}</span>
+                        <br>
+                        <span class="badge-{{ $riskClass }}" style="font-size:0.6rem;">{{ $riskLevel }}</span>
                     </div>
                 </div>
-                <div class="course-card-body">
-                    <div class="course-stat">
-                        <div
-                            class="value {{ ($course->attendance_percentage ?? 0) >= 75 ? 'green' : (($course->attendance_percentage ?? 0) >= 60 ? 'yellow' : 'red') }}">
-                            {{ number_format($course->attendance_percentage ?? 0, 1) }}%
-                        </div>
-                        <div class="label">Attendance</div>
-                        <div class="progress-bar">
-                            <div class="fill {{ ($course->attendance_percentage ?? 0) >= 75 ? 'green' : (($course->attendance_percentage ?? 0) >= 60 ? 'yellow' : 'red') }}"
-                                style="width: {{ min($course->attendance_percentage ?? 0, 100) }}%;"></div>
-                        </div>
-                    </div>
-                    <div class="course-stat">
-                        <div class="value">{{ number_format($course->roll_call_mark ?? 0, 1) }}/10</div>
-                        <div class="label">Roll Call</div>
-                    </div>
-                    <div class="course-stat">
-                        <div class="value">
-                            @php
-                                $risk = $course->risk_level ?? 'Low';
-                                $riskClass = strtolower($risk);
-                            @endphp
-                            <span class="badge-{{ $riskClass }}">{{ $risk }}</span>
-                        </div>
-                        <div class="label">Risk Level</div>
-                    </div>
-                    <div class="course-stat">
-                        <div class="value">{{ $course->sessions ?? 0 }}</div>
-                        <div class="label">Sessions</div>
-                        <div style="font-size:0.65rem; color:#6b7280;">
-                            P: {{ $course->present_count ?? 0 }}
-                            L: {{ $course->late_count ?? 0 }}
-                            A: {{ $course->absent_count ?? 0 }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @empty
-            <div style="text-align:center; padding:2rem; color:#9ca3af;">
-                <i class="bi bi-inbox" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
-                No attendance records found.
-            </div>
-        @endforelse
-
-        <!-- Attendance Records Table -->
-        <h5 style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-weight: 700; color: #1f2937;">
-            📋 Attendance Records
-            <span style="font-size: 0.8rem; font-weight: 400; color: #6b7280;">Total: {{ $records->total() ?? 0 }}
-                records</span>
-        </h5>
-
-        <div style="overflow-x: auto; background: white; border-radius: 0.75rem; border: 1px solid #e5e7eb;">
-            <table class="attendance-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Course</th>
-                        <th>Status</th>
-                        <th>Time</th>
-                        <th>Method</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($records ?? [] as $record)
-                        <tr>
-                            <td>
-                                {{ $record->scanned_at ? \Carbon\Carbon::parse($record->scanned_at)->format('d M Y') : 'N/A' }}
-                            </td>
-                            <td>
-                                <strong>{{ $record->session->course->course_code ?? 'N/A' }}</strong>
-                                <br>
-                                <small
-                                    style="color: #6b7280; font-size: 0.7rem;">{{ $record->session->course->course_name ?? 'N/A' }}</small>
-                            </td>
-                            <td>
-                                <span class="status-badge {{ $record->status ?? 'absent' }}">
-                                    {{ ucfirst($record->status ?? 'N/A') }}
-                                </span>
-                            </td>
-                            <td style="color: #6b7280; font-size: 0.75rem;">
-                                {{ $record->scanned_at ? \Carbon\Carbon::parse($record->scanned_at)->format('h:i A') : 'N/A' }}
-                            </td>
-                            <td>
-                                @if ($record->is_manual ?? false)
-                                    <span class="status-badge manual">Manual</span>
-                                @else
-                                    <span style="font-size:0.65rem; color:#6b7280;">QR Scan</span>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" style="text-align:center; padding:2rem; color:#9ca3af;">
-                                <i class="bi bi-inbox" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
-                                No attendance records found.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        @if (isset($records) && $records->hasPages())
-            <div style="margin-top: 1rem; display: flex; justify-content: center;">
-                {{ $records->links() }}
+            @endforeach
+        @else
+            <div class="empty-state">
+                <i class="bi bi-book"></i>
+                <p>No courses enrolled yet</p>
             </div>
         @endif
     </div>

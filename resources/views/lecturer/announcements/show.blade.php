@@ -12,44 +12,63 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #800000;
+            color: var(--primary);
             text-decoration: none;
             font-weight: 500;
             margin-bottom: 1rem;
             padding: 0.5rem 1rem;
-            background: #fef7f7;
-            border-radius: 0.5rem;
-            border: 1px solid #fde2e2;
-            transition: all 0.2s;
+            background: rgba(10, 36, 99, 0.05);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            transition: var(--transition);
         }
 
         .back-link:hover {
-            background: #fde2e2;
+            background: rgba(10, 36, 99, 0.08);
             text-decoration: none;
-            color: #800000;
+            color: var(--primary);
         }
 
         .announcement-detail {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 2rem;
+            box-shadow: var(--shadow);
         }
 
         .announcement-detail .title {
             font-size: 1.5rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
             margin-bottom: 0.5rem;
         }
 
         .announcement-detail .content {
             font-size: 0.95rem;
-            color: #1f2937;
+            color: var(--text-dark);
             line-height: 1.8;
             white-space: pre-wrap;
             margin: 1.5rem 0;
@@ -60,9 +79,9 @@
             gap: 1.5rem;
             flex-wrap: wrap;
             font-size: 0.8rem;
-            color: #6b7280;
+            color: var(--text-gray);
             padding-top: 1rem;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
             margin-top: 1rem;
         }
 
@@ -76,7 +95,7 @@
 
         .badge-all {
             background: #e5e7eb;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         .badge-lecturer {
@@ -90,7 +109,7 @@
         }
 
         .badge-active {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
@@ -99,18 +118,18 @@
             align-items: center;
             gap: 0.3rem;
             padding: 0.3rem 0.8rem;
-            border-radius: 0.3rem;
+            border-radius: 8px;
             font-size: 0.75rem;
             font-weight: 500;
             background: #f3f4f6;
-            color: #374151;
+            color: var(--text-dark);
             text-decoration: none;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-back:hover {
             background: #e5e7eb;
-            color: #374151;
+            color: var(--text-dark);
             text-decoration: none;
         }
 
@@ -130,11 +149,13 @@
         }
     </style>
 
-    <a href="{{ route('lecturer.announcements.index') }}" class="back-link">
+    {{-- Use route('lecturer.announcements') - the index route --}}
+    <a href="{{ route('lecturer.announcements') }}" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to Announcements
     </a>
 
     <div class="announcement-detail">
+        {{-- Use $announcement (singular) - NOT $announcements --}}
         <h1 class="title">{{ $announcement->title }}</h1>
 
         <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.5rem;">

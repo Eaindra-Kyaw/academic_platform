@@ -10,8 +10,11 @@ use App\Models\Enrollment;
 use App\Models\User;
 use App\Models\AuditLog;
 use App\Models\TimetableEntry;
+use App\Models\AttendanceEvaluation;
+use App\Helpers\AttendanceHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class AttendanceController extends Controller
@@ -19,19 +22,52 @@ class AttendanceController extends Controller
     /**
      * Take Attendance - Shows QR scanner and current active session
      */
-    public function takeAttendance()
+    public function takeAttendance(Request $request)
     {
         $lecturer = Auth::user();
 
         $courses = Course::where('lecturer_id', $lecturer->id)
             ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
             ->where('is_active', true)
-            ->get();
+            ->get()
+            ->unique('id');
+
+        if ($request->has('back')) {
+            session(['show_create_form' => true]);
+            return redirect()->route('lecturer.attendance.take')
+                ->with('info', 'Returned to main page. Your QR session is still active.');
+        }
+
+        if ($request->has('session')) {
+            session()->forget('show_create_form');
+            $sessionId = $request->session;
+            $session = AttendanceSession::where('lecturer_id', $lecturer->id)
+                ->where('id', $sessionId)
+                ->first();
+            if ($session) {
+                $session->status = 'active';
+                $session->started_at = Carbon::now();
+                $session->save();
+                return redirect()->route('lecturer.attendance.take')
+                    ->with('success', 'Loaded semester QR for: ' . ($session->course->course_name ?? 'Unknown'));
+            }
+        }
 
         $activeSession = AttendanceSession::where('lecturer_id', $lecturer->id)
             ->where('status', 'active')
             ->with(['course', 'records.student'])
             ->first();
+
+        if (session('viewing_session_id')) {
+            $viewingSession = AttendanceSession::where('lecturer_id', $lecturer->id)
+                ->where('id', session('viewing_session_id'))
+                ->where('status', 'active')
+                ->with(['course', 'records.student'])
+                ->first();
+            if ($viewingSession) {
+                $activeSession = $viewingSession;
+            }
+        }
 
         if ($activeSession && is_null($activeSession->qr_expires_at)) {
             $activeSession->qr_expires_at = Carbon::now()->addMinutes($activeSession->duration ?? 30);
@@ -47,16 +83,27 @@ class AttendanceController extends Controller
             ? Carbon::now()->diffInSeconds($activeSession->qr_expires_at)
             : 0;
 
+        $existingStaticQrs = AttendanceSession::where('lecturer_id', $lecturer->id)
+            ->where('qr_mode', 'semester')
+            ->where('status', 'active')
+            ->with('course')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $showCreateForm = session('show_create_form', false);
+
         return view('lecturer.attendance.take-attendance', compact(
             'courses',
             'activeSession',
             'students',
-            'expiresIn'
+            'expiresIn',
+            'existingStaticQrs',
+            'showCreateForm'
         ));
     }
 
     /**
-     * Session History - Shows all past and active sessions with statistics
+     * Session History
      */
     public function sessions()
     {
@@ -95,7 +142,48 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Create a new attendance session - FULLY FIXED
+     * Display all attendance records for lecturer's courses
+     */
+    public function allRecords(Request $request)
+    {
+        $lecturer = Auth::user();
+
+        $courses = Course::where('lecturer_id', $lecturer->id)
+            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+            ->where('is_active', true)
+            ->get()
+            ->unique('id');
+
+        $courseIds = $courses->pluck('id')->toArray();
+
+        $query = AttendanceRecord::whereHas('session', function($q) use ($courseIds) {
+            $q->whereIn('course_id', $courseIds);
+        })->with(['session.course', 'student']);
+
+        if ($request->filled('course_id')) {
+            $query->whereHas('session', function($q) use ($request) {
+                $q->where('course_id', $request->course_id);
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $records = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        return view('lecturer.attendance.all-records', compact('records', 'courses'));
+    }
+
+    /**
+     * Create a new attendance session
      */
     public function createSession(Request $request)
     {
@@ -125,14 +213,15 @@ class AttendanceController extends Controller
                     'course_id' => $course->id,
                     'course_name' => $course->course_name,
                     'session_id' => $existingSession->id,
-                    'reason' => 'New session started',
+                    'reason' => 'New session started for this course',
                 ],
                 $existingSession,
                 'success'
             );
         }
 
-        // Get period count from timetable
+        session()->forget('show_create_form');
+
         $periodCount = 4;
         $timetable = TimetableEntry::where('course_id', $course->id)
             ->where('is_active', true)
@@ -207,7 +296,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * End an active attendance session
+     * End an active attendance session – also recalculates evaluations
      */
     public function endSession($id)
     {
@@ -218,6 +307,9 @@ class AttendanceController extends Controller
         $session->status = 'ended';
         $session->ended_at = Carbon::now();
         $session->save();
+
+        session()->forget('show_create_form');
+        session()->forget('viewing_session_id');
 
         $present = AttendanceRecord::where('attendance_session_id', $session->id)
             ->where('status', 'present')
@@ -245,7 +337,122 @@ class AttendanceController extends Controller
             'success'
         );
 
-        return redirect()->back()->with('success', 'Attendance session ended successfully.');
+        $this->recalculateCourseEvaluations($session->course_id);
+
+        return redirect()->route('lecturer.attendance.take')
+            ->with('success', 'QR session ended. Attendance evaluations updated with KG+12 calculations.');
+    }
+
+    /**
+     * Recalculate KG+12 evaluations for all students in a course.
+     */
+    private function recalculateCourseEvaluations($courseId)
+    {
+        $enrollments = Enrollment::where('course_id', $courseId)
+            ->where('status', 'approved')
+            ->with('student')
+            ->get();
+
+        if ($enrollments->isEmpty()) {
+            return;
+        }
+
+        $sessions = AttendanceSession::where('course_id', $courseId)
+            ->where('status', 'ended')
+            ->where('is_cancelled', false)
+            ->orderBy('session_date', 'asc')
+            ->get();
+
+        $totalSessions = $sessions->count();
+        if ($totalSessions == 0) {
+            foreach ($enrollments as $enrollment) {
+                DB::table('attendance_evaluations')->updateOrInsert(
+                    ['student_id' => $enrollment->student_id, 'course_id' => $courseId],
+                    [
+                        'total_sessions' => 0,
+                        'attended_sessions' => 0,
+                        'attendance_percentage' => 0,
+                        'consistency_marks' => 0.5,
+                        'punctuality_marks' => 2.0,
+                        'participation_marks' => 1.5,
+                        'roll_call_total' => 4.0,
+                        'eligibility_status' => 'not_eligible',
+                        'consecutive_absences' => 0,
+                        'attendance_trend' => 'stable',
+                        'risk_score' => 0,
+                        'risk_level' => 'Low',
+                        'risk_factors' => json_encode(['No sessions conducted yet']),
+                        'academic_health_score' => 0,
+                        'recovery_status' => 'Stable',
+                        'evaluation_date' => Carbon::today()->toDateString(),
+                        'updated_at' => now(),
+                    ]
+                );
+            }
+            return;
+        }
+
+        $sessionIds = $sessions->pluck('id')->toArray();
+
+        foreach ($enrollments as $enrollment) {
+            $studentId = $enrollment->student_id;
+
+            $records = AttendanceRecord::where('student_id', $studentId)
+                ->whereIn('attendance_session_id', $sessionIds)
+                ->get()
+                ->keyBy('attendance_session_id');
+
+            $attendedCount = $records->whereIn('status', ['present', 'late'])->count();
+            $lateCount = $records->where('status', 'late')->count();
+
+            // All calculations using AttendanceHelper
+            $attendancePercentage = AttendanceHelper::calculateAttendance($attendedCount, $totalSessions);
+            $rollCall = AttendanceHelper::calculateRollCallMark($attendancePercentage, $lateCount, 1.5);
+            $consecutiveAbsences = AttendanceHelper::getConsecutiveAbsences($studentId, $courseId);
+            $trend = AttendanceHelper::getAttendanceTrend($studentId, $courseId);
+            $riskScore = AttendanceHelper::calculateRiskScore(
+                $attendancePercentage,
+                $rollCall['total'],
+                $consecutiveAbsences,
+                $trend
+            );
+            $riskLevel = AttendanceHelper::getRiskLevel($riskScore);
+            $eligibility = AttendanceHelper::getEligibilityStatus($attendancePercentage);
+            $explanations = AttendanceHelper::getRiskExplanation(
+                $attendancePercentage,
+                $rollCall['total'],
+                $consecutiveAbsences,
+                $trend,
+                $riskLevel
+            );
+
+            $academicHealthScore = round(($attendancePercentage * 0.4) + ($rollCall['total'] * 6), 0);
+            $recoveryStatus = ($attendancePercentage >= 75 && $riskLevel == 'Low') ? 'Recovering'
+                : (($attendancePercentage < 60 || $riskLevel == 'High') ? 'Declining' : 'Stable');
+
+            DB::table('attendance_evaluations')->updateOrInsert(
+                ['student_id' => $studentId, 'course_id' => $courseId],
+                [
+                    'total_sessions' => $totalSessions,
+                    'attended_sessions' => $attendedCount,
+                    'attendance_percentage' => $attendancePercentage,
+                    'consistency_marks' => $rollCall['consistency'],
+                    'punctuality_marks' => $rollCall['punctuality'],
+                    'participation_marks' => $rollCall['participation'],
+                    'roll_call_total' => $rollCall['total'],
+                    'eligibility_status' => $eligibility,
+                    'consecutive_absences' => $consecutiveAbsences,
+                    'attendance_trend' => $trend,
+                    'risk_score' => $riskScore,
+                    'risk_level' => $riskLevel,
+                    'risk_factors' => json_encode($explanations),
+                    'academic_health_score' => $academicHealthScore,
+                    'recovery_status' => $recoveryStatus,
+                    'evaluation_date' => Carbon::today()->toDateString(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
     }
 
     /**
@@ -376,20 +583,70 @@ class AttendanceController extends Controller
     }
 
     /**
-     * History alias - redirects to sessions
+     * History alias
      */
     public function history()
     {
         return $this->sessions();
     }
 
-    // ============================================
-    // AJAX METHODS - ONLY ONE generateQr() METHOD!
-    // ============================================
+    /**
+     * Manage Semester QR Codes
+     */
+    public function semesterQrManagement()
+    {
+        $lecturer = Auth::user();
+
+        $semesterQrs = AttendanceSession::where('lecturer_id', $lecturer->id)
+            ->where('qr_mode', 'semester')
+            ->with('course')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $activeCount = $semesterQrs->where('status', 'active')->count();
+        $endedCount = $semesterQrs->where('status', 'ended')->count();
+
+        return view('lecturer.attendance.semester-qr-management', compact(
+            'semesterQrs',
+            'activeCount',
+            'endedCount'
+        ));
+    }
 
     /**
-     * Generate QR code for a session (AJAX)
+     * End a semester QR code
      */
+    public function endSemesterQr($id)
+    {
+        $session = AttendanceSession::where('lecturer_id', Auth::id())
+            ->where('id', $id)
+            ->where('qr_mode', 'semester')
+            ->firstOrFail();
+
+        $session->status = 'ended';
+        $session->ended_at = Carbon::now();
+        $session->save();
+
+        AuditLog::log(
+            Auth::id(),
+            'end_semester_qr',
+            [
+                'course_id' => $session->course_id,
+                'course_name' => $session->course->course_name ?? 'Unknown',
+                'session_id' => $session->id,
+            ],
+            $session,
+            'success'
+        );
+
+        return redirect()->route('lecturer.semester-qr.management')
+            ->with('success', 'Semester QR deactivated successfully!');
+    }
+
+    // ============================================================
+    // AJAX METHODS
+    // ============================================================
+
     public function generateQr(Request $request)
     {
         $request->validate([
@@ -404,7 +661,6 @@ class AttendanceController extends Controller
         $expiresAt = Carbon::now()->addMinutes($duration);
         $qrExpiresAt = Carbon::now()->addMinutes($duration);
 
-        // Get period count from timetable
         $periodCount = 4;
         $timetable = TimetableEntry::where('course_id', $course->id)
             ->where('is_active', true)
@@ -460,6 +716,8 @@ class AttendanceController extends Controller
         $session->ended_at = Carbon::now();
         $session->save();
 
+        $this->recalculateCourseEvaluations($session->course_id);
+
         return response()->json(['success' => true, 'message' => 'Session ended']);
     }
 
@@ -486,9 +744,6 @@ class AttendanceController extends Controller
         ]);
     }
 
-    /**
-     * Get session statistics for real-time display
-     */
     public function getSessionStats($id)
     {
         $session = AttendanceSession::findOrFail($id);

@@ -11,27 +11,42 @@
 
 @section('content')
     <style>
-        /* ============================================
-                           CONTAINER
-                           ============================================ */
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .chat-wrapper {
             max-width: 820px;
             margin: 0 auto;
         }
 
-        /* ============================================
-                           FEATURES BAR - Clickable Buttons
-                           ============================================ */
         .features-bar {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 10px 14px;
             margin-bottom: 12px;
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
             justify-content: center;
+            box-shadow: var(--shadow);
         }
 
         .features-bar .feature-btn {
@@ -40,22 +55,22 @@
             gap: 4px;
             padding: 4px 12px;
             border-radius: 18px;
-            border: 1px solid #e5e7eb;
-            background: #fafafa;
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            background: var(--bg-main);
             font-size: 11px;
-            color: #374151;
+            color: var(--text-dark);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             font-weight: 500;
             white-space: nowrap;
         }
 
         .features-bar .feature-btn:hover {
-            border-color: #800000;
-            color: #800000;
-            background: #fef2f2;
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(10, 36, 99, 0.05);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.08);
+            box-shadow: var(--shadow-hover);
         }
 
         .features-bar .feature-btn .icon {
@@ -64,8 +79,8 @@
 
         .features-bar .feature-btn .badge-new {
             font-size: 7px;
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             padding: 1px 5px;
             border-radius: 8px;
             font-weight: 600;
@@ -74,26 +89,20 @@
             margin-left: 2px;
         }
 
-        /* ============================================
-                           CHAT BOX
-                           ============================================ */
         .chat-box {
-            background: white;
-            border-radius: 16px;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             overflow: hidden;
             height: 440px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow);
         }
 
-        /* ============================================
-                           HEADER
-                           ============================================ */
         .chat-header {
             padding: 10px 16px;
-            background: linear-gradient(135deg, #800000, #6b0000);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -111,7 +120,7 @@
             height: 32px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.15);
-            color: white;
+            color: var(--white);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -123,7 +132,7 @@
             margin: 0;
             font-size: 14px;
             font-weight: 700;
-            color: white;
+            color: var(--white);
         }
 
         .chat-header .left .info small {
@@ -138,7 +147,7 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: #10b981;
+            background: var(--success);
             display: inline-block;
             animation: pulseDot 2s infinite;
         }
@@ -168,7 +177,7 @@
             background: rgba(255, 255, 255, 0.06);
             color: rgba(255, 255, 255, 0.6);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -177,7 +186,7 @@
 
         .chat-header .right .btn-header:hover {
             background: rgba(255, 255, 255, 0.15);
-            color: white;
+            color: var(--white);
         }
 
         .chat-header .right .btn-header.clear:hover {
@@ -185,14 +194,11 @@
             color: #fca5a5;
         }
 
-        /* ============================================
-                           MESSAGES AREA
-                           ============================================ */
         .chat-messages {
             flex: 1;
             padding: 12px 16px;
             overflow-y: auto;
-            background: #f8fafc;
+            background: var(--bg-main);
             min-height: 0;
         }
 
@@ -201,13 +207,10 @@
         }
 
         .chat-messages::-webkit-scrollbar-thumb {
-            background: #d1d5db;
+            background: var(--text-gray);
             border-radius: 4px;
         }
 
-        /* ============================================
-                           WELCOME
-                           ============================================ */
         .welcome {
             text-align: center;
             padding: 4px 10px;
@@ -216,32 +219,29 @@
         .welcome .icon-wrap {
             width: 44px;
             height: 44px;
-            background: linear-gradient(135deg, #fef2f2, #fdf2f2);
+            background: linear-gradient(135deg, rgba(10, 36, 99, 0.08), rgba(10, 36, 99, 0.05));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 6px;
             font-size: 22px;
-            border: 2px solid #fecaca;
+            border: 2px solid rgba(10, 36, 99, 0.1);
         }
 
         .welcome h5 {
             font-size: 15px;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
             margin: 0 0 2px;
         }
 
         .welcome p {
-            color: #6b7280;
+            color: var(--text-gray);
             font-size: 12px;
             margin: 0 0 4px;
         }
 
-        /* ============================================
-                           MESSAGE
-                           ============================================ */
         .message {
             display: flex;
             gap: 8px;
@@ -269,13 +269,13 @@
         }
 
         .message.bot .msg-avatar {
-            background: linear-gradient(135deg, #800000, #6b0000);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
         }
 
         .message.user .msg-avatar {
             background: #e5e7eb;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         .message .bubble {
@@ -289,8 +289,8 @@
         }
 
         .message.bot .bubble {
-            background: white;
-            color: #1f2937;
+            background: var(--white);
+            color: var(--text-dark);
             border-bottom-left-radius: 3px;
             box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
         }
@@ -301,12 +301,12 @@
             left: -7px;
             top: 10px;
             border: 7px solid transparent;
-            border-right-color: white;
+            border-right-color: var(--white);
         }
 
         .message.user .bubble {
-            background: linear-gradient(135deg, #800000, #6b0000);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
             border-bottom-right-radius: 3px;
         }
 
@@ -316,7 +316,7 @@
             right: -7px;
             top: 10px;
             border: 7px solid transparent;
-            border-left-color: #800000;
+            border-left-color: var(--primary);
         }
 
         .message .bubble .time {
@@ -343,9 +343,6 @@
             }
         }
 
-        /* ============================================
-                           TYPING
-                           ============================================ */
         .typing {
             display: none;
             padding: 2px 0 6px 14px;
@@ -394,15 +391,12 @@
             }
         }
 
-        /* ============================================
-                           INPUT
-                           ============================================ */
         .chat-input {
             padding: 10px 16px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             gap: 8px;
-            background: white;
+            background: var(--white);
             flex-shrink: 0;
         }
 
@@ -423,19 +417,19 @@
         .chat-input .input-wrap input {
             width: 100%;
             padding: 8px 10px 8px 34px;
-            border: 2px solid #e5e7eb;
+            border: 2px solid rgba(10, 36, 99, 0.12);
             border-radius: 10px;
             font-size: 13px;
             outline: none;
-            transition: all 0.2s;
-            background: #fafafa;
-            color: #1f2937;
+            transition: var(--transition);
+            background: var(--bg-main);
+            color: var(--text-dark);
         }
 
         .chat-input .input-wrap input:focus {
-            border-color: #800000;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.05);
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.05);
         }
 
         .chat-input .input-wrap input::placeholder {
@@ -446,11 +440,11 @@
             padding: 8px 16px;
             border-radius: 10px;
             border: none;
-            background: linear-gradient(135deg, #800000, #6b0000);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             white-space: nowrap;
             display: flex;
             align-items: center;
@@ -460,7 +454,7 @@
 
         .chat-input .btn-send:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(128, 0, 0, 0.2);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.2);
         }
 
         .chat-input .btn-send:disabled {
@@ -470,9 +464,6 @@
             box-shadow: none;
         }
 
-        /* ============================================
-                           RESPONSIVE
-                           ============================================ */
         @media (max-width: 768px) {
             .features-bar {
                 padding: 8px 10px;
@@ -545,7 +536,7 @@
 
             .chat-box {
                 height: 360px;
-                border-radius: 12px;
+                border-radius: var(--radius);
             }
 
             .chat-messages {
@@ -581,11 +572,7 @@
     </style>
 
     <div class="chat-wrapper">
-        <!-- ==========================================
-                        FEATURES BAR - Clickable Buttons
-                        ========================================== -->
         <div class="features-bar">
-            <!-- Core Features -->
             <button class="feature-btn" onclick="quickAsk('What is my attendance?')">
                 <span class="icon">📊</span> Attendance
             </button>
@@ -601,21 +588,15 @@
             <button class="feature-btn" onclick="quickAsk('What is my health score?')">
                 <span class="icon">💚</span> Score
             </button>
-
-            <!-- Academic Features -->
             <button class="feature-btn" onclick="quickAsk('What courses am I enrolled in?')">
                 <span class="icon">📚</span> Courses
             </button>
             <button class="feature-btn" onclick="quickAsk('What is my class rank?')">
                 <span class="icon">🏆</span> Rank
             </button>
-
-            <!-- Analytics Features -->
             <button class="feature-btn" onclick="quickAsk('Show my attendance trend')">
                 <span class="icon">📈</span> Trend
             </button>
-
-            <!-- Support Features -->
             <button class="feature-btn" onclick="quickAsk('Give me study tips')">
                 <span class="icon">💡</span> Study Tips
             </button>
@@ -630,9 +611,7 @@
             </button>
         </div>
 
-        <!-- Chat Box -->
         <div class="chat-box">
-            <!-- Header -->
             <div class="chat-header">
                 <div class="left">
                     <div class="avatar"><i class="bi bi-robot"></i></div>
@@ -651,7 +630,6 @@
                 </div>
             </div>
 
-            <!-- Messages -->
             <div class="chat-messages" id="chatMessages">
                 <div class="welcome" id="welcomeMessage">
                     <div class="icon-wrap">🤖</div>
@@ -660,17 +638,15 @@
                 </div>
             </div>
 
-            <!-- Typing -->
             <div class="typing" id="typingIndicator">
                 <div class="dots">
                     <span></span>
                     <span></span>
                     <span></span>
                 </div>
-                <span style="font-size:12px; color:#9ca3af;">Thinking...</span>
+                <span style="font-size:12px; color:var(--text-gray);">Thinking...</span>
             </div>
 
-            <!-- Input -->
             <div class="chat-input">
                 <div class="input-wrap">
                     <span class="input-icon"><i class="bi bi-chat"></i></span>
@@ -761,12 +737,12 @@
                 if (confirm('Clear all messages?')) {
                     const container = document.getElementById('chatMessages');
                     container.innerHTML = `
-                    <div class="welcome" id="welcomeMessage">
-                        <div class="icon-wrap">🤖</div>
-                        <h5>Hello! I'm your Academic Assistant</h5>
-                        <p>Click a button below or type your question</p>
-                    </div>
-                `;
+                        <div class="welcome" id="welcomeMessage">
+                            <div class="icon-wrap">🤖</div>
+                            <h5>Hello! I'm your Academic Assistant</h5>
+                            <p>Click a button below or type your question</p>
+                        </div>
+                    `;
                     messageCount = 0;
                 }
             }

@@ -1,46 +1,67 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <!-- ADD THIS META TAG FOR USER ROLE -->
-    <meta name="user-role" content="{{ Auth::user()->role->name ?? 'student' }}">
-    <title>@yield('title', 'Academic Portal')</title>
 
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <meta name="user-role" content="{{ Auth::user()->role->name ?? 'student' }}">
+
+    <title>@yield('title', 'MTU Academic Portal')</title>
+
+
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+
+
     <style>
+        /* ============================================================
+                   MOST OFFICIAL COLORS - From Logo
+                   ============================================================ */
         :root {
-            --primary: #800000;
-            --primary-dark: #5f0000;
-            --secondary: #f4c430;
+            --most-navy: #0A2463;
+            --most-blue: #1E3A8A;
+            --most-light: #3B82F6;
+            --most-gold: #D4A017;
+            --most-white: #FFFFFF;
+
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --accent-light: #E8B831;
+            --bg-main: #EEF2F7;
+            --bg-sidebar: linear-gradient(180deg, #1E3A8A 0%, #0A2463 100%);
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
             --info: #3b82f6;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-500: #6b7280;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-500: #64748b;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
         }
 
         * {
@@ -51,8 +72,8 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--gray-100);
-            color: var(--gray-800);
+            background: var(--bg-main);
+            color: var(--text-dark);
             line-height: 1.5;
         }
 
@@ -61,11 +82,13 @@
             min-height: 100vh;
         }
 
-        /* Sidebar*/
+        /* ============================================================
+                   SIDEBAR - CLEAN & READABLE
+                   ============================================================ */
         .sidebar {
-            width: 250px;
-            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
+            width: 260px;
+            background: var(--bg-sidebar);
+            color: var(--white);
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -74,11 +97,13 @@
             display: flex;
             flex-direction: column;
             flex-shrink: 0;
+            box-shadow: 2px 0 24px rgba(10, 36, 99, 0.12);
         }
 
+        /* ===== SIDEBAR HEADER ===== */
         .sidebar-header {
-            padding: 1.25rem 1.25rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.25rem 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             margin-bottom: 0.5rem;
         }
 
@@ -89,16 +114,16 @@
         }
 
         .brand-icon {
-            width: 38px;
-            height: 38px;
-            background: var(--secondary);
+            width: 40px;
+            height: 40px;
+            background: var(--most-gold);
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
-            font-size: 1.1rem;
-            color: var(--primary);
+            font-size: 1.05rem;
+            color: var(--primary-dark);
             flex-shrink: 0;
         }
 
@@ -106,72 +131,99 @@
             font-size: 1.2rem;
             font-weight: 700;
             margin: 0;
-            white-space: nowrap;
+            color: var(--white);
+            letter-spacing: -0.3px;
         }
 
-        .brand-text p {
-            font-size: 0.55rem;
-            opacity: 0.7;
+        .brand-text .sub {
+            font-size: 0.5rem;
+            opacity: 0.6;
             margin: 0;
+            color: rgba(255, 255, 255, 0.5);
+            letter-spacing: 0.5px;
+            display: block;
+            margin-top: 1px;
         }
 
+        .brand-text .sub .gold {
+            color: var(--most-gold);
+            font-weight: 700;
+        }
+
+        /* ===== NAV LABELS - MORE VISIBLE ===== */
         .nav-label {
-            padding: 0.5rem 0.75rem 0.25rem;
-            font-size: 0.67rem !important;
+            padding: 0.8rem 1.25rem 0.3rem;
+            font-size: 0.65rem !important;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.35);
         }
 
+        /* ===== NAV ITEMS - BIGGER & CLEARER ===== */
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
-            padding: 0.45rem 0.75rem !important;
-            margin: 0.1rem 0.6rem;
-            border-radius: 8px;
+            gap: 0.8rem;
+            padding: 0.6rem 1rem !important;
+            margin: 0.1rem 0.7rem;
+            border-radius: 10px;
             color: rgba(255, 255, 255, 0.75);
             text-decoration: none;
-            font-size: 0.9rem !important;
-            font-weight: 600;
+            font-size: 0.95rem !important;
+            font-weight: 500;
             transition: all 0.2s ease;
             white-space: nowrap;
         }
 
         .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--white);
         }
 
+        /* ===== ACTIVE SIDEBAR - GOLD ===== */
         .nav-item.active {
-            background: var(--secondary);
+            background: var(--most-gold);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item.active i {
             color: var(--primary);
         }
 
+        /* ===== ICONS - BIGGER ===== */
         .nav-item i {
-            font-size: 1rem !important;
-            width: 1.3rem;
+            font-size: 1.15rem !important;
+            width: 1.4rem;
             flex-shrink: 0;
+            color: rgba(255, 255, 255, 0.5);
         }
 
+        .nav-item.active i {
+            color: var(--primary);
+        }
+
+        /* ===== SIDEBAR NOTE ===== */
         .sidebar-note {
-            margin: 0.5rem 0.6rem;
-            padding: 0.6rem 0.75rem;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin: 0.5rem 0.8rem 0.8rem;
+            padding: 0.7rem 0.9rem;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .sidebar-note strong {
             display: block;
             font-size: 0.7rem !important;
+            color: var(--white);
         }
 
         .sidebar-note p {
             font-size: 0.6rem !important;
-            opacity: 0.6;
+            opacity: 0.5;
             margin: 0;
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .nav-container {
@@ -179,30 +231,53 @@
             overflow-y: auto;
         }
 
-        /* Main Content - MEDIUM MARGIN */
-        .main-content {
-            flex: 1;
-            margin-left: 240px;
-            /* MATCHES sidebar width */
-            padding: 1.5rem;
-            min-height: 100vh;
-            width: calc(100% - 240px);
-            /* MATCHES sidebar width */
-            max-width: 100%;
-            overflow-x: hidden;
+        /* ============================================================
+                   SIDEBAR SCROLLBAR
+                   ============================================================ */
+        .sidebar::-webkit-scrollbar {
+            width: 3px;
         }
 
-        /* Top Bar */
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ============================================================
+                   MAIN CONTENT
+                   ============================================================ */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 1.5rem;
+            min-height: 100vh;
+            width: calc(100% - 260px);
+            max-width: 100%;
+            overflow-x: hidden;
+            background: var(--bg-main);
+        }
+
+        /* ============================================================
+                   TOP BAR
+                   ============================================================ */
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: white;
+            background: var(--white);
             padding: 0.7rem 1.5rem;
-            border-radius: 0.75rem;
+            border-radius: 12px;
             margin-bottom: 1.5rem;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(10, 36, 99, 0.04);
             flex-wrap: wrap;
             gap: 0.5rem;
         }
@@ -214,13 +289,19 @@
             margin: 0;
         }
 
+        .page-title-section h1 .gold {
+            color: var(--most-gold);
+        }
+
         .welcome-text {
             font-size: 0.75rem;
-            color: var(--gray-500);
+            color: var(--text-gray);
             margin-top: 0.1rem;
         }
 
-        /* Account Dropdown */
+        /* ============================================================
+                   ACCOUNT DROPDOWN
+                   ============================================================ */
         .account-dropdown {
             position: relative;
             display: inline-block;
@@ -231,7 +312,7 @@
             align-items: center;
             gap: 0.4rem;
             cursor: pointer;
-            padding: 0.2rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 2rem;
             transition: all 0.2s ease;
         }
@@ -241,22 +322,22 @@
         }
 
         .account-avatar {
-            width: 36px;
-            height: 36px;
-            background: var(--primary);
+            width: 34px;
+            height: 34px;
+            background: var(--most-gold);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--secondary);
+            color: var(--primary);
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             flex-shrink: 0;
         }
 
         .dropdown-arrow {
-            font-size: 0.7rem;
-            color: var(--gray-500);
+            font-size: 0.65rem;
+            color: var(--text-gray);
             transition: transform 0.2s ease;
         }
 
@@ -265,9 +346,9 @@
             top: 100%;
             right: 0;
             margin-top: 0.5rem;
-            background: white;
-            border-radius: 0.75rem;
-            box-shadow: var(--shadow-lg);
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-hover);
             border: 1px solid var(--gray-200);
             min-width: 160px;
             z-index: 1000;
@@ -297,7 +378,7 @@
             align-items: center;
             gap: 0.6rem;
             padding: 0.6rem 1rem;
-            color: var(--gray-700);
+            color: var(--text-dark);
             text-decoration: none;
             font-size: 0.75rem;
             transition: all 0.2s ease;
@@ -333,10 +414,12 @@
             color: var(--danger);
         }
 
-        /* ===== RESPONSIVE ===== */
+        /* ============================================================
+                   RESPONSIVE
+                   ============================================================ */
         @media (max-width: 1024px) {
             .sidebar {
-                width: 80px;
+                width: 72px;
             }
 
             .sidebar .brand-text,
@@ -347,9 +430,9 @@
             }
 
             .main-content {
-                margin-left: 80px;
+                margin-left: 72px;
                 padding: 1rem;
-                width: calc(100% - 80px);
+                width: calc(100% - 72px);
             }
 
             .nav-item {
@@ -359,7 +442,7 @@
 
             .nav-item i {
                 width: auto;
-                font-size: 1.2rem !important;
+                font-size: 1.3rem !important;
             }
 
             .topbar {
@@ -375,22 +458,22 @@
 
         @media (max-width: 768px) {
             .main-content {
-                margin-left: 68px;
+                margin-left: 60px;
                 padding: 0.75rem;
-                width: calc(100% - 68px);
+                width: calc(100% - 60px);
             }
 
             .sidebar {
-                width: 68px;
+                width: 60px;
             }
 
             .sidebar-header {
-                padding: 0.75rem;
+                padding: 0.6rem;
             }
 
             .brand-icon {
-                width: 32px;
-                height: 32px;
+                width: 30px;
+                height: 30px;
                 font-size: 0.7rem;
             }
 
@@ -399,43 +482,44 @@
             }
 
             .page-title-section h1 {
-                font-size: 0.95rem;
+                font-size: 1rem;
             }
 
             .welcome-text {
-                font-size: 0.6rem;
+                font-size: 0.65rem;
             }
 
             .account-avatar {
-                width: 30px;
-                height: 30px;
-                font-size: 0.7rem;
+                width: 28px;
+                height: 28px;
+                font-size: 0.65rem;
             }
         }
 
         @media (max-width: 430px) {
             .main-content {
-                margin-left: 58px;
+                margin-left: 52px;
                 padding: 0.5rem;
-                width: calc(100% - 58px);
+                width: calc(100% - 52px);
             }
 
             .sidebar {
-                width: 58px;
+                width: 52px;
             }
 
             .sidebar-header {
-                padding: 0.5rem;
+                padding: 0.4rem;
             }
 
             .brand-icon {
-                width: 28px;
-                height: 28px;
-                font-size: 0.65rem;
+                width: 26px;
+                height: 26px;
+                font-size: 0.6rem;
+                border-radius: 6px;
             }
 
             .page-title-section h1 {
-                font-size: 0.8rem;
+                font-size: 0.85rem;
             }
 
             .topbar {
@@ -443,73 +527,119 @@
             }
 
             .account-avatar {
-                width: 26px;
-                height: 26px;
-                font-size: 0.6rem;
+                width: 24px;
+                height: 24px;
+                font-size: 0.55rem;
             }
 
             .nav-item {
                 padding: 0.4rem !important;
-                margin: 0.1rem 0.4rem;
+                margin: 0.05rem 0.3rem;
             }
 
             .nav-item i {
-                font-size: 0.9rem !important;
+                font-size: 0.95rem !important;
             }
         }
     </style>
+
     @stack('styles')
+
 </head>
 
 <body>
+
     <div class="app">
+
         <aside class="sidebar">
+
             <div class="sidebar-header">
+
                 <div class="brand">
-                    <div class="brand-icon">Uni</div>
+
+                    <div class="brand-icon">MTU</div>
+
                     <div class="brand-text">
-                        <h2>Academic Portal</h2>
+
+                        <h2>University Portal</h2>
 
                     </div>
+
                 </div>
+
             </div>
+
+
 
             <div class="nav-container">
+
                 @yield('sidebar')
+
             </div>
+
         </aside>
 
+
+
         <main class="main-content">
+
             <div class="topbar">
+
                 <div class="page-title-section">
+
                     <h1>@yield('page-title')</h1>
+
                     <p class="welcome-text">@yield('welcome-text')</p>
+
                 </div>
 
-                <!-- Account Dropdown -->
+
+
                 <div class="account-dropdown" id="accountDropdown">
+
                     <div class="account-button" onclick="toggleDropdown()">
+
                         <div class="account-avatar">{{ substr(Auth::user()->name ?? 'U', 0, 2) }}</div>
+
                         <i class="bi bi-chevron-down dropdown-arrow" id="dropdownArrow"></i>
+
                     </div>
+
                     <div class="dropdown-menu" id="dropdownMenu">
+
                         <form method="POST" action="{{ route('logout') }}" id="logout-form">
+
                             @csrf
+
                             <button type="submit" class="dropdown-item text-danger">
+
                                 <i class="bi bi-box-arrow-right"></i>
+
                                 <span>Logout</span>
+
                             </button>
+
                         </form>
+
                     </div>
+
                 </div>
+
             </div>
 
+
+
             @yield('content')
+
         </main>
+
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
+
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
 
     <script>
         function toggleDropdown() {
@@ -527,20 +657,12 @@
             }
         });
 
-        // ============================================================
-        // ANNOUNCEMENT UNREAD COUNT - SIMPLE VERSION
-        // ============================================================
         function updateAnnouncementBadge() {
             const userRole = document.querySelector('meta[name="user-role"]')?.content || 'student';
-
             let url = '';
-            if (userRole === 'admin') {
-                url = '/admin/announcements/unread-count';
-            } else if (userRole === 'lecturer') {
-                url = '/lecturer/announcements/unread-count';
-            } else {
-                url = '/student/announcements/unread-count';
-            }
+            if (userRole === 'admin') url = '/admin/announcements/unread-count';
+            else if (userRole === 'lecturer') url = '/lecturer/announcements/unread-count';
+            else url = '/student/announcements/unread-count';
 
             fetch(url, {
                     headers: {
@@ -551,7 +673,6 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Find all announcement badges in sidebar with the specific style
                     const badges = document.querySelectorAll('.nav-item span[style*="background:#ef4444"]');
                     badges.forEach(badge => {
                         if (data.count && data.count > 0) {
@@ -573,15 +694,12 @@
                 .catch(() => {});
         }
 
-        // Run on page load
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(updateAnnouncementBadge, 500);
         });
 
-        // Refresh every 30 seconds
         setInterval(updateAnnouncementBadge, 30000);
 
-        // Refresh when page becomes visible again
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden) {
                 setTimeout(updateAnnouncementBadge, 200);
@@ -590,6 +708,7 @@
     </script>
 
     @stack('scripts')
+
 </body>
 
 </html>

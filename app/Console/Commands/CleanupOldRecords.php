@@ -16,8 +16,6 @@ class CleanupOldRecords extends Command
         $this->info('🧹 Starting cleanup...');
         $dryRun = $this->option('dry-run');
 
-        // Only delete audit logs older than 5 years
-        // All academic records are KEPT PERMANENTLY
         $cutoffDate = Carbon::now()->subYears(5);
 
         $this->info("🗑️ Audit logs older than: " . $cutoffDate->format('Y-m-d'));

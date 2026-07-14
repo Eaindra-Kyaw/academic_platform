@@ -10,14 +10,32 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .form-card {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e9edf4;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            box-shadow: var(--shadow);
         }
 
         .form-group {
@@ -28,7 +46,7 @@
             display: block;
             font-weight: 600;
             font-size: 0.8rem;
-            color: #1a2332;
+            color: var(--text-dark);
             margin-bottom: 0.2rem;
         }
 
@@ -37,60 +55,62 @@
         .form-group textarea {
             width: 100%;
             padding: 0.5rem;
-            border: 1px solid #e9edf4;
-            border-radius: 0.4rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 8px;
             font-size: 0.85rem;
-            transition: all 0.2s;
+            transition: var(--transition);
+            background: #fafbfc;
+            font-family: 'Inter', sans-serif;
         }
 
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #800000;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .form-group .help-text {
-            color: #6b7a8f;
+            color: var(--text-gray);
             font-size: 0.65rem;
             margin-top: 0.2rem;
         }
 
         .error {
-            color: #ef4444;
+            color: var(--danger);
             font-size: 0.7rem;
             margin-top: 0.2rem;
         }
 
         .btn-submit {
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             border: none;
             padding: 0.5rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 8px;
             font-size: 0.85rem;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-submit:hover {
-            background: #a00000;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.25);
         }
 
         .btn-cancel {
             background: #f3f4f6;
-            color: #374151;
+            color: var(--text-dark);
             border: none;
             padding: 0.5rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 8px;
             font-size: 0.85rem;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-cancel:hover {
@@ -101,21 +121,21 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #6b7a8f;
+            color: var(--text-gray);
             text-decoration: none;
             font-size: 0.8rem;
             font-weight: 500;
             padding: 0.3rem 0.8rem;
-            border-radius: 0.5rem;
-            background: white;
-            border: 1px solid #e9edf4;
-            transition: all 0.2s;
+            border-radius: 8px;
+            background: var(--white);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            transition: var(--transition);
             margin-bottom: 1.25rem;
         }
 
         .back-link:hover {
-            color: #800000;
-            border-color: #800000;
+            color: var(--primary);
+            border-color: var(--primary);
             transform: translateX(-3px);
         }
 
@@ -126,7 +146,7 @@
         }
 
         .section-divider {
-            border-top: 1px solid #e9edf4;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
             margin: 1.5rem 0 1rem 0;
             padding-top: 0.5rem;
         }
@@ -134,8 +154,12 @@
         .section-title {
             font-size: 0.85rem;
             font-weight: 600;
-            color: #1a2332;
+            color: var(--text-dark);
             margin-bottom: 1rem;
+        }
+
+        .section-title i {
+            color: var(--primary);
         }
 
         @media (max-width: 768px) {
@@ -149,15 +173,13 @@
         }
     </style>
 
-    <!-- ===== BACK LINK ===== -->
     <a href="{{ route('admin.departments.courses.show', [$department, $course]) }}" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to Course Details
     </a>
 
-    <!-- ===== FORM ===== -->
     <div class="form-card">
-        <h3 style="color: #1a2332; font-size: 1.1rem; font-weight: 700; margin: 0 0 1.5rem 0;">
-            <i class="bi bi-pencil" style="color: #800000;"></i> Edit Course: {{ $course->course_code }}
+        <h3 style="color: var(--text-dark); font-size: 1.1rem; font-weight: 700; margin: 0 0 1.5rem 0;">
+            <i class="bi bi-pencil" style="color: var(--primary);"></i> Edit Course: {{ $course->course_code }}
         </h3>
 
         <form method="POST" action="{{ route('admin.departments.courses.update', [$department, $course]) }}">
@@ -165,7 +187,6 @@
             @method('PUT')
 
             <div class="grid-2col">
-                <!-- Course Code -->
                 <div class="form-group">
                     <label>Course Code *</label>
                     <input type="text" name="course_code" value="{{ old('course_code', $course->course_code) }}" required
@@ -175,7 +196,6 @@
                     @enderror
                 </div>
 
-                <!-- Credits -->
                 <div class="form-group">
                     <label>Credits *</label>
                     <input type="number" name="credits" value="{{ old('credits', $course->credits) }}" required
@@ -186,7 +206,6 @@
                 </div>
             </div>
 
-            <!-- Course Name -->
             <div class="form-group">
                 <label>Course Name *</label>
                 <input type="text" name="course_name" value="{{ old('course_name', $course->course_name) }}" required
@@ -197,7 +216,6 @@
             </div>
 
             <div class="grid-2col">
-                <!-- Year -->
                 <div class="form-group">
                     <label>Year *</label>
                     <select name="year" required>
@@ -213,7 +231,6 @@
                     @enderror
                 </div>
 
-                <!-- Semester -->
                 <div class="form-group">
                     <label>Semester *</label>
                     <select name="semester" required>
@@ -232,7 +249,6 @@
             </div>
 
             <div class="grid-2col">
-                <!-- Academic Year -->
                 <div class="form-group">
                     <label>Academic Year *</label>
                     <input type="text" name="academic_year" value="{{ old('academic_year', $course->academic_year) }}"
@@ -242,7 +258,6 @@
                     @enderror
                 </div>
 
-                <!-- Room -->
                 <div class="form-group">
                     <label>Room</label>
                     <input type="text" name="room" value="{{ old('room', $course->room) }}"
@@ -253,7 +268,6 @@
                 </div>
             </div>
 
-            <!-- Lecturer -->
             <div class="form-group">
                 <label>Lecturer</label>
                 <select name="lecturer_id">
@@ -283,7 +297,6 @@
                 @enderror
             </div>
 
-            <!-- Lecturer Name (Manual Entry) -->
             <div class="form-group">
                 <label>Lecturer Name (Manual Entry)</label>
                 <input type="text" name="lecturer_name" value="{{ old('lecturer_name', $course->lecturer_name) }}"
@@ -294,19 +307,16 @@
                 @enderror
             </div>
 
-            <!-- ========================================== -->
-            <!-- ✅ TIMETABLE SCHEDULE SECTION (Auto-Insert) -->
-            <!-- ========================================== -->
             <div class="section-divider"></div>
             <div class="section-title">
-                <i class="bi bi-calendar-week" style="color: #800000;"></i> Timetable Schedule
-                <span style="font-weight: 400; color: #6b7a8f; font-size: 0.7rem; display: block; margin-top: 2px;">
+                <i class="bi bi-calendar-week"></i> Timetable Schedule
+                <span
+                    style="font-weight: 400; color: var(--text-gray); font-size: 0.7rem; display: block; margin-top: 2px;">
                     This data will automatically appear in the lecturer's timetable
                 </span>
             </div>
 
             <div class="grid-2col">
-                <!-- Schedule Day -->
                 <div class="form-group">
                     <label>Day</label>
                     <select name="schedule_day">
@@ -336,7 +346,6 @@
                     @enderror
                 </div>
 
-                <!-- Room -->
                 <div class="form-group">
                     <label>Room</label>
                     <input type="text" name="room" value="{{ old('room', $course->room) }}"
@@ -348,7 +357,6 @@
             </div>
 
             <div class="grid-2col">
-                <!-- Start Time -->
                 <div class="form-group">
                     <label>Start Time</label>
                     <input type="time" name="schedule_time" value="{{ old('schedule_time', $course->schedule_time) }}"
@@ -359,7 +367,6 @@
                     @enderror
                 </div>
 
-                <!-- End Time -->
                 <div class="form-group">
                     <label>End Time</label>
                     <input type="time" name="schedule_end_time"
@@ -371,14 +378,8 @@
                 </div>
             </div>
 
-            <!-- ========================================== -->
-            <!-- BUTTONS -->
-            <!-- ========================================== -->
             <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem; justify-content: flex-end;">
-                <!-- Cancel: Back to Department Courses -->
                 <a href="{{ route('admin.departments.courses.index', $department) }}" class="btn-cancel">Cancel</a>
-
-                <!-- Update: Submit and go to Course Show -->
                 <button type="submit" class="btn-submit">
                     <i class="bi bi-save"></i> Update Course
                 </button>

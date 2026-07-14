@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Admin/SemesterController.php
 
 namespace App\Http\Controllers\Admin;
 
@@ -7,169 +6,157 @@ use App\Http\Controllers\Controller;
 use App\Models\Semester;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class SemesterController extends Controller
 {
+    /**
+     * Display a listing of semesters
+     */
     public function index()
     {
-        $semesters = Semester::orderBy('year')
-            ->orderBy('semester')
-            ->paginate(15);
+        // ✅ FIXED: Use 'academic_year' instead of 'year'
+        $semestersByYear = Semester::select('academic_year', DB::raw('count(*) as total'))
+            ->groupBy('academic_year')
+            ->orderBy('academic_year', 'asc')
+            ->get()
+            ->pluck('total', 'academic_year');
 
-        $stats = [
-            'total' => Semester::count(),
-            'active' => Semester::where('is_active', true)->count(),
-            'current' => Semester::where('is_current', true)->first(),
-            'by_year' => Semester::select('year', DB::raw('count(*) as total'))
-                ->groupBy('year')
-                ->orderBy('year')
-                ->get()
-                ->pluck('total', 'year')
-                ->toArray(),
-        ];
+        $semesters = Semester::orderBy('academic_year', 'desc')
+            ->orderBy('semester_number', 'asc')
+            ->get();
 
-        return view('admin.semesters.index', compact('semesters', 'stats'));
+        $totalSemesters = Semester::count();
+        $activeSemesters = Semester::where('is_active', true)->count();
+        $currentSemester = Semester::where('is_current', true)->first();
+
+        return view('admin.semesters.index', compact(
+            'semesters',
+            'semestersByYear',
+            'totalSemesters',
+            'activeSemesters',
+            'currentSemester'
+        ));
     }
 
+    /**
+     * Show the form for creating a new semester
+     */
     public function create()
     {
-        $yearNames = Semester::$yearNames;
-        $semesterNames = Semester::$semesterNames;
-        return view('admin.semesters.create', compact('yearNames', 'semesterNames'));
+        return view('admin.semesters.create');
     }
 
+    /**
+     * Store a newly created semester
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'year' => 'required|integer|min:1|max:6',
-            'semester' => 'required|integer|in:1,2',
-            'academic_year' => 'nullable|string|max:20',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after:start_date',
-            'is_active' => 'nullable|boolean',
+            'academic_year' => 'required|string|max:255',
+            'semester_number' => 'required|integer|min:1|max:3',
+            'semester_name' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
             'is_current' => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
         ]);
 
-        $exists = Semester::where('year', $validated['year'])
-            ->where('semester', $validated['semester'])
-            ->exists();
-
-        if ($exists) {
-            return back()->with('error', 'This semester already exists!')->withInput();
-        }
-
-        if ($request->has('is_current')) {
+        // If this semester is set as current, unset any other current
+        if ($request->has('is_current') && $request->is_current) {
             Semester::where('is_current', true)->update(['is_current' => false]);
         }
 
-        $validated['code'] = 'Y' . $validated['year'] . 'S' . $validated['semester'];
-        $validated['is_active'] = $request->has('is_active');
-        $validated['is_current'] = $request->has('is_current');
-
-        // Set default dates if not provided
-        if (empty($validated['start_date']) || empty($validated['end_date'])) {
-            $baseYear = 2024 + $validated['year'];
-
-            if ($validated['semester'] == 1) {
-                $validated['start_date'] = date('Y-m-d', strtotime($baseYear . '-12-01'));
-                $validated['end_date'] = date('Y-m-d', strtotime(($baseYear + 1) . '-03-31'));
-            } else {
-                $validated['start_date'] = date('Y-m-d', strtotime(($baseYear + 1) . '-06-01'));
-                $validated['end_date'] = date('Y-m-d', strtotime(($baseYear + 1) . '-09-30'));
-            }
-        }
-
-        Semester::create($validated);
+        $semester = Semester::create([
+            'academic_year' => $validated['academic_year'],
+            'semester_number' => $validated['semester_number'],
+            'semester_name' => $validated['semester_name'],
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+            'is_current' => $request->has('is_current') ? (bool) $request->is_current : false,
+            'is_active' => $request->has('is_active') ? (bool) $request->is_active : true,
+            'year_name' => $this->getYearName($validated['academic_year']),
+        ]);
 
         return redirect()->route('admin.semesters.index')
             ->with('success', 'Semester created successfully!');
     }
 
+    /**
+     * Display the specified semester
+     */
     public function show($id)
     {
         $semester = Semester::findOrFail($id);
-
-        // Get courses in this semester (matching year and semester)
-        $courses = \App\Models\Course::where('year', $this->getYearName($semester->year))
-            ->where('semester', $this->getSemesterName($semester->semester))
-            ->with('department')
-            ->get();
-
-        return view('admin.semesters.show', compact('semester', 'courses'));
+        return view('admin.semesters.show', compact('semester'));
     }
 
+    /**
+     * Show the form for editing a semester
+     */
     public function edit($id)
     {
         $semester = Semester::findOrFail($id);
-        $yearNames = Semester::$yearNames;
-        $semesterNames = Semester::$semesterNames;
-        return view('admin.semesters.edit', compact('semester', 'yearNames', 'semesterNames'));
+        return view('admin.semesters.edit', compact('semester'));
     }
 
+    /**
+     * Update the specified semester
+     */
     public function update(Request $request, $id)
     {
         $semester = Semester::findOrFail($id);
 
         $validated = $request->validate([
-            'year' => 'required|integer|min:1|max:6',
-            'semester' => 'required|integer|in:1,2',
-            'academic_year' => 'nullable|string|max:20',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after:start_date',
-            'is_active' => 'nullable|boolean',
+            'academic_year' => 'required|string|max:255',
+            'semester_number' => 'required|integer|min:1|max:3',
+            'semester_name' => 'required|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
             'is_current' => 'nullable|boolean',
+            'is_active' => 'nullable|boolean',
         ]);
 
-        $exists = Semester::where('year', $validated['year'])
-            ->where('semester', $validated['semester'])
-            ->where('id', '!=', $id)
-            ->exists();
-
-        if ($exists) {
-            return back()->with('error', 'This semester already exists!')->withInput();
+        // If this semester is set as current, unset any other current
+        if ($request->has('is_current') && $request->is_current) {
+            Semester::where('is_current', true)->where('id', '!=', $id)->update(['is_current' => false]);
         }
 
-        if ($request->has('is_current')) {
-            Semester::where('is_current', true)->update(['is_current' => false]);
-        }
-
-        $validated['code'] = 'Y' . $validated['year'] . 'S' . $validated['semester'];
-        $validated['is_active'] = $request->has('is_active');
-        $validated['is_current'] = $request->has('is_current');
-
-        $semester->update($validated);
+        $semester->update([
+            'academic_year' => $validated['academic_year'],
+            'semester_number' => $validated['semester_number'],
+            'semester_name' => $validated['semester_name'],
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+            'is_current' => $request->has('is_current') ? (bool) $request->is_current : false,
+            'is_active' => $request->has('is_active') ? (bool) $request->is_active : true,
+            'year_name' => $this->getYearName($validated['academic_year']),
+        ]);
 
         return redirect()->route('admin.semesters.index')
             ->with('success', 'Semester updated successfully!');
     }
 
+    /**
+     * Remove the specified semester
+     */
     public function destroy($id)
     {
         $semester = Semester::findOrFail($id);
-
-        if ($semester->is_current) {
-            return back()->with('error', 'Cannot delete the current semester!');
-        }
-
-        // Check if any courses are linked to this semester
-        $courseCount = \App\Models\Course::where('year', $this->getYearName($semester->year))
-            ->where('semester', $this->getSemesterName($semester->semester))
-            ->count();
-
-        if ($courseCount > 0) {
-            return back()->with('error', "Cannot delete this semester because it has {$courseCount} courses!");
-        }
-
         $semester->delete();
 
         return redirect()->route('admin.semesters.index')
             ->with('success', 'Semester deleted successfully!');
     }
 
+    /**
+     * Toggle active status
+     */
     public function toggleStatus($id)
     {
         $semester = Semester::findOrFail($id);
-        $semester->update(['is_active' => !$semester->is_active]);
+        $semester->is_active = !$semester->is_active;
+        $semester->save();
 
         $status = $semester->is_active ? 'activated' : 'deactivated';
 
@@ -177,85 +164,84 @@ class SemesterController extends Controller
             ->with('success', "Semester {$status} successfully!");
     }
 
+    /**
+     * Set a semester as current
+     */
     public function setCurrent($id)
     {
-        $semester = Semester::findOrFail($id);
-
+        // Unset all other current semesters
         Semester::where('is_current', true)->update(['is_current' => false]);
-        $semester->update(['is_current' => true]);
+
+        $semester = Semester::findOrFail($id);
+        $semester->is_current = true;
+        $semester->save();
 
         return redirect()->route('admin.semesters.index')
             ->with('success', 'Semester set as current successfully!');
     }
 
-    public function generate()
+    /**
+     * Generate a year name from academic year
+     */
+    private function getYearName($academicYear)
     {
-        if (Semester::count() > 0) {
-            return redirect()->route('admin.semesters.index')
-                ->with('error', 'Semesters already exist! Please delete existing ones first.');
+        // Format: "2025-2026" -> "2025-2026"
+        return $academicYear;
+    }
+
+    /**
+     * Generate semesters for a new academic year
+     */
+    public function generate(Request $request)
+    {
+        $year = $request->input('year', date('Y'));
+        $nextYear = $year + 1;
+
+        $academicYear = $year . '-' . $nextYear;
+
+        // Check if semesters already exist for this year
+        $existing = Semester::where('academic_year', $academicYear)->count();
+        if ($existing > 0) {
+            return redirect()->back()->with('error', "Semesters for {$academicYear} already exist!");
         }
 
-        $semesters = [];
-        $startYear = 2025;
-        $academicYear = $startYear . '-' . ($startYear + 1);
+        // Create First Semester
+        Semester::create([
+            'academic_year' => $academicYear,
+            'semester_number' => 1,
+            'semester_name' => 'First Semester',
+            'start_date' => Carbon::create($year, 6, 1),
+            'end_date' => Carbon::create($year, 10, 31),
+            'is_current' => false,
+            'is_active' => true,
+            'year_name' => $academicYear,
+        ]);
 
-        for ($year = 1; $year <= 6; $year++) {
-            $baseYear = $startYear + $year - 1;
+        // Create Second Semester
+        Semester::create([
+            'academic_year' => $academicYear,
+            'semester_number' => 2,
+            'semester_name' => 'Second Semester',
+            'start_date' => Carbon::create($year, 11, 1),
+            'end_date' => Carbon::create($nextYear, 3, 31),
+            'is_current' => false,
+            'is_active' => true,
+            'year_name' => $academicYear,
+        ]);
 
-            // First Semester: December to March
-            $semesters[] = [
-                'year' => $year,
-                'semester' => 1,
-                'code' => 'Y' . $year . 'S1',
-                'academic_year' => $academicYear,
-                'start_date' => date('Y-m-d', strtotime($baseYear . '-12-01')),
-                'end_date' => date('Y-m-d', strtotime(($baseYear + 1) . '-03-31')),
-                'is_active' => true,
-                'is_current' => ($year == 1),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-
-            // Second Semester: June to September
-            $semesters[] = [
-                'year' => $year,
-                'semester' => 2,
-                'code' => 'Y' . $year . 'S2',
-                'academic_year' => $academicYear,
-                'start_date' => date('Y-m-d', strtotime(($baseYear + 1) . '-06-01')),
-                'end_date' => date('Y-m-d', strtotime(($baseYear + 1) . '-09-30')),
-                'is_active' => true,
-                'is_current' => false,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }
-
-        Semester::insert($semesters);
+        // Create Summer Semester (optional)
+        Semester::create([
+            'academic_year' => $academicYear,
+            'semester_number' => 3,
+            'semester_name' => 'Summer Semester',
+            'start_date' => Carbon::create($nextYear, 4, 1),
+            'end_date' => Carbon::create($nextYear, 5, 31),
+            'is_current' => false,
+            'is_active' => false,
+            'year_name' => $academicYear,
+        ]);
 
         return redirect()->route('admin.semesters.index')
-            ->with('success', 'All 12 semesters generated successfully!');
-    }
-
-    private function getYearName($yearNumber)
-    {
-        $yearNames = [
-            1 => 'First Year',
-            2 => 'Second Year',
-            3 => 'Third Year',
-            4 => 'Fourth Year',
-            5 => 'Fifth Year',
-            6 => 'Sixth Year',
-        ];
-        return $yearNames[$yearNumber] ?? 'Unknown Year';
-    }
-
-    private function getSemesterName($semesterNumber)
-    {
-        $semesterNames = [
-            1 => 'First Semester',
-            2 => 'Second Semester',
-        ];
-        return $semesterNames[$semesterNumber] ?? 'Unknown Semester';
+            ->with('success', "Semesters for {$academicYear} generated successfully!");
     }
 }

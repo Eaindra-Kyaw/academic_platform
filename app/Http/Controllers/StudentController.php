@@ -9,7 +9,9 @@ use App\Models\Department;
 use App\Models\Announcement;
 use App\Models\AttendanceRecord;
 use App\Models\AttendanceSession;
+use App\Models\AttendanceEvaluation;
 use App\Models\TimetableEntry;
+use App\Helpers\AttendanceHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,407 +20,415 @@ use Carbon\Carbon;
 class StudentController extends Controller
 {
     /**
- * Display student dashboard
- */
-public function dashboard()
-{
-    $student = Auth::user();
-    $studentId = $student->id;
+     * Display student dashboard with KG+12 roll call and risk
+     */
+    public function dashboard()
+    {
+        $student = Auth::user();
+        $studentId = $student->id;
 
-    // Get approved enrollments
-    $enrollments = Enrollment::where('student_id', $studentId)
-        ->where('status', 'approved')
-        ->with(['course', 'course.department'])
-        ->get();
+        // Get approved enrollments
+        $enrollments = Enrollment::where('student_id', $studentId)
+            ->where('status', 'approved')
+            ->with(['course', 'course.department'])
+            ->get();
 
-    // ============================================
-    // STATISTICS - PERIOD-BASED CALCULATION
-    // ============================================
-    $totalCourses = $enrollments->count();
+        $totalCourses = $enrollments->count();
 
-    // Get all course IDs
-    $courseIds = $enrollments->pluck('course_id')->toArray();
+        // ============================================================
+        // GET LATEST EVALUATIONS FOR EACH COURSE
+        // ============================================================
+        $evaluations = [];
+        $totalAttendance = 0;
+        $totalRollCall = 0;
+        $eligibleCount = 0;
+        $warningCount = 0;
+        $notEligibleCount = 0;
+        $lowRisk = 0;
+        $mediumRisk = 0;
+        $highRisk = 0;
 
-    // Calculate conducted periods for ALL courses
-    $conductedPeriods = AttendanceSession::whereIn('course_id', $courseIds)
-        ->where('status', 'ended')
-        ->where('is_cancelled', false)
-        ->sum('conducted_periods');
+        foreach ($enrollments as $enrollment) {
+            $eval = AttendanceEvaluation::where('student_id', $studentId)
+                ->where('course_id', $enrollment->course_id)
+                ->orderBy('evaluation_date', 'desc')
+                ->first();
 
-    // If no conducted periods, use period_count
-    if ($conductedPeriods == 0) {
-        $conductedPeriods = AttendanceSession::whereIn('course_id', $courseIds)
-            ->where('status', 'ended')
-            ->where('is_cancelled', false)
-            ->sum('period_count');
-    }
+            if ($eval) {
+                $evaluations[] = [
+                    'course' => $enrollment->course,
+                    'attendance' => $eval->attendance_percentage,
+                    'roll_call_total' => $eval->roll_call_total,
+                    'consistency' => $eval->consistency_marks,
+                    'punctuality' => $eval->punctuality_marks,
+                    'participation' => $eval->participation_marks,
+                    'eligibility' => $eval->eligibility_status,
+                    'risk_level' => $eval->risk_level,
+                    'risk_score' => $eval->risk_score,
+                    'consecutive_absences' => $eval->consecutive_absences,
+                    'trend' => $eval->attendance_trend,
+                    'total_sessions' => $eval->total_sessions,
+                    'attended_sessions' => $eval->attended_sessions,
+                ];
 
-    // Calculate attended periods
-    $attendedPeriods = AttendanceRecord::where('student_id', $studentId)
-        ->whereHas('session', function($q) use ($courseIds) {
-            $q->whereIn('course_id', $courseIds)
-              ->where('is_cancelled', false);
-        })
-        ->whereIn('status', ['present', 'late'])
-        ->sum('periods_attended');
+                $totalAttendance += $eval->attendance_percentage;
+                $totalRollCall += $eval->roll_call_total;
 
-    // If periods_attended is 0, count unique sessions
-    if ($attendedPeriods == 0) {
-        $attendedSessions = AttendanceRecord::where('student_id', $studentId)
-            ->whereHas('session', function($q) use ($courseIds) {
-                $q->whereIn('course_id', $courseIds)
-                  ->where('is_cancelled', false);
+                if ($eval->eligibility_status == 'eligible') $eligibleCount++;
+                elseif ($eval->eligibility_status == 'warning') $warningCount++;
+                else $notEligibleCount++;
+
+                if ($eval->risk_level == 'Low') $lowRisk++;
+                elseif ($eval->risk_level == 'Medium') $mediumRisk++;
+                else $highRisk++;
+            } else {
+                // No evaluation yet – default
+                $evaluations[] = [
+                    'course' => $enrollment->course,
+                    'attendance' => 0,
+                    'roll_call_total' => 0,
+                    'consistency' => 0,
+                    'punctuality' => 0,
+                    'participation' => 0,
+                    'eligibility' => 'not_eligible',
+                    'risk_level' => 'Low',
+                    'risk_score' => 0,
+                    'consecutive_absences' => 0,
+                    'trend' => 'stable',
+                    'total_sessions' => 0,
+                    'attended_sessions' => 0,
+                ];
+            }
+        }
+
+        // Overall stats
+        $avgAttendance = $totalCourses > 0 ? round($totalAttendance / $totalCourses, 1) : 0;
+        $avgRollCall = $totalCourses > 0 ? round($totalRollCall / $totalCourses, 1) : 0;
+
+        // Consecutive streak (from latest evaluation with highest streak)
+        $consecutiveStreak = 0;
+        foreach ($evaluations as $eval) {
+            if ($eval['consecutive_absences'] < 3 && $eval['attendance'] >= 75) {
+                $consecutiveStreak = max($consecutiveStreak, 1);
+            }
+        }
+
+        // ============================================================
+        // ACADEMIC HEALTH SCORE
+        // ============================================================
+        $healthScore = $this->calculateHealthScore($studentId);
+        $healthCategory = $this->getHealthCategory($healthScore);
+
+        // ============================================================
+        // RISK SCORE (from evaluations)
+        // ============================================================
+        $riskScore = 0;
+        $riskLevel = 'Low';
+        $riskFactors = [];
+
+        $latestEvals = AttendanceEvaluation::where('student_id', $studentId)
+            ->orderBy('evaluation_date', 'desc')
+            ->get();
+
+        if ($latestEvals->count() > 0) {
+            $avgRiskScore = $latestEvals->avg('risk_score') ?? 0;
+            $riskScore = round($avgRiskScore);
+            $riskLevel = AttendanceHelper::getRiskLevel($riskScore);
+
+            // Collect risk factors from latest evaluation
+            $latest = $latestEvals->first();
+            if ($latest && $latest->risk_factors) {
+                $riskFactors = is_array($latest->risk_factors) ? $latest->risk_factors : json_decode($latest->risk_factors, true);
+                $riskFactors = $riskFactors ?? [];
+            }
+        }
+
+        // ============================================================
+        // RECENT ATTENDANCE RECORDS
+        // ============================================================
+        $attendanceRecords = AttendanceRecord::where('student_id', $studentId)
+            ->with(['session.course'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
+        // ============================================================
+        // RECOMMENDATIONS
+        // ============================================================
+        $recommendations = $this->generateRecommendations($studentId, $enrollments);
+
+        // ============================================================
+        // ANNOUNCEMENTS
+        // ============================================================
+        $announcements = Announcement::forRole('student')
+            ->where('is_active', true)
+            ->where(function($q) {
+                $q->whereNull('published_at')
+                  ->orWhere('published_at', '<=', now());
             })
-            ->whereIn('status', ['present', 'late'])
-            ->distinct('attendance_session_id')
-            ->count('attendance_session_id');
-        $attendedPeriods = $attendedSessions * 4;
-    }
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
 
-    // Calculate attendance percentage
-    $attendanceRate = $conductedPeriods > 0
-        ? round(($attendedPeriods / $conductedPeriods) * 100, 1)
-        : 0;
-
-    $avgAttendance = $attendanceRate;
-
-    // Calculate roll call mark
-    $rollCallMark = $this->calculateRollCallMark($attendanceRate);
-    $avgRollCall = $rollCallMark;
-
-    // Count eligible courses
-    $eligibleCourses = 0;
-    foreach ($enrollments as $enrollment) {
-        $courseConducted = AttendanceSession::where('course_id', $enrollment->course_id)
-            ->where('status', 'ended')
-            ->where('is_cancelled', false)
-            ->sum('conducted_periods');
-
-        if ($courseConducted == 0) {
-            $courseConducted = AttendanceSession::where('course_id', $enrollment->course_id)
-                ->where('status', 'ended')
-                ->where('is_cancelled', false)
-                ->sum('period_count');
+        foreach ($announcements as $announcement) {
+            if (!$announcement->isReadBy($student->id)) {
+                $announcement->markAsRead($student->id);
+            }
         }
 
-        $courseAttended = AttendanceRecord::where('student_id', $studentId)
-            ->whereHas('session', function($q) use ($enrollment) {
-                $q->where('course_id', $enrollment->course_id)
-                  ->where('is_cancelled', false);
-            })
-            ->whereIn('status', ['present', 'late'])
-            ->sum('periods_attended');
-
-        if ($courseAttended == 0) {
-            $courseAttendedSessions = AttendanceRecord::where('student_id', $studentId)
-                ->whereHas('session', function($q) use ($enrollment) {
-                    $q->where('course_id', $enrollment->course_id)
-                      ->where('is_cancelled', false);
-                })
-                ->whereIn('status', ['present', 'late'])
-                ->distinct('attendance_session_id')
-                ->count('attendance_session_id');
-            $courseAttended = $courseAttendedSessions * 4;
-        }
-
-        $coursePercentage = $courseConducted > 0
-            ? round(($courseAttended / $courseConducted) * 100, 1)
-            : 0;
-
-        if ($coursePercentage >= 75) {
-            $eligibleCourses++;
-        }
-    }
-
-    $atRiskCourses = $totalCourses - $eligibleCourses;
-
-    // ============================================
-    // ACADEMIC HEALTH SCORE
-    // ============================================
-    $healthScore = $this->calculateHealthScore($studentId);
-    $healthCategory = $this->getHealthCategory($healthScore);
-
-    // ============================================
-    // RISK SCORE
-    // ============================================
-    $riskData = $this->calculateRisk($studentId);
-    $riskScore = $riskData['score'];
-    $riskLevel = $riskData['level'];
-    $riskFactors = $riskData['factors'];
-
-    // ============================================
-    // CONSECUTIVE STREAK
-    // ============================================
-    $consecutiveStreak = $this->getConsecutiveStreak($studentId);
-
-    // ============================================
-    // RECENT ATTENDANCE
-    // ============================================
-    $attendanceRecords = AttendanceRecord::where('student_id', $studentId)
-        ->with(['session.course'])
-        ->orderBy('created_at', 'desc')
-        ->limit(5)
-        ->get();
-
-    // ============================================
-    // RECENT ENROLLMENTS
-    // ============================================
-    $recentEnrollments = Enrollment::where('student_id', $studentId)
-        ->with('course')
-        ->orderBy('created_at', 'desc')
-        ->limit(5)
-        ->get();
-
-    // ============================================
-    // RECOMMENDATIONS
-    // ============================================
-    $recommendations = $this->generateRecommendations($studentId, $enrollments);
-
-    // ============================================
-    // ANNOUNCEMENTS
-    // ============================================
-    $announcements = Announcement::forRole('student')
-        ->where('is_active', true)
-        ->where(function($q) {
-            $q->whereNull('published_at')
-              ->orWhere('published_at', '<=', now());
-        })
-        ->orderBy('created_at', 'desc')
-        ->limit(5)
-        ->get();
-
-    foreach ($announcements as $announcement) {
-        if (!$announcement->isReadBy($student->id)) {
-            $announcement->markAsRead($student->id);
-        }
-    }
-
-    // ============================================
-    // PENDING ENROLLMENTS COUNT
-    // ============================================
-    $pendingEnrollments = Enrollment::where('student_id', $studentId)
-        ->where('status', 'pending')
-        ->count();
-
-    return view('student.dashboard', compact(
-        'student',
-        'enrollments',
-        'totalCourses',
-        'avgAttendance',
-        'avgRollCall',
-        'eligibleCourses',
-        'atRiskCourses',
-        'healthScore',
-        'healthCategory',
-        'riskScore',
-        'riskLevel',
-        'riskFactors',
-        'attendanceRate',
-        'consecutiveStreak',
-        'attendanceRecords',
-        'recentEnrollments',
-        'recommendations',
-        'announcements',
-        'pendingEnrollments'
-    ));
-}
-    /**
- * Display student attendance - Period-based calculation
- */
-public function attendance()
-{
-    $student = Auth::user();
-    $studentId = $student->id;
-
-    // Get attendance records with pagination
-    $records = AttendanceRecord::where('student_id', $studentId)
-        ->with(['session.course'])
-        ->orderBy('created_at', 'desc')
-        ->paginate(20);
-
-    // Get all enrolled courses
-    $courseIds = Enrollment::where('student_id', $studentId)
-        ->where('status', 'approved')
-        ->pluck('course_id')
-        ->toArray();
-
-    $courseSummary = collect();
-
-    foreach ($courseIds as $courseId) {
-        $course = Course::find($courseId);
-
-        if (!$course) continue;
-
-        // ============================================
-        // 1. COUNT SESSIONS (Conducted)
-        // ============================================
-        $sessionCount = AttendanceSession::where('course_id', $courseId)
-            ->where('status', 'ended')
-            ->where('is_cancelled', false)
+        // ============================================================
+        // PENDING ENROLLMENTS COUNT
+        // ============================================================
+        $pendingEnrollments = Enrollment::where('student_id', $studentId)
+            ->where('status', 'pending')
             ->count();
 
-        // ============================================
-        // 2. CALCULATE CONDUCTED PERIODS
-        // ============================================
-        $conductedPeriods = AttendanceSession::where('course_id', $courseId)
-            ->where('status', 'ended')
-            ->where('is_cancelled', false)
-            ->sum('conducted_periods');
-
-        // If conducted_periods is 0, use period_count from sessions
-        if ($conductedPeriods == 0) {
-            $conductedPeriods = AttendanceSession::where('course_id', $courseId)
-                ->where('status', 'ended')
-                ->where('is_cancelled', false)
-                ->sum('period_count');
-        }
-
-        // ============================================
-        // 3. CALCULATE ATTENDED PERIODS
-        // ============================================
-        // Count unique sessions attended
-        $attendedSessions = AttendanceRecord::where('student_id', $studentId)
-            ->whereHas('session', function($q) use ($courseId) {
-                $q->where('course_id', $courseId)
-                  ->where('is_cancelled', false);
-            })
-            ->whereIn('status', ['present', 'late'])
-            ->distinct('attendance_session_id')
-            ->count('attendance_session_id');
-
-        // Count attended periods
-        $attendedPeriods = AttendanceRecord::where('student_id', $studentId)
-            ->whereHas('session', function($q) use ($courseId) {
-                $q->where('course_id', $courseId)
-                  ->where('is_cancelled', false);
-            })
-            ->whereIn('status', ['present', 'late'])
-            ->sum('periods_attended');
-
-        // If periods_attended is 0, use session period_count
-        if ($attendedPeriods == 0 && $attendedSessions > 0) {
-            $attendedPeriods = $attendedSessions * 4;
-        }
-
-        // ============================================
-        // 4. CALCULATE ATTENDANCE %
-        // ============================================
-        $percentage = $conductedPeriods > 0
-            ? round(($attendedPeriods / $conductedPeriods) * 100, 1)
-            : 0;
-
-        // ============================================
-        // 5. CALCULATE ROLL CALL MARK (MTU System)
-        // ============================================
-        $rollCallMark = $this->calculateRollCallMark($percentage);
-
-        // ============================================
-        // 6. DETERMINE ELIGIBILITY & RISK
-        // ============================================
-        $eligibility = $percentage >= 75 ? 'Eligible' : ($percentage >= 60 ? 'Warning' : 'At Risk');
-        $riskLevel = $percentage >= 75 ? 'Low' : ($percentage >= 60 ? 'Medium' : 'High');
-
-        // ============================================
-        // 7. COUNT PRESENT, LATE, ABSENT (Unique Sessions)
-        // ============================================
-        $presentCount = AttendanceRecord::where('student_id', $studentId)
-            ->whereHas('session', function($q) use ($courseId) {
-                $q->where('course_id', $courseId)
-                  ->where('is_cancelled', false);
-            })
-            ->where('status', 'present')
-            ->distinct('attendance_session_id')
-            ->count('attendance_session_id');
-
-        $lateCount = AttendanceRecord::where('student_id', $studentId)
-            ->whereHas('session', function($q) use ($courseId) {
-                $q->where('course_id', $courseId)
-                  ->where('is_cancelled', false);
-            })
-            ->where('status', 'late')
-            ->distinct('attendance_session_id')
-            ->count('attendance_session_id');
-
-        $absentCount = $sessionCount - ($presentCount + $lateCount);
-
-        // ============================================
-        // 8. ADD TO SUMMARY
-        // ============================================
-        $courseSummary->push((object)[
-            'course_id' => $courseId,
-            'course_code' => $course->course_code ?? 'N/A',
-            'course_name' => $course->course_name ?? 'N/A',
-            'conducted_periods' => $conductedPeriods,
-            'attended_periods' => $attendedPeriods,
-            'attendance_percentage' => $percentage,
-            'roll_call_mark' => $rollCallMark,
-            'eligibility_status' => $eligibility,
-            'risk_level' => $riskLevel,
-            'sessions' => $sessionCount,  // ← This was missing!
-            'present_count' => $presentCount,
-            'late_count' => $lateCount,
-            'absent_count' => $absentCount,
-        ]);
+        return view('student.dashboard', compact(
+            'student',
+            'enrollments',
+            'evaluations',
+            'totalCourses',
+            'avgAttendance',
+            'avgRollCall',
+            'eligibleCount',
+            'warningCount',
+            'notEligibleCount',
+            'lowRisk',
+            'mediumRisk',
+            'highRisk',
+            'healthScore',
+            'healthCategory',
+            'riskScore',
+            'riskLevel',
+            'riskFactors',
+            'consecutiveStreak',
+            'attendanceRecords',
+            'recommendations',
+            'announcements',
+            'pendingEnrollments'
+        ));
     }
 
-    // Sort courses by percentage (lowest first)
-    $courseSummary = $courseSummary->sortBy('attendance_percentage');
+    /**
+     * Display student attendance with KG+12 roll call breakdown
+     */
+    public function attendance()
+    {
+        $student = Auth::user();
+        $studentId = $student->id;
 
-    // Overall stats
-    $totalConducted = $courseSummary->sum('conducted_periods');
-    $totalAttended = $courseSummary->sum('attended_periods');
-    $overallAttendance = $totalConducted > 0 ? round(($totalAttended / $totalConducted) * 100, 1) : 0;
-    $overallRollCall = $this->calculateRollCallMark($overallAttendance);
+        // Get attendance records with pagination
+        $records = AttendanceRecord::where('student_id', $studentId)
+            ->with(['session.course'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
 
-    // Count unique sessions for overall stats
-    $totalSessions = AttendanceRecord::where('student_id', $studentId)
-        ->distinct('attendance_session_id')
-        ->count('attendance_session_id');
+        // Get all enrolled courses with evaluations
+        $enrollments = Enrollment::where('student_id', $studentId)
+            ->where('status', 'approved')
+            ->with('course')
+            ->get();
 
-    $presentSessions = AttendanceRecord::where('student_id', $studentId)
-        ->where('status', 'present')
-        ->distinct('attendance_session_id')
-        ->count('attendance_session_id');
+        $courseData = [];
+        $totalAttendance = 0;
+        $totalRollCall = 0;
+        $totalSessions = 0;
+        $totalAttended = 0;
 
-    $lateSessions = AttendanceRecord::where('student_id', $studentId)
-        ->where('status', 'late')
-        ->distinct('attendance_session_id')
-        ->count('attendance_session_id');
+        foreach ($enrollments as $enrollment) {
+            $eval = AttendanceEvaluation::where('student_id', $studentId)
+                ->where('course_id', $enrollment->course_id)
+                ->orderBy('evaluation_date', 'desc')
+                ->first();
 
-    $absentSessions = AttendanceRecord::where('student_id', $studentId)
-        ->where('status', 'absent')
-        ->distinct('attendance_session_id')
-        ->count('attendance_session_id');
+            if ($eval) {
+                $courseData[] = [
+                    'course' => $enrollment->course,
+                    'attendance' => $eval->attendance_percentage,
+                    'roll_call_total' => $eval->roll_call_total,
+                    'consistency' => $eval->consistency_marks,
+                    'punctuality' => $eval->punctuality_marks,
+                    'participation' => $eval->participation_marks,
+                    'eligibility' => $eval->eligibility_status,
+                    'risk_level' => $eval->risk_level,
+                    'risk_score' => $eval->risk_score,
+                    'consecutive_absences' => $eval->consecutive_absences,
+                    'trend' => $eval->attendance_trend,
+                    'total_sessions' => $eval->total_sessions,
+                    'attended_sessions' => $eval->attended_sessions,
+                ];
 
-    return view('student.attendance', compact(
-        'student',
-        'records',
-        'courseSummary',
-        'overallAttendance',
-        'overallRollCall',
-        'totalSessions',
-        'presentSessions',
-        'lateSessions',
-        'absentSessions'
-    ));
-}
+                $totalAttendance += $eval->attendance_percentage;
+                $totalRollCall += $eval->roll_call_total;
+                $totalSessions += $eval->total_sessions;
+                $totalAttended += $eval->attended_sessions;
+            } else {
+                $courseData[] = [
+                    'course' => $enrollment->course,
+                    'attendance' => 0,
+                    'roll_call_total' => 0,
+                    'consistency' => 0,
+                    'punctuality' => 0,
+                    'participation' => 0,
+                    'eligibility' => 'not_eligible',
+                    'risk_level' => 'Low',
+                    'risk_score' => 0,
+                    'consecutive_absences' => 0,
+                    'trend' => 'stable',
+                    'total_sessions' => 0,
+                    'attended_sessions' => 0,
+                ];
+            }
+        }
 
-/**
- * Calculate roll call mark (MTU System)
- */
-private function calculateRollCallMark($percentage)
-{
-    if ($percentage >= 95) return 10;
-    if ($percentage >= 90) return 9;
-    if ($percentage >= 85) return 8;
-    if ($percentage >= 80) return 7;
-    if ($percentage >= 75) return 6;
-    if ($percentage >= 70) return 5;
-    if ($percentage >= 65) return 4;
-    if ($percentage >= 60) return 3;
-    if ($percentage >= 55) return 2;
-    return 1;
-}
+        $courseCount = count($courseData);
+        $overallAttendance = $courseCount > 0 ? round($totalAttendance / $courseCount, 1) : 0;
+        $overallRollCall = $courseCount > 0 ? round($totalRollCall / $courseCount, 1) : 0;
+
+        // Attendance stats from records
+        $presentCount = AttendanceRecord::where('student_id', $studentId)
+            ->where('status', 'present')
+            ->count();
+        $lateCount = AttendanceRecord::where('student_id', $studentId)
+            ->where('status', 'late')
+            ->count();
+        $absentCount = AttendanceRecord::where('student_id', $studentId)
+            ->where('status', 'absent')
+            ->count();
+
+        return view('student.attendance', compact(
+            'student',
+            'records',
+            'courseData',
+            'overallAttendance',
+            'overallRollCall',
+            'presentCount',
+            'lateCount',
+            'absentCount',
+            'totalSessions',
+            'totalAttended'
+        ));
+    }
+
+    /**
+     * Display student's attendance history with filters
+     */
+    public function attendanceHistory(Request $request)
+    {
+        $student = Auth::user();
+        $studentId = $student->id;
+
+        $query = AttendanceRecord::where('student_id', $studentId)
+            ->with(['session.course']);
+
+        // Filter by course
+        if ($request->filled('course_id')) {
+            $query->whereHas('session', function($q) use ($request) {
+                $q->where('course_id', $request->course_id);
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $records = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        // Get enrolled courses for filter dropdown
+        $courses = Enrollment::where('student_id', $studentId)
+            ->where('status', 'approved')
+            ->with('course')
+            ->get()
+            ->pluck('course');
+
+        return view('student.attendance-history', compact('records', 'courses'));
+    }
+
+    /**
+     * Calculate Academic Health Score (using KG+12 roll call)
+     */
+    private function calculateHealthScore($studentId)
+    {
+        $evaluations = AttendanceEvaluation::where('student_id', $studentId)
+            ->orderBy('evaluation_date', 'desc')
+            ->get();
+
+        if ($evaluations->isEmpty()) return 0;
+
+        $avgAttendance = $evaluations->avg('attendance_percentage') ?? 0;
+        $avgRollCall = $evaluations->avg('roll_call_total') ?? 0;
+        $streakScore = $this->getStreakScore($studentId);
+        $trendScore = $this->getTrendScore($studentId);
+
+        // Roll call score normalized to 0-100
+        $rollCallScore = $avgRollCall * 10;
+
+        $score = ($avgAttendance * 0.40) + ($rollCallScore * 0.25) + ($streakScore * 0.20) + ($trendScore * 0.15);
+        return min(100, round($score, 1));
+    }
+
+    private function getHealthCategory($score)
+    {
+        if ($score >= 90) return 'Excellent';
+        if ($score >= 75) return 'Stable';
+        if ($score >= 50) return 'At Risk';
+        return 'Critical';
+    }
+
+    private function getStreakScore($studentId)
+    {
+        $evaluations = AttendanceEvaluation::where('student_id', $studentId)
+            ->orderBy('evaluation_date', 'desc')
+            ->limit(5)
+            ->get();
+
+        $streak = 0;
+        foreach ($evaluations as $eval) {
+            if ($eval->consecutive_absences == 0 && $eval->attendance_percentage >= 75) {
+                $streak++;
+            } else {
+                break;
+            }
+        }
+
+        if ($streak >= 13) return 100;
+        if ($streak >= 9) return 80;
+        if ($streak >= 6) return 60;
+        if ($streak >= 3) return 40;
+        return 20;
+    }
+
+    private function getTrendScore($studentId)
+    {
+        $records = AttendanceRecord::where('student_id', $studentId)
+            ->whereIn('status', ['present', 'late'])
+            ->select(DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as count'))
+            ->groupBy('month')
+            ->orderBy('month', 'desc')
+            ->limit(3)
+            ->get();
+
+        if ($records->count() < 2) return 75;
+
+        $months = $records->pluck('count')->toArray();
+        $diff = $months[0] - $months[1];
+        $percentChange = $months[1] > 0 ? ($diff / $months[1]) * 100 : 0;
+
+        if ($percentChange > 10) return 100;
+        if ($percentChange > 5) return 75;
+        if ($percentChange < -10) return 0;
+        if ($percentChange < -5) return 25;
+        return 50;
+    }
 
     /**
      * Display student timetable
@@ -428,13 +438,11 @@ private function calculateRollCallMark($percentage)
         $student = Auth::user();
         $studentId = $student->id;
 
-        // Get enrolled course IDs
         $enrolledCourseIds = Enrollment::where('student_id', $studentId)
             ->where('status', 'approved')
             ->pluck('course_id')
             ->toArray();
 
-        // Get timetable entries for enrolled courses
         $timetableEntries = TimetableEntry::whereIn('course_id', $enrolledCourseIds)
             ->where('is_active', true)
             ->with(['course', 'course.department'])
@@ -442,7 +450,6 @@ private function calculateRollCallMark($percentage)
             ->orderBy('start_time')
             ->get();
 
-        // If no timetable entries, get schedule from courses table
         if ($timetableEntries->isEmpty()) {
             $courses = Course::whereIn('id', $enrolledCourseIds)
                 ->whereNotNull('schedule_day')
@@ -462,7 +469,6 @@ private function calculateRollCallMark($percentage)
             });
         }
 
-        // Build grid
         $days = $this->getDays();
         $timeSlots = $this->getTimeSlots();
         $weekStart = now()->startOfWeek();
@@ -575,7 +581,7 @@ private function calculateRollCallMark($percentage)
     }
 
     /**
-     * Display student progress
+     * Display student progress with KG+12 roll call
      */
     public function progress()
     {
@@ -589,23 +595,40 @@ private function calculateRollCallMark($percentage)
 
         $courseProgress = [];
         foreach ($enrollments as $enrollment) {
-            $courseSessions = AttendanceSession::where('course_id', $enrollment->course_id)->count();
-            $attended = AttendanceRecord::where('student_id', $studentId)
-                ->whereHas('session', function($q) use ($enrollment) {
-                    $q->where('course_id', $enrollment->course_id);
-                })
-                ->whereIn('status', ['present', 'late'])
-                ->count();
+            $eval = AttendanceEvaluation::where('student_id', $studentId)
+                ->where('course_id', $enrollment->course_id)
+                ->orderBy('evaluation_date', 'desc')
+                ->first();
 
-            $courseProgress[] = [
-                'course' => $enrollment->course,
-                'attended' => $attended,
-                'total' => $courseSessions,
-                'percentage' => $courseSessions > 0 ? round(($attended / $courseSessions) * 100, 1) : 0,
-                'attendance_percentage' => $enrollment->attendance_percentage ?? 0,
-                'roll_call_mark' => $enrollment->roll_call_mark ?? 0,
-                'eligibility_status' => $enrollment->eligibility_status ?? 'pending',
-            ];
+            if ($eval) {
+                $courseProgress[] = [
+                    'course' => $enrollment->course,
+                    'attendance' => $eval->attendance_percentage,
+                    'roll_call_total' => $eval->roll_call_total,
+                    'consistency' => $eval->consistency_marks,
+                    'punctuality' => $eval->punctuality_marks,
+                    'participation' => $eval->participation_marks,
+                    'eligibility_status' => $eval->eligibility_status,
+                    'risk_level' => $eval->risk_level,
+                    'risk_score' => $eval->risk_score,
+                    'attended' => $eval->attended_sessions,
+                    'total' => $eval->total_sessions,
+                ];
+            } else {
+                $courseProgress[] = [
+                    'course' => $enrollment->course,
+                    'attendance' => 0,
+                    'roll_call_total' => 0,
+                    'consistency' => 0,
+                    'punctuality' => 0,
+                    'participation' => 0,
+                    'eligibility_status' => 'pending',
+                    'risk_level' => 'Low',
+                    'risk_score' => 0,
+                    'attended' => 0,
+                    'total' => 0,
+                ];
+            }
         }
 
         $totalSessions = AttendanceRecord::where('student_id', $studentId)->count();
@@ -812,7 +835,6 @@ private function calculateRollCallMark($percentage)
     {
         $student = Auth::user();
 
-        // Get courses not yet enrolled in
         $enrolledIds = Enrollment::where('student_id', $student->id)
             ->pluck('course_id')
             ->toArray();
@@ -1151,7 +1173,7 @@ private function calculateRollCallMark($percentage)
     }
 
     // ============================================
-    // CHATBOT METHODS
+    // CHATBOT METHODS (updated with KG+12 roll call)
     // ============================================
 
     /**
@@ -1180,7 +1202,7 @@ private function calculateRollCallMark($percentage)
     }
 
     /**
-     * Get bot response based on query
+     * Get bot response based on query (updated with KG+12 roll call)
      */
     private function getBotResponse($query, $student)
     {
@@ -1218,15 +1240,20 @@ private function calculateRollCallMark($percentage)
         }
 
         // ============================================
-        // ATTENDANCE QUERIES
+        // ATTENDANCE QUERIES (with roll call)
         // ============================================
-        if (preg_match('/\b(attendance|percentage|present|absent|attended|sessions)\b/i', $query)) {
-            $enrollments = Enrollment::where('student_id', $studentId)
-                ->where('status', 'approved')
+        if (preg_match('/\b(attendance|percentage|present|absent|attended|sessions|roll call)\b/i', $query)) {
+            $evaluations = AttendanceEvaluation::where('student_id', $studentId)
+                ->orderBy('evaluation_date', 'desc')
                 ->get();
 
-            $avgAttendance = round($enrollments->avg('attendance_percentage') ?? 0, 1);
-            $totalSessions = AttendanceRecord::where('student_id', $studentId)->count();
+            if ($evaluations->isEmpty()) {
+                return "📊 <strong>No attendance data available yet.</strong><br>Please attend your classes and check back later.";
+            }
+
+            $avgAttendance = round($evaluations->avg('attendance_percentage') ?? 0, 1);
+            $avgRollCall = round($evaluations->avg('roll_call_total') ?? 0, 1);
+            $totalRecords = AttendanceRecord::where('student_id', $studentId)->count();
             $presentSessions = AttendanceRecord::where('student_id', $studentId)
                 ->where('status', 'present')
                 ->count();
@@ -1238,11 +1265,12 @@ private function calculateRollCallMark($percentage)
                 ->count();
 
             $response = "📊 <strong>Your Attendance Summary</strong><br>";
-            $response .= "• Overall: <strong>{$avgAttendance}%</strong><br>";
+            $response .= "• Overall Attendance: <strong>{$avgAttendance}%</strong><br>";
+            $response .= "• Average Roll Call: <strong>{$avgRollCall}/10</strong><br>";
             $response .= "• ✅ Present: {$presentSessions}<br>";
             $response .= "• ⏰ Late: {$lateSessions}<br>";
             $response .= "• ❌ Absent: {$absentSessions}<br>";
-            $response .= "• 📚 Total: {$totalSessions} sessions";
+            $response .= "• 📚 Total: {$totalRecords} sessions";
 
             if ($avgAttendance >= 75) {
                 $response .= "<br><br>✅ <strong>Good standing!</strong> Keep it up! 🎉";
@@ -1259,13 +1287,17 @@ private function calculateRollCallMark($percentage)
         // ELIGIBILITY QUERIES
         // ============================================
         if (preg_match('/\b(eligible|eligibility|exam|final|eligible for exam|can i take exam)\b/i', $query)) {
-            $enrollments = Enrollment::where('student_id', $studentId)
-                ->where('status', 'approved')
+            $evaluations = AttendanceEvaluation::where('student_id', $studentId)
+                ->orderBy('evaluation_date', 'desc')
                 ->get();
 
-            $eligible = $enrollments->where('eligibility_status', 'eligible')->count();
-            $total = $enrollments->count();
-            $avgAttendance = round($enrollments->avg('attendance_percentage') ?? 0, 1);
+            if ($evaluations->isEmpty()) {
+                return "📚 You don't have any attendance records yet. Attend your classes first.";
+            }
+
+            $eligible = $evaluations->where('eligibility_status', 'eligible')->count();
+            $total = $evaluations->count();
+            $avgAttendance = round($evaluations->avg('attendance_percentage') ?? 0, 1);
 
             $response = "✅ <strong>Exam Eligibility Summary</strong><br>";
             $response .= "• Eligible: <strong>{$eligible}</strong> out of {$total} courses<br>";
@@ -1286,14 +1318,23 @@ private function calculateRollCallMark($percentage)
         // RISK QUERIES
         // ============================================
         if (preg_match('/\b(risk|risk level|am i at risk|danger|high risk)\b/i', $query)) {
-            $riskData = $this->calculateRisk($studentId);
-            $level = $riskData['level'];
-            $score = $riskData['score'];
-            $factors = $riskData['factors'];
+            $evaluations = AttendanceEvaluation::where('student_id', $studentId)
+                ->orderBy('evaluation_date', 'desc')
+                ->get();
+
+            if ($evaluations->isEmpty()) {
+                return "⚠️ No risk data available yet. Please attend your classes.";
+            }
+
+            $avgRisk = round($evaluations->avg('risk_score') ?? 0);
+            $level = AttendanceHelper::getRiskLevel($avgRisk);
+
+            $latest = $evaluations->first();
+            $factors = $latest && $latest->risk_factors ? json_decode($latest->risk_factors, true) : [];
 
             $response = "⚠️ <strong>Risk Analysis</strong><br>";
             $response .= "• Risk Level: <strong>{$level}</strong><br>";
-            $response .= "• Risk Score: <strong>{$score}/100</strong>";
+            $response .= "• Risk Score: <strong>{$avgRisk}/100</strong>";
 
             if (!empty($factors)) {
                 $response .= "<br><br>📌 <strong>Risk Factors:</strong><br>";
@@ -1344,11 +1385,12 @@ private function calculateRollCallMark($percentage)
             $healthScore = $this->calculateHealthScore($studentId);
             $category = $this->getHealthCategory($healthScore);
 
-            $enrollments = Enrollment::where('student_id', $studentId)
-                ->where('status', 'approved')
+            $evaluations = AttendanceEvaluation::where('student_id', $studentId)
+                ->orderBy('evaluation_date', 'desc')
                 ->get();
-            $avgAttendance = round($enrollments->avg('attendance_percentage') ?? 0, 1);
-            $avgRollCall = round($enrollments->avg('roll_call_mark') ?? 0, 1);
+
+            $avgAttendance = round($evaluations->avg('attendance_percentage') ?? 0, 1);
+            $avgRollCall = round($evaluations->avg('roll_call_total') ?? 0, 1);
 
             $response = "💚 <strong>Academic Health Score</strong><br>";
             $response .= "• Score: <strong>{$healthScore}</strong><br>";
@@ -1370,113 +1412,11 @@ private function calculateRollCallMark($percentage)
         }
 
         // ============================================
-        // TIMETABLE
-        // ============================================
-        if (preg_match('/\b(timetable|schedule|next class|class time|when is my class)\b/i', $query)) {
-            return "📅 <strong>Your Timetable</strong><br><br>View your full timetable here:<br>👉 <a href='" . route('student.timetable') . "' style='color:#800000; text-decoration:underline;'>My Timetable</a><br><br>You can also check your daily schedule from the navigation menu.";
-        }
-
-        // ============================================
-        // COURSES
-        // ============================================
-        if (preg_match('/\b(course|courses|my courses|enrolled|enrollments)\b/i', $query)) {
-            $enrollments = Enrollment::where('student_id', $studentId)
-                ->where('status', 'approved')
-                ->with('course')
-                ->get();
-
-            if ($enrollments->isEmpty()) {
-                return "📚 <strong>You are not enrolled in any courses yet.</strong><br><br>Browse available courses here:<br>👉 <a href='" . route('student.courses.available') . "' style='color:#800000; text-decoration:underline;'>Available Courses</a>";
-            }
-
-            $response = "📚 <strong>Your Enrolled Courses</strong><br><br>";
-            foreach ($enrollments as $enrollment) {
-                $response .= "• " . $enrollment->course->course_code . " - " . $enrollment->course->course_name . "<br>";
-            }
-            $response .= "<br>View all: <a href='" . route('student.my.enrollments') . "' style='color:#800000; text-decoration:underline;'>My Enrollments</a>";
-
-            return $response;
-        }
-
-        // ============================================
-        // COURSE-SPECIFIC QUERIES
+        // COURSE-SPECIFIC QUERIES (with roll call)
         // ============================================
         if (preg_match('/\b([A-Z]{2,5}-\d+)\b/', $query, $matches)) {
             $courseCode = $matches[1];
             return $this->getCourseInfo($courseCode);
-        }
-
-        // ============================================
-        // CLASS RANK
-        // ============================================
-        if (preg_match('/\b(rank|ranking|position|top|class rank|where do i stand)\b/i', $query)) {
-            return $this->getClassRank();
-        }
-
-        // ============================================
-        // ATTENDANCE TREND
-        // ============================================
-        if (preg_match('/\b(trend|weekly|progress|improvement|decline)\b/i', $query)) {
-            return $this->getAttendanceTrend();
-        }
-
-        // ============================================
-        // ATTENDANCE FORECAST
-        // ============================================
-        if (preg_match('/\b(forecast|predict|project|will i be eligible|future attendance)\b/i', $query)) {
-            return $this->getAttendanceForecast();
-        }
-
-        // ============================================
-        // STUDY TIPS
-        // ============================================
-        if (preg_match('/\b(study tips|how to study|study advice|prepare for class|improve|get better)\b/i', $query)) {
-            return $this->getStudyTips();
-        }
-
-        // ============================================
-        // DEPARTMENT COMPARISON
-        // ============================================
-        if (preg_match('/\b(compare|department average|class average|benchmark|peers)\b/i', $query)) {
-            return $this->getDepartmentComparison();
-        }
-
-        // ============================================
-        // EXAM READINESS
-        // ============================================
-        if (preg_match('/\b(exam ready|exam preparation|ready for exam|test prep)\b/i', $query)) {
-            return $this->getExamReadiness();
-        }
-
-        // ============================================
-        // EXAM COUNTDOWN
-        // ============================================
-        if (preg_match('/\b(countdown|exam countdown|days until exam|exam date|when is exam)\b/i', $query)) {
-            return $this->getExamCountdown();
-        }
-
-        // ============================================
-        // LECTURER INFO
-        // ============================================
-        if (preg_match('/\b(lecturer|teacher|professor|who teaches|instructor)\b/i', $query)) {
-            if (preg_match('/\b([A-Z]{2,5}-\d+)\b/', $query, $matches)) {
-                return $this->getLecturerInfo($matches[1]);
-            }
-            return $this->getLecturerInfo();
-        }
-
-        // ============================================
-        // SEMESTER SUMMARY
-        // ============================================
-        if (preg_match('/\b(semester summary|semester overview|my semester|how is my semester)\b/i', $query)) {
-            return $this->getSemesterSummary();
-        }
-
-        // ============================================
-        // PROGRESS
-        // ============================================
-        if (preg_match('/\b(progress|performance|how am i doing|my progress)\b/i', $query)) {
-            return "📊 <strong>Your Academic Progress</strong><br><br>View detailed progress here:<br>👉 <a href='" . route('student.progress') . "' style='color:#800000; text-decoration:underline;'>My Progress</a><br><br>You can see course-by-course attendance, roll call marks, and eligibility status.";
         }
 
         // ============================================
@@ -1508,39 +1448,41 @@ private function calculateRollCallMark($percentage)
     // ============================================
 
     /**
-     * Get course-specific information
+     * Get course-specific information (with KG+12 roll call)
      */
     private function getCourseInfo($courseCode)
     {
         $studentId = Auth::id();
 
-        $enrollment = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
+        $eval = AttendanceEvaluation::where('student_id', $studentId)
             ->whereHas('course', function($q) use ($courseCode) {
                 $q->where('course_code', $courseCode);
             })
-            ->with(['course', 'course.lecturer'])
+            ->with('course', 'course.lecturer')
+            ->orderBy('evaluation_date', 'desc')
             ->first();
 
-        if (!$enrollment) {
-            return "❌ <strong>Course not found.</strong><br>You are not enrolled in <strong>{$courseCode}</strong>.";
+        if (!$eval) {
+            return "❌ <strong>Course not found.</strong><br>You are not enrolled in <strong>{$courseCode}</strong> or no evaluation data exists.";
         }
 
-        $course = $enrollment->course;
-        $attendance = $enrollment->attendance_percentage ?? 0;
-        $rollCall = $enrollment->roll_call_mark ?? 0;
-        $status = $enrollment->eligibility_status ?? 'pending';
+        $course = $eval->course;
 
         $response = "📚 <strong>{$course->course_code} - {$course->course_name}</strong><br>";
         $response .= "• Lecturer: " . ($course->lecturer->name ?? 'N/A') . "<br>";
         $response .= "• Department: " . ($course->department->name ?? 'N/A') . "<br>";
-        $response .= "• Your Attendance: <strong>{$attendance}%</strong><br>";
-        $response .= "• Roll Call Mark: <strong>{$rollCall}/10</strong><br>";
-        $response .= "• Status: <strong>" . ucfirst(str_replace('_', ' ', $status)) . "</strong>";
+        $response .= "• Your Attendance: <strong>{$eval->attendance_percentage}%</strong><br>";
+        $response .= "• Roll Call Components:<br>";
+        $response .= "   - Consistency: <strong>{$eval->consistency_marks}/6</strong><br>";
+        $response .= "   - Punctuality: <strong>{$eval->punctuality_marks}/2</strong><br>";
+        $response .= "   - Participation: <strong>{$eval->participation_marks}/2</strong><br>";
+        $response .= "• Total Roll Call: <strong>{$eval->roll_call_total}/10</strong><br>";
+        $response .= "• Status: <strong>" . ucfirst(str_replace('_', ' ', $eval->eligibility_status)) . "</strong><br>";
+        $response .= "• Risk: <strong>{$eval->risk_level}</strong> ({$eval->risk_score}/100)";
 
-        if ($attendance < 60) {
+        if ($eval->attendance_percentage < 60) {
             $response .= "<br><br>⚠️ <strong>Recommendation:</strong> Your attendance is below 60%. Contact your lecturer for support.";
-        } elseif ($attendance < 75) {
+        } elseif ($eval->attendance_percentage < 75) {
             $response .= "<br><br>📈 <strong>Recommendation:</strong> Attend upcoming sessions to reach the 75% eligibility threshold.";
         } else {
             $response .= "<br><br>✅ <strong>Great job!</strong> You're maintaining good attendance in this course.";
@@ -1550,618 +1492,21 @@ private function calculateRollCallMark($percentage)
     }
 
     /**
-     * Get class rank
-     */
-    private function getClassRank()
-    {
-        $student = Auth::user();
-        $studentId = $student->id;
-
-        $enrollments = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
-            ->with(['course'])
-            ->get();
-
-        if ($enrollments->isEmpty()) {
-            return "📚 You are not enrolled in any courses yet.";
-        }
-
-        $response = "🏆 <strong>Your Class Rank</strong><br><br>";
-
-        foreach ($enrollments as $enrollment) {
-            $courseId = $enrollment->course_id;
-            $attendance = $enrollment->attendance_percentage ?? 0;
-
-            // Get all students in this course
-            $allEnrollments = Enrollment::where('course_id', $courseId)
-                ->where('status', 'approved')
-                ->get();
-
-            $totalStudents = $allEnrollments->count();
-
-            // Count students with higher attendance
-            $higher = $allEnrollments->filter(function($e) use ($attendance) {
-                return ($e->attendance_percentage ?? 0) > $attendance;
-            })->count();
-
-            $rank = $higher + 1;
-            $percentile = $totalStudents > 0 ? round((($totalStudents - $higher) / $totalStudents) * 100) : 0;
-
-            $icon = $percentile >= 80 ? '🌟' : ($percentile >= 60 ? '📈' : '📊');
-            $response .= "{$icon} <strong>{$enrollment->course->course_code}</strong><br>";
-            $response .= "   Rank: <strong>#{$rank}</strong> of {$totalStudents} students<br>";
-            $response .= "   Attendance: {$attendance}% (Top {$percentile}%)<br><br>";
-        }
-
-        return $response;
-    }
-
-    /**
-     * Get attendance trend
-     */
-    private function getAttendanceTrend()
-    {
-        $student = Auth::user();
-        $studentId = $student->id;
-
-        $enrollments = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
-            ->with(['course'])
-            ->get();
-
-        if ($enrollments->isEmpty()) {
-            return "📚 You are not enrolled in any courses yet.";
-        }
-
-        $response = "📈 <strong>Attendance Trend</strong><br><br>";
-
-        foreach ($enrollments as $enrollment) {
-            $courseId = $enrollment->course_id;
-            $course = $enrollment->course;
-
-            // Get weekly attendance data
-            $weeks = [];
-            for ($i = 4; $i >= 0; $i--) {
-                $weekStart = now()->startOfWeek()->subWeeks($i);
-                $weekEnd = now()->startOfWeek()->subWeeks($i)->endOfWeek();
-
-                $weekRecords = AttendanceRecord::where('student_id', $studentId)
-                    ->whereHas('session', function($q) use ($courseId) {
-                        $q->where('course_id', $courseId);
-                    })
-                    ->whereBetween('created_at', [$weekStart, $weekEnd])
-                    ->whereIn('status', ['present', 'late'])
-                    ->count();
-
-                $weekSessions = AttendanceSession::where('course_id', $courseId)
-                    ->whereBetween('created_at', [$weekStart, $weekEnd])
-                    ->count();
-
-                $weeks[] = [
-                    'week' => $weekStart->format('d M'),
-                    'attended' => $weekRecords,
-                    'total' => $weekSessions,
-                ];
-            }
-
-            $response .= "<strong>{$course->course_code}</strong><br>";
-            foreach ($weeks as $week) {
-                $icon = $week['total'] > 0 && $week['attended'] == $week['total'] ? '✅' :
-                        ($week['total'] > 0 && $week['attended'] > 0 ? '🟡' : '❌');
-                $response .= "   {$icon} {$week['week']}: {$week['attended']}/{$week['total']} sessions<br>";
-            }
-            $response .= "<br>";
-        }
-
-        return $response;
-    }
-
-    /**
-     * Get attendance forecast
-     */
-    private function getAttendanceForecast()
-    {
-        $studentId = Auth::id();
-
-        $enrollments = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
-            ->with(['course'])
-            ->get();
-
-        if ($enrollments->isEmpty()) {
-            return "📚 You are not enrolled in any courses yet.";
-        }
-
-        $forecasts = [];
-        foreach ($enrollments as $enrollment) {
-            $current = $enrollment->attendance_percentage ?? 0;
-            $totalSessions = AttendanceSession::where('course_id', $enrollment->course_id)->count();
-            $attended = AttendanceRecord::where('student_id', $studentId)
-                ->whereHas('session', function($q) use ($enrollment) {
-                    $q->where('course_id', $enrollment->course_id);
-                })
-                ->whereIn('status', ['present', 'late'])
-                ->count();
-
-            $remainingSessions = max(0, $totalSessions - $attended);
-            $projected = $totalSessions > 0
-                ? round((($attended + $remainingSessions * 0.8) / $totalSessions) * 100)
-                : 0;
-
-            $forecasts[] = [
-                'course' => $enrollment->course,
-                'current' => $current,
-                'projected' => $projected,
-                'status' => $projected >= 75 ? 'Likely Eligible' : ($projected >= 60 ? 'Needs Improvement' : 'At Risk'),
-            ];
-        }
-
-        $response = "📊 <strong>Attendance Forecast</strong><br><br>";
-        foreach ($forecasts as $forecast) {
-            $icon = $forecast['projected'] >= 75 ? '✅' : ($forecast['projected'] >= 60 ? '📈' : '⚠️');
-            $response .= "{$icon} <strong>{$forecast['course']->course_code}</strong><br>";
-            $response .= "   Current: {$forecast['current']}% → Projected: <strong>{$forecast['projected']}%</strong><br>";
-            $response .= "   Status: <strong>{$forecast['status']}</strong><br><br>";
-        }
-
-        return $response;
-    }
-
-    /**
-     * Get study tips
-     */
-    private function getStudyTips()
-    {
-        $studentId = Auth::id();
-
-        $enrollments = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
-            ->with(['course'])
-            ->get();
-
-        $tips = [];
-        foreach ($enrollments as $enrollment) {
-            $attendance = $enrollment->attendance_percentage ?? 0;
-            $course = $enrollment->course;
-
-            if ($attendance < 60) {
-                $tips[] = "🚨 Focus on <strong>{$course->course_code}</strong> - Your attendance ({$attendance}%) is critical. Attend the next 3 sessions.";
-            } elseif ($attendance < 75) {
-                $tips[] = "📈 Improve <strong>{$course->course_code}</strong> - Attend 2 more sessions to reach 75% eligibility.";
-            } elseif ($attendance >= 90) {
-                $tips[] = "🌟 Maintain <strong>{$course->course_code}</strong> - Your attendance ({$attendance}%) is excellent!";
-            }
-        }
-
-        if (empty($tips)) {
-            $tips[] = "📚 Keep up your good attendance! Consider reviewing course materials regularly.";
-            $tips[] = "💡 Set a study schedule and stick to it.";
-        }
-
-        $response = "💡 <strong>Personalized Study Tips</strong><br><br>";
-        foreach ($tips as $tip) {
-            $response .= "• " . $tip . "<br>";
-        }
-
-        $response .= "<br>📌 <strong>General Tips:</strong><br>";
-        $response .= "• Review notes within 24 hours of class<br>";
-        $response .= "• Join study groups for difficult subjects<br>";
-        $response .= "• Take breaks during study sessions<br>";
-        $response .= "• Stay consistent with attendance";
-
-        return $response;
-    }
-
-    /**
-     * Get department comparison
-     */
-    private function getDepartmentComparison()
-    {
-        $student = Auth::user();
-        $studentId = $student->id;
-
-        $enrollments = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
-            ->with(['course.department'])
-            ->get();
-
-        if ($enrollments->isEmpty()) {
-            return "📚 You are not enrolled in any courses yet.";
-        }
-
-        $yourAvg = round($enrollments->avg('attendance_percentage') ?? 0, 1);
-        $deptId = $student->department_id;
-
-        // Get department average
-        $deptStudents = User::where('department_id', $deptId)
-            ->where('role_id', 3)
-            ->pluck('id');
-
-        $deptAvg = Enrollment::whereIn('student_id', $deptStudents)
-            ->where('status', 'approved')
-            ->avg('attendance_percentage') ?? 0;
-        $deptAvg = round($deptAvg, 1);
-
-        $diff = $yourAvg - $deptAvg;
-        $comparison = $diff > 5 ? 'above' : ($diff < -5 ? 'below' : 'at');
-
-        $response = "📊 <strong>Department Comparison</strong><br><br>";
-        $response .= "• Your Attendance: <strong>{$yourAvg}%</strong><br>";
-        $response .= "• Department Average: <strong>{$deptAvg}%</strong><br>";
-        $response .= "• You are <strong>" . abs($diff) . "%</strong> {$comparison} the department average";
-
-        if ($diff > 5) {
-            $response .= "<br><br>🌟 <strong>Excellent!</strong> You're performing above the department average. Keep it up!";
-        } elseif ($diff < -5) {
-            $response .= "<br><br>📈 <strong>Room for improvement.</strong> Focus on increasing your attendance to match the department average.";
-        } else {
-            $response .= "<br><br>✅ <strong>Good standing.</strong> You're performing at the department average.";
-        }
-
-        return $response;
-    }
-
-    /**
-     * Get exam readiness
-     */
-    private function getExamReadiness()
-    {
-        $studentId = Auth::id();
-
-        $enrollments = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
-            ->with(['course'])
-            ->get();
-
-        if ($enrollments->isEmpty()) {
-            return "📚 You are not enrolled in any courses yet.";
-        }
-
-        $ready = 0;
-        $notReady = 0;
-        $details = [];
-
-        foreach ($enrollments as $enrollment) {
-            $attendance = $enrollment->attendance_percentage ?? 0;
-            $rollCall = $enrollment->roll_call_mark ?? 0;
-            $isReady = $attendance >= 75 && $rollCall >= 5;
-
-            if ($isReady) {
-                $ready++;
-            } else {
-                $notReady++;
-            }
-
-            $details[] = [
-                'course' => $enrollment->course,
-                'attendance' => $attendance,
-                'roll_call' => $rollCall,
-                'ready' => $isReady,
-            ];
-        }
-
-        $total = $enrollments->count();
-        $percentage = $total > 0 ? round(($ready / $total) * 100) : 0;
-
-        $response = "📝 <strong>Exam Readiness</strong><br><br>";
-        $response .= "• Ready for Exam: <strong>{$ready}</strong> courses<br>";
-        $response .= "• Needs Improvement: <strong>{$notReady}</strong> courses<br>";
-        $response .= "• Readiness Rate: <strong>{$percentage}%</strong><br><br>";
-
-        foreach ($details as $detail) {
-            $icon = $detail['ready'] ? '✅' : '⚠️';
-            $response .= "{$icon} <strong>{$detail['course']->course_code}</strong> - ";
-            $response .= "Attendance: {$detail['attendance']}%, ";
-            $response .= "Roll Call: {$detail['roll_call']}/10";
-            if (!$detail['ready']) {
-                $response .= " <span style='color:#ef4444;'>(Needs Work)</span>";
-            }
-            $response .= "<br>";
-        }
-
-        if ($percentage >= 80) {
-            $response .= "<br>🎉 <strong>You're well prepared!</strong> Continue your good work.";
-        } elseif ($percentage >= 50) {
-            $response .= "<br>📚 <strong>Keep preparing!</strong> Focus on the courses marked with ⚠️.";
-        } else {
-            $response .= "<br>🚨 <strong>Immediate attention needed!</strong> Contact your lecturer for support.";
-        }
-
-        return $response;
-    }
-
-    /**
-     * Get exam countdown
-     */
-    private function getExamCountdown()
-    {
-        // Default exam period - can be dynamic from database
-        $examDate = Carbon::create(2026, 12, 15, 9, 0, 0);
-        $now = Carbon::now();
-
-        $diff = $now->diff($examDate);
-
-        if ($now > $examDate) {
-            $diff = $examDate->diff($now);
-            return "⏰ <strong>Exam Period</strong><br><br>Exams started <strong>{$diff->days} days</strong> ago.<br>Good luck! 🍀";
-        }
-
-        $response = "⏰ <strong>Exam Countdown</strong><br><br>";
-        $response .= "• Days: <strong>{$diff->days}</strong><br>";
-        $response .= "• Hours: <strong>{$diff->h}</strong><br>";
-        $response .= "• Minutes: <strong>{$diff->i}</strong><br><br>";
-
-        if ($diff->days <= 7) {
-            $response .= "🚨 <strong>Exams are coming soon!</strong> Start preparing now!";
-        } elseif ($diff->days <= 30) {
-            $response .= "📚 <strong>You have enough time.</strong> Create a study schedule.";
-        } else {
-            $response .= "✅ <strong>You have plenty of time.</strong> Stay consistent with your studies.";
-        }
-
-        return $response;
-    }
-
-    /**
-     * Get lecturer information
-     */
-    private function getLecturerInfo($courseCode = null)
-    {
-        $student = Auth::user();
-        $studentId = $student->id;
-
-        $query = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
-            ->with(['course', 'course.lecturer']);
-
-        if ($courseCode) {
-            $query->whereHas('course', function($q) use ($courseCode) {
-                $q->where('course_code', $courseCode);
-            });
-        }
-
-        $enrollments = $query->get();
-
-        if ($enrollments->isEmpty()) {
-            return "👨‍🏫 You are not enrolled in any courses.";
-        }
-
-        $response = "👨‍🏫 <strong>Your Lecturers</strong><br><br>";
-
-        foreach ($enrollments as $enrollment) {
-            $course = $enrollment->course;
-            $lecturer = $course->lecturer;
-            $lecturerName = $lecturer ? $lecturer->name : 'Not assigned';
-            $lecturerEmail = $lecturer ? $lecturer->email : 'N/A';
-
-            $response .= "<strong>{$course->course_code}</strong><br>";
-            $response .= "   👤 {$lecturerName}<br>";
-            $response .= "   📧 <a href='mailto:{$lecturerEmail}' style='color:#800000;'>{$lecturerEmail}</a><br><br>";
-        }
-
-        return $response;
-    }
-
-    /**
-     * Get semester summary
-     */
-    private function getSemesterSummary()
-    {
-        $student = Auth::user();
-        $studentId = $student->id;
-
-        $enrollments = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
-            ->with(['course'])
-            ->get();
-
-        if ($enrollments->isEmpty()) {
-            return "📚 You are not enrolled in any courses yet.";
-        }
-
-        $totalCourses = $enrollments->count();
-        $eligible = $enrollments->where('eligibility_status', 'eligible')->count();
-        $avgAttendance = round($enrollments->avg('attendance_percentage') ?? 0, 1);
-        $avgRollCall = round($enrollments->avg('roll_call_mark') ?? 0, 1);
-
-        $healthScore = $this->calculateHealthScore($studentId);
-        $healthCategory = $this->getHealthCategory($healthScore);
-
-        $response = "📚 <strong>Semester Summary</strong><br><br>";
-        $response .= "• 📖 Total Courses: <strong>{$totalCourses}</strong><br>";
-        $response .= "• ✅ Eligible: <strong>{$eligible}</strong> of {$totalCourses}<br>";
-        $response .= "• 📊 Attendance: <strong>{$avgAttendance}%</strong><br>";
-        $response .= "• 🎯 Roll Call: <strong>{$avgRollCall}/10</strong><br>";
-        $response .= "• 💚 Health Score: <strong>{$healthScore}</strong> ({$healthCategory})<br><br>";
-
-        if ($eligible == $totalCourses) {
-            $response .= "🎉 <strong>Excellent!</strong> You are eligible for all courses!";
-        } elseif ($eligible >= $totalCourses * 0.7) {
-            $response .= "📈 <strong>Good standing.</strong> Maintain your attendance to stay eligible.";
-        } else {
-            $response .= "⚠️ <strong>Need improvement.</strong> Focus on increasing your attendance.";
-        }
-
-        return $response;
-    }
-
-    // ============================================
-    // PRIVATE HELPER METHODS
-    // ============================================
-
-    /**
-     * Calculate Academic Health Score
-     */
-    private function calculateHealthScore($studentId)
-    {
-        $enrollments = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
-            ->get();
-
-        $total = $enrollments->count();
-        if ($total == 0) return 0;
-
-        $avgAttendance = $enrollments->avg('attendance_percentage') ?? 0;
-        $avgRollCall = $enrollments->avg('roll_call_mark') ?? 0;
-        $streakScore = $this->getStreakScore($studentId);
-        $trendScore = $this->getTrendScore($studentId);
-
-        $score = ($avgAttendance * 0.40) + ($avgRollCall * 10 * 0.25) + ($streakScore * 0.20) + ($trendScore * 0.15);
-        return min(100, round($score, 1));
-    }
-
-    private function getHealthCategory($score)
-    {
-        if ($score >= 90) return 'Excellent';
-        if ($score >= 75) return 'Stable';
-        if ($score >= 50) return 'At Risk';
-        return 'Critical';
-    }
-
-    private function getStreakScore($studentId)
-    {
-        $streak = $this->getConsecutiveStreak($studentId);
-        if ($streak >= 13) return 100;
-        if ($streak >= 9) return 80;
-        if ($streak >= 6) return 60;
-        if ($streak >= 3) return 40;
-        return 20;
-    }
-
-    private function getTrendScore($studentId)
-    {
-        $records = AttendanceRecord::where('student_id', $studentId)
-            ->whereIn('status', ['present', 'late'])
-            ->select(DB::raw('MONTH(created_at) as month'), DB::raw('COUNT(*) as count'))
-            ->groupBy('month')
-            ->orderBy('month', 'desc')
-            ->limit(3)
-            ->get();
-
-        if ($records->count() < 2) return 75;
-
-        $months = $records->pluck('count')->toArray();
-        $diff = $months[0] - $months[1];
-        $percentChange = $months[1] > 0 ? ($diff / $months[1]) * 100 : 0;
-
-        if ($percentChange > 10) return 100;
-        if ($percentChange > 5) return 75;
-        if ($percentChange < -10) return 0;
-        if ($percentChange < -5) return 25;
-        return 50;
-    }
-
-    private function getConsecutiveStreak($studentId)
-    {
-        $sessions = AttendanceSession::where('status', 'ended')
-            ->orderBy('created_at', 'desc')
-            ->limit(20)
-            ->get();
-
-        $streak = 0;
-        foreach ($sessions as $session) {
-            $record = AttendanceRecord::where('attendance_session_id', $session->id)
-                ->where('student_id', $studentId)
-                ->whereIn('status', ['present', 'late'])
-                ->first();
-
-            if ($record) {
-                $streak++;
-            } else {
-                break;
-            }
-        }
-        return $streak;
-    }
-
-    /**
-     * Calculate Risk
-     */
-    private function calculateRisk($studentId)
-    {
-        $enrollments = Enrollment::where('student_id', $studentId)
-            ->where('status', 'approved')
-            ->get();
-
-        $avgAttendance = $enrollments->avg('attendance_percentage') ?? 0;
-        $avgRollCall = $enrollments->avg('roll_call_mark') ?? 0;
-
-        if ($avgAttendance >= 90) $attendancePoints = 0;
-        elseif ($avgAttendance >= 80) $attendancePoints = 25;
-        elseif ($avgAttendance >= 70) $attendancePoints = 50;
-        elseif ($avgAttendance >= 60) $attendancePoints = 75;
-        else $attendancePoints = 100;
-
-        if ($avgRollCall >= 9) $rollCallPoints = 0;
-        elseif ($avgRollCall >= 7) $rollCallPoints = 25;
-        elseif ($avgRollCall >= 5) $rollCallPoints = 50;
-        elseif ($avgRollCall >= 3) $rollCallPoints = 75;
-        else $rollCallPoints = 100;
-
-        $consecutiveAbsences = $this->getConsecutiveAbsences($studentId);
-        if ($consecutiveAbsences == 0) $consecutivePoints = 0;
-        elseif ($consecutiveAbsences == 1) $consecutivePoints = 25;
-        elseif ($consecutiveAbsences == 2) $consecutivePoints = 50;
-        elseif ($consecutiveAbsences == 3) $consecutivePoints = 75;
-        else $consecutivePoints = 100;
-
-        $trendPoints = $this->getTrendScore($studentId);
-        if ($trendPoints >= 75) $trendPoints = 0;
-        elseif ($trendPoints >= 50) $trendPoints = 25;
-        elseif ($trendPoints >= 25) $trendPoints = 50;
-        else $trendPoints = 75;
-
-        $score = ($attendancePoints * 0.40) + ($rollCallPoints * 0.25) + ($consecutivePoints * 0.20) + ($trendPoints * 0.15);
-        $score = round($score);
-
-        $level = 'Low';
-        if ($score >= 70) $level = 'High';
-        elseif ($score >= 40) $level = 'Medium';
-
-        $factors = [];
-        if ($avgAttendance < 70) $factors[] = 'Attendance below 70%';
-        if ($avgRollCall < 5) $factors[] = 'Roll call score below 5';
-        if ($consecutiveAbsences >= 3) $factors[] = $consecutiveAbsences . ' consecutive absences';
-
-        return [
-            'score' => $score,
-            'level' => $level,
-            'factors' => $factors,
-        ];
-    }
-
-    private function getConsecutiveAbsences($studentId)
-    {
-        $sessions = AttendanceSession::where('status', 'ended')
-            ->orderBy('created_at', 'desc')
-            ->limit(20)
-            ->get();
-
-        $consecutive = 0;
-        foreach ($sessions as $session) {
-            $record = AttendanceRecord::where('attendance_session_id', $session->id)
-                ->where('student_id', $studentId)
-                ->where('status', 'absent')
-                ->first();
-
-            if ($record) {
-                $consecutive++;
-            } else {
-                break;
-            }
-        }
-        return $consecutive;
-    }
-
-    /**
-     * Generate Recommendations
+     * Generate Recommendations (using KG+12 evaluations)
      */
     private function generateRecommendations($studentId, $enrollments)
     {
         $recommendations = [];
 
         foreach ($enrollments as $enrollment) {
-            $attendance = $enrollment->attendance_percentage ?? 0;
+            $eval = AttendanceEvaluation::where('student_id', $studentId)
+                ->where('course_id', $enrollment->course_id)
+                ->orderBy('evaluation_date', 'desc')
+                ->first();
+
+            if (!$eval) continue;
+
+            $attendance = $eval->attendance_percentage;
             $course = $enrollment->course;
 
             if ($attendance >= 90) {
@@ -2193,18 +1538,40 @@ private function calculateRollCallMark($percentage)
                     'priority' => 'high',
                 ];
             }
-        }
 
-        $consecutiveAbsences = $this->getConsecutiveAbsences($studentId);
-        if ($consecutiveAbsences >= 3) {
-            $recommendations[] = [
-                'course' => null,
-                'type' => 'warning',
-                'message' => '📚 You missed ' . $consecutiveAbsences . ' consecutive sessions — review missed topics before falling behind',
-                'priority' => 'high',
-            ];
+            // Consecutive absences
+            if ($eval->consecutive_absences >= 3) {
+                $recommendations[] = [
+                    'course' => $course,
+                    'type' => 'warning',
+                    'message' => '📚 You missed ' . $eval->consecutive_absences . ' consecutive sessions in ' . $course->course_name . ' — review missed topics before falling behind',
+                    'priority' => 'high',
+                ];
+            }
         }
 
         return $recommendations;
+    }
+
+    // ============================================
+    // UNUSED/LEGACY METHODS (kept for compatibility)
+    // ============================================
+
+    /**
+     * @deprecated Use AttendanceEvaluation instead
+     */
+    private function calculateRollCallMark($percentage)
+    {
+        // Kept for backward compatibility
+        if ($percentage >= 95) return 10;
+        if ($percentage >= 90) return 9;
+        if ($percentage >= 85) return 8;
+        if ($percentage >= 80) return 7;
+        if ($percentage >= 75) return 6;
+        if ($percentage >= 70) return 5;
+        if ($percentage >= 65) return 4;
+        if ($percentage >= 60) return 3;
+        if ($percentage >= 55) return 2;
+        return 1;
     }
 }

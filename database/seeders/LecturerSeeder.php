@@ -13,7 +13,7 @@ class LecturerSeeder extends Seeder
     public function run(): void
     {
         // Get CEIT department ID
-        $ceitDept = DB::table('departments')->where('code', 'CS')->first();
+        $ceitDept = DB::table('departments')->where('code', 'CEIT')->first();
 
         if (!$ceitDept) {
             $this->command->error('❌ CS Department not found! Run DepartmentSeeder first.');
@@ -59,7 +59,7 @@ class LecturerSeeder extends Seeder
 
         foreach ($lecturers as $lecturer) {
             // Determine department
-            $departmentCode = $lecturer['department_code'] ?? 'CS';
+            $departmentCode = $lecturer['department_code'] ?? 'CEIT';
             $dept = DB::table('departments')->where('code', $departmentCode)->first();
 
             if (!$dept) {

@@ -11,11 +11,25 @@
 
 @section('content')
     <style>
-        /* ============================================
-                   COMPACT PROFESSIONAL DESIGN
-                   ============================================ */
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-        /* Stats Row - Compact */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -24,20 +38,21 @@
         }
 
         .stat-box {
-            background: white;
-            border-radius: 10px;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 14px 18px;
-            border: 1px solid #e5e7eb;
-            transition: all 0.2s;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            transition: var(--transition);
+            box-shadow: var(--shadow);
         }
 
         .stat-box:hover {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-box .label {
             font-size: 12px;
-            color: #6b7280;
+            color: var(--text-gray);
             font-weight: 500;
             text-transform: uppercase;
             letter-spacing: 0.3px;
@@ -46,7 +61,7 @@
         .stat-box .value {
             font-size: 22px;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
             line-height: 1.2;
         }
 
@@ -60,34 +75,32 @@
         }
 
         .stat-box .trend.up {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
         .stat-box .trend.down {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
         }
 
         .stat-box .trend.stable {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
         }
 
-        /* ============================================
-                   SESSION TABLE - Compact
-                   ============================================ */
         .session-table-wrap {
-            background: white;
-            border-radius: 10px;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .session-table-wrap .table-header {
             padding: 12px 18px;
             background: #fafafa;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -99,7 +112,7 @@
             margin: 0;
             font-size: 15px;
             font-weight: 600;
-            color: #1f2937;
+            color: var(--text-dark);
         }
 
         .session-table-wrap .table-header .filters {
@@ -112,21 +125,22 @@
         .session-table-wrap .table-header .filters select,
         .session-table-wrap .table-header .filters input {
             padding: 5px 10px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 8px;
             font-size: 12px;
-            background: white;
-            color: #1f2937;
+            background: var(--white);
+            color: var(--text-dark);
             outline: none;
-            transition: all 0.2s;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
         }
 
         .session-table-wrap .table-header .filters select:focus,
         .session-table-wrap .table-header .filters input:focus {
-            border-color: #800000;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
-        /* Table */
         .table-scroll {
             overflow-x: auto;
         }
@@ -145,18 +159,18 @@
             padding: 10px 14px;
             text-align: left;
             font-weight: 600;
-            color: #374151;
+            color: var(--text-dark);
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             white-space: nowrap;
         }
 
         .session-table tbody td {
             padding: 9px 14px;
-            border-bottom: 1px solid #f3f4f6;
-            color: #1f2937;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
+            color: var(--text-dark);
             vertical-align: middle;
         }
 
@@ -168,31 +182,28 @@
             border-bottom: none;
         }
 
-        /* Course Cell */
         .course-cell .name {
             font-weight: 500;
             font-size: 13px;
-            color: #1f2937;
+            color: var(--text-dark);
         }
 
         .course-cell .code {
             font-size: 11px;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
-        /* Code Badge */
         .code-badge {
             background: #f3f4f6;
             padding: 1px 10px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-family: monospace;
             font-weight: 600;
             font-size: 12px;
-            color: #374151;
+            color: var(--text-dark);
             letter-spacing: 0.5px;
         }
 
-        /* Status Badge */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -204,7 +215,7 @@
         }
 
         .status-badge.active {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
@@ -213,13 +224,13 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: #10b981;
+            background: var(--success);
             animation: pulse 1.5s infinite;
         }
 
         .status-badge.ended {
             background: #f3f4f6;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         @keyframes pulse {
@@ -234,7 +245,6 @@
             }
         }
 
-        /* Attendance Progress - Compact */
         .attendance-cell {
             min-width: 120px;
         }
@@ -263,7 +273,7 @@
         .attendance-cell .bar-wrap .percent {
             font-weight: 600;
             font-size: 13px;
-            color: #1f2937;
+            color: var(--text-dark);
             min-width: 36px;
             text-align: right;
         }
@@ -272,23 +282,22 @@
             display: flex;
             gap: 8px;
             font-size: 11px;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-top: 2px;
         }
 
         .attendance-cell .stats-mini .p {
-            color: #10b981;
+            color: var(--success);
         }
 
         .attendance-cell .stats-mini .l {
-            color: #f59e0b;
+            color: var(--warning);
         }
 
         .attendance-cell .stats-mini .a {
-            color: #ef4444;
+            color: var(--danger);
         }
 
-        /* Action Buttons - Only End Session */
         .action-group {
             display: flex;
             gap: 4px;
@@ -298,40 +307,37 @@
         .btn-icon-sm {
             width: 28px;
             height: 28px;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-            background: white;
+            border-radius: 8px;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            background: var(--white);
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
+            transition: var(--transition);
             cursor: pointer;
-            color: #6b7280;
+            color: var(--text-gray);
             font-size: 13px;
         }
 
         .btn-icon-sm:hover {
             background: #f3f4f6;
-            border-color: #800000;
-            color: #800000;
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         .btn-icon-sm.danger {
-            border-color: #fee2e2;
-            color: #ef4444;
+            border-color: var(--danger-light);
+            color: var(--danger);
         }
 
         .btn-icon-sm.danger:hover {
-            background: #fee2e2;
-            border-color: #ef4444;
+            background: var(--danger-light);
+            border-color: var(--danger);
         }
 
-        /* ============================================
-                   PAGINATION - Compact
-                   ============================================ */
         .pagination-wrap {
             padding: 12px 18px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -341,7 +347,7 @@
         }
 
         .pagination-wrap .info {
-            color: #6b7280;
+            color: var(--text-gray);
             font-size: 12px;
         }
 
@@ -353,29 +359,26 @@
 
         .pagination-wrap .pagination .page-link {
             padding: 4px 10px;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-            color: #6b7280;
+            border-radius: 8px;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            color: var(--text-gray);
             font-size: 12px;
             text-decoration: none;
-            transition: all 0.2s;
-            background: white;
+            transition: var(--transition);
+            background: var(--white);
         }
 
         .pagination-wrap .pagination .page-link:hover {
-            border-color: #800000;
-            color: #800000;
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         .pagination-wrap .pagination .page-link.active {
-            background: #800000;
-            border-color: #800000;
-            color: white;
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--white);
         }
 
-        /* ============================================
-                   EMPTY STATE
-                   ============================================ */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -388,37 +391,34 @@
         }
 
         .empty-state h5 {
-            color: #1f2937;
+            color: var(--text-dark);
             margin-bottom: 4px;
             font-size: 16px;
         }
 
         .empty-state p {
-            color: #6b7280;
+            color: var(--text-gray);
             font-size: 13px;
             margin-bottom: 16px;
         }
 
         .empty-state .btn-primary {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             padding: 8px 24px;
             border-radius: 8px;
             text-decoration: none;
             border: none;
             display: inline-block;
-            transition: all 0.2s;
+            transition: var(--transition);
             font-weight: 500;
             font-size: 13px;
         }
 
         .empty-state .btn-primary:hover {
-            background: #6b0000;
+            background: var(--primary-dark);
         }
 
-        /* ============================================
-                   RESPONSIVE
-                   ============================================ */
         @media (max-width: 992px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -431,7 +431,7 @@
             .session-table tbody tr {
                 display: block;
                 padding: 12px 0;
-                border-bottom: 1px solid #f3f4f6;
+                border-bottom: 1px solid rgba(10, 36, 99, 0.04);
             }
 
             .session-table tbody td {
@@ -445,7 +445,7 @@
             .session-table tbody td::before {
                 content: attr(data-label);
                 font-weight: 600;
-                color: #6b7280;
+                color: var(--text-gray);
                 font-size: 11px;
             }
 
@@ -493,9 +493,6 @@
         }
     </style>
 
-    <!-- ==========================================
-            STATISTICS - COMPACT
-            ========================================== -->
     <div class="stats-grid">
         <div class="stat-box">
             <div class="label">Total Sessions</div>
@@ -524,9 +521,6 @@
         </div>
     </div>
 
-    <!-- ==========================================
-            SESSION TABLE
-            ========================================== -->
     <div class="session-table-wrap">
         <div class="table-header">
             <h5><i class="bi bi-clock-history"></i> Sessions</h5>
@@ -543,6 +537,7 @@
         @if ($sessions && $sessions->count() > 0)
             <div class="table-scroll">
                 <table class="session-table" id="sessionTable">
+                    <!-- Inside the session table, add Roll Call column -->
                     <thead>
                         <tr>
                             <th>Course</th>
@@ -551,6 +546,7 @@
                             <th>Date & Time</th>
                             <th>Status</th>
                             <th>Attendance</th>
+                            <th>Roll Call</th>
                             <th style="text-align: center;">Action</th>
                         </tr>
                     </thead>
@@ -562,7 +558,26 @@
                                 $absent = $session->records->where('status', 'absent')->count();
                                 $total = $present + $late + $absent;
                                 $percentage = $total > 0 ? round(($present / $total) * 100) : 0;
-
+                                $rollCall =
+                                    $percentage >= 95
+                                        ? 10
+                                        : ($percentage >= 90
+                                            ? 9
+                                            : ($percentage >= 85
+                                                ? 8
+                                                : ($percentage >= 80
+                                                    ? 7
+                                                    : ($percentage >= 75
+                                                        ? 6
+                                                        : ($percentage >= 70
+                                                            ? 5
+                                                            : ($percentage >= 65
+                                                                ? 4
+                                                                : ($percentage >= 60
+                                                                    ? 3
+                                                                    : ($percentage >= 55
+                                                                        ? 2
+                                                                        : 1))))))));
                                 $barColor = $percentage >= 75 ? '#10b981' : ($percentage >= 50 ? '#f59e0b' : '#ef4444');
                             @endphp
                             <tr data-status="{{ $session->status }}"
@@ -580,7 +595,7 @@
                                 <td data-label="Date & Time">
                                     {{ $session->started_at ? \Carbon\Carbon::parse($session->started_at)->format('M d, Y') : 'N/A' }}
                                     <br>
-                                    <small style="color: #6b7280; font-size: 11px;">
+                                    <small style="color: var(--text-gray); font-size: 11px;">
                                         {{ $session->started_at ? \Carbon\Carbon::parse($session->started_at)->format('h:i A') : '' }}
                                         · {{ $session->duration }}m
                                     </small>
@@ -605,8 +620,10 @@
                                         <span class="a">A: {{ $absent }}</span>
                                     </div>
                                 </td>
+                                <td data-label="Roll Call" style="text-align:center; font-weight:700;">
+                                    {{ $rollCall }}/10
+                                </td>
                                 <td data-label="Action" style="text-align: center;">
-                                    {{-- End Session Button (only for active sessions) --}}
                                     @if ($session->status == 'active')
                                         <form
                                             action="{{ route('lecturer.attendance.sessions.end', ['id' => $session->id]) }}"
@@ -627,7 +644,6 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
             <div class="pagination-wrap">
                 <span class="info">
                     {{ $sessions->firstItem() ?? 0 }}–{{ $sessions->lastItem() ?? 0 }} of {{ $sessions->total() }}

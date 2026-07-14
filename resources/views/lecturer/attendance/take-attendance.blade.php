@@ -11,26 +11,46 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
         .qr-container {
-            background: linear-gradient(135deg, #800000, #5f0000);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
             padding: 20px;
             border-radius: 15px;
             text-align: center;
             margin-bottom: 20px;
+            box-shadow: var(--shadow);
         }
 
         .qr-container-semester {
-            background: linear-gradient(135deg, #1a5f7a, #0d3b4f);
-            color: white;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            color: var(--white);
             padding: 20px;
             border-radius: 15px;
             text-align: center;
             margin-bottom: 20px;
+            box-shadow: var(--shadow);
         }
 
         .qr-box {
-            background: white;
+            background: var(--white);
             padding: 15px;
             border-radius: 10px;
             display: inline-block;
@@ -51,19 +71,21 @@
             border-radius: 8px;
             display: inline-block;
             font-family: monospace;
+            color: var(--white);
         }
 
         .mode-selector {
-            background: white;
+            background: var(--white);
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 20px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
         }
 
         .btn-custom {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             border: none;
             padding: 8px 16px;
             border-radius: 6px;
@@ -72,16 +94,23 @@
         }
 
         .btn-custom:hover {
-            background: #5f0000;
+            background: var(--primary-dark);
             transform: translateY(-1px);
         }
 
         .form-control {
             width: 100%;
             padding: 8px;
-            border: 1px solid #ddd;
+            border: 1px solid rgba(10, 36, 99, 0.12);
             border-radius: 6px;
             margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .countdown {
@@ -103,27 +132,26 @@
 
         .stat-label {
             font-size: 12px;
+            color: var(--text-gray);
         }
 
         .download-btn {
             display: inline-block;
-            background: #10b981;
-            color: white;
+            background: var(--success);
+            color: var(--white);
             padding: 5px 10px;
             border-radius: 5px;
             font-size: 12px;
             margin-top: 8px;
             text-decoration: none;
+            transition: all 0.2s;
         }
 
         .download-btn:hover {
             background: #059669;
-            color: white;
+            color: var(--white);
         }
 
-        /* ============================================
-               REAL-TIME ATTENDANCE TABLE
-               ============================================ */
         .live-attendance-table {
             width: 100%;
             border-collapse: collapse;
@@ -131,7 +159,7 @@
         }
 
         .live-attendance-table thead {
-            background: #f8fafc;
+            background: var(--bg-main);
         }
 
         .live-attendance-table th {
@@ -139,9 +167,9 @@
             text-align: left;
             font-size: 11px;
             text-transform: uppercase;
-            color: #6b7280;
+            color: var(--text-gray);
             font-weight: 600;
-            border-bottom: 2px solid #e5e7eb;
+            border-bottom: 2px solid rgba(10, 36, 99, 0.06);
         }
 
         .live-attendance-table td {
@@ -155,7 +183,7 @@
         }
 
         .live-attendance-table tbody tr:hover {
-            background: #f8fafc;
+            background: var(--bg-main);
         }
 
         .live-attendance-table .status-badge {
@@ -203,7 +231,7 @@
             display: inline-block;
             width: 8px;
             height: 8px;
-            background: #10b981;
+            background: var(--success);
             border-radius: 50%;
             animation: pulse 1.5s infinite;
             margin-right: 6px;
@@ -225,16 +253,320 @@
 
         .attendance-counter {
             font-size: 14px;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .attendance-counter strong {
-            color: #1f2937;
+            color: var(--text-dark);
+        }
+
+        .btn-back-to-form {
+            background: var(--text-gray);
+            color: var(--white);
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-back-to-form:hover {
+            background: #4b5563;
+            color: var(--white);
+            transform: translateY(-1px);
+        }
+
+        .btn-deactivate {
+            background: var(--danger);
+            color: var(--white);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-deactivate:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+
+        .btn-regenerate {
+            background: var(--warning);
+            color: var(--white);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-regenerate:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+
+        .top-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .alert-info {
+            background: #eff6ff;
+            color: #1e40af;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--info);
+            font-size: 14px;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--success);
+            font-size: 14px;
+        }
+
+        .qr-list {
+            margin-top: 10px;
+        }
+
+        .qr-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: var(--bg-main);
+            border-radius: 8px;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .qr-item:hover {
+            background: #e8edf5;
+        }
+
+        .qr-item .course-info .name {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .qr-item .course-info .code {
+            font-size: 12px;
+            color: var(--text-gray);
+        }
+
+        .qr-item .status-badge-sm {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge-sm.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .btn-view-qr {
+            background: var(--primary-light);
+            color: var(--white);
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-view-qr:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-end-qr {
+            background: var(--danger);
+            color: var(--white);
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-end-qr:hover {
+            background: #b91c1c;
+            color: var(--white);
+        }
+
+        .qr-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .qr-badge.semester {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .qr-badge.dynamic {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 15px;
+            color: var(--text-gray);
+            font-size: 13px;
+        }
+
+        .empty-state i {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 8px;
+            color: #d1d5db;
+        }
+
+        .mode-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .mode-badge.dynamic {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fcd34d;
+        }
+
+        .mode-badge.semester {
+            background: rgba(255, 255, 255, 0.2);
+            color: #93c5fd;
+        }
+
+        /* Roll Call Styles */
+        .rollcall-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .rollcall-box {
+            background: var(--bg-main);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .rollcall-box:hover {
+            border-color: var(--primary);
+        }
+
+        .rollcall-box .value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .rollcall-box .value.high {
+            color: var(--success);
+        }
+
+        .rollcall-box .value.medium {
+            color: var(--warning);
+        }
+
+        .rollcall-box .value.low {
+            color: var(--danger);
+        }
+
+        .rollcall-box .label {
+            font-size: 10px;
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+
+        .eligibility-badge {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .eligibility-badge.eligible {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .eligibility-badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .eligibility-badge.not_eligible {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .risk-badge-sm {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .risk-badge-sm.low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .risk-badge-sm.medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .risk-badge-sm.high {
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         @media (max-width: 768px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .rollcall-grid {
+                grid-template-columns: repeat(3, 1fr);
             }
 
             .qr-box img {
@@ -254,16 +586,44 @@
             .live-attendance-table td {
                 padding: 4px 6px;
             }
+
+            .top-actions {
+                justify-content: center;
+            }
+
+            .qr-item {
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
         }
     </style>
 
+    @if (session('info'))
+        <div class="alert-info">
+            <i class="bi bi-info-circle"></i> {{ session('info') }}
+        </div>
+    @endif
+
+    @if (session('success'))
+        <div class="alert-success">
+            <i class="bi bi-check-circle"></i> {{ session('success') }}
+        </div>
+    @endif
+
     <div class="row">
         <div class="col-md-6">
-            @if ($activeSession)
-                @if ($activeSession->course->qr_mode == 'semester')
-                    <!-- Semester QR Mode Display -->
+            @if ($activeSession && !$showCreateForm)
+                <div class="top-actions">
+                    <a href="{{ route('lecturer.attendance.take') }}?back=1" class="btn-back-to-form">
+                        <i class="bi bi-arrow-left"></i> Back to Create New QR
+                    </a>
+                </div>
+
+                @if ($activeSession->qr_mode == 'semester')
                     <div class="qr-container-semester">
-                        <h4><i class="bi bi-qr-code"></i> Semester QR (Static)</h4>
+                        <span class="mode-badge semester"><i class="bi bi-book"></i> Semester QR (Static)</span>
+                        <h4><i class="bi bi-qr-code"></i> Semester QR Code</h4>
                         <p style="font-size: 12px;">Same QR for whole semester - put on PowerPoint once</p>
                         <div class="qr-box">
                             @php
@@ -284,28 +644,42 @@
                         <div>
                             <p><strong>Course:</strong> {{ $activeSession->course->course_name ?? 'N/A' }}</p>
                             <p><strong>Room:</strong> {{ $activeSession->room ?? 'Not specified' }}</p>
+                            <p style="font-size: 12px; opacity: 0.8;">
+                                <i class="bi bi-info-circle"></i>
+                                Students can scan anytime during the semester
+                            </p>
+                            <p style="margin-top: 10px;">
+                                <strong>Manual Code:</strong>
+                            </p>
+                            <div class="manual-code">{{ $activeSession->manual_code }}</div>
+                            <p style="font-size: 12px; opacity: 0.8; margin-top: 5px;">
+                                <i class="bi bi-info-circle"></i> Students can enter this code manually if they can't scan
+                            </p>
                         </div>
-                        <div style="margin-top: 15px;">
+                        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                             <form method="POST"
                                 action="{{ route('lecturer.course.regenerate-semester-qr', $activeSession->course->id) }}"
                                 style="display: inline;">
                                 @csrf
-                                <button type="submit" class="btn-custom" style="background: #f59e0b;">⟳ Regenerate
-                                    QR</button>
+                                <button type="submit" class="btn-regenerate">
+                                    ⟳ Regenerate QR
+                                </button>
                             </form>
                             <form method="POST"
                                 action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
-                                style="display: inline;">
+                                style="display: inline;"
+                                onsubmit="return confirm('End this semester QR? Students will no longer be able to scan.')">
                                 @csrf
-                                <button type="submit" class="btn-custom" style="background: #dc2626;">⏹ End
-                                    Session</button>
+                                <button type="submit" class="btn-deactivate">
+                                    ⏹ End QR
+                                </button>
                             </form>
                         </div>
                     </div>
                 @else
-                    <!-- Dynamic Session QR Mode Display -->
                     <div class="qr-container">
-                        <h4><i class="bi bi-qr-code"></i> Session QR (Dynamic)</h4>
+                        <span class="mode-badge dynamic"><i class="bi bi-arrow-repeat"></i> Session QR (Dynamic)</span>
+                        <h4><i class="bi bi-qr-code"></i> Dynamic QR Code</h4>
                         <p style="font-size: 12px;">Changes every session - expires in {{ $activeSession->duration }}
                             minutes</p>
                         <div class="qr-box">
@@ -329,55 +703,135 @@
                             <p><strong>Room:</strong> {{ $activeSession->room ?? 'Not specified' }}</p>
                             <p><strong>Manual Code:</strong></p>
                             <div class="manual-code">{{ $activeSession->manual_code }}</div>
+                            <p style="font-size: 12px; opacity: 0.8; margin-top: 5px;">
+                                <i class="bi bi-info-circle"></i> Students can enter this code manually if they can't scan
+                            </p>
                             <div class="countdown"><span id="countdownTimer"></span></div>
                         </div>
-                        <div style="margin-top: 15px;">
+                        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                             <form method="POST"
                                 action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
-                                style="display: inline;">
+                                style="display: inline;" onsubmit="return confirm('End this session?')">
                                 @csrf
-                                <button type="submit" class="btn-custom" style="background: #dc2626;">End Session</button>
+                                <button type="submit" class="btn-custom" style="background: var(--danger);">
+                                    ⏹ End Session
+                                </button>
                             </form>
                             <a href="{{ route('lecturer.attendance.sessions.refresh', $activeSession->id) }}"
-                                class="btn-custom" style="background: #f59e0b; text-decoration: none;">Refresh QR</a>
+                                class="btn-custom" style="background: var(--secondary); text-decoration: none;">
+                                ⟳ Refresh QR
+                            </a>
                         </div>
                     </div>
                 @endif
 
-                <!-- Live Stats -->
+                {{-- Live Attendance Statistics --}}
                 <div class="mode-selector">
-                    <h5><i class="bi bi-graph-up"></i> Live Attendance Statistics</h5>
+                    <h5 style="color: var(--primary);"><i class="bi bi-graph-up"></i> Live Attendance Statistics</h5>
                     <div class="stats-grid">
                         <div>
-                            <div class="stat-number" style="color:#10b981;" id="livePresentCount">
+                            <div class="stat-number" style="color:var(--success);" id="livePresentCount">
                                 {{ $activeSession->present_count ?? 0 }}
                             </div>
                             <div class="stat-label">Present</div>
                         </div>
                         <div>
-                            <div class="stat-number" style="color:#f59e0b;" id="liveLateCount">
+                            <div class="stat-number" style="color:var(--warning);" id="liveLateCount">
                                 {{ $activeSession->late_count ?? 0 }}
                             </div>
                             <div class="stat-label">Late</div>
                         </div>
                         <div>
-                            <div class="stat-number" style="color:#ef4444;" id="liveAbsentCount">
-                                {{ ($activeSession->total_students ?? 0) - ($activeSession->present_count ?? 0) - ($activeSession->late_count ?? 0) }}
+                            <div class="stat-number" style="color:var(--danger);" id="liveAbsentCount">
+                                {{ max(0, ($activeSession->total_students ?? 0) - ($activeSession->present_count ?? 0) - ($activeSession->late_count ?? 0)) }}
                             </div>
                             <div class="stat-label">Absent</div>
                         </div>
                         <div>
-                            <div class="stat-number" style="color:#800000;" id="liveTotalCount">
+                            <div class="stat-number" style="color:var(--primary);" id="liveTotalCount">
                                 {{ $activeSession->total_students ?? 0 }}
                             </div>
                             <div class="stat-label">Total</div>
                         </div>
                     </div>
                 </div>
+
+                <div class="mode-selector" style="margin-top: 1rem;">
+                    <h5 style="color: var(--primary);">
+                        <i class="bi bi-clock-history"></i> Real-Time Attendance
+                        <span class="live-badge"></span>
+                        <span class="attendance-counter">
+                            <strong id="totalScanned">0</strong> students scanned so far
+                        </span>
+                    </h5>
+                    <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
+                        <table class="live-attendance-table" id="liveAttendanceTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student</th>
+                                    <th>Status</th>
+                                    <th>Time</th>
+                                    <th>Method</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTableBody">
+                                @php
+                                    $existingRecords = $activeSession->records ?? collect();
+                                    $counter = 0;
+                                @endphp
+                                @if ($existingRecords && $existingRecords->count() > 0)
+                                    @foreach ($existingRecords as $record)
+                                        @php
+                                            $counter++;
+                                            $statusClass = $record->status ?? 'absent';
+                                        @endphp
+                                        <tr id="attendance-row-{{ $record->id }}">
+                                            <td>{{ $counter }}</td>
+                                            <td>
+                                                <strong>{{ $record->student->name ?? 'Unknown' }}</strong>
+                                                <br>
+                                                <small
+                                                    style="color: var(--text-gray); font-size: 10px;">{{ $record->student->email ?? 'N/A' }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="status-badge {{ $statusClass }}">
+                                                    {{ ucfirst($statusClass) }}
+                                                </span>
+                                            </td>
+                                            <td style="font-size: 12px; color: var(--text-gray);">
+                                                {{ $record->scanned_at ? \Carbon\Carbon::parse($record->scanned_at)->format('h:i:s A') : 'N/A' }}
+                                            </td>
+                                            <td>
+                                                @if ($record->is_manual)
+                                                    <span
+                                                        style="font-size: 10px; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px;">Manual</span>
+                                                @else
+                                                    <span
+                                                        style="font-size: 10px; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px;">QR
+                                                        Scan</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 20px; color: #9ca3af;">
+                                            <i class="bi bi-inbox"
+                                                style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                                            No students have scanned yet
+                                        </td>
+                                    </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             @else
-                <!-- Create New Session Form -->
                 <div class="mode-selector">
-                    <h5 style="margin-bottom: 15px;"><i class="bi bi-sliders2"></i> Select QR Mode</h5>
+                    <h5 style="color: var(--primary); margin-bottom: 15px;">
+                        <i class="bi bi-sliders2"></i> Select QR Mode
+                    </h5>
 
                     <form method="POST" action="{{ route('lecturer.attendance.sessions.create') }}">
                         @csrf
@@ -391,14 +845,22 @@
 
                         <div style="margin: 15px 0;">
                             <label
-                                style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; cursor: pointer;">
-                                <input type="radio" name="qr_mode" value="session" checked> 📱 Session QR (Dynamic) - New
-                                QR every session
+                                style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid rgba(10, 36, 99, 0.12); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s ease;">
+                                <input type="radio" name="qr_mode" value="session" checked>
+                                <span>
+                                    <strong>📱 Session QR (Dynamic)</strong><br>
+                                    <small style="color: var(--text-gray);">New QR every session - expires after set
+                                        time</small>
+                                </span>
                             </label>
                             <label
-                                style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
-                                <input type="radio" name="qr_mode" value="semester"> 📚 Semester QR (Static) - Same QR
-                                all semester
+                                style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid rgba(10, 36, 99, 0.12); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+                                <input type="radio" name="qr_mode" value="semester">
+                                <span>
+                                    <strong>📚 Semester QR (Static)</strong><br>
+                                    <small style="color: var(--text-gray);">Same QR all semester - put on PowerPoint
+                                        once</small>
+                                </span>
                             </label>
                         </div>
 
@@ -415,17 +877,85 @@
 
                         <input type="text" name="room" class="form-control" placeholder="Room (optional)">
 
-                        <button type="submit" class="btn-custom" style="width: 100%; margin-top: 10px;">🚀 Start QR
-                            Session</button>
+                        <button type="submit" class="btn-custom" style="width: 100%; margin-top: 10px;">
+                            🚀 Start QR Session
+                        </button>
                     </form>
                 </div>
+
+                @if (isset($allActiveSessions) && $allActiveSessions->count() > 0)
+                    <div class="mode-selector"
+                        style="margin-top: 16px; background: var(--bg-main); border-color: var(--primary);">
+                        <h5 style="color: var(--primary);">
+                            <i class="bi bi-qr-code"></i> Your Active QR Sessions
+                        </h5>
+                        <p style="font-size: 12px; color: var(--text-gray); margin-bottom: 12px;">
+                            You have {{ $allActiveSessions->count() }} active QR session(s).
+                            Click "View" to switch between them.
+                        </p>
+                        <div class="qr-list">
+                            @foreach ($allActiveSessions as $session)
+                                <div class="qr-item">
+                                    <div class="course-info">
+                                        <span class="name">{{ $session->course->course_name ?? 'Unknown' }}</span>
+                                        <span class="code">
+                                            {{ $session->course->course_code ?? 'N/A' }} •
+                                            Room: {{ $session->room ?? 'N/A' }}
+                                            <span
+                                                class="qr-badge {{ $session->qr_mode == 'semester' ? 'semester' : 'dynamic' }}">
+                                                {{ $session->qr_mode == 'semester' ? '📚 Semester' : '📱 Dynamic' }}
+                                            </span>
+                                        </span>
+                                        @if ($activeSession && $activeSession->id == $session->id)
+                                            <span style="font-size: 10px; color: var(--success); font-weight: 600;">
+                                                <i class="bi bi-check-circle"></i> Currently viewing
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                        <span class="status-badge-sm active">● Active</span>
+                                        @if (!$activeSession || $activeSession->id != $session->id)
+                                            <a href="{{ route('lecturer.attendance.take') }}?session={{ $session->id }}"
+                                                class="btn-view-qr">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        @else
+                                            <span style="font-size: 11px; color: var(--success); font-weight: 600;">
+                                                <i class="bi bi-check-circle"></i> Active
+                                            </span>
+                                        @endif
+                                        <form method="POST"
+                                            action="{{ route('lecturer.attendance.sessions.end', $session->id) }}"
+                                            style="display: inline;"
+                                            onsubmit="return confirm('End this QR session? Students will no longer be able to scan this QR.')">
+                                            @csrf
+                                            <button type="submit" class="btn-end-qr">
+                                                <i class="bi bi-stop-circle"></i> End
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @else
+                    <div class="mode-selector" style="margin-top: 16px; background: var(--bg-main);">
+                        <h5 style="color: var(--primary);">
+                            <i class="bi bi-qr-code"></i> Your Active QR Sessions
+                        </h5>
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <p>No active QR sessions found.</p>
+                            <p style="font-size: 11px;">Create one using the form above.</p>
+                        </div>
+                    </div>
+                @endif
             @endif
         </div>
 
         <div class="col-md-6">
-            <!-- Manual Attendance Form -->
             <div class="mode-selector">
-                <h5><i class="bi bi-pencil-square"></i> Manual Attendance Entry</h5>
+                <h5 style="color: var(--primary);"><i class="bi bi-pencil-square"></i> Manual Attendance Entry</h5>
                 <form method="POST" action="{{ route('lecturer.attendance.manual') }}">
                     @csrf
                     <select name="course_id" class="form-control" required>
@@ -450,130 +980,54 @@
                     </select>
 
                     <div style="margin-top: 10px;">
-                        <label style="font-size: 12px; color: #6b7280;">Notes (Optional)</label>
+                        <label style="font-size: 12px; color: var(--text-gray);">Notes (Optional)</label>
                         <textarea name="notes" class="form-control" rows="2"
                             placeholder="e.g., Student arrived 15 minutes late due to traffic" style="resize: vertical;"></textarea>
                     </div>
 
-                    <button type="submit" class="btn-custom" style="width: 100%; margin-top: 10px;">Save Manual
-                        Attendance</button>
+                    <button type="submit" class="btn-custom" style="width: 100%; margin-top: 10px;">
+                        Save Manual Attendance
+                    </button>
                 </form>
             </div>
 
-            <!-- Link to Session History -->
-            <div class="mode-selector" style="text-align: center; background: #f8fafc;">
-                <a href="{{ route('lecturer.attendance.sessions') }}" class="btn btn-outline-primary"
-                    style="width: 100%; display: inline-block; padding: 8px; border: 1px solid #800000; color: #800000; border-radius: 6px; text-decoration: none; transition: all 0.2s;"
-                    onmouseover="this.style.background='#800000'; this.style.color='white';"
-                    onmouseout="this.style.background='transparent'; this.style.color='#800000';">
+            <div class="mode-selector" style="text-align: center; background: var(--bg-main);">
+                <a href="{{ route('lecturer.attendance.sessions') }}" class="btn-custom"
+                    style="width: 100%; display: inline-block; padding: 8px; background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 6px; text-decoration: none; transition: all 0.3s ease; text-align: center;"
+                    onmouseover="this.style.background='var(--primary)'; this.style.color='white';"
+                    onmouseout="this.style.background='transparent'; this.style.color='var(--primary)';">
                     <i class="bi bi-clock-history"></i> View Full Session History
                 </a>
-                <small class="text-muted" style="display: block; margin-top: 8px; color: #6b7280; font-size: 12px;">
+                <small class="text-muted"
+                    style="display: block; margin-top: 8px; color: var(--text-gray); font-size: 12px;">
                     View all past sessions, attendance statistics, and detailed reports
                 </small>
             </div>
         </div>
     </div>
 
-    <!-- ============================================================
-        REAL-TIME ATTENDANCE TABLE
-        ============================================================ -->
-    @if ($activeSession)
-        <div class="mode-selector" style="margin-top: 1rem;">
-            <h5>
-                <i class="bi bi-clock-history"></i> Real-Time Attendance
-                <span class="live-badge"></span>
-                <span class="attendance-counter">
-                    <strong id="totalScanned">0</strong> students scanned so far
-                </span>
-            </h5>
-            <div style="overflow-x: auto; max-height: 400px; overflow-y: auto;">
-                <table class="live-attendance-table" id="liveAttendanceTable">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Student</th>
-                            <th>Status</th>
-                            <th>Time</th>
-                            <th>Method</th>
-                        </tr>
-                    </thead>
-                    <tbody id="attendanceTableBody">
-                        @php
-                            $existingRecords = $activeSession->records ?? [];
-                            $counter = 0;
-                        @endphp
-                        @if ($existingRecords && $existingRecords->count() > 0)
-                            @foreach ($existingRecords as $record)
-                                @php
-                                    $counter++;
-                                    $statusClass = $record->status ?? 'absent';
-                                @endphp
-                                <tr id="attendance-row-{{ $record->id }}">
-                                    <td>{{ $counter }}</td>
-                                    <td>
-                                        <strong>{{ $record->student->name ?? 'Unknown' }}</strong>
-                                        <br>
-                                        <small
-                                            style="color: #6b7280; font-size: 10px;">{{ $record->student->email ?? 'N/A' }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="status-badge {{ $statusClass }}">
-                                            {{ ucfirst($statusClass) }}
-                                        </span>
-                                    </td>
-                                    <td style="font-size: 12px; color: #6b7280;">
-                                        {{ $record->scanned_at ? \Carbon\Carbon::parse($record->scanned_at)->format('h:i:s A') : 'N/A' }}
-                                    </td>
-                                    <td>
-                                        @if ($record->is_manual)
-                                            <span
-                                                style="font-size: 10px; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px;">Manual</span>
-                                        @else
-                                            <span
-                                                style="font-size: 10px; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px;">QR
-                                                Scan</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @else
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 20px; color: #9ca3af;">
-                                    <i class="bi bi-inbox"
-                                        style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
-                                    No students have scanned yet
-                                </td>
-                            </tr>
-                        @endif
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    @endif
-
     <script>
-        // ============================================================
-        // COUNTDOWN TIMER
-        // ============================================================
-        @if ($activeSession && $activeSession->expires_at && $activeSession->course->qr_mode == 'session')
+        @if ($activeSession && $activeSession->qr_mode == 'session' && $activeSession->expires_at)
             let expiresAt = new Date('{{ $activeSession->expires_at }}').getTime();
-            setInterval(function() {
+
+            function updateTimer() {
                 let now = new Date().getTime();
                 let distance = expiresAt - now;
+
                 if (distance < 0) {
-                    document.getElementById('countdownTimer').innerHTML = 'EXPIRED';
+                    document.getElementById('countdownTimer').innerHTML = '⏹ EXPIRED';
                     return;
                 }
+
                 let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                document.getElementById('countdownTimer').innerHTML = `Time remaining: ${minutes}m ${seconds}s`;
-            }, 1000);
+                document.getElementById('countdownTimer').innerHTML = '⏱ Time remaining: ' + minutes + 'm ' + seconds + 's';
+            }
+
+            updateTimer();
+            setInterval(updateTimer, 1000);
         @endif
 
-        // ============================================================
-        // QR MODE TOGGLE
-        // ============================================================
         document.querySelectorAll('input[name="qr_mode"]').forEach(radio => {
             radio.addEventListener('change', function() {
                 const durationField = document.getElementById('durationField');
@@ -588,30 +1042,28 @@
         document.addEventListener('DOMContentLoaded', function() {
             const selected = document.querySelector('input[name="qr_mode"]:checked');
             if (selected && selected.value === 'semester') {
-                document.getElementById('durationField').style.display = 'none';
+                const durationField = document.getElementById('durationField');
+                if (durationField) {
+                    durationField.style.display = 'none';
+                }
             }
         });
 
-        // ============================================================
-        // REAL-TIME POLLING
-        // ============================================================
         @if ($activeSession)
             const sessionId = {{ $activeSession->id }};
-            const pollInterval = 3000; // 3 seconds
+            const pollInterval = 3000;
 
             function fetchLiveAttendance() {
                 fetch(`/lecturer/session-stats/${sessionId}`)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Update stats
                             document.getElementById('livePresentCount').innerText = data.present || 0;
                             document.getElementById('liveLateCount').innerText = data.late || 0;
                             document.getElementById('liveTotalCount').innerText = data.total || 0;
                             const absent = (data.total || 0) - (data.present || 0) - (data.late || 0);
-                            document.getElementById('liveAbsentCount').innerText = absent;
+                            document.getElementById('liveAbsentCount').innerText = Math.max(0, absent);
 
-                            // Update table
                             const tbody = document.getElementById('attendanceTableBody');
                             if (data.records && data.records.length > 0) {
                                 let html = '';
@@ -619,8 +1071,6 @@
                                     const statusClass = record.status || 'absent';
                                     const isManual = record.is_manual || false;
                                     const methodLabel = isManual ? 'Manual' : 'QR Scan';
-                                    const methodClass = isManual ? 'bg-blue-100 text-blue-700' :
-                                        'bg-green-100 text-green-700';
 
                                     html += `
                                         <tr id="attendance-row-${index}" class="${index === data.records.length - 1 ? 'new-row' : ''}">
@@ -628,14 +1078,14 @@
                                             <td>
                                                 <strong>${record.student_name || 'Unknown'}</strong>
                                                 <br>
-                                                <small style="color: #6b7280; font-size: 10px;">${record.student_email || 'N/A'}</small>
+                                                <small style="color: var(--text-gray); font-size: 10px;">${record.student_email || 'N/A'}</small>
                                             </td>
                                             <td>
                                                 <span class="status-badge ${statusClass}">
                                                     ${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}
                                                 </span>
                                             </td>
-                                            <td style="font-size: 12px; color: #6b7280;">
+                                            <td style="font-size: 12px; color: var(--text-gray);">
                                                 ${record.scanned_at ? new Date(record.scanned_at).toLocaleTimeString() : 'N/A'}
                                             </td>
                                             <td>
@@ -647,15 +1097,11 @@
                                     `;
                                 });
 
-                                // Update or append
                                 if (tbody.querySelector('tr td[colspan]')) {
-                                    // If empty state, replace all
                                     tbody.innerHTML = html;
                                 } else {
-                                    // Check if we need to update or append
                                     const existingRows = tbody.querySelectorAll('tr');
                                     if (data.records.length > existingRows.length) {
-                                        // New record added - append the new one
                                         const newRecords = data.records.slice(existingRows.length);
                                         let newHtml = '';
                                         newRecords.forEach((record, idx) => {
@@ -669,14 +1115,14 @@
                                                     <td>
                                                         <strong>${record.student_name || 'Unknown'}</strong>
                                                         <br>
-                                                        <small style="color: #6b7280; font-size: 10px;">${record.student_email || 'N/A'}</small>
+                                                        <small style="color: var(--text-gray); font-size: 10px;">${record.student_email || 'N/A'}</small>
                                                     </td>
                                                     <td>
                                                         <span class="status-badge ${statusClass}">
                                                             ${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}
                                                         </span>
                                                     </td>
-                                                    <td style="font-size: 12px; color: #6b7280;">
+                                                    <td style="font-size: 12px; color: var(--text-gray);">
                                                         ${record.scanned_at ? new Date(record.scanned_at).toLocaleTimeString() : 'N/A'}
                                                     </td>
                                                     <td>
@@ -689,7 +1135,6 @@
                                         });
                                         tbody.insertAdjacentHTML('beforeend', newHtml);
                                     } else {
-                                        // Update existing rows (reorder numbers)
                                         const rows = tbody.querySelectorAll('tr');
                                         rows.forEach((row, idx) => {
                                             const td = row.querySelector('td:first-child');
@@ -698,10 +1143,8 @@
                                     }
                                 }
 
-                                // Update counter
                                 document.getElementById('totalScanned').innerText = data.records.length;
                             } else {
-                                // No records - show empty state
                                 tbody.innerHTML = `
                                     <tr>
                                         <td colspan="5" style="text-align: center; padding: 20px; color: #9ca3af;">
@@ -719,14 +1162,8 @@
                     });
             }
 
-            // Start polling
             fetchLiveAttendance();
             setInterval(fetchLiveAttendance, pollInterval);
-
-            // Clean up on page unload
-            window.addEventListener('beforeunload', function() {
-                // Stop polling (no need to clear intervals, they'll stop on page unload)
-            });
         @endif
     </script>
 @endsection

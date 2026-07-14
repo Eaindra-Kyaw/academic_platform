@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Auth/AuthenticatedSessionController.php
 
 namespace App\Http\Controllers\Auth;
 
@@ -30,15 +31,35 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
+        // ✅ CHECK: Is email verified?
+        if (!$user->hasVerifiedEmail()) {
+            Auth::logout();
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Please verify your email address before logging in.'])
+                ->with('verification_required', true);
+        }
+
+        // ✅ CHECK: Is user active?
+        if (!$user->is_active) {
+            Auth::logout();
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Your account is pending approval. Please contact admin.']);
+        }
+
+        // ✅ CHECK: Must change password? (Skip for Admins)
+        if ($user->must_change_password && $user->role_id != 1) {
+            return redirect()->route('profile.edit')
+                ->with('warning', 'Please change your password before continuing.');
+        }
+
+        // ✅ REDIRECT BASED ON ROLE
         if ($user->role_id == 1) {
             return redirect()->route('admin.dashboard');
-        }
-
-        if ($user->role_id == 2) {
+        } elseif ($user->role_id == 2) {
             return redirect()->route('lecturer.dashboard');
+        } else {
+            return redirect()->route('student.dashboard');
         }
-
-        return redirect()->route('student.dashboard');
     }
 
     /**
@@ -52,7 +73,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        // ✅ Redirect to the main login page
         return redirect('/login');
     }
 }

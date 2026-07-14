@@ -11,35 +11,53 @@
 
 @section('content')
     <style>
-        /* Search Section - Like Course Management */
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
         .search-section {
-            background: white;
+            background: var(--white);
             border-radius: 0.75rem;
             padding: 1rem;
             margin-bottom: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             gap: 1rem;
             align-items: center;
             flex-wrap: wrap;
+            box-shadow: var(--shadow);
         }
 
         .search-input {
             flex: 1;
             padding: 0.6rem 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.12);
             border-radius: 2rem;
             font-size: 0.8rem;
+            transition: all 0.3s ease;
         }
 
         .search-input:focus {
             outline: none;
-            border-color: #800000;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .btn-filter {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             border: none;
             padding: 0.6rem 1.2rem;
             border-radius: 2rem;
@@ -48,16 +66,18 @@
             align-items: center;
             gap: 0.5rem;
             font-weight: 500;
+            transition: all 0.3s ease;
         }
 
         .btn-filter:hover {
-            background: #9a0000;
+            background: var(--primary-dark);
+            transform: translateY(-1px);
         }
 
         .btn-reset {
             background: #f3f4f6;
             color: #374151;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.1);
             padding: 0.6rem 1.2rem;
             border-radius: 2rem;
             cursor: pointer;
@@ -65,6 +85,7 @@
             align-items: center;
             gap: 0.5rem;
             text-decoration: none;
+            transition: all 0.3s ease;
         }
 
         .btn-reset:hover {
@@ -73,24 +94,29 @@
 
         .result-count {
             font-size: 0.8rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-bottom: 1rem;
             text-align: right;
         }
 
-        /* Course Cards */
         .course-card {
-            background: white;
+            background: var(--white);
             border-radius: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             margin-bottom: 1.5rem;
             overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .course-card:hover {
+            box-shadow: var(--shadow-hover);
         }
 
         .course-header {
-            background: linear-gradient(135deg, #800000 0%, #6b0000 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             padding: 1rem 1.25rem;
-            color: white;
+            color: var(--white);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -103,13 +129,12 @@
         }
 
         .student-count {
-            background: rgba(255, 215, 0, 0.2);
+            background: rgba(197, 160, 32, 0.2);
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.75rem;
         }
 
-        /* Students Table - Clean like Course Management */
         .students-table {
             width: 100%;
             border-collapse: collapse;
@@ -118,12 +143,12 @@
         .students-table th {
             padding: 0.75rem 1rem;
             text-align: left;
-            background: #f9fafb;
+            background: var(--bg-main);
             font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
-            color: #6b7280;
-            border-bottom: 1px solid #e5e7eb;
+            color: var(--text-gray);
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .students-table td {
@@ -134,7 +159,7 @@
         }
 
         .students-table tr:hover td {
-            background: #fefce8;
+            background: #f8f9fc;
         }
 
         .badge-enrolled {
@@ -148,18 +173,25 @@
 
         .approval-date {
             font-size: 0.65rem;
-            color: #10b981;
+            color: var(--success);
         }
 
         .rejection-date {
             font-size: 0.65rem;
-            color: #dc2626;
+            color: var(--danger);
         }
 
         .empty-state {
             text-align: center;
             padding: 2rem;
-            color: #9ca3af;
+            color: var(--text-gray);
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            color: #d1d5db;
+            display: block;
+            margin-bottom: 0.5rem;
         }
 
         @media (max-width: 768px) {
@@ -182,7 +214,7 @@
 
     <div>
 
-        <!-- Search Section - Like Course Management -->
+        <!-- Search Section -->
         <div class="search-section">
             <input type="text" id="searchStudentInput" class="search-input"
                 placeholder="🔍 Search by student name, email, or student ID...">
@@ -244,7 +276,7 @@
                                                         {{ \Carbon\Carbon::parse($enrollment->rejected_at)->format('d M Y') }}
                                                     </span>
                                                 @else
-                                                    <span style="color: #6b7280; font-size: 0.65rem;">—</span>
+                                                    <span style="color: var(--text-gray); font-size: 0.65rem;">—</span>
                                                 @endif
                                             </td>
                                             <td><span class="badge-enrolled">Enrolled</span></td>
@@ -254,7 +286,7 @@
                             </table>
                         @else
                             <div class="empty-state">
-                                <i class="bi bi-person-x" style="font-size: 2rem;"></i>
+                                <i class="bi bi-person-x"></i>
                                 <p>No students enrolled in this course yet.</p>
                             </div>
                         @endif
@@ -262,7 +294,7 @@
                 </div>
             @endforeach
         @else
-            <div class="empty-state" style="background: white; border-radius: 1rem; padding: 3rem;">
+            <div class="empty-state" style="background: var(--white); border-radius: 1rem; padding: 3rem;">
                 <i class="bi bi-book" style="font-size: 3rem;"></i>
                 <p>You are not assigned to any courses yet.</p>
             </div>
@@ -310,7 +342,6 @@
                 }
             @endfor
 
-            // Show result count
             const resultCountDiv = document.getElementById('resultCount');
             if (searchTerm !== '') {
                 resultCountDiv.innerHTML =

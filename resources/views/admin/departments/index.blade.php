@@ -10,9 +10,26 @@
 
 @section('content')
     <style>
-        /* ============================================================
-           PAGE HEADER
-           ============================================================ */
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .page-header-dept {
             display: flex;
             justify-content: flex-end;
@@ -23,30 +40,26 @@
         }
 
         .btn-primary-dept {
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             border: none;
             padding: 0.5rem 1.2rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             font-weight: 500;
             font-size: 0.85rem;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-primary-dept:hover {
-            background: #5f0000;
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.25);
+            color: var(--white);
         }
 
-        /* ============================================================
-           STATS BAR
-           ============================================================ */
         .stats-bar-dept {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -55,25 +68,26 @@
         }
 
         .stat-item-dept {
-            background: white;
+            background: var(--white);
             padding: 1rem 1.25rem;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             align-items: center;
             gap: 1rem;
-            transition: all 0.2s;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
         }
 
         .stat-item-dept:hover {
-            border-color: #800000;
-            box-shadow: 0 2px 8px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-icon-dept {
             width: 44px;
             height: 44px;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -82,42 +96,39 @@
         }
 
         .stat-icon-dept.blue {
-            background: #eff6ff;
-            color: #3b82f6;
+            background: var(--info-light);
+            color: var(--info);
         }
 
         .stat-icon-dept.green {
-            background: #ecfdf5;
-            color: #10b981;
+            background: var(--success-light);
+            color: var(--success);
         }
 
         .stat-icon-dept.yellow {
-            background: #fffbeb;
-            color: #f59e0b;
+            background: var(--warning-light);
+            color: var(--warning);
         }
 
         .stat-icon-dept.red {
-            background: #fef2f2;
-            color: #ef4444;
+            background: var(--danger-light);
+            color: var(--danger);
         }
 
         .stat-info-dept .number {
             font-size: 1.3rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
             line-height: 1.2;
         }
 
         .stat-info-dept .label {
             font-size: 0.65rem;
-            color: #6b7280;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
 
-        /* ============================================================
-           DEPARTMENT CARDS
-           ============================================================ */
         .dept-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -125,42 +136,43 @@
         }
 
         .dept-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 1.25rem;
-            transition: all 0.25s ease;
+            transition: var(--transition);
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .dept-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            border-color: #800000;
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary);
         }
 
         .dept-card .dept-code {
             display: inline-block;
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             font-size: 0.65rem;
             font-weight: 700;
             padding: 0.15rem 0.6rem;
-            border-radius: 0.3rem;
+            border-radius: 6px;
             letter-spacing: 0.5px;
         }
 
         .dept-card .dept-name {
             font-size: 0.95rem;
             font-weight: 600;
-            color: #1f2937;
+            color: var(--text-dark);
             margin: 0.5rem 0 0.2rem;
         }
 
         .dept-card .dept-hod {
             font-size: 0.75rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-bottom: 0.75rem;
         }
 
@@ -168,18 +180,18 @@
             display: flex;
             gap: 1.5rem;
             padding: 0.6rem 0;
-            border-top: 1px solid #f3f4f6;
-            border-bottom: 1px solid #f3f4f6;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             margin-bottom: 0.75rem;
         }
 
         .dept-card .dept-stats span {
             font-size: 0.75rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .dept-card .dept-stats strong {
-            color: #1f2937;
+            color: var(--text-dark);
             font-size: 0.9rem;
         }
 
@@ -189,25 +201,28 @@
             justify-content: flex-end;
         }
 
-        .dept-card .dept-actions a {
+        .dept-card .dept-actions a,
+        .dept-card .dept-actions button {
             font-size: 0.75rem;
             padding: 0.25rem 0.75rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             text-decoration: none;
-            transition: all 0.2s;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
         }
 
         .btn-view-dept {
-            background: #f3f4f6;
-            color: #374151;
+            background: var(--info-light);
+            color: var(--info);
         }
 
         .btn-view-dept:hover {
-            background: #e5e7eb;
+            background: #bfdbfe;
         }
 
         .btn-edit-dept {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
         }
 
@@ -216,23 +231,37 @@
         }
 
         .btn-delete-dept {
-            background: #fee2e2;
-            color: #991b1b;
-            border: none;
-            cursor: pointer;
-            font-size: 0.75rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.4rem;
-            transition: all 0.2s;
+            background: var(--danger-light);
+            color: var(--danger);
         }
 
         .btn-delete-dept:hover {
             background: #fca5a5;
         }
 
-        /* ============================================================
-           CUSTOM CONFIRM DIALOG
-           ============================================================ */
+        .empty-state-dept {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 2px dashed rgba(10, 36, 99, 0.1);
+        }
+
+        .empty-state-dept i {
+            font-size: 3rem;
+            color: #d1d5db;
+        }
+
+        .empty-state-dept h5 {
+            margin-top: 1rem;
+            color: var(--text-dark);
+        }
+
+        .empty-state-dept p {
+            color: var(--text-gray);
+            font-size: 0.85rem;
+        }
+
         .confirm-overlay {
             display: none;
             position: fixed;
@@ -251,8 +280,8 @@
         }
 
         .confirm-box {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 2rem;
             max-width: 420px;
             width: 90%;
@@ -275,7 +304,7 @@
         .confirm-box .icon {
             text-align: center;
             font-size: 2.5rem;
-            color: #ef4444;
+            color: var(--danger);
             margin-bottom: 0.5rem;
         }
 
@@ -283,14 +312,14 @@
             text-align: center;
             font-size: 1.1rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
             margin: 0 0 0.3rem 0;
         }
 
         .confirm-box p {
             text-align: center;
             font-size: 0.85rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin: 0 0 1.5rem 0;
         }
 
@@ -302,14 +331,14 @@
 
         .confirm-box .btn-confirm-cancel {
             padding: 0.4rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.8rem;
             font-weight: 500;
-            border: 1px solid #e5e7eb;
-            background: white;
-            color: #374151;
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            background: var(--white);
+            color: var(--text-dark);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .confirm-box .btn-confirm-cancel:hover {
@@ -318,49 +347,20 @@
 
         .confirm-box .btn-confirm-delete {
             padding: 0.4rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.8rem;
             font-weight: 500;
             border: none;
-            background: #dc2626;
-            color: white;
+            background: var(--danger);
+            color: var(--white);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .confirm-box .btn-confirm-delete:hover {
             background: #b91c1c;
         }
 
-        /* ============================================================
-           EMPTY STATE
-           ============================================================ */
-        .empty-state-dept {
-            text-align: center;
-            padding: 3rem 1.5rem;
-            background: white;
-            border-radius: 0.75rem;
-            border: 2px dashed #e5e7eb;
-        }
-
-        .empty-state-dept i {
-            font-size: 3rem;
-            color: #d1d5db;
-        }
-
-        .empty-state-dept h5 {
-            margin-top: 1rem;
-            color: #374151;
-        }
-
-        .empty-state-dept p {
-            color: #6b7280;
-            font-size: 0.85rem;
-        }
-
-        /* ============================================================
-           RESPONSIVE
-           ============================================================ */
         @media (max-width: 768px) {
             .stats-bar-dept {
                 grid-template-columns: repeat(2, 1fr);
@@ -406,14 +406,12 @@
         }
     </style>
 
-    <!-- ===== PAGE HEADER ===== -->
     <div class="page-header-dept">
         <a href="{{ route('admin.departments.create') }}" class="btn-primary-dept">
             <i class="bi bi-plus-circle"></i> Add New Department
         </a>
     </div>
 
-    <!-- ===== STATS BAR ===== -->
     <div class="stats-bar-dept">
         <div class="stat-item-dept">
             <div class="stat-icon-dept blue"><i class="bi bi-building"></i></div>
@@ -445,14 +443,13 @@
         </div>
     </div>
 
-    <!-- ===== DEPARTMENT CARDS ===== -->
     @if ($departments->count() > 0)
         <div class="dept-grid">
             @foreach ($departments as $dept)
                 <div class="dept-card">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <span class="dept-code">{{ $dept->code }}</span>
-                        <span style="font-size:0.7rem; color:#10b981;">
+                        <span style="font-size:0.7rem; color:var(--success);">
                             <i class="bi bi-graph-up"></i> {{ number_format($dept->avg_attendance ?? 0, 1) }}%
                         </span>
                     </div>
@@ -493,7 +490,6 @@
         </div>
     @endif
 
-    <!-- ===== CUSTOM CONFIRM DIALOG ===== -->
     <div class="confirm-overlay" id="deleteConfirm">
         <div class="confirm-box">
             <div class="icon">🗑️</div>
@@ -521,19 +517,16 @@
             document.getElementById('deleteConfirm').classList.remove('show');
         }
 
-        // Close when clicking outside
         document.getElementById('deleteConfirm').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeConfirm();
             }
         });
 
-        // Close with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeConfirm();
             }
         });
     </script>
-
 @endsection

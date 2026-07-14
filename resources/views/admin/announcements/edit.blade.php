@@ -12,25 +12,43 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #800000;
+            color: var(--primary);
             text-decoration: none;
             font-weight: 500;
             margin-bottom: 1.5rem;
             padding: 0.5rem 1rem;
-            background: #fef7f7;
-            border-radius: 0.5rem;
-            border: 1px solid #fde2e2;
-            transition: all 0.2s;
+            background: rgba(212, 160, 23, 0.08);
+            border-radius: var(--radius);
+            border: 1px solid rgba(212, 160, 23, 0.15);
+            transition: var(--transition);
         }
 
         .back-link:hover {
-            background: #fde2e2;
+            background: rgba(212, 160, 23, 0.15);
             text-decoration: none;
-            color: #800000;
+            color: var(--primary-dark);
         }
 
         .form-wrapper {
@@ -42,28 +60,32 @@
         }
 
         .form-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 2rem 2.5rem;
             max-width: 700px;
             width: 100%;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow);
         }
 
         .form-card .form-title {
             font-size: 1.1rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
             margin: 0 0 0.25rem 0;
+        }
+
+        .form-card .form-title i {
+            color: var(--primary);
         }
 
         .form-card .form-subtitle {
             font-size: 0.8rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin: 0 0 1.5rem 0;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .form-group {
@@ -73,63 +95,63 @@
         .form-group label {
             font-size: 0.8rem;
             font-weight: 600;
-            color: #374151;
+            color: var(--text-dark);
             display: block;
             margin-bottom: 0.3rem;
         }
 
         .form-group label .required {
-            color: #ef4444;
+            color: var(--danger);
             margin-left: 0.1rem;
         }
 
         .form-group .form-control {
             width: 100%;
             padding: 0.6rem 0.8rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 8px;
             font-size: 0.85rem;
-            transition: all 0.2s;
-            background: #fafafa;
+            transition: var(--transition);
+            background: #fafbfc;
+            font-family: 'Inter', sans-serif;
         }
 
         .form-group .form-control:focus {
             outline: none;
-            border-color: #800000;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .form-group .form-control.error {
-            border-color: #ef4444;
+            border-color: var(--danger);
             background: #fef2f2;
         }
 
         .form-group .help-text {
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-top: 0.3rem;
         }
 
         .form-group .help-text i {
-            font-size: 0.65rem;
+            color: var(--secondary);
         }
 
         .form-group .error-text {
             font-size: 0.7rem;
-            color: #ef4444;
+            color: var(--danger);
             margin-top: 0.3rem;
         }
 
-        /* Multi-select checkbox styling */
         .checkbox-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.5rem;
-            background: #fafafa;
+            background: #fafbfc;
             padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            border: 1px solid rgba(10, 36, 99, 0.1);
         }
 
         .checkbox-group .checkbox-item {
@@ -138,25 +160,25 @@
             gap: 0.5rem;
             cursor: pointer;
             padding: 0.3rem 0.5rem;
-            border-radius: 0.3rem;
-            transition: all 0.2s;
+            border-radius: 6px;
+            transition: var(--transition);
         }
 
         .checkbox-group .checkbox-item:hover {
-            background: #f3f4f6;
+            background: rgba(10, 36, 99, 0.04);
         }
 
         .checkbox-group .checkbox-item input[type="checkbox"] {
             width: 16px;
             height: 16px;
-            accent-color: #800000;
+            accent-color: var(--primary);
             cursor: pointer;
         }
 
         .checkbox-group .checkbox-item label {
             font-size: 0.8rem;
             font-weight: 500;
-            color: #374151;
+            color: var(--text-dark);
             margin: 0;
             cursor: pointer;
         }
@@ -170,15 +192,15 @@
             align-items: center;
             gap: 0.75rem;
             padding: 0.5rem 0.75rem;
-            background: #fafafa;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
+            background: #fafbfc;
+            border-radius: 8px;
+            border: 1px solid rgba(10, 36, 99, 0.1);
         }
 
         .status-toggle input[type="checkbox"] {
             width: 18px;
             height: 18px;
-            accent-color: #800000;
+            accent-color: var(--primary);
             cursor: pointer;
         }
 
@@ -194,36 +216,35 @@
             gap: 0.75rem;
             margin-top: 1.5rem;
             padding-top: 1.5rem;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .btn-submit {
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             padding: 0.6rem 2rem;
             border: none;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .btn-submit:hover {
-            background: #5f0000;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.25);
         }
 
         .btn-cancel {
             background: #f3f4f6;
-            color: #374151;
+            color: var(--text-dark);
             padding: 0.6rem 1.5rem;
             border: none;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
@@ -231,7 +252,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-cancel:hover {
@@ -240,21 +261,21 @@
 
         .alert {
             padding: 0.6rem 1rem;
-            border-radius: 0.75rem;
+            border-radius: var(--radius);
             margin-bottom: 1rem;
             font-size: 0.85rem;
         }
 
         .alert-success {
-            background: #dcfce7;
+            background: #ecfdf5;
             color: #166534;
-            border: 1px solid #bbf7d0;
+            border: 1px solid #a7f3d0;
         }
 
         .alert-danger {
-            background: #fee2e2;
+            background: #fef2f2;
             color: #991b1b;
-            border: 1px solid #fecaca;
+            border: 1px solid #fca5a5;
         }
 
         .alert-dismissible {
@@ -325,7 +346,7 @@
     <div class="form-wrapper">
         <div class="form-card">
             <h2 class="form-title">
-                <i class="bi bi-pencil-square" style="color:#800000;"></i> Edit Announcement
+                <i class="bi bi-pencil-square"></i> Edit Announcement
             </h2>
             <p class="form-subtitle">
                 Update the announcement details below
@@ -335,7 +356,6 @@
                 @csrf
                 @method('PUT')
 
-                {{-- Title --}}
                 <div class="form-group">
                     <label for="title">Title <span class="required">*</span></label>
                     <input type="text" name="title" id="title" class="form-control @error('title') error @enderror"
@@ -345,7 +365,6 @@
                     @enderror
                 </div>
 
-                {{-- Content --}}
                 <div class="form-group">
                     <label for="content">Content <span class="required">*</span></label>
                     <textarea name="content" id="content" class="form-control @error('content') error @enderror" rows="6"
@@ -358,7 +377,6 @@
                     </div>
                 </div>
 
-                {{-- Target Audience (Multi-select Checkboxes) --}}
                 <div class="form-group">
                     <label>Target Audience <span class="required">*</span></label>
                     @php
@@ -406,7 +424,6 @@
                     </div>
                 </div>
 
-                {{-- Published At --}}
                 <div class="form-group">
                     <label for="published_at">Publish Date</label>
                     <input type="datetime-local" name="published_at" id="published_at"
@@ -420,7 +437,6 @@
                     </div>
                 </div>
 
-                {{-- Status --}}
                 <div class="form-group">
                     <label>Status</label>
                     <div class="status-toggle">
@@ -436,7 +452,6 @@
                     </div>
                 </div>
 
-                {{-- Form Actions --}}
                 <div class="form-actions">
                     <button type="submit" class="btn-submit">
                         <i class="bi bi-save"></i> Update Announcement

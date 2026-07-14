@@ -13,7 +13,7 @@ class StudentSeeder extends Seeder
     public function run(): void
     {
         // Get Computer Engineering department ID (CS)
-        $dept = DB::table('departments')->where('code', 'CS')->first();
+        $dept = DB::table('departments')->where('code', 'CEIT')->first();
 
         if (!$dept) {
             $this->command->error('❌ CS Department not found! Run DepartmentSeeder first.');

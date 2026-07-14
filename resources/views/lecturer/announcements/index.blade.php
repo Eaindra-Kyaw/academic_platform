@@ -12,24 +12,43 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .announcement-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 1.25rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             margin-bottom: 1rem;
             cursor: pointer;
             position: relative;
+            box-shadow: var(--shadow);
         }
 
         .announcement-card:hover {
-            border-color: #800000;
-            box-shadow: 0 4px 16px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
             transform: translateY(-2px);
         }
 
-        /* The clickable overlay - covers the entire card */
         .announcement-card .card-link {
             position: absolute;
             top: 0;
@@ -42,14 +61,12 @@
             overflow: hidden;
         }
 
-        /* Everything inside the card should be above the overlay but still clickable */
         .announcement-card .card-content {
             position: relative;
             z-index: 1;
             pointer-events: none;
         }
 
-        /* But we want links inside to still work, so we give them pointer-events: auto */
         .announcement-card .card-content a,
         .announcement-card .card-content .read-more {
             pointer-events: auto;
@@ -69,12 +86,12 @@
         .announcement-card .title {
             font-size: 1rem;
             font-weight: 600;
-            color: #1f2937;
+            color: var(--text-dark);
             margin: 0;
         }
 
         .announcement-card .title a {
-            color: #1f2937;
+            color: var(--text-dark);
             text-decoration: none;
             pointer-events: auto;
             position: relative;
@@ -82,7 +99,7 @@
         }
 
         .announcement-card .title a:hover {
-            color: #800000;
+            color: var(--primary);
             text-decoration: underline;
         }
 
@@ -98,10 +115,10 @@
             gap: 1rem;
             flex-wrap: wrap;
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-top: 0.5rem;
             padding-top: 0.5rem;
-            border-top: 1px solid #f3f4f6;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .badge {
@@ -117,7 +134,7 @@
 
         .badge-all {
             background: #e5e7eb;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         .badge-lecturer {
@@ -131,13 +148,13 @@
         }
 
         .badge-active {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
         .badge-unread {
-            background: #ef4444;
-            color: white;
+            background: var(--danger);
+            color: var(--white);
             font-size: 0.5rem;
             padding: 0.1rem 0.4rem;
             animation: pulse 2s infinite;
@@ -160,7 +177,7 @@
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
-            color: #9ca3af;
+            color: var(--text-gray);
         }
 
         .empty-state i {
@@ -169,7 +186,7 @@
         }
 
         .empty-state h4 {
-            color: #374151;
+            color: var(--text-dark);
             margin-top: 1rem;
             margin-bottom: 0.5rem;
         }
@@ -188,7 +205,7 @@
         }
 
         .read-more {
-            color: #800000;
+            color: var(--primary);
             font-size: 0.8rem;
             font-weight: 500;
             display: inline-block;
@@ -215,16 +232,14 @@
     </style>
 
     <div class="mb-4">
-        <h5 style="color: #6b7280; font-size: 0.85rem; font-weight: 400;">
+        <h5 style="color: var(--text-gray); font-size: 0.85rem; font-weight: 400;">
             <i class="bi bi-info-circle"></i>
             Showing announcements from administrators
         </h5>
     </div>
 
-    {{-- Announcements List --}}
     @forelse($announcements as $announcement)
         <div class="announcement-card">
-            {{-- Full card clickable link - covers the entire card --}}
             <a href="{{ route('lecturer.announcements.show', $announcement->id) }}" class="card-link"></a>
 
             <div class="card-content">
@@ -247,7 +262,7 @@
                             @endif
                         </div>
                     </div>
-                    <small style="color:#9ca3af; font-size:0.7rem; white-space:nowrap;">
+                    <small style="color:var(--text-gray); font-size:0.7rem; white-space:nowrap;">
                         {{ $announcement->created_at->diffForHumans() }}
                     </small>
                 </div>
@@ -287,7 +302,6 @@
         </div>
     @endforelse
 
-    {{-- Pagination --}}
     @if ($announcements->hasPages())
         <div class="pagination-wrapper">
             <div class="text-muted" style="font-size:0.75rem;">

@@ -10,7 +10,26 @@
 
 @section('content')
     <style>
-        /* ===== STATS ROW ===== */
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .stats-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -19,12 +38,12 @@
         }
 
         .stats-row .stat-box {
-            background: white;
+            background: var(--white);
             border-radius: 0.5rem;
-            border: 2px solid #e9edf4;
+            border: 2px solid rgba(10, 36, 99, 0.06);
             padding: 0.75rem;
             text-align: center;
-            transition: all 0.2s;
+            transition: var(--transition);
             cursor: pointer;
             text-decoration: none;
             color: inherit;
@@ -32,33 +51,33 @@
         }
 
         .stats-row .stat-box:hover {
-            border-color: #800000;
-            box-shadow: 0 2px 8px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
             transform: translateY(-2px);
         }
 
         .stats-row .stat-box.active {
-            border-color: #800000;
-            background: #fefce8;
+            border-color: var(--primary);
+            background: #f8f9fc;
         }
 
         .stats-row .stat-box .number {
             font-size: 1.3rem;
             font-weight: 700;
-            color: #800000;
+            color: var(--primary);
         }
 
         .stats-row .stat-box .number.blue {
-            color: #3b82f6;
+            color: var(--info);
         }
 
         .stats-row .stat-box .number.green {
-            color: #10b981;
+            color: var(--success);
         }
 
         .stats-row .stat-box .label {
             font-size: 0.6rem;
-            color: #6b7280;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
@@ -66,7 +85,7 @@
         .stats-row .stat-box .filter-badge {
             font-size: 0.5rem;
             background: #f3f4f6;
-            color: #6b7280;
+            color: var(--text-gray);
             padding: 0.05rem 0.4rem;
             border-radius: 1rem;
             margin-top: 0.1rem;
@@ -74,18 +93,17 @@
         }
 
         .stats-row .stat-box.active .filter-badge {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
         }
 
-        /* ===== MESSAGE LIST ===== */
         .message-item {
             display: flex;
             align-items: center;
             gap: 1rem;
             padding: 0.8rem 1rem;
             border-bottom: 1px solid #f1f5f9;
-            transition: all 0.2s;
+            transition: var(--transition);
             cursor: pointer;
             text-decoration: none;
             color: inherit;
@@ -96,20 +114,20 @@
         }
 
         .message-item:hover {
-            background: #fafbfc;
+            background: var(--bg-main);
         }
 
         .message-item.unread {
             background: #f0f7ff;
-            border-left: 3px solid #3b82f6;
+            border-left: 3px solid var(--info);
         }
 
         .message-item .avatar {
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #800000, #a00000);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -134,12 +152,12 @@
         .message-item .content .subject {
             font-weight: 600;
             font-size: 0.9rem;
-            color: #1a2332;
+            color: var(--text-dark);
         }
 
         .message-item .content .from {
             font-size: 0.75rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .message-item .content .from i {
@@ -148,7 +166,7 @@
 
         .message-item .content .preview {
             font-size: 0.8rem;
-            color: #6b7280;
+            color: var(--text-gray);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -156,8 +174,8 @@
         }
 
         .message-item .badge-new {
-            background: #3b82f6;
-            color: white;
+            background: var(--info);
+            color: var(--white);
             font-size: 0.55rem;
             padding: 0.1rem 0.6rem;
             border-radius: 1rem;
@@ -166,8 +184,8 @@
         }
 
         .message-item .badge-read {
-            background: #10b981;
-            color: white;
+            background: var(--success);
+            color: var(--white);
             font-size: 0.55rem;
             padding: 0.1rem 0.6rem;
             border-radius: 1rem;
@@ -182,7 +200,6 @@
             flex-shrink: 0;
         }
 
-        /* ===== EMPTY STATE ===== */
         .empty-state {
             text-align: center;
             padding: 3rem 1.5rem;
@@ -197,7 +214,7 @@
         }
 
         .empty-state h5 {
-            color: #374151;
+            color: var(--text-dark);
             font-size: 1rem;
             margin: 0;
         }
@@ -210,17 +227,19 @@
         .empty-state .btn-reset-filter {
             display: inline-block;
             margin-top: 0.5rem;
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             padding: 0.3rem 1rem;
             border-radius: 0.4rem;
             text-decoration: none;
             font-size: 0.8rem;
+            transition: var(--transition);
         }
 
-        /* ============================================================
-           RESPONSIVE
-           ============================================================ */
+        .empty-state .btn-reset-filter:hover {
+            background: var(--primary-dark);
+        }
+
         @media (max-width: 768px) {
             .message-item {
                 flex-wrap: wrap;
@@ -269,14 +288,13 @@
     </style>
 
     <div style="max-width:900px; margin:0 auto;">
-        <!-- Header -->
         <div
             style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.5rem;">
             <div>
-                <h4 style="margin:0; font-weight:700; color:#1f2937; font-size:1.1rem;">
-                    <i class="bi bi-envelope" style="color:#800000;"></i> My Messages
+                <h4 style="margin:0; font-weight:700; color:var(--text-dark); font-size:1.1rem;">
+                    <i class="bi bi-envelope" style="color:var(--primary);"></i> My Messages
                 </h4>
-                <p style="font-size:0.8rem; color:#6b7280; margin:0;">
+                <p style="font-size:0.8rem; color:var(--text-gray); margin:0;">
                     @if (request()->get('filter') == 'unread')
                         Showing <strong>unread</strong> messages
                     @elseif(request()->get('filter') == 'read')
@@ -286,7 +304,7 @@
                     @endif
                     @if ($unreadCount > 0 && !request()->get('filter'))
                         <span
-                            style="background:#3b82f6; color:white; padding:0.1rem 0.6rem; border-radius:1rem; font-size:0.65rem; margin-left:0.3rem;">
+                            style="background:var(--info); color:var(--white); padding:0.1rem 0.6rem; border-radius:1rem; font-size:0.65rem; margin-left:0.3rem;">
                             {{ $unreadCount }} unread
                         </span>
                     @endif
@@ -294,13 +312,12 @@
             </div>
             @if (request()->get('filter'))
                 <a href="{{ route('student.messages.inbox') }}"
-                    style="font-size:0.75rem; color:#800000; text-decoration:none;">
+                    style="font-size:0.75rem; color:var(--primary); text-decoration:none;">
                     <i class="bi bi-x-circle"></i> Clear filter
                 </a>
             @endif
         </div>
 
-        <!-- ===== STATS ROW (CLICKABLE FILTERS) ===== -->
         <div class="stats-row">
             <a href="{{ route('student.messages.inbox') }}"
                 class="stat-box {{ !request()->get('filter') ? 'active' : '' }}">
@@ -322,9 +339,8 @@
             </a>
         </div>
 
-        <!-- ===== MESSAGES LIST ===== -->
         <div
-            style="background:white; border-radius:0.75rem; border:1px solid #e9edf4; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+            style="background:var(--white); border-radius:0.75rem; border:1px solid rgba(10, 36, 99, 0.06); overflow:hidden; box-shadow:var(--shadow);">
             @php
                 $filter = request()->get('filter');
                 $filteredMessages = $messages;
@@ -349,10 +365,7 @@
                     @endphp
                     <a href="{{ route('student.messages.show', $message) }}"
                         class="message-item {{ $isUnread ? 'unread' : '' }}">
-                        <!-- Avatar -->
                         <div class="avatar">{{ $senderInitials }}</div>
-
-                        <!-- Content -->
                         <div class="content">
                             <div class="top-row">
                                 <span class="subject">{{ $message->subject ?? 'No Subject' }}</span>
@@ -368,8 +381,6 @@
                             </div>
                             <div class="preview">{{ Str::limit($message->message, 80) }}</div>
                         </div>
-
-                        <!-- Time -->
                         <div class="time">{{ $message->created_at->diffForHumans() }}</div>
                     </a>
                 @endforeach
@@ -388,7 +399,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Update unread badge in sidebar
             const badge = document.getElementById('unreadBadge');
             if (badge) {
                 const count = {{ $unreadCount }};

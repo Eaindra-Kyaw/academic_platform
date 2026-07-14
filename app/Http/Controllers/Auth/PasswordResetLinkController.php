@@ -1,43 +1,61 @@
 <?php
+// app/Http/Controllers/Auth/PasswordSetupController.php
 
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
-class PasswordResetLinkController extends Controller
+class PasswordSetupController extends Controller
 {
-    public function create()
+    /**
+     * Display the password setup form.
+     */
+    public function showSetupForm(Request $request): View
     {
-        return view('auth.forgot-password');
+        $token = $request->route('token');
+        $email = $request->query('email');
+
+        return view('auth.setup-password', [
+            'token' => $token,
+            'email' => $email,
+        ]);
     }
 
-    public function store(Request $request)
+    /**
+     * Handle password setup.
+     */
+    public function setupPassword(Request $request): RedirectResponse
     {
         $request->validate([
+            'token' => ['required'],
             'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        $user = \App\Models\User::where('email', $request->email)->first();
-
-        if (!$user) {
-            return back()->withErrors(['email' => 'We can\'t find a user with that email address.']);
-        }
-
-        $token = Str::random(60);
-
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $user->email],
-            ['token' => $token, 'created_at' => now()]
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user) use ($request) {
+                $user->forceFill([
+                    'password' => Hash::make($request->password),
+                    'remember_token' => Str::random(60),
+                    'must_change_password' => false,
+                    'email_verified_at' => now(),
+                ])->save();
+            }
         );
 
-        $resetLink = url('/reset-password/' . $token . '?email=' . urlencode($user->email));
-
-        // Show clickable link on screen (for localhost development)
-        $clickableLink = '<a href="' . $resetLink . '" style="color: #800000; text-decoration: underline;">Click here to reset your password</a>';
-
-        return back()->with('status', 'Password reset link: ' . $clickableLink);
+        return $status == Password::PASSWORD_RESET
+            ? redirect()->route('login')->with('status', 'Password set successfully! You can now log in.')
+            : back()->withInput($request->only('email'))
+                ->withErrors(['email' => __($status)]);
     }
 }

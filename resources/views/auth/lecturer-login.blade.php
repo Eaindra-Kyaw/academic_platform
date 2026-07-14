@@ -4,10 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lecturer Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Lecturer Login - MTU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
+        :root {
+            --primary: #0D47A1;
+            --primary-dark: #0B2B5B;
+            --primary-light: #1565C0;
+            --secondary: #42A5F5;
+            --accent: #F9A825;
+            --bg-light: #E3F2FD;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --shadow: 0 4px 20px rgba(13, 71, 161, 0.08);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,7 +29,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #800000 0%, #4a0000 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -25,7 +38,7 @@
         }
 
         .card {
-            background: white;
+            background: var(--white);
             border-radius: 24px;
             padding: 40px;
             max-width: 500px;
@@ -38,30 +51,54 @@
             margin-bottom: 30px;
         }
 
+        /* ===== MTU LOGO IMAGE ===== */
         .logo-icon {
-            width: 60px;
-            height: 60px;
-            background: #800000;
+            width: 64px;
+            height: 64px;
             border-radius: 16px;
+            overflow: hidden;
+            margin: 0 auto 15px;
+            /* border: 2px solid var(--accent); */
+            box-shadow: 0 4px 16px rgba(13, 71, 161, 0.2);
+            background: var(--white);
+        }
+
+        .logo-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Fallback if image doesn't load */
+        .logo-icon .fallback {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 15px;
-            color: #FFD700;
-            font-size: 24px;
-            font-weight: bold;
+            font-weight: 900;
+            font-size: 22px;
+            color: var(--accent);
         }
 
         .logo h2 {
-            color: #800000;
+            color: var(--primary);
             font-size: 20px;
             margin-top: 10px;
+            font-weight: 700;
         }
 
         .logo p {
-            color: #666;
+            color: var(--text-gray);
             font-size: 12px;
             margin-top: 5px;
+        }
+
+        .logo p .gold {
+            color: var(--accent);
+            font-weight: 600;
         }
 
         .role-badge {
@@ -72,14 +109,12 @@
             text-align: center;
             margin-bottom: 20px;
             font-weight: 600;
+            font-size: 14px;
         }
 
-        h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #800000;
-            text-align: center;
-            margin-bottom: 10px;
+        .role-badge i {
+            color: #10b981;
+            margin-right: 6px;
         }
 
         .input-group {
@@ -96,48 +131,43 @@
 
         input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
             border-radius: 10px;
             font-size: 14px;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
         }
 
         input:focus {
             outline: none;
-            border-color: #800000;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.08);
         }
 
         .btn {
             width: 100%;
             padding: 12px;
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             border: none;
             border-radius: 10px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn:hover {
-            background: #5f0000;
-        }
-
-        .back-link {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .back-link a {
-            color: #800000;
-            text-decoration: none;
-            font-size: 14px;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(13, 71, 161, 0.3);
         }
 
         .alert-danger {
             background: #fee2e2;
             color: #991b1b;
-            padding: 12px;
+            padding: 12px 16px;
             border-radius: 10px;
             margin-bottom: 20px;
             font-size: 14px;
@@ -147,18 +177,47 @@
         .alert-danger p {
             margin: 0;
         }
+
+        .alert-danger i {
+            margin-right: 6px;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .back-link a:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
     </style>
 </head>
 
 <body>
     <div class="card">
         <div class="logo">
-            <div class="logo-icon">Uni</div>
-            <h2>Academic Portal</h2>
+            <!-- ===== MTU LOGO IMAGE ===== -->
+            <div class="logo-icon">
+                <img src="{{ asset('images/mtu-logo.png') }}" alt="MTU">
+                <!-- <div class="fallback">MTU</div> -->
+            </div>
+            <h2>Mandalay Technological University</h2>
+            <p><span class="gold">✦</span> Ministry of Science and Technology <span class="gold">✦</span></p>
         </div>
 
         <div class="role-badge">
-            <i class="bi bi-person-badge"></i> Lecturer Login
+            <i class="bi bi-person-badge"></i> Teacher Login
         </div>
 
         @if ($errors->any())
@@ -180,11 +239,13 @@
                 <label>Password</label>
                 <input type="password" name="password" placeholder="Enter your password" required>
             </div>
-            <button type="submit" class="btn">Login as Lecturer</button>
+            <button type="submit" class="btn">Login as Teacher</button>
         </form>
 
         <div class="back-link">
-            <a href="{{ url('/') }}"><i class="bi bi-arrow-left"></i> Back to Home</a>
+            <a href="{{ route('home') }}">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
         </div>
     </div>
 </body>

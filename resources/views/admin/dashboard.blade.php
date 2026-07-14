@@ -11,14 +11,18 @@
 
 @section('content')
     <style>
-        /* ============================================================
-                               CSS VARIABLES
-                               ============================================================ */
         :root {
-            --primary: #800000;
-            --primary-light: #a00000;
-            --primary-dark: #4a0000;
-            --primary-gradient: linear-gradient(135deg, #800000 0%, #a00000 50%, #c00000 100%);
+            --primary: #0D47A1;
+            --primary-dark: #0B2B5B;
+            --primary-light: #1565C0;
+            --secondary: #42A5F5;
+            --accent: #F9A825;
+            --bg-main: #E3F2FD;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(13, 71, 161, 0.08);
+            --shadow-hover: 0 8px 30px rgba(13, 71, 161, 0.15);
             --success: #10b981;
             --success-light: #d1fae5;
             --warning: #f59e0b;
@@ -39,18 +43,12 @@
             --gray-700: #334155;
             --gray-800: #1e293b;
             --gray-900: #0f172a;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ============================================================
-                               STATS GRID - COMPACT (8 Cards)
-                               ============================================================ */
         .stats-grid-premium {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -59,11 +57,11 @@
         }
 
         .stat-card-premium {
-            background: white;
+            background: var(--white);
             border-radius: var(--radius-md);
             padding: 1rem 1.25rem;
-            border: 1px solid rgba(128, 0, 0, 0.06);
-            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(13, 71, 161, 0.06);
+            box-shadow: var(--shadow);
             transition: var(--transition);
             position: relative;
             overflow: hidden;
@@ -77,15 +75,15 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, #0D47A1, #1565C0);
             opacity: 0;
             transition: var(--transition);
         }
 
         .stat-card-premium:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-            border-color: rgba(128, 0, 0, 0.12);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(13, 71, 161, 0.12);
         }
 
         .stat-card-premium:hover::before {
@@ -109,7 +107,7 @@
         }
 
         .stat-icon-wrap.primary {
-            background: rgba(128, 0, 0, 0.08);
+            background: rgba(13, 71, 161, 0.08);
             color: var(--primary);
         }
 
@@ -141,9 +139,13 @@
         .stat-card-premium .stat-value {
             font-size: 1.5rem;
             font-weight: 800;
-            color: var(--gray-900);
+            color: var(--primary);
             letter-spacing: -0.02em;
             line-height: 1.2;
+        }
+
+        .stat-card-premium .stat-value.danger {
+            color: var(--danger);
         }
 
         .stat-card-premium .stat-label {
@@ -176,24 +178,13 @@
         }
 
         .stat-card-premium .mini-progress .bar.primary {
-            background: var(--primary-gradient);
-        }
-
-        .stat-card-premium .mini-progress .bar.success {
-            background: var(--success);
-        }
-
-        .stat-card-premium .mini-progress .bar.warning {
-            background: var(--warning);
+            background: linear-gradient(135deg, #0D47A1, #1565C0);
         }
 
         .stat-card-premium .mini-progress .bar.danger {
             background: var(--danger);
         }
 
-        /* ============================================================
-                               CHART GRID
-                               ============================================================ */
         .chart-grid-premium {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -202,16 +193,16 @@
         }
 
         .chart-card-premium {
-            background: white;
+            background: var(--white);
             border-radius: var(--radius-lg);
-            border: 1px solid rgba(128, 0, 0, 0.06);
-            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(13, 71, 161, 0.06);
+            box-shadow: var(--shadow);
             overflow: hidden;
             transition: var(--transition);
         }
 
         .chart-card-premium:hover {
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-hover);
         }
 
         .chart-card-premium .card-header-premium {
@@ -238,7 +229,7 @@
             font-size: 0.5rem;
             padding: 0.1rem 0.5rem;
             border-radius: 1rem;
-            background: rgba(128, 0, 0, 0.08);
+            background: rgba(13, 71, 161, 0.08);
             color: var(--primary);
             font-weight: 600;
         }
@@ -258,9 +249,6 @@
             height: 220px;
         }
 
-        /* ============================================================
-                               DEPARTMENT RANKING
-                               ============================================================ */
         .dept-ranking-premium {
             max-height: 220px;
             overflow-y: auto;
@@ -300,7 +288,7 @@
         }
 
         .dept-rank-item .rank-number.gold {
-            color: #f59e0b;
+            color: var(--accent);
         }
 
         .dept-rank-item .rank-number.silver {
@@ -361,9 +349,6 @@
             transition: width 1s ease;
         }
 
-        /* ============================================================
-                               INSIGHTS CARDS (Compact 3)
-                               ============================================================ */
         .insights-grid-premium {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -372,11 +357,11 @@
         }
 
         .insight-card-premium {
-            background: white;
+            background: var(--white);
             border-radius: var(--radius-md);
-            border: 1px solid rgba(128, 0, 0, 0.06);
+            border: 1px solid rgba(13, 71, 161, 0.06);
             padding: 0.75rem 1rem;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow);
             transition: var(--transition);
             display: flex;
             align-items: flex-start;
@@ -385,7 +370,7 @@
 
         .insight-card-premium:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            box-shadow: var(--shadow-hover);
         }
 
         .insight-card-premium .insight-icon {
@@ -399,9 +384,9 @@
             flex-shrink: 0;
         }
 
-        .insight-card-premium .insight-icon.purple {
-            background: var(--purple-light);
-            color: var(--purple);
+        .insight-card-premium .insight-icon.gold {
+            background: rgba(249, 168, 37, 0.15);
+            color: var(--accent);
         }
 
         .insight-card-premium .insight-icon.green {
@@ -434,8 +419,16 @@
             margin-top: 0.05rem;
         }
 
-        .insight-card-premium .insight-content .insight-text .highlight {
-            color: var(--primary);
+        .insight-card-premium .insight-content .insight-text .highlight-gold {
+            color: var(--accent);
+        }
+
+        .insight-card-premium .insight-content .insight-text .highlight-green {
+            color: var(--success);
+        }
+
+        .insight-card-premium .insight-content .insight-text .highlight-red {
+            color: var(--danger);
         }
 
         .insight-card-premium .insight-content .insight-sub {
@@ -444,9 +437,6 @@
             margin-top: 0.05rem;
         }
 
-        /* ============================================================
-                               SESSION & CLASSROOM CARDS
-                               ============================================================ */
         .session-grid-premium {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -466,8 +456,8 @@
         }
 
         .session-item-premium:hover {
-            border-color: rgba(128, 0, 0, 0.1);
-            background: white;
+            border-color: rgba(13, 71, 161, 0.1);
+            background: var(--white);
         }
 
         .session-item-premium .session-info .course {
@@ -547,55 +537,32 @@
             transition: width 1s ease;
         }
 
-        /* ============================================================
-                               QUICK ACTIONS
-                               ============================================================ */
-        .quick-actions-premium {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-top: 0.5rem;
+        /* Risk Level Badge Colors */
+        .risk-badge {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
 
-        .quick-action-premium {
-            background: white;
-            border-radius: var(--radius-md);
-            border: 1px solid rgba(128, 0, 0, 0.06);
-            padding: 0.75rem;
-            text-align: center;
-            transition: var(--transition);
-            text-decoration: none;
-            color: var(--gray-700);
-            box-shadow: var(--shadow-sm);
-            cursor: pointer;
+        .risk-badge.low {
+            background: var(--success-light);
+            color: #166534;
         }
 
-        .quick-action-premium:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary);
+        .risk-badge.medium {
+            background: var(--warning-light);
+            color: #92400e;
         }
 
-        .quick-action-premium .qa-icon {
-            font-size: 1.5rem;
-            margin-bottom: 0.15rem;
-            display: block;
+        .risk-badge.high {
+            background: var(--danger-light);
+            color: #991b1b;
         }
 
-        .quick-action-premium .qa-label {
-            font-size: 0.65rem;
-            font-weight: 600;
-            color: var(--gray-600);
-        }
-
-        .quick-action-premium .qa-count {
-            font-size: 0.55rem;
-            color: var(--gray-400);
-        }
-
-        /* ============================================================
-                               RESPONSIVE
-                               ============================================================ */
         @media (max-width: 1200px) {
             .stats-grid-premium {
                 grid-template-columns: repeat(4, 1fr);
@@ -617,10 +584,6 @@
 
             .session-grid-premium {
                 grid-template-columns: 1fr;
-            }
-
-            .quick-actions-premium {
-                grid-template-columns: repeat(2, 1fr);
             }
         }
 
@@ -648,11 +611,6 @@
                 grid-template-columns: 1fr;
             }
 
-            .quick-actions-premium {
-                grid-template-columns: 1fr 1fr;
-                gap: 0.5rem;
-            }
-
             .chart-container-premium {
                 height: 180px;
             }
@@ -666,15 +624,8 @@
             .stat-card-premium .stat-value {
                 font-size: 1.1rem;
             }
-
-            .quick-actions-premium {
-                grid-template-columns: 1fr 1fr;
-            }
         }
 
-        /* ============================================================
-                               ANIMATIONS
-                               ============================================================ */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -706,29 +657,10 @@
         .animate-in:nth-child(4) {
             animation-delay: 0.12s;
         }
-
-        .animate-in:nth-child(5) {
-            animation-delay: 0.15s;
-        }
-
-        .animate-in:nth-child(6) {
-            animation-delay: 0.18s;
-        }
-
-        .animate-in:nth-child(7) {
-            animation-delay: 0.21s;
-        }
-
-        .animate-in:nth-child(8) {
-            animation-delay: 0.24s;
-        }
     </style>
 
-    <!-- ============================================================
-                STATS CARDS - COMPACT (8 Cards)
-                ============================================================ -->
+    <!-- Stats -->
     <div class="stats-grid-premium">
-        <!-- Row 1: 4 Cards -->
         <div class="stat-card-premium animate-in">
             <div class="stat-icon-wrap primary"><i class="bi bi-people-fill"></i></div>
             <div class="stat-value">{{ number_format($totalStudents ?? 0) }}</div>
@@ -747,7 +679,7 @@
 
         <div class="stat-card-premium animate-in">
             <div class="stat-icon-wrap danger"><i class="bi bi-exclamation-octagon-fill"></i></div>
-            <div class="stat-value" style="color: var(--danger);">{{ $atRiskStudents ?? 0 }}</div>
+            <div class="stat-value danger">{{ $atRiskStudents ?? 0 }}</div>
             <div class="stat-label">Students At Risk</div>
             <div class="stat-sub">{{ $totalStudents > 0 ? round(($atRiskStudents / $totalStudents) * 100) : 0 }}% of total
             </div>
@@ -763,43 +695,9 @@
             <div class="stat-label">Active Sessions</div>
             <div class="stat-sub">📱 Live QR sessions</div>
         </div>
-
-        <!-- Row 2: 4 Cards -->
-        {{-- <div class="stat-card-premium animate-in">
-            <div class="stat-icon-wrap info"><i class="bi bi-book"></i></div>
-            <div class="stat-value">{{ $totalCourses ?? 0 }}</div>
-            <div class="stat-label">Active Courses</div>
-            <div class="stat-sub">📚 This semester</div>
-        </div>
-
-        <div class="stat-card-premium animate-in">
-            <div class="stat-icon-wrap success"><i class="bi bi-trophy"></i></div>
-            <div class="stat-value">{{ $eligibilityRate ?? 0 }}%</div>
-            <div class="stat-label">Eligibility Rate</div>
-            <div class="stat-sub">✅ Eligible for exams</div>
-            <div class="mini-progress">
-                <div class="bar success" style="width: {{ $eligibilityRate ?? 0 }}%;"></div>
-            </div>
-        </div>
-
-        <div class="stat-card-premium animate-in">
-            <div class="stat-icon-wrap warning"><i class="bi bi-clock-history"></i></div>
-            <div class="stat-value">{{ $totalDepartments ?? 0 }}</div>
-            <div class="stat-label">Departments</div>
-            <div class="stat-sub">🏛️ All faculties</div>
-        </div>
-
-        <div class="stat-card-premium animate-in">
-            <div class="stat-icon-wrap primary"><i class="bi bi-people"></i></div>
-            <div class="stat-value">{{ $totalLecturers ?? 0 }}</div>
-            <div class="stat-label">Total Lecturers</div>
-            <div class="stat-sub">👨‍🏫 Faculty members</div>
-        </div> --}}
     </div>
 
-    <!-- ============================================================
-                CHARTS ROW
-                ============================================================ -->
+    <!-- Charts -->
     <div class="chart-grid-premium">
         <div class="chart-card-premium">
             <div class="card-header-premium">
@@ -822,7 +720,7 @@
                 <span class="title">
                     <i class="bi bi-pie-chart-fill" style="color: var(--primary);"></i>
                     Risk Distribution
-                    <span class="badge">Real-time</span>
+                    <span class="badge">KG+12 Full Risk</span>
                 </span>
                 <span class="subtitle">🎯 Student risk levels</span>
             </div>
@@ -834,17 +732,15 @@
         </div>
     </div>
 
-    <!-- ============================================================
-                INSIGHTS ROW (3 Cards - Compact)
-                ============================================================ -->
+    <!-- Insights -->
     <div class="insights-grid-premium">
         <div class="insight-card-premium">
-            <div class="insight-icon purple"><i class="bi bi-trophy"></i></div>
+            <div class="insight-icon gold"><i class="bi bi-trophy-fill"></i></div>
             <div class="insight-content">
                 <div class="insight-title">🏆 Top Performing Department</div>
                 <div class="insight-text">
                     @if (isset($departmentAttendance) && count($departmentAttendance) > 0)
-                        <span class="highlight">{{ $departmentAttendance[0]['name'] ?? 'N/A' }}</span>
+                        <span class="highlight-gold">{{ $departmentAttendance[0]['name'] ?? 'N/A' }}</span>
                         with {{ $departmentAttendance[0]['attendance'] ?? 0 }}% attendance
                     @else
                         No data available
@@ -855,7 +751,7 @@
         </div>
 
         <div class="insight-card-premium">
-            <div class="insight-icon green"><i class="bi bi-arrow-up-circle"></i></div>
+            <div class="insight-icon green"><i class="bi bi-arrow-up-circle-fill"></i></div>
             <div class="insight-content">
                 <div class="insight-title">📈 Most Improved</div>
                 <div class="insight-text">
@@ -865,7 +761,7 @@
                             : null;
                     @endphp
                     @if ($best)
-                        <span class="highlight">{{ $best['name'] ?? 'N/A' }}</span>
+                        <span class="highlight-green">{{ $best['name'] ?? 'N/A' }}</span>
                         ↑ +{{ $best['change'] ?? 0 }}% this month
                     @else
                         No data available
@@ -876,7 +772,7 @@
         </div>
 
         <div class="insight-card-premium">
-            <div class="insight-icon red"><i class="bi bi-exclamation-triangle"></i></div>
+            <div class="insight-icon red"><i class="bi bi-exclamation-triangle-fill"></i></div>
             <div class="insight-content">
                 <div class="insight-title">⚠️ Needs Attention</div>
                 <div class="insight-text">
@@ -886,7 +782,7 @@
                             : null;
                     @endphp
                     @if ($worst)
-                        <span class="highlight">{{ $worst['name'] ?? 'N/A' }}</span>
+                        <span class="highlight-red">{{ $worst['name'] ?? 'N/A' }}</span>
                         at {{ $worst['attendance'] ?? 0 }}% attendance
                     @else
                         No data available
@@ -897,17 +793,14 @@
         </div>
     </div>
 
-    <!-- ============================================================
-                DEPARTMENT RANKING
-                ============================================================ -->
+    <!-- Department Rankings -->
     <div class="chart-grid-premium">
         <div class="chart-card-premium">
             <div class="card-header-premium">
                 <span class="title">
                     <i class="bi bi-trophy" style="color: var(--primary);"></i>
                     Department Rankings
-                    <span class="badge">{{ isset($departmentAttendance) ? count($departmentAttendance) : 0 }}
-                        depts</span>
+                    <span class="badge">{{ isset($departmentAttendance) ? count($departmentAttendance) : 0 }} depts</span>
                 </span>
                 <span class="subtitle">🏅 Attendance leaderboard</span>
             </div>
@@ -924,7 +817,6 @@
                                 } elseif ($index == 2) {
                                     $rankClass = 'bronze';
                                 }
-
                                 $attClass =
                                     $dept['attendance'] >= 75 ? 'high' : ($dept['attendance'] >= 60 ? 'medium' : 'low');
                                 $barColor =
@@ -943,8 +835,7 @@
                                 </div>
                                 <div class="dept-bar">
                                     <div class="fill"
-                                        style="width: {{ $dept['attendance'] }}%; background: {{ $barColor }};">
-                                    </div>
+                                        style="width: {{ $dept['attendance'] }}%; background: {{ $barColor }};"></div>
                                 </div>
                                 <div class="dept-attendance {{ $attClass }}">
                                     {{ $dept['attendance'] }}%
@@ -969,55 +860,46 @@
             <div class="card-header-premium">
                 <span class="title">
                     <i class="bi bi-graph-up" style="color: var(--primary);"></i>
-                    Performance Insights
-                    <span class="badge">AI Analytics</span>
+                    KG+12 Performance Metrics
+                    <span class="badge">Eligibility</span>
                 </span>
-                <span class="subtitle">📊 Key metrics summary</span>
+                <span class="subtitle">📊 University-wide summary</span>
             </div>
             <div class="card-body-premium">
-                @if (isset($departmentAttendance) && count($departmentAttendance) > 0)
-                    @php
-                        $highest = collect($departmentAttendance)->sortByDesc('attendance')->first();
-                        $lowest = collect($departmentAttendance)->sortBy('attendance')->first();
-                        $avg = collect($departmentAttendance)->avg('attendance');
-                    @endphp
-                    <div style="padding: 0.25rem 0;">
-                        <div
-                            style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--gray-100);">
-                            <span style="font-size: 0.7rem; color: var(--gray-500);">Average Attendance</span>
-                            <span
-                                style="font-size: 0.8rem; font-weight: 700; color: var(--gray-800);">{{ round($avg) }}%</span>
-                        </div>
-                        <div
-                            style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--gray-100);">
-                            <span style="font-size: 0.7rem; color: var(--gray-500);">Highest</span>
-                            <span
-                                style="font-size: 0.8rem; font-weight: 700; color: var(--success);">{{ $highest['name'] ?? 'N/A' }}
-                                ({{ $highest['attendance'] ?? 0 }}%)</span>
-                        </div>
-                        <div
-                            style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--gray-100);">
-                            <span style="font-size: 0.7rem; color: var(--gray-500);">Lowest</span>
-                            <span
-                                style="font-size: 0.8rem; font-weight: 700; color: var(--danger);">{{ $lowest['name'] ?? 'N/A' }}
-                                ({{ $lowest['attendance'] ?? 0 }}%)</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.4rem 0;">
-                            <span style="font-size: 0.7rem; color: var(--gray-500);">Total Departments</span>
-                            <span
-                                style="font-size: 0.8rem; font-weight: 700; color: var(--gray-800);">{{ count($departmentAttendance) }}</span>
-                        </div>
+                @php
+                    $avgAtt = isset($departmentAttendance) ? collect($departmentAttendance)->avg('attendance') : 0;
+                    $eligibleRate = $eligibilityRate ?? 0;
+                @endphp
+                <div style="padding: 0.25rem 0;">
+                    <div
+                        style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--gray-100);">
+                        <span style="font-size: 0.7rem; color: var(--gray-500);">Avg Attendance</span>
+                        <span
+                            style="font-size: 0.8rem; font-weight: 700; color: var(--gray-800);">{{ round($avgAtt) }}%</span>
                     </div>
-                @else
-                    <p class="text-muted text-center" style="padding: 1rem;">No data available</p>
-                @endif
+                    <div
+                        style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--gray-100);">
+                        <span style="font-size: 0.7rem; color: var(--gray-500);">Eligibility Rate</span>
+                        <span
+                            style="font-size: 0.8rem; font-weight: 700; color: var(--success);">{{ $eligibleRate }}%</span>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--gray-100);">
+                        <span style="font-size: 0.7rem; color: var(--gray-500);">Students At Risk</span>
+                        <span
+                            style="font-size: 0.8rem; font-weight: 700; color: var(--danger);">{{ $atRiskStudents ?? 0 }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.4rem 0;">
+                        <span style="font-size: 0.7rem; color: var(--gray-500);">Total Departments</span>
+                        <span
+                            style="font-size: 0.8rem; font-weight: 700; color: var(--gray-800);">{{ count($departmentAttendance ?? []) }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ============================================================
-                SESSION SUMMARIES & BUSIEST CLASSROOMS
-                ============================================================ -->
+    <!-- Sessions -->
     <div class="session-grid-premium">
         <div class="chart-card-premium">
             <div class="card-header-premium">
@@ -1091,42 +973,11 @@
         </div>
     </div>
 
-    <!-- ============================================================
-                QUICK ACTIONS
-                ============================================================ -->
-    {{-- <div class="quick-actions-premium">
-        <a href="{{ route('admin.users.index') }}" class="quick-action-premium">
-            <span class="qa-icon">👨‍🎓</span>
-            <span class="qa-label">User Management</span>
-            <span class="qa-count">{{ ($totalStudents ?? 0) + ($totalLecturers ?? 0) }} users</span>
-        </a>
-        <a href="{{ route('admin.enrollments.index') }}" class="quick-action-premium">
-            <span class="qa-icon">📋</span>
-            <span class="qa-label">Enrollments</span>
-            <span class="qa-count">{{ $pendingEnrollments ?? 0 }} pending</span>
-        </a>
-        <a href="{{ route('admin.departments.index') }}" class="quick-action-premium">
-            <span class="qa-icon">🏛️</span>
-            <span class="qa-label">Departments</span>
-            <span class="qa-count">{{ $totalDepartments ?? 0 }} departments</span>
-        </a>
-        <a href="{{ route('admin.reports') }}" class="quick-action-premium">
-            <span class="qa-icon">📊</span>
-            <span class="qa-label">Export Reports</span>
-            <span class="qa-count">Download data</span>
-        </a>
-    </div> --}}
-
-    <!-- ============================================================
-                SCRIPTS
-                ============================================================ -->
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                // ============================================================
-                // TREND CHART
-                // ============================================================
+                // Trend Chart
                 var trendLabels =
                     {{ json_encode(isset($trendData) ? array_column($trendData, 'month') : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']) }};
                 var trendData =
@@ -1141,12 +992,12 @@
                             datasets: [{
                                 label: 'Attendance %',
                                 data: trendData,
-                                borderColor: '#800000',
-                                backgroundColor: 'rgba(128, 0, 0, 0.08)',
+                                borderColor: '#0D47A1',
+                                backgroundColor: 'rgba(13, 71, 161, 0.08)',
                                 borderWidth: 3,
                                 fill: true,
                                 tension: 0.4,
-                                pointBackgroundColor: '#800000',
+                                pointBackgroundColor: '#0D47A1',
                                 pointBorderColor: '#fff',
                                 pointBorderWidth: 2,
                                 pointRadius: 4,
@@ -1213,9 +1064,7 @@
                     });
                 }
 
-                // ============================================================
-                // RISK CHART
-                // ============================================================
+                // Risk Distribution Chart
                 var riskData =
                     {{ json_encode(isset($riskDistribution) ? $riskDistribution : ['Low' => 0, 'Medium' => 0, 'High' => 0]) }};
 

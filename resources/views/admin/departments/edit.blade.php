@@ -11,13 +11,32 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .form-card {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
-            border-radius: 1rem;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 2rem;
-            border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow);
         }
 
         .form-group {
@@ -28,56 +47,65 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 600;
-            color: #374151;
+            color: var(--text-dark);
+            font-size: 0.85rem;
         }
 
         .form-group input,
         .form-group textarea {
             width: 100%;
             padding: 0.6rem;
-            border: 1px solid #d1d5db;
-            border-radius: 0.5rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 8px;
             font-size: 0.9rem;
+            transition: var(--transition);
+            background: #fafbfc;
+            font-family: 'Inter', sans-serif;
         }
 
         .form-group input:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #800000;
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .btn-submit {
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             border: none;
             padding: 0.6rem 1.5rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+            transition: var(--transition);
         }
 
         .btn-submit:hover {
-            background: #5f0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.25);
         }
 
         .btn-cancel {
-            background: #9ca3af;
-            color: white;
+            background: #f3f4f6;
+            color: var(--text-dark);
             border: none;
             padding: 0.6rem 1.5rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
             text-decoration: none;
             display: inline-block;
+            transition: var(--transition);
         }
 
         .btn-cancel:hover {
-            background: #6b7280;
+            background: #e5e7eb;
         }
 
         .error {
-            color: #dc2626;
+            color: var(--danger);
             font-size: 0.75rem;
             margin-top: 0.25rem;
         }
@@ -86,32 +114,33 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #6b7a8f;
+            color: var(--text-gray);
             text-decoration: none;
             font-size: 0.8rem;
             font-weight: 500;
             padding: 0.3rem 0.8rem;
-            border-radius: 0.5rem;
-            background: white;
-            border: 1px solid #e9edf4;
-            transition: all 0.2s;
+            border-radius: 8px;
+            background: var(--white);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            transition: var(--transition);
             margin-bottom: 1.25rem;
         }
 
         .back-link:hover {
-            color: #800000;
-            border-color: #800000;
+            color: var(--primary);
+            border-color: var(--primary);
             transform: translateX(-3px);
         }
     </style>
 
-    <!-- Back Link -->
     <a href="{{ route('admin.departments.show', $department) }}" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to Department
     </a>
 
     <div class="form-card">
-        <h3 style="color: #800000; margin-bottom: 1.5rem;">Edit Department: {{ $department->name }}</h3>
+        <h3 style="color: var(--primary); margin-bottom: 1.5rem; font-size: 1.1rem; font-weight: 700;">
+            <i class="bi bi-pencil"></i> Edit Department: {{ $department->name }}
+        </h3>
 
         <form method="POST" action="{{ route('admin.departments.update', $department) }}">
             @csrf

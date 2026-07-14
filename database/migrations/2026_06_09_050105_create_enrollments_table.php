@@ -37,6 +37,7 @@ return new class extends Migration
             // ===================================
 
             $table->timestamp('approved_at')->nullable();
+            $table->timestamp('rejected_at')->nullable();  // ✅ ADDED
             $table->timestamp('dropped_at')->nullable();
 
             $table->timestamps();

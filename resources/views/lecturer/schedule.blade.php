@@ -11,29 +11,45 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --success: #10b981;
+        }
+
         .schedule-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            background: var(--white);
             border-radius: 0.75rem;
             overflow: hidden;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
         }
 
         .schedule-table th {
             padding: 0.75rem;
             text-align: center;
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             font-size: 0.8rem;
             font-weight: 600;
-            border: 1px solid #6b0000;
+            border: 1px solid var(--primary-dark);
         }
 
         .schedule-table td {
             padding: 0.75rem;
             text-align: center;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             vertical-align: middle;
         }
 
@@ -41,22 +57,28 @@
             background: #fef3c7;
             border-radius: 0.5rem;
             padding: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .course-cell:hover {
+            transform: scale(1.03);
+            box-shadow: var(--shadow-hover);
         }
 
         .course-code {
             font-weight: 700;
-            color: #800000;
+            color: var(--primary);
             font-size: 0.75rem;
         }
 
         .course-name {
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .room {
             font-size: 0.65rem;
-            color: #10b981;
+            color: var(--success);
             margin-top: 0.25rem;
         }
 
@@ -79,7 +101,7 @@
     </style>
 
     <div>
-        <h3 style="color: #800000; margin-bottom: 1rem;">📅 Weekly Teaching Schedule</h3>
+        <h3 style="color: var(--primary); margin-bottom: 1rem;">📅 Weekly Teaching Schedule</h3>
 
         <div style="overflow-x: auto;">
             <table class="schedule-table">
@@ -94,7 +116,7 @@
                 <tbody>
                     @foreach ($timeSlots as $time)
                         <tr>
-                            <td style="background: #f9fafb; font-weight: 600;">
+                            <td style="background: var(--bg-main); font-weight: 600;">
                                 {{ \Carbon\Carbon::parse($time)->format('g:i A') }}</td>
                             @foreach ($days as $day)
                                 <td>

@@ -34,7 +34,7 @@
         }
 
         .breadcrumb-bar .breadcrumb-item a {
-            color: #800000;
+            color: #0A2463;
             text-decoration: none;
             font-weight: 500;
         }
@@ -53,7 +53,7 @@
         }
 
         .breadcrumb-bar .badge-filter {
-            background: #800000;
+            background: #0A2463;
             color: white;
             padding: 0.2rem 0.7rem;
             border-radius: 20px;

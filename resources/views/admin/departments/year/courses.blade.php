@@ -10,6 +10,26 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .breadcrumb-custom {
             background: transparent;
             padding: 0;
@@ -17,7 +37,7 @@
         }
 
         .breadcrumb-custom .breadcrumb-item a {
-            color: #800000;
+            color: var(--primary);
             text-decoration: none;
             font-size: 0.8rem;
         }
@@ -27,7 +47,7 @@
         }
 
         .breadcrumb-custom .breadcrumb-item.active {
-            color: #6b7280;
+            color: var(--text-gray);
             font-size: 0.8rem;
         }
 
@@ -35,21 +55,21 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #6b7a8f;
+            color: var(--text-gray);
             text-decoration: none;
             font-size: 0.8rem;
             font-weight: 500;
             padding: 0.3rem 0.8rem;
-            border-radius: 0.5rem;
-            background: white;
-            border: 1px solid #e9edf4;
-            transition: all 0.2s;
+            border-radius: 8px;
+            background: var(--white);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            transition: var(--transition);
             margin-bottom: 1.25rem;
         }
 
         .back-link-course:hover {
-            color: #800000;
-            border-color: #800000;
+            color: var(--primary);
+            border-color: var(--primary);
             transform: translateX(-3px);
         }
 
@@ -64,43 +84,41 @@
 
         .btn-action-course {
             padding: 0.4rem 1.2rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             font-size: 0.8rem;
             font-weight: 500;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            transition: all 0.2s;
+            transition: var(--transition);
             border: none;
             cursor: pointer;
         }
 
         .btn-action-course-primary {
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
         }
 
         .btn-action-course-primary:hover {
-            background: #a00000;
-            color: white;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.25);
+            color: var(--white);
         }
 
         .course-table-wrap {
             overflow-x: auto;
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e9edf4;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
         }
 
-        /* ===== YEAR GROUP WITH GAP ===== */
         .year-group {
             margin-bottom: 1.5rem;
-            border: 1px solid #e9edf4;
-            border-radius: 0.5rem;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            border-radius: 8px;
             overflow: hidden;
         }
 
@@ -113,16 +131,16 @@
             background: #f8f9fc;
             font-weight: 600;
             font-size: 0.85rem;
-            color: #1a2332;
-            border-bottom: 1px solid #e9edf4;
+            color: var(--text-dark);
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .year-group .year-header .badge-count {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             font-size: 0.6rem;
             padding: 0.05rem 0.6rem;
             border-radius: 1rem;
@@ -139,8 +157,8 @@
             padding: 0.6rem 0.75rem;
             text-align: left;
             font-weight: 600;
-            color: #6b7a8f;
-            border-bottom: 2px solid #e9edf4;
+            color: var(--text-gray);
+            border-bottom: 2px solid rgba(10, 36, 99, 0.06);
             font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -150,12 +168,12 @@
 
         .course-table tbody td {
             padding: 0.5rem 0.75rem;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
             vertical-align: middle;
         }
 
         .course-table tbody tr {
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .course-table tbody tr:hover {
@@ -168,11 +186,11 @@
 
         .course-table .course-code-cell {
             font-weight: 700;
-            color: #800000;
+            color: var(--primary);
             font-size: 0.7rem;
-            background: #fef3c7;
+            background: rgba(212, 160, 23, 0.12);
             padding: 0.05rem 0.6rem;
-            border-radius: 0.3rem;
+            border-radius: 6px;
             display: inline-block;
             white-space: nowrap;
         }
@@ -187,26 +205,26 @@
         }
 
         .course-table .attendance-pill.high {
-            background: #ecfdf5;
-            color: #10b981;
+            background: var(--success-light);
+            color: #166534;
         }
 
         .course-table .attendance-pill.medium {
-            background: #fffbeb;
-            color: #f59e0b;
+            background: var(--warning-light);
+            color: #92400e;
         }
 
         .course-table .attendance-pill.low {
-            background: #fef2f2;
-            color: #ef4444;
+            background: var(--danger-light);
+            color: #991b1b;
         }
 
         .course-table .btn-action-sm {
             padding: 0.25rem 0.7rem;
-            border-radius: 0.3rem;
+            border-radius: 6px;
             font-size: 0.7rem;
             text-decoration: none;
-            transition: all 0.2s;
+            transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 0.2rem;
@@ -217,39 +235,36 @@
         }
 
         .btn-view-course {
-            background: #eff6ff;
-            color: #3b82f6;
+            background: var(--info-light);
+            color: var(--info);
         }
 
         .btn-view-course:hover {
-            background: #dbeafe;
-            color: #2563eb;
+            background: #bfdbfe;
         }
 
         .btn-edit-course {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
         }
 
         .btn-edit-course:hover {
             background: #fde68a;
-            color: #78350f;
         }
 
         .btn-delete-course {
-            background: #fee2e2;
-            color: #991b1b;
+            background: var(--danger-light);
+            color: var(--danger);
         }
 
         .btn-delete-course:hover {
             background: #fca5a5;
-            color: #7f1d1d;
         }
 
         .empty-state {
             text-align: center;
             padding: 2.5rem 1rem;
-            color: #9ca3af;
+            color: var(--text-gray);
         }
 
         .empty-state i {
@@ -268,7 +283,6 @@
             min-width: 130px;
         }
 
-        /* ===== CUSTOM CONFIRM DIALOG ===== */
         .confirm-overlay {
             display: none;
             position: fixed;
@@ -287,8 +301,8 @@
         }
 
         .confirm-box {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 2rem;
             max-width: 420px;
             width: 90%;
@@ -311,7 +325,7 @@
         .confirm-box .icon {
             text-align: center;
             font-size: 2.5rem;
-            color: #ef4444;
+            color: var(--danger);
             margin-bottom: 0.5rem;
         }
 
@@ -319,14 +333,14 @@
             text-align: center;
             font-size: 1.1rem;
             font-weight: 700;
-            color: #1a2332;
+            color: var(--text-dark);
             margin: 0 0 0.3rem 0;
         }
 
         .confirm-box p {
             text-align: center;
             font-size: 0.85rem;
-            color: #6b7a8f;
+            color: var(--text-gray);
             margin: 0 0 1.5rem 0;
         }
 
@@ -338,14 +352,14 @@
 
         .confirm-box .btn-confirm-cancel {
             padding: 0.4rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.8rem;
             font-weight: 500;
-            border: 1px solid #e9edf4;
-            background: white;
-            color: #374151;
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            background: var(--white);
+            color: var(--text-dark);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .confirm-box .btn-confirm-cancel:hover {
@@ -354,14 +368,14 @@
 
         .confirm-box .btn-confirm-delete {
             padding: 0.4rem 1.5rem;
-            border-radius: 0.4rem;
+            border-radius: 6px;
             font-size: 0.8rem;
             font-weight: 500;
             border: none;
-            background: #dc2626;
-            color: white;
+            background: var(--danger);
+            color: var(--white);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .confirm-box .btn-confirm-delete:hover {
@@ -400,7 +414,6 @@
         }
     </style>
 
-    <!-- ===== BREADCRUMB ===== -->
     <nav aria-label="breadcrumb" class="breadcrumb-custom">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
@@ -411,12 +424,10 @@
         </ol>
     </nav>
 
-    <!-- ===== BACK LINK ===== -->
     <a href="{{ route('admin.departments.show', $department) }}" class="back-link-course">
         <i class="bi bi-arrow-left"></i> Back to Department
     </a>
 
-    <!-- ===== ACTION BUTTONS ===== -->
     <div class="action-bar-course">
         <a href="{{ route('admin.departments.courses.create', $department) }}"
             class="btn-action-course btn-action-course-primary">
@@ -424,10 +435,8 @@
         </a>
     </div>
 
-    <!-- ===== COURSES TABLE ===== -->
     <div class="course-table-wrap">
         @if ($courses->count() > 0)
-            <!-- Year Group with Gap -->
             <div class="year-group">
                 <div class="year-header">
                     <span>{{ $yearLabel }}</span>
@@ -454,15 +463,15 @@
                             @endphp
                             <tr>
                                 <td><span class="course-code-cell">{{ $course->course_code }}</span></td>
-                                <td style="font-weight:500; color:#1a2332;">{{ $course->course_name }}</td>
-                                <td style="color:#6b7a8f; font-size:0.75rem;">
-                                    <i class="bi bi-person" style="color:#800000; font-size:0.6rem;"></i>
+                                <td style="font-weight:500; color:var(--text-dark);">{{ $course->course_name }}</td>
+                                <td style="color:var(--text-gray); font-size:0.75rem;">
+                                    <i class="bi bi-person" style="color:var(--primary); font-size:0.6rem;"></i>
                                     {{ $lecturerName }}
                                 </td>
-                                <td style="color:#6b7a8f; font-size:0.75rem; text-align:center;">
+                                <td style="color:var(--text-gray); font-size:0.75rem; text-align:center;">
                                     <i class="bi bi-door-open" style="font-size:0.6rem;"></i> {{ $course->room ?? 'N/A' }}
                                 </td>
-                                <td style="text-align:center; font-weight:600; color:#1a2332;">
+                                <td style="text-align:center; font-weight:600; color:var(--text-dark);">
                                     {{ $course->student_count ?? 0 }}
                                 </td>
                                 <td style="text-align:center;">
@@ -480,7 +489,6 @@
                                             class="btn-action-sm btn-edit-course" title="Edit Course">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <!-- Delete Button with Custom Confirm -->
                                         <button type="button" class="btn-action-sm btn-delete-course" title="Delete Course"
                                             onclick="showDeleteConfirm('{{ addslashes($course->course_name) }}', '{{ route('admin.departments.courses.destroy', [$department, $course]) }}')">
                                             <i class="bi bi-trash"></i>
@@ -498,14 +506,13 @@
                 <p style="font-size:0.9rem; margin:0;">No courses found in {{ $yearLabel }}</p>
                 <p style="font-size:0.75rem; margin:0.2rem 0 0.5rem;">Start by adding your first course</p>
                 <a href="{{ route('admin.departments.courses.create', $department) }}"
-                    style="display:inline-block; background:#800000; color:white; padding:0.3rem 1rem; border-radius:0.4rem; text-decoration:none; font-size:0.8rem;">
+                    style="display:inline-block; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:var(--white); padding:0.3rem 1rem; border-radius:6px; text-decoration:none; font-size:0.8rem;">
                     <i class="bi bi-plus-circle"></i> Add Course
                 </a>
             </div>
         @endif
     </div>
 
-    <!-- ===== CUSTOM CONFIRM DIALOG ===== -->
     <div class="confirm-overlay" id="deleteConfirm">
         <div class="confirm-box">
             <div class="icon">🗑️</div>
@@ -533,19 +540,16 @@
             document.getElementById('deleteConfirm').classList.remove('show');
         }
 
-        // Close when clicking outside
         document.getElementById('deleteConfirm').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeConfirm();
             }
         });
 
-        // Close with Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeConfirm();
             }
         });
     </script>
-
 @endsection

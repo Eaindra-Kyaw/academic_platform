@@ -10,12 +10,30 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .message-detail-box {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e9edf4;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 2rem;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         }
@@ -32,13 +50,13 @@
         .message-header h3 {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #1a2332;
+            color: var(--text-dark);
             margin: 0;
         }
 
         .message-header .meta {
             font-size: 0.8rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .sender-info {
@@ -47,7 +65,7 @@
             gap: 0.75rem;
             padding: 0.75rem 1rem;
             background: #fafbfc;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             margin-bottom: 1.5rem;
         }
 
@@ -55,8 +73,8 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #800000, #a00000);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -68,24 +86,24 @@
         .sender-info .name {
             font-weight: 600;
             font-size: 0.9rem;
-            color: #1a2332;
+            color: var(--text-dark);
         }
 
         .sender-info .email {
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .message-body {
             padding: 1rem 0;
-            border-top: 1px solid #f1f5f9;
-            border-bottom: 1px solid #f1f5f9;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             margin-bottom: 1.5rem;
         }
 
         .message-body p {
             font-size: 0.95rem;
-            color: #1a2332;
+            color: var(--text-dark);
             line-height: 1.6;
             white-space: pre-wrap;
             margin: 0;
@@ -98,32 +116,32 @@
         }
 
         .btn-reply {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             border: none;
             padding: 0.4rem 1.2rem;
-            border-radius: 0.4rem;
+            border-radius: 8px;
             font-size: 0.8rem;
             text-decoration: none;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-reply:hover {
-            background: #a00000;
+            background: var(--primary-light);
             transform: translateY(-1px);
         }
 
         .btn-back {
             background: #f3f4f6;
-            color: #374151;
+            color: var(--text-dark);
             border: none;
             padding: 0.4rem 1.2rem;
-            border-radius: 0.4rem;
+            border-radius: 8px;
             font-size: 0.8rem;
             text-decoration: none;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-back:hover {
@@ -138,7 +156,7 @@
                 <i class="bi bi-clock"></i> {{ $message->created_at->format('F j, Y g:i A') }}
                 @if (!$message->is_read && $message->recipient_id == Auth::id())
                     <span
-                        style="background:#3b82f6; color:white; font-size:0.6rem; padding:0.1rem 0.6rem; border-radius:1rem; margin-left:0.5rem;">New</span>
+                        style="background:var(--info); color:var(--white); font-size:0.6rem; padding:0.1rem 0.6rem; border-radius:1rem; margin-left:0.5rem;">New</span>
                 @endif
             </div>
         </div>

@@ -10,13 +10,31 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .message-tabs {
             display: flex;
             gap: 0.25rem;
-            background: white;
-            border-radius: 0.5rem;
+            background: var(--white);
+            border-radius: 8px;
             padding: 0.25rem;
-            border: 1px solid #e9edf4;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
@@ -27,10 +45,10 @@
             background: transparent;
             font-size: 0.8rem;
             font-weight: 500;
-            color: #6b7280;
-            border-radius: 0.4rem;
+            color: var(--text-gray);
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -39,12 +57,12 @@
 
         .message-tab:hover {
             background: #f3f4f6;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         .message-tab.active {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
         }
 
         .message-tab .badge-count {
@@ -60,12 +78,14 @@
 
         .message-item {
             padding: 0.75rem 1rem;
-            border-bottom: 1px solid #f1f5f9;
-            transition: all 0.2s;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
+            transition: var(--transition);
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 1rem;
+            text-decoration: none;
+            color: inherit;
         }
 
         .message-item:hover {
@@ -76,8 +96,8 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #800000, #a00000);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -93,18 +113,18 @@
 
         .message-item .content .subject {
             font-weight: 600;
-            color: #1a2332;
+            color: var(--text-dark);
             font-size: 0.9rem;
         }
 
         .message-item .content .recipient {
             font-size: 0.75rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .message-item .content .preview {
             font-size: 0.75rem;
-            color: #6b7280;
+            color: var(--text-gray);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -112,13 +132,13 @@
 
         .message-item .date {
             font-size: 0.65rem;
-            color: #6b7280;
+            color: var(--text-gray);
             white-space: nowrap;
         }
 
         .message-item .badge-read {
-            background: #10b981;
-            color: white;
+            background: var(--success);
+            color: var(--white);
             font-size: 0.55rem;
             padding: 0.1rem 0.5rem;
             border-radius: 1rem;
@@ -126,8 +146,8 @@
         }
 
         .message-item .badge-unread {
-            background: #3b82f6;
-            color: white;
+            background: var(--info);
+            color: var(--white);
             font-size: 0.55rem;
             padding: 0.1rem 0.5rem;
             border-radius: 1rem;
@@ -137,7 +157,7 @@
         .empty-state {
             text-align: center;
             padding: 3rem 1rem;
-            color: #9ca3af;
+            color: var(--text-gray);
         }
 
         .empty-state i {
@@ -148,7 +168,7 @@
         }
 
         .empty-state h5 {
-            color: #374151;
+            color: var(--text-dark);
             margin: 0;
         }
 
@@ -158,7 +178,6 @@
     </style>
 
     <div style="max-width:900px; margin:0 auto;">
-        <!-- Tabs -->
         <div class="message-tabs">
             <a href="{{ route('admin.messages.inbox') }}" class="message-tab">
                 <i class="bi bi-inbox"></i> Inbox
@@ -167,21 +186,19 @@
                 <i class="bi bi-send"></i> Sent
             </a>
             <a href="{{ route('admin.messages.compose') }}" class="message-tab"
-                style="margin-left:auto; background:#800000; color:white;">
+                style="margin-left:auto; background:var(--primary); color:var(--white);">
                 <i class="bi bi-plus-circle"></i> Compose
             </a>
         </div>
 
-        <!-- Messages List -->
         <div
-            style="background:white; border-radius:0.75rem; border:1px solid #e9edf4; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+            style="background:var(--white); border-radius:var(--radius); border:1px solid rgba(10, 36, 99, 0.06); overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
             @if ($messages->count() > 0)
                 @foreach ($messages as $message)
                     @php
                         $isRead = $message->is_read;
                     @endphp
-                    <a href="{{ route('admin.messages.show', $message) }}"
-                        style="text-decoration:none; color:inherit; display:block;" class="message-item">
+                    <a href="{{ route('admin.messages.show', $message) }}" class="message-item">
                         <div class="avatar">{{ substr($message->recipient->name ?? 'U', 0, 2) }}</div>
                         <div class="content">
                             <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">

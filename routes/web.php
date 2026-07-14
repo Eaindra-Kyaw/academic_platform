@@ -1,5 +1,4 @@
 <?php
-// routes/web.php
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -18,6 +17,7 @@ use App\Http\Controllers\Admin\MessageController as AdminMessageController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\SemesterController;
 use App\Http\Controllers\Admin\AttendanceAnalyticsController;
+use App\Http\Controllers\Admin\AttendanceEvaluationController;
 use App\Http\Controllers\Admin\RiskAnalysisController;
 use App\Http\Controllers\Lecturer\MessageController as LecturerMessageController;
 use App\Http\Controllers\Student\MessageController as StudentMessageController;
@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Controllers\Student\EnrollmentController as StudentEnrollmentController;
 use App\Http\Controllers\Lecturer\AttendanceController;
 use App\Http\Controllers\Student\QRScanController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 
 // ============================================================
 // LANDING PAGE (Home)
@@ -51,6 +52,14 @@ Route::get('/lecturer/login', function () {
 Route::get('/student/login', function () {
     return view('auth.student-login');
 })->name('student.login');
+
+// Registration Route - Keep this if you want public registration
+Route::get('/register', function () {
+    if (auth()->check()) {
+        return redirect('/dashboard');
+    }
+    return app(RegisteredUserController::class)->create();
+})->name('register');
 
 // ============================================================
 // ROLE-SPECIFIC LOGIN HANDLERS (POST Routes)
@@ -104,6 +113,16 @@ Route::middleware(['auth', 'must.change.password'])->group(function () {
     })->name('dashboard');
 });
 
+// Profile Routes - Available to all authenticated users
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile', function () {
+        return view('profile.edit');
+    })->name('profile.edit');
+
+    Route::put('/profile', [App\Http\Controllers\ProfileController::class, 'update'])
+        ->name('profile.update');
+});
+
 // ============================================================
 // ADMIN ROUTES
 // ============================================================
@@ -125,6 +144,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/users/{id}', [AdminController::class, 'destroy'])->name('users.destroy');
 
     // ============================================================
+    // USER SETUP LINK ROUTE (For Telegram Sharing)
+    // ============================================================
+    Route::get('/users/{id}/setup-link', [AdminController::class, 'getSetupLink'])->name('users.setup-link');
+
+    // ============================================================
     // REPORTS
     // ============================================================
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
@@ -135,6 +159,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // STUDENT MANAGEMENT
     // ============================================================
     Route::get('/students/{student}', [StudentController::class, 'show'])->name('students.show');
+
+    Route::get('/records', [AttendanceAnalyticsController::class, 'records'])->name('attendance.records');
 
     // ============================================================
     // MESSAGE ROUTES (Admin)
@@ -160,6 +186,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
         // Semester courses route
         Route::get('/semester/{semester}/courses', [DepartmentController::class, 'semesterCourses'])->name('departments.semester.courses');
+
+        // ✅ ADD THIS LINE:
+        Route::get('/courses/export', [CourseController::class, 'export'])->name('departments.courses.export');
 
         Route::resource('/courses', CourseController::class)->names([
             'index' => 'departments.courses.index',
@@ -229,6 +258,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         })->name('index');
         Route::get('/analytics', [AttendanceAnalyticsController::class, 'index'])->name('analytics');
         Route::get('/chart-data', [AttendanceAnalyticsController::class, 'chartData'])->name('chart-data');
+        Route::post('/evaluate/date-range', [AttendanceEvaluationController::class, 'evaluateByDateRange'])
+    ->name('attendance.evaluate.date-range');
     });
 
     // ============================================================
@@ -238,6 +269,22 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [RiskAnalysisController::class, 'index'])->name('index');
         Route::get('/export', [RiskAnalysisController::class, 'export'])->name('export');
     });
+
+    // ============================================================
+    // ATTENDANCE EVALUATION ROUTES (Admin)
+    // ============================================================
+    Route::post('/attendance/evaluate/student-course', [AttendanceEvaluationController::class, 'evaluateStudentCourse'])
+        ->name('attendance.evaluate.student-course');
+    Route::post('/attendance/evaluate/course/{courseId}', [AttendanceEvaluationController::class, 'evaluateCourse'])
+        ->name('attendance.evaluate.course');
+    Route::get('/attendance/student/{studentId}/summary', [AttendanceEvaluationController::class, 'studentSummary'])
+        ->name('attendance.student.summary');
+    Route::get('/attendance/course/{courseId}/summary', [AttendanceEvaluationController::class, 'courseSummary'])
+        ->name('attendance.course.summary');
+    Route::get('/attendance/risk-distribution/{departmentId?}/{year?}', [AttendanceEvaluationController::class, 'riskDistribution'])
+        ->name('attendance.risk.distribution');
+    Route::post('/attendance/evaluate/batch', [AttendanceEvaluationController::class, 'batchEvaluate'])
+        ->name('attendance.evaluate.batch');
 
     // ============================================================
     // LECTURER MANAGEMENT ROUTES
@@ -268,7 +315,8 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
         Route::get('/', [LecturerController::class, 'timetable'])->name('index');
         Route::get('/manage', [LecturerController::class, 'manageTimetable'])->name('manage');
         Route::post('/add', [LecturerController::class, 'addToTimetable'])->name('add');
-Route::match(['post', 'delete'], '/{id}/remove', [LecturerController::class, 'removeFromTimetable'])->name('remove');        Route::post('/add-multiple', [LecturerController::class, 'addMultipleSessions'])->name('add.multiple');
+        Route::match(['post', 'delete'], '/{id}/remove', [LecturerController::class, 'removeFromTimetable'])->name('remove');
+        Route::post('/add-multiple', [LecturerController::class, 'addMultipleSessions'])->name('add.multiple');
         Route::get('/export', [LecturerController::class, 'exportTimetable'])->name('export');
         Route::get('/export-pdf', [LecturerController::class, 'exportTimetablePdf'])->name('export.pdf');
     });
@@ -278,6 +326,16 @@ Route::match(['post', 'delete'], '/{id}/remove', [LecturerController::class, 're
     // ============================================================
     Route::get('/announcements', [LecturerController::class, 'announcements'])->name('announcements');
     Route::get('/announcements/{id}', [LecturerController::class, 'showAnnouncement'])->name('announcements.show');
+
+    // ============================================================
+    // SEMESTER QR MANAGEMENT ROUTES (Lecturer)
+    // ============================================================
+    Route::prefix('semester-qr')->name('semester-qr.')->group(function () {
+        Route::get('/management', [AttendanceController::class, 'semesterQrManagement'])
+            ->name('management');
+        Route::post('/{id}/end', [AttendanceController::class, 'endSemesterQr'])
+            ->name('end');
+    });
 
     // ============================================================
     // STUDENT MANAGEMENT
@@ -297,13 +355,13 @@ Route::match(['post', 'delete'], '/{id}/remove', [LecturerController::class, 're
     Route::get('/attendance/take', [AttendanceController::class, 'takeAttendance'])->name('attendance.take');
     Route::get('/attendance/sessions', [AttendanceController::class, 'sessions'])->name('attendance.sessions');
     Route::get('/attendance/history', [AttendanceController::class, 'history'])->name('attendance.history');
+    Route::get('/attendance/records', [AttendanceController::class, 'allRecords'])->name('attendance.records');
 
     Route::post('/attendance/sessions', [AttendanceController::class, 'createSession'])->name('attendance.sessions.create');
     Route::post('/attendance/sessions/{id}/end', [AttendanceController::class, 'endSession'])->name('attendance.sessions.end');
     Route::get('/attendance/sessions/{id}/refresh', [AttendanceController::class, 'refreshSession'])->name('attendance.sessions.refresh');
 
     Route::post('/attendance/manual', [AttendanceController::class, 'manualAttendance'])->name('attendance.manual');
-
 
     // ============================================================
     // AJAX ROUTES (Lecturer)
@@ -333,6 +391,13 @@ Route::match(['post', 'delete'], '/{id}/remove', [LecturerController::class, 're
     Route::get('/messages/unread/count', [LecturerMessageController::class, 'unreadCount'])->name('messages.unread');
 
     // ============================================================
+    // REPORTS (Lecturer) – already defined above, but keep both
+    // ============================================================
+    Route::get('/reports', [LecturerController::class, 'reports'])->name('reports');
+    Route::get('/reports/export', [LecturerController::class, 'exportReport'])->name('reports.export');
+    Route::get('/reports/at-risk', [LecturerController::class, 'exportAtRiskReport'])->name('reports.at-risk');
+
+    // ============================================================
     // ANNOUNCEMENT UNREAD COUNT ROUTE (Lecturer)
     // ============================================================
     Route::get('/announcements/unread-count', [AnnouncementController::class, 'unreadCount'])->name('announcements.unread');
@@ -350,6 +415,7 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::get('/attendance', [StudentController::class, 'attendance'])->name('attendance');
     Route::get('/timetable', [StudentController::class, 'timetable'])->name('timetable');
     Route::get('/progress', [StudentController::class, 'progress'])->name('progress');
+    Route::get('/attendance/history', [StudentController::class, 'attendanceHistory'])->name('attendance.history');
 
     // ============================================================
     // ENROLLMENT ROUTES (Student)
@@ -399,7 +465,7 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::get('/messages/{message}', [StudentMessageController::class, 'show'])->name('messages.show');
     Route::get('/messages/unread/count', [StudentMessageController::class, 'unreadCount'])->name('messages.unread');
 
-     // ============================================================
+    // ============================================================
     // CHATBOT ROUTES
     // ============================================================
     Route::get('/chatbot', [StudentController::class, 'chatbot'])->name('chatbot');

@@ -11,6 +11,25 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -27,7 +46,7 @@
         }
 
         .status-approved {
-            background: #dcfce7;
+            background: #d1fae5;
             color: #166534;
         }
 
@@ -39,43 +58,53 @@
         .enrollments-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            background: var(--white);
             border-radius: 1rem;
             overflow: hidden;
         }
 
         .enrollments-table th {
-            background: #fafbfc;
+            background: var(--bg-main);
             padding: 1rem;
             text-align: left;
             font-size: 0.7rem;
             font-weight: 700;
-            color: #6b7280;
-            border-bottom: 1px solid #e5e7eb;
+            color: var(--text-gray);
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .enrollments-table td {
             padding: 1rem;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
+        }
+
+        .enrollments-table tr:hover td {
+            background: #f8f9fc;
         }
 
         .rejection-reason {
             font-size: 0.7rem;
-            color: #dc2626;
+            color: var(--danger);
             margin-top: 0.25rem;
         }
 
         .approval-date {
             font-size: 0.7rem;
-            color: #166534;
+            color: var(--success);
             margin-top: 0.25rem;
         }
 
         .empty-state {
             text-align: center;
             padding: 3rem;
-            background: white;
+            background: var(--white);
             border-radius: 1rem;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #d1d5db;
         }
 
         .stats-grid {
@@ -86,22 +115,29 @@
         }
 
         .stat-card {
-            background: white;
+            background: var(--white);
             border-radius: 1rem;
             padding: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
         }
 
         .stat-number {
             font-size: 1.5rem;
             font-weight: 800;
-            color: #800000;
+            color: var(--primary);
         }
 
         .stat-label {
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         @media (max-width: 768px) {
@@ -113,14 +149,20 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 
     <div>
-        <h3 style="color: #800000; margin-bottom: 1rem;">📋 My Enrollment History</h3>
+        <h3 style="color: var(--primary); margin-bottom: 1rem;">📋 My Enrollment History</h3>
 
         @if (session('success'))
             <div
-                style="background: #dcfce7; color: #166534; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
+                style="background: #d1fae5; color: #166534; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
                 <i class="bi bi-check-circle"></i> {{ session('success') }}
             </div>
         @endif
@@ -132,7 +174,6 @@
             </div>
         @endif
 
-        <!-- Statistics Summary -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number">{{ isset($enrollments) ? $enrollments->where('status', 'pending')->count() : 0 }}
@@ -167,7 +208,8 @@
                     <tbody>
                         @foreach ($enrollments as $enrollment)
                             <tr>
-                                <td><strong>{{ $enrollment->course->course_code }}</strong></td>
+                                <td><strong style="color: var(--primary);">{{ $enrollment->course->course_code }}</strong>
+                                </td>
                                 <td>{{ $enrollment->course->course_name }}</td>
                                 <td>{{ $enrollment->created_at->format('d M Y') }}</td>
                                 <td>
@@ -192,12 +234,12 @@
                                             {{ \Carbon\Carbon::parse($enrollment->approved_at)->format('d M Y') }}
                                         </span>
                                     @elseif($enrollment->status == 'rejected' && $enrollment->rejected_at)
-                                        <span class="rejection-reason" style="color: #dc2626;">
+                                        <span class="rejection-reason" style="color: var(--danger);">
                                             <i class="bi bi-calendar-x"></i>
                                             {{ \Carbon\Carbon::parse($enrollment->rejected_at)->format('d M Y') }}
                                         </span>
                                     @else
-                                        <span style="font-size: 0.7rem; color: #6b7280;">—</span>
+                                        <span style="font-size: 0.7rem; color: var(--text-gray);">—</span>
                                     @endif
                                 </td>
                                 <td>
@@ -210,7 +252,7 @@
                                             <i class="bi bi-check-circle"></i> Enrollment confirmed
                                         </div>
                                     @else
-                                        <span style="font-size: 0.7rem; color: #6b7280;">Waiting for review</span>
+                                        <span style="font-size: 0.7rem; color: var(--text-gray);">Waiting for review</span>
                                     @endif
                                 </td>
                             </tr>
@@ -220,21 +262,13 @@
             </div>
         @else
             <div class="empty-state">
-                <i class="bi bi-inbox" style="font-size: 3rem; color: #9ca3af;"></i>
+                <i class="bi bi-inbox"></i>
                 <p>You haven't requested any enrollments yet.</p>
                 <a href="{{ route('student.courses.available') }}"
-                    style="background: #800000; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none; display: inline-block; margin-top: 1rem;">
+                    style="background: var(--primary); color: var(--white); border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none; display: inline-block; margin-top: 1rem; transition: var(--transition);">
                     <i class="bi bi-book"></i> Browse Available Courses
                 </a>
             </div>
         @endif
     </div>
-
-    <script>
-        function openUniBot() {
-            alert(
-                '🤖 Uni Bot: How can I help you?\n\n- What is my enrollment status?\n- Check my courses\n- Track my attendance'
-            );
-        }
-    </script>
 @endsection

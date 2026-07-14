@@ -13,23 +13,31 @@
 @section('content')
     <style>
         :root {
-            --primary-maroon: #800000;
-            --primary-maroon-light: #a00000;
-            --primary-maroon-dark: #4a0000;
-            --gradient-primary: linear-gradient(135deg, #800000, #a00000, #c00000);
-            --gradient-success: linear-gradient(135deg, #059669, #10b981, #34d399);
-            --gradient-warning: linear-gradient(135deg, #d97706, #f59e0b, #fbbf24);
-            --gradient-danger: linear-gradient(135deg, #dc2626, #ef4444, #f87171);
-            --shadow-premium: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
-            --shadow-premium-hover: 0 12px 48px rgba(128, 0, 0, 0.12);
-            --radius-premium: 16px;
-            --radius-circle: 50%;
-            --transition-premium: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            --purple: #8b5cf6;
+            --purple-light: #ede9fe;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ============================================================
-               COMPACT STATS CARDS
-               ============================================================ */
         .stats-grid-compact {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -38,12 +46,12 @@
         }
 
         .stat-card-compact {
-            background: white;
-            border-radius: var(--radius-premium);
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1rem 1.25rem;
-            border: 1px solid rgba(128, 0, 0, 0.06);
-            box-shadow: var(--shadow-premium);
-            transition: var(--transition-premium);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
             display: flex;
             align-items: center;
             gap: 1rem;
@@ -52,8 +60,8 @@
 
         .stat-card-compact:hover {
             transform: translateY(-4px);
-            box-shadow: var(--shadow-premium-hover);
-            border-color: rgba(128, 0, 0, 0.15);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(10, 36, 99, 0.15);
         }
 
         .stat-card-compact .stat-icon {
@@ -65,7 +73,7 @@
             justify-content: center;
             font-size: 1.3rem;
             flex-shrink: 0;
-            transition: var(--transition-premium);
+            transition: var(--transition);
         }
 
         .stat-card-compact:hover .stat-icon {
@@ -73,23 +81,23 @@
         }
 
         .stat-card-compact .stat-icon.primary {
-            background: rgba(128, 0, 0, 0.08);
-            color: #800000;
+            background: rgba(10, 36, 99, 0.08);
+            color: var(--primary);
         }
 
         .stat-card-compact .stat-icon.success {
             background: rgba(16, 185, 129, 0.08);
-            color: #059669;
+            color: var(--success);
         }
 
         .stat-card-compact .stat-icon.warning {
             background: rgba(245, 158, 11, 0.08);
-            color: #d97706;
+            color: var(--warning);
         }
 
         .stat-card-compact .stat-icon.danger {
             background: rgba(239, 68, 68, 0.08);
-            color: #dc2626;
+            color: var(--danger);
         }
 
         .stat-card-compact .stat-info {
@@ -100,7 +108,7 @@
         .stat-card-compact .stat-number {
             font-size: 1.5rem;
             font-weight: 800;
-            color: #0f172a;
+            color: var(--text-dark);
             line-height: 1.2;
             letter-spacing: -0.02em;
         }
@@ -108,30 +116,27 @@
         .stat-card-compact .stat-number .suffix {
             font-size: 0.7rem;
             font-weight: 600;
-            color: #64748b;
+            color: var(--text-gray);
             margin-left: 0.15rem;
         }
 
         .stat-card-compact .stat-label {
             font-size: 0.6rem;
-            color: #64748b;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
         }
 
-        /* ============================================================
-               FILTER BAR WITH SEARCH
-               ============================================================ */
         .filter-bar-premium {
             display: flex;
             gap: 0.75rem;
             flex-wrap: wrap;
-            background: white;
+            background: var(--white);
             padding: 0.75rem 1.25rem;
-            border-radius: var(--radius-premium);
-            border: 1px solid rgba(128, 0, 0, 0.06);
-            box-shadow: var(--shadow-premium);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
             margin-bottom: 2rem;
             align-items: center;
         }
@@ -145,7 +150,7 @@
         .filter-bar-premium .filter-group label {
             font-size: 0.65rem;
             font-weight: 600;
-            color: #64748b;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.3px;
             white-space: nowrap;
@@ -153,21 +158,22 @@
 
         .filter-bar-premium .filter-group select {
             padding: 0.35rem 0.6rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.4rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 8px;
             font-size: 0.8rem;
             background: #f8fafc;
-            transition: var(--transition-premium);
-            color: #0f172a;
+            transition: var(--transition);
+            color: var(--text-dark);
             min-width: 120px;
             cursor: pointer;
+            font-family: 'Inter', sans-serif;
         }
 
         .filter-bar-premium .filter-group select:focus {
             outline: none;
-            border-color: #800000;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
-            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
+            background: var(--white);
         }
 
         .filter-bar-premium .search-group {
@@ -180,21 +186,22 @@
 
         .filter-bar-premium .search-group input {
             padding: 0.35rem 0.6rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.4rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 8px;
             font-size: 0.8rem;
             background: #f8fafc;
-            transition: var(--transition-premium);
-            color: #0f172a;
+            transition: var(--transition);
+            color: var(--text-dark);
             width: 100%;
             min-width: 120px;
+            font-family: 'Inter', sans-serif;
         }
 
         .filter-bar-premium .search-group input:focus {
             outline: none;
-            border-color: #800000;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
-            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
+            background: var(--white);
         }
 
         .filter-bar-premium .search-group input::placeholder {
@@ -204,56 +211,54 @@
 
         .btn-premium {
             padding: 0.35rem 1rem;
-            border-radius: 0.4rem;
+            border-radius: 8px;
             font-size: 0.8rem;
             font-weight: 500;
             border: none;
             cursor: pointer;
-            transition: var(--transition-premium);
+            transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
             text-decoration: none;
             white-space: nowrap;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-premium-primary {
-            background: var(--gradient-primary);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
         }
 
         .btn-premium-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(128, 0, 0, 0.25);
-            color: white;
+            box-shadow: 0 8px 24px rgba(10, 36, 99, 0.25);
+            color: var(--white);
         }
 
         .btn-premium-outline {
             background: transparent;
-            color: #64748b;
-            border: 1px solid #e2e8f0;
+            color: var(--text-gray);
+            border: 1px solid rgba(10, 36, 99, 0.12);
         }
 
         .btn-premium-outline:hover {
-            border-color: #800000;
-            color: #800000;
-            background: rgba(128, 0, 0, 0.04);
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(10, 36, 99, 0.04);
         }
 
         .btn-premium-success {
-            background: var(--gradient-success);
-            color: white;
+            background: linear-gradient(135deg, #059669, var(--success));
+            color: var(--white);
         }
 
         .btn-premium-success:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
-            color: white;
+            color: var(--white);
         }
 
-        /* ============================================================
-               CHART GRID
-               ============================================================ */
         .chart-grid-premium {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -262,23 +267,23 @@
         }
 
         .chart-card-premium {
-            background: white;
-            border-radius: var(--radius-premium);
-            border: 1px solid rgba(128, 0, 0, 0.06);
-            box-shadow: var(--shadow-premium);
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
             overflow: hidden;
-            transition: var(--transition-premium);
+            transition: var(--transition);
         }
 
         .chart-card-premium:hover {
-            border-color: rgba(128, 0, 0, 0.12);
-            box-shadow: var(--shadow-premium-hover);
+            border-color: rgba(10, 36, 99, 0.12);
+            box-shadow: var(--shadow-hover);
         }
 
         .chart-card-premium .card-header {
             padding: 0.75rem 1.25rem;
             background: #fafbfc;
-            border-bottom: 1px solid rgba(128, 0, 0, 0.04);
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -289,7 +294,7 @@
         .chart-card-premium .card-header .title {
             font-size: 0.95rem;
             font-weight: 700;
-            color: #0f172a;
+            color: var(--text-dark);
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -299,8 +304,8 @@
             font-size: 0.6rem;
             padding: 0.05rem 0.5rem;
             border-radius: 1rem;
-            background: rgba(128, 0, 0, 0.08);
-            color: #800000;
+            background: rgba(10, 36, 99, 0.08);
+            color: var(--primary);
             font-weight: 600;
         }
 
@@ -319,9 +324,6 @@
             height: 280px;
         }
 
-        /* ============================================================
-               RISK FACTORS
-               ============================================================ */
         .factors-grid-premium {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -330,24 +332,24 @@
 
         .factor-item-premium {
             background: #fafbfc;
-            border: 1px solid #f1f5f9;
-            border-radius: 0.5rem;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            border-radius: 8px;
             padding: 0.4rem 0.6rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: var(--transition-premium);
+            transition: var(--transition);
             font-size: 0.75rem;
         }
 
         .factor-item-premium:hover {
-            border-color: #800000;
-            background: rgba(128, 0, 0, 0.02);
+            border-color: var(--primary);
+            background: rgba(10, 36, 99, 0.02);
             transform: translateX(4px);
         }
 
         .factor-item-premium .factor-name {
-            color: #0f172a;
+            color: var(--text-dark);
             font-weight: 500;
             font-size: 0.75rem;
             white-space: nowrap;
@@ -357,8 +359,8 @@
         }
 
         .factor-item-premium .factor-count {
-            background: var(--gradient-primary);
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             font-size: 0.6rem;
             font-weight: 700;
             padding: 0.05rem 0.5rem;
@@ -368,13 +370,19 @@
             flex-shrink: 0;
         }
 
-        /* ============================================================
-               DEPARTMENT BARS
-               ============================================================ */
         .dept-bars-premium {
             max-height: 260px;
             overflow-y: auto;
             padding: 0.25rem;
+        }
+
+        .dept-bars-premium::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .dept-bars-premium::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
         }
 
         .dept-bar-item {
@@ -392,28 +400,28 @@
         .dept-bar-item .dept-header .dept-name {
             font-weight: 600;
             font-size: 0.75rem;
-            color: #0f172a;
+            color: var(--text-dark);
         }
 
         .dept-bar-item .dept-header .dept-counts {
             font-size: 0.65rem;
-            color: #64748b;
+            color: var(--text-gray);
             white-space: nowrap;
             flex-shrink: 0;
         }
 
         .dept-bar-item .dept-header .dept-counts .high {
-            color: #ef4444;
+            color: var(--danger);
             font-weight: 600;
         }
 
         .dept-bar-item .dept-header .dept-counts .medium {
-            color: #f59e0b;
+            color: var(--warning);
             font-weight: 600;
         }
 
         .dept-bar-item .dept-header .dept-counts .low {
-            color: #10b981;
+            color: var(--success);
             font-weight: 600;
         }
 
@@ -432,31 +440,28 @@
         }
 
         .dept-bar-track .segment.high {
-            background: #ef4444;
+            background: var(--danger);
         }
 
         .dept-bar-track .segment.medium {
-            background: #f59e0b;
+            background: var(--warning);
         }
 
         .dept-bar-track .segment.low {
-            background: #10b981;
+            background: var(--success);
         }
 
-        /* ============================================================
-               TABLE - FULL DEPARTMENT NAMES + PROPER ACTION BUTTONS
-               ============================================================ */
         .table-wrapper-premium {
             overflow-x: auto;
-            border-radius: var(--radius-premium);
-            border: 1px solid rgba(128, 0, 0, 0.06);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .table-premium {
             width: 100%;
             font-size: 0.78rem;
             border-collapse: collapse;
-            min-width: 900px;
+            min-width: 1100px;
         }
 
         .table-premium thead {
@@ -468,123 +473,26 @@
             padding: 0.5rem 0.75rem;
             font-size: 0.6rem;
             text-transform: uppercase;
-            color: #64748b;
+            color: var(--text-gray);
             font-weight: 700;
             letter-spacing: 0.3px;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid rgba(10, 36, 99, 0.06);
             background: #fafbfc;
             white-space: nowrap;
         }
 
         .table-premium td {
             padding: 0.4rem 0.75rem;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
             vertical-align: middle;
         }
 
         .table-premium tbody tr {
-            transition: var(--transition-premium);
+            transition: var(--transition);
         }
 
         .table-premium tbody tr:hover {
-            background: rgba(128, 0, 0, 0.02);
-        }
-
-        /* Column widths */
-        .table-premium .col-student {
-            width: 18%;
-            min-width: 160px;
-        }
-
-        .table-premium .col-dept {
-            width: 18%;
-            min-width: 160px;
-        }
-
-        .table-premium .col-year {
-            width: 6%;
-            min-width: 50px;
-        }
-
-        .table-premium .col-attendance {
-            width: 10%;
-            min-width: 80px;
-        }
-
-        .table-premium .col-score {
-            width: 8%;
-            min-width: 60px;
-        }
-
-        .table-premium .col-risk {
-            width: 10%;
-            min-width: 80px;
-        }
-
-        .table-premium .col-factors {
-            width: 16%;
-            min-width: 120px;
-        }
-
-        .table-premium .col-actions {
-            width: 14%;
-            min-width: 130px;
-        }
-
-        .table-premium .student-cell {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .table-premium .student-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: var(--radius-circle);
-            background: var(--gradient-primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.7rem;
-            flex-shrink: 0;
-        }
-
-        .table-premium .student-info {
-            min-width: 0;
-        }
-
-        .table-premium .student-name {
-            font-weight: 600;
-            color: #0f172a;
-            font-size: 0.78rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .table-premium .student-email {
-            font-size: 0.6rem;
-            color: #94a3b8;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .table-premium .dept-name-cell {
-            font-size: 0.75rem;
-            color: #475569;
-            font-weight: 500;
-            word-wrap: break-word;
-            line-height: 1.3;
-            max-width: 100%;
-        }
-
-        .table-premium .year-cell {
-            font-size: 0.7rem;
-            color: #64748b;
-            text-align: center;
+            background: rgba(10, 36, 99, 0.02);
         }
 
         .risk-badge-premium {
@@ -599,22 +507,18 @@
         }
 
         .risk-badge-premium.high {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
         }
 
         .risk-badge-premium.medium {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
         }
 
         .risk-badge-premium.low {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
-        }
-
-        .attendance-cell {
-            text-align: center;
         }
 
         .attendance-cell .attendance-value {
@@ -623,25 +527,50 @@
         }
 
         .attendance-cell .attendance-value.high {
-            color: #10b981;
+            color: var(--success);
         }
 
         .attendance-cell .attendance-value.medium {
-            color: #f59e0b;
+            color: var(--warning);
         }
 
         .attendance-cell .attendance-value.low {
-            color: #ef4444;
+            color: var(--danger);
         }
 
-        .risk-score-cell {
+        .roll-call-cell {
             text-align: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .roll-call-cell .roll-value {
+            display: inline-block;
+            padding: 0.1rem 0.5rem;
+            border-radius: 1rem;
+            background: rgba(10, 36, 99, 0.06);
+        }
+
+        .roll-call-breakdown {
+            font-size: 0.6rem;
+            color: var(--text-gray);
+            display: flex;
+            gap: 0.3rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .roll-call-breakdown span {
+            display: inline-block;
+            padding: 0.05rem 0.3rem;
+            border-radius: 0.5rem;
+            background: #f1f5f9;
         }
 
         .risk-score-cell .score-value {
             font-weight: 800;
             font-size: 0.85rem;
-            color: #800000;
+            color: var(--primary);
         }
 
         .risk-score-bar {
@@ -660,15 +589,15 @@
         }
 
         .risk-score-bar .fill.high {
-            background: var(--gradient-danger);
+            background: linear-gradient(135deg, var(--danger), #f87171);
         }
 
         .risk-score-bar .fill.medium {
-            background: var(--gradient-warning);
+            background: linear-gradient(135deg, var(--warning), #fbbf24);
         }
 
         .risk-score-bar .fill.low {
-            background: var(--gradient-success);
+            background: linear-gradient(135deg, #059669, var(--success));
         }
 
         .factors-cell {
@@ -684,58 +613,47 @@
             font-size: 0.55rem;
             font-weight: 500;
             background: #f1f5f9;
-            color: #64748b;
+            color: var(--text-gray);
             border: 1px solid transparent;
-            transition: var(--transition-premium);
+            transition: var(--transition);
             white-space: nowrap;
         }
 
         .risk-factor-pill:hover {
-            border-color: #800000;
-            background: rgba(128, 0, 0, 0.04);
+            border-color: var(--primary);
+            background: rgba(10, 36, 99, 0.04);
         }
 
         .risk-factor-pill.critical {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
             border-color: #fecaca;
         }
 
         .risk-factor-pill.warning {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
             border-color: #fde68a;
         }
 
-        /* Actions */
-        .actions-cell {
-            text-align: center;
-            white-space: nowrap;
-        }
-
-        .actions-cell .action-group {
-            display: inline-flex;
-            gap: 0.3rem;
-            align-items: center;
-        }
-
         .btn-action {
             padding: 0.2rem 0.5rem;
-            border-radius: 0.4rem;
+            border-radius: 8px;
             font-size: 0.65rem;
             border: none;
             cursor: pointer;
-            transition: var(--transition-premium);
+            transition: var(--transition);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.25rem;
             font-weight: 500;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-action.view {
             background: rgba(59, 130, 246, 0.08);
-            color: #2563eb;
+            color: var(--info);
         }
 
         .btn-action.view:hover {
@@ -744,12 +662,12 @@
         }
 
         .btn-action.intervene {
-            background: rgba(128, 0, 0, 0.08);
-            color: #800000;
+            background: rgba(10, 36, 99, 0.08);
+            color: var(--primary);
         }
 
         .btn-action.intervene:hover {
-            background: rgba(128, 0, 0, 0.15);
+            background: rgba(10, 36, 99, 0.15);
             transform: translateY(-1px);
         }
 
@@ -761,45 +679,45 @@
             font-size: 0.6rem;
         }
 
-        /* ============================================================
-               QUICK MESSAGE MODAL STYLES
-               ============================================================ */
         .btn-template {
             padding: 0.2rem 0.6rem;
             border-radius: 1rem;
-            border: 1px solid #e2e8f0;
-            background: white;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            background: var(--white);
             font-size: 0.65rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            color: #0f172a;
+            transition: var(--transition);
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
         }
 
         .btn-template:hover {
-            background: #800000 !important;
-            color: white !important;
-            border-color: #800000 !important;
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
             transform: translateY(-1px);
         }
 
         .btn-template.active {
-            background: #800000 !important;
-            color: white !important;
-            border-color: #800000 !important;
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
         }
 
         #qmSendBtn {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             border-radius: 8px;
             padding: 0.5rem 1.5rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
         }
 
         #qmSendBtn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(128, 0, 0, 0.25);
+            box-shadow: 0 8px 24px rgba(10, 36, 99, 0.25);
         }
 
         #qmSendBtn:disabled {
@@ -808,7 +726,6 @@
             transform: none !important;
         }
 
-        /* Toast notification */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -820,31 +737,31 @@
         }
 
         .toast-notification {
-            background: white;
+            background: var(--white);
             padding: 12px 20px;
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
-            border-left: 4px solid #800000;
+            border-left: 4px solid var(--primary);
             margin-bottom: 10px;
             animation: slideIn 0.3s ease;
             font-size: 0.9rem;
             max-width: 400px;
-            color: #0f172a;
+            color: var(--text-dark);
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
         .toast-notification.success {
-            border-left-color: #10b981;
+            border-left-color: var(--success);
         }
 
         .toast-notification.error {
-            border-left-color: #ef4444;
+            border-left-color: var(--danger);
         }
 
         .toast-notification.warning {
-            border-left-color: #f59e0b;
+            border-left-color: var(--warning);
         }
 
         .toast-notification .toast-icon {
@@ -860,7 +777,7 @@
         }
 
         .toast-notification .toast-close:hover {
-            color: #0f172a;
+            color: var(--text-dark);
         }
 
         @keyframes slideIn {
@@ -887,34 +804,9 @@
             }
         }
 
-        /* ============================================================
-               RESPONSIVE
-               ============================================================ */
         @media (max-width: 1200px) {
             .chart-grid-premium {
                 grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 1100px) {
-            .table-premium .col-dept {
-                width: 14%;
-                min-width: 120px;
-            }
-
-            .table-premium .col-student {
-                width: 16%;
-                min-width: 130px;
-            }
-
-            .table-premium .col-factors {
-                width: 14%;
-                min-width: 100px;
-            }
-
-            .table-premium .col-actions {
-                width: 16%;
-                min-width: 120px;
             }
         }
 
@@ -925,49 +817,7 @@
 
             .table-premium {
                 font-size: 0.7rem;
-                min-width: 800px;
-            }
-        }
-
-        @media (max-width: 820px) {
-            .table-premium .col-dept {
-                width: 12%;
-                min-width: 100px;
-            }
-
-            .table-premium .col-factors {
-                width: 12%;
-                min-width: 80px;
-            }
-
-            .table-premium .student-email {
-                display: none;
-            }
-
-            .table-premium .student-name {
-                font-size: 0.7rem;
-            }
-
-            .table-premium .dept-name-cell {
-                font-size: 0.65rem;
-            }
-
-            .btn-action .btn-text {
-                display: none;
-            }
-
-            .btn-action {
-                padding: 0.15rem 0.35rem;
-                font-size: 0.6rem;
-            }
-
-            .btn-action .btn-icon {
-                font-size: 0.65rem;
-            }
-
-            .table-premium .col-actions {
-                width: 12%;
-                min-width: 60px;
+                min-width: 900px;
             }
         }
 
@@ -998,12 +848,6 @@
                 min-width: unset;
             }
 
-            .filter-bar-premium .btn-group {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 0.4rem;
-            }
-
             .stats-grid-compact {
                 grid-template-columns: 1fr 1fr;
                 gap: 0.75rem;
@@ -1029,7 +873,7 @@
 
             .table-premium {
                 font-size: 0.65rem;
-                min-width: 700px;
+                min-width: 800px;
             }
 
             .table-premium th,
@@ -1037,48 +881,17 @@
                 padding: 0.3rem 0.4rem;
             }
 
-            .table-premium .student-avatar {
-                width: 24px;
-                height: 24px;
-                font-size: 0.6rem;
-            }
-
-            .table-premium .student-name {
-                font-size: 0.65rem;
-            }
-
-            .table-premium .dept-name-cell {
-                font-size: 0.6rem;
-            }
-
-            .risk-factor-pill {
-                font-size: 0.5rem;
-                padding: 0.05rem 0.3rem;
-            }
-
-            .btn-action {
-                font-size: 0.55rem;
-                padding: 0.1rem 0.3rem;
-            }
-
             .btn-action .btn-text {
                 display: none;
             }
 
-            .btn-action .btn-icon {
+            .btn-action {
+                padding: 0.15rem 0.35rem;
                 font-size: 0.6rem;
             }
 
-            .table-premium .col-student {
-                min-width: 100px;
-            }
-
-            .table-premium .col-dept {
-                min-width: 80px;
-            }
-
-            .table-premium .col-actions {
-                min-width: 50px;
+            .btn-action .btn-icon {
+                font-size: 0.65rem;
             }
 
             .factors-grid-premium {
@@ -1087,27 +900,8 @@
         }
 
         @media (max-width: 600px) {
-            .table-premium .col-dept {
-                display: none;
-            }
-
-            .table-premium .col-year {
-                width: 8%;
-            }
-
-            .table-premium .col-student {
-                width: 25%;
-                min-width: 80px;
-            }
-
-            .table-premium .col-factors {
-                width: 18%;
-                min-width: 60px;
-            }
-
-            .table-premium .col-actions {
-                width: 14%;
-                min-width: 50px;
+            .table-premium {
+                min-width: 700px;
             }
         }
 
@@ -1140,25 +934,8 @@
             .factors-grid-premium {
                 grid-template-columns: 1fr;
             }
-
-            .table-premium .col-factors {
-                display: none;
-            }
-
-            .table-premium .col-student {
-                width: 35%;
-                min-width: 70px;
-            }
-
-            .table-premium .col-actions {
-                width: 18%;
-                min-width: 45px;
-            }
         }
 
-        /* ============================================================
-               ANIMATIONS
-               ============================================================ */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -1188,9 +965,7 @@
         }
     </style>
 
-    {{-- ============================================================
-    COMPACT STATS CARDS
-    ============================================================ --}}
+    {{-- Stats --}}
     <div class="stats-grid-compact">
         <div class="stat-card-compact animate-in">
             <div class="stat-icon primary">
@@ -1235,9 +1010,7 @@
         </div>
     </div>
 
-    {{-- ============================================================
-    FILTER BAR WITH SEARCH
-    ============================================================ --}}
+    {{-- Filter Bar --}}
     <form class="filter-bar-premium" method="GET" action="{{ route('admin.risk.index') }}" id="filterForm">
         <div class="filter-group">
             <label><i class="bi bi-building"></i> Dept</label>
@@ -1290,16 +1063,14 @@
         </div>
     </form>
 
-    {{-- ============================================================
-    CHART GRID
-    ============================================================ --}}
+    {{-- Charts --}}
     <div class="chart-grid-premium">
         <div class="chart-card-premium">
             <div class="card-header">
                 <span class="title">
-                    <i class="bi bi-pie-chart-fill" style="color:#800000;"></i>
+                    <i class="bi bi-pie-chart-fill" style="color:var(--primary);"></i>
                     Risk Distribution
-                    <span class="badge">Real-time</span>
+                    <span class="badge">KG+12 Full Risk</span>
                 </span>
                 <span class="subtitle">Student risk level breakdown</span>
             </div>
@@ -1313,7 +1084,7 @@
         <div class="chart-card-premium">
             <div class="card-header">
                 <span class="title">
-                    <i class="bi bi-graph-up-arrow" style="color:#800000;"></i>
+                    <i class="bi bi-graph-up-arrow" style="color:var(--primary);"></i>
                     Risk Trend Analysis
                     <span class="badge">6 Months</span>
                 </span>
@@ -1327,14 +1098,12 @@
         </div>
     </div>
 
-    {{-- ============================================================
-    RISK FACTORS & DEPARTMENT BREAKDOWN
-    ============================================================ --}}
+    {{-- Risk Factors & Department Breakdown --}}
     <div class="chart-grid-premium">
         <div class="chart-card-premium">
             <div class="card-header">
                 <span class="title">
-                    <i class="bi bi-list-check" style="color:#800000;"></i>
+                    <i class="bi bi-list-check" style="color:var(--primary);"></i>
                     Risk Indicators
                     <span class="badge">{{ count(array_filter($riskFactors)) }} active</span>
                 </span>
@@ -1378,7 +1147,7 @@
         <div class="chart-card-premium">
             <div class="card-header">
                 <span class="title">
-                    <i class="bi bi-building" style="color:#800000;"></i>
+                    <i class="bi bi-building" style="color:var(--primary);"></i>
                     Department Risk Analysis
                     <span class="badge">{{ count($riskByDepartment) }} departments</span>
                 </span>
@@ -1387,21 +1156,24 @@
             <div class="card-body">
                 @if (count($riskByDepartment) > 0)
                     <div class="dept-bars-premium">
-                        @foreach ($riskByDepartment as $deptName => $counts)
+                        {{-- FIXED: use $deptData instead of $deptName => $counts --}}
+                        @foreach ($riskByDepartment as $deptData)
                             @php
-                                $total = array_sum($counts);
-                                $highPct = $total > 0 ? round(($counts['High'] / $total) * 100) : 0;
-                                $medPct = $total > 0 ? round(($counts['Medium'] / $total) * 100) : 0;
-                                $lowPct = $total > 0 ? round(($counts['Low'] / $total) * 100) : 0;
+                                $total = $deptData['total']; // pre-computed total
+                                $highPct = $total > 0 ? round(($deptData['High'] / $total) * 100) : 0;
+                                $medPct = $total > 0 ? round(($deptData['Medium'] / $total) * 100) : 0;
+                                $lowPct = $total > 0 ? round(($deptData['Low'] / $total) * 100) : 0;
                             @endphp
                             <div class="dept-bar-item">
                                 <div class="dept-header">
-                                    <span class="dept-name" title="{{ $deptName }}">{{ $deptName }}</span>
+                                    <span class="dept-name"
+                                        title="{{ $deptData['name'] }}">{{ $deptData['name'] }}</span>
                                     <span class="dept-counts">
-                                        <span class="high">{{ $counts['High'] }}H</span>
-                                        <span class="medium">{{ $counts['Medium'] }}M</span>
-                                        <span class="low">{{ $counts['Low'] }}L</span>
-                                        <span style="font-weight:600; color:#0f172a;">({{ $total }})</span>
+                                        <span class="high">{{ $deptData['High'] }}H</span>
+                                        <span class="medium">{{ $deptData['Medium'] }}M</span>
+                                        <span class="low">{{ $deptData['Low'] }}L</span>
+                                        <span
+                                            style="font-weight:600; color:var(--text-dark);">({{ $total }})</span>
                                     </span>
                                 </div>
                                 <div class="dept-bar-track">
@@ -1427,17 +1199,15 @@
         </div>
     </div>
 
-    {{-- ============================================================
-    AT-RISK STUDENTS TABLE
-    ============================================================ --}}
+    {{-- At-Risk Students Table with KG+12 Roll Call --}}
     <div class="chart-card-premium" style="margin-bottom:2rem;">
         <div class="card-header">
             <span class="title">
-                <i class="bi bi-person-exclamation" style="color:#800000;"></i>
+                <i class="bi bi-person-exclamation" style="color:var(--primary);"></i>
                 At-Risk Student Registry
                 <span class="badge" id="rowCount">{{ count($riskData) }} identified</span>
             </span>
-            <span class="subtitle">Prioritized by risk score | Immediate intervention recommended</span>
+            <span class="subtitle">KG+12 Roll Call & Full Risk Score | Immediate intervention recommended</span>
         </div>
         <div class="card-body" style="padding:0;">
             @if (count($riskData) > 0)
@@ -1445,59 +1215,63 @@
                     <table class="table-premium" id="riskTable">
                         <thead>
                             <tr>
-                                <th class="col-student">Student</th>
-                                <th class="col-dept">Department</th>
-                                <th class="col-year" style="text-align:center;">Year</th>
-                                <th class="col-attendance" style="text-align:center;">Attendance</th>
-                                <th class="col-score" style="text-align:center;">Score</th>
-                                <th class="col-risk" style="text-align:center;">Risk Level</th>
-                                <th class="col-factors">Risk Factors</th>
-                                <th class="col-actions" style="text-align:center;">Actions</th>
+                                <th>Student</th>
+                                <th>Department</th>
+                                <th style="text-align:center;">Year</th>
+                                <th style="text-align:center;">Attendance</th>
+                                <th style="text-align:center;">Roll Call<br><small>/10</small></th>
+                                <th style="text-align:center;">Consistency<br><small>6 max</small></th>
+                                <th style="text-align:center;">Punctuality<br><small>2 max</small></th>
+                                <th style="text-align:center;">Participation<br><small>2 max</small></th>
+                                <th style="text-align:center;">Risk Level</th>
+                                <th>Risk Factors</th>
+                                <th style="text-align:center;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="riskTableBody">
                             @foreach ($riskData as $data)
                                 <tr>
                                     <td>
-                                        <div class="student-cell">
-                                            <div class="student-avatar">
+                                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                                            <div
+                                                style="width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:var(--white); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.7rem; flex-shrink:0;">
                                                 {{ Str::upper(substr($data['student']->name ?? 'U', 0, 1)) }}
                                             </div>
-                                            <div class="student-info">
-                                                <div class="student-name"
-                                                    title="{{ $data['student']->name ?? 'Unknown' }}">
+                                            <div>
+                                                <div
+                                                    style="font-weight:600; color:var(--text-dark); font-size:0.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">
                                                     {{ $data['student']->name ?? 'Unknown' }}
                                                 </div>
-                                                <div class="student-email" title="{{ $data['student']->email ?? '' }}">
+                                                <div
+                                                    style="font-size:0.6rem; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">
                                                     {{ $data['student']->email ?? '' }}
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
-                                        <div class="dept-name-cell">
-                                            {{ $data['student']->department->name ?? 'N/A' }}
-                                        </div>
+                                    <td style="font-size:0.75rem; color:var(--text-gray);">
+                                        {{ $data['student']->department->name ?? 'N/A' }}
                                     </td>
-                                    <td class="year-cell">
+                                    <td style="text-align:center; font-size:0.7rem; color:var(--text-gray);">
                                         {{ $data['student']->current_year ?? 'N/A' }}
                                     </td>
-                                    <td class="attendance-cell">
+                                    <td class="attendance-cell" style="text-align:center;">
                                         <div
                                             class="attendance-value {{ $data['attendance'] >= 70 ? 'high' : ($data['attendance'] >= 60 ? 'medium' : 'low') }}">
                                             {{ $data['attendance'] }}%
                                         </div>
-                                        <div class="risk-score-bar">
-                                            <div class="fill {{ strtolower($data['level']) }}"
-                                                style="width:{{ $data['attendance'] }}%;"></div>
-                                        </div>
                                     </td>
-                                    <td class="risk-score-cell">
-                                        <div class="score-value">{{ $data['score'] }}</div>
-                                        <div class="risk-score-bar">
-                                            <div class="fill {{ strtolower($data['level']) }}"
-                                                style="width:{{ $data['score'] }}%;"></div>
-                                        </div>
+                                    <td class="roll-call-cell" style="text-align:center;">
+                                        <span class="roll-value">{{ $data['roll_call'] ?? '0' }}</span>
+                                    </td>
+                                    <td style="text-align:center; font-size:0.7rem; color:var(--text-gray);">
+                                        {{ $data['consistency'] ?? '0' }}
+                                    </td>
+                                    <td style="text-align:center; font-size:0.7rem; color:var(--text-gray);">
+                                        {{ $data['punctuality'] ?? '0' }}
+                                    </td>
+                                    <td style="text-align:center; font-size:0.7rem; color:var(--text-gray);">
+                                        {{ $data['participation'] ?? '0' }}
                                     </td>
                                     <td style="text-align:center;">
                                         <span class="risk-badge-premium {{ strtolower($data['level']) }}">
@@ -1514,7 +1288,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="factors-cell">
+                                        <div style="display:flex; gap:0.2rem; flex-wrap:wrap;">
                                             @foreach ($data['factors'] as $factor)
                                                 <span
                                                     class="risk-factor-pill {{ str_contains($factor, 'critical') || str_contains($factor, '3+') ? 'critical' : 'warning' }}">
@@ -1523,8 +1297,8 @@
                                             @endforeach
                                         </div>
                                     </td>
-                                    <td class="actions-cell">
-                                        <div class="action-group">
+                                    <td style="text-align:center;">
+                                        <div style="display:flex; gap:0.3rem; justify-content:center;">
                                             <a href="{{ route('admin.students.show', $data['student']->id) }}"
                                                 class="btn-action view" title="View Student Profile">
                                                 <span class="btn-icon">👤</span>
@@ -1545,12 +1319,13 @@
             @else
                 <div style="text-align:center; padding:3rem 2rem;">
                     <div style="font-size:3.5rem; margin-bottom:1rem;">🎉</div>
-                    <div style="color:#0f172a; font-weight:700; font-size:1.25rem;">No Students Currently At Risk</div>
-                    <div style="color:#64748b; font-size:0.9rem; margin-top:0.25rem;">
+                    <div style="color:var(--text-dark); font-weight:700; font-size:1.25rem;">No Students Currently At Risk
+                    </div>
+                    <div style="color:var(--text-gray); font-size:0.9rem; margin-top:0.25rem;">
                         All students have good attendance records and are performing well
                     </div>
                     <div
-                        style="margin-top:1rem; padding:0.5rem 1.5rem; background:#f0fdf4; border-radius:0.5rem; display:inline-block; border:1px solid #bbf7d0;">
+                        style="margin-top:1rem; padding:0.5rem 1.5rem; background:var(--success-light); border-radius:8px; display:inline-block; border:1px solid #a7f3d0;">
                         <span style="color:#166534; font-weight:500;">✅ Risk Rate: 0% — Excellent</span>
                     </div>
                 </div>
@@ -1558,50 +1333,47 @@
         </div>
     </div>
 
-    {{-- ============================================================
-    QUICK MESSAGE MODAL
-    ============================================================ --}}
+    {{-- Quick Message Modal --}}
     <div class="modal fade" id="quickMessageModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content"
-                style="border-radius: 16px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="border-bottom: 1px solid #f1f5f9; padding: 1.25rem 1.5rem;">
-                    <h5 class="modal-title" style="font-weight: 700; color: #0f172a;">
-                        <span style="color: #800000;">✉️</span> Send Message
+            <div class="modal-content" style="border-radius:16px; border:none; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+                <div class="modal-header" style="border-bottom:1px solid #f1f5f9; padding:1.25rem 1.5rem;">
+                    <h5 class="modal-title" style="font-weight:700; color:var(--text-dark);">
+                        <span style="color:var(--primary);">✉️</span> Send Message
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" style="padding: 1.5rem;">
+                <div class="modal-body" style="padding:1.5rem;">
                     <div id="quickMessageStudentInfo"
-                        style="background: #f8fafc; padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1.25rem;">
-                        <p style="margin: 0; font-weight: 600;">To: <span id="qmStudentName"
-                                style="font-weight: 400;"></span></p>
-                        <p style="margin: 0; font-size: 0.85rem; color: #64748b;">
+                        style="background:#f8fafc; padding:0.75rem 1rem; border-radius:10px; margin-bottom:1.25rem;">
+                        <p style="margin:0; font-weight:600;">To: <span id="qmStudentName"
+                                style="font-weight:400;"></span></p>
+                        <p style="margin:0; font-size:0.85rem; color:var(--text-gray);">
                             <span id="qmStudentEmail"></span>
-                            <span style="margin: 0 0.5rem;">•</span>
+                            <span style="margin:0 0.5rem;">•</span>
                             Risk: <span id="qmRiskLevel"></span>
                         </p>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label"
-                            style="font-weight: 600; font-size: 0.85rem; color: #0f172a;">Subject</label>
+                            style="font-weight:600; font-size:0.85rem; color:var(--text-dark);">Subject</label>
                         <input type="text" id="qmSubject" class="form-control"
-                            style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.6rem;"
+                            style="border-radius:8px; border:1px solid rgba(10,36,99,0.12); padding:0.6rem;"
                             placeholder="Enter subject...">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label"
-                            style="font-weight: 600; font-size: 0.85rem; color: #0f172a;">Message</label>
+                            style="font-weight:600; font-size:0.85rem; color:var(--text-dark);">Message</label>
                         <textarea id="qmBody" class="form-control" rows="4"
-                            style="border-radius: 8px; border: 1px solid #e2e8f0; padding: 0.6rem; resize: vertical;"
+                            style="border-radius:8px; border:1px solid rgba(10,36,99,0.12); padding:0.6rem; resize:vertical;"
                             placeholder="Type your message here..."></textarea>
                     </div>
 
                     <div class="mb-2">
-                        <label style="font-weight: 600; font-size: 0.75rem; color: #64748b;">Quick Templates</label>
-                        <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.3rem;">
+                        <label style="font-weight:600; font-size:0.75rem; color:var(--text-gray);">Quick Templates</label>
+                        <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.3rem;">
                             <button type="button" class="btn-template" data-template="intervention">📋
                                 Intervention</button>
                             <button type="button" class="btn-template" data-template="checkin">✅ Check-in</button>
@@ -1611,9 +1383,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer" style="border-top: 1px solid #f1f5f9; padding: 1rem 1.5rem; gap: 0.5rem;">
+                <div class="modal-footer" style="border-top:1px solid #f1f5f9; padding:1rem 1.5rem; gap:0.5rem;">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                        style="border-radius: 8px; padding: 0.5rem 1.5rem; border: 1px solid #e2e8f0; background: white; color: #64748b;">
+                        style="border-radius:8px; padding:0.5rem 1.5rem; border:1px solid rgba(10,36,99,0.12); background:var(--white); color:var(--text-gray);">
                         Cancel
                     </button>
                     <button type="button" class="btn" id="qmSendBtn">
@@ -1624,20 +1396,14 @@
         </div>
     </div>
 
-    {{-- ============================================================
-    TOAST CONTAINER
-    ============================================================ --}}
+    {{-- Toast Container --}}
     <div id="toast-container"></div>
 
-    {{-- ============================================================
-    JAVASCRIPT - Chart.js & Client-Side Filtering & Quick Message
-    ============================================================ --}}
+    {{-- JavaScript --}}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // ============================================================
-            // RISK DISTRIBUTION CHART
-            // ============================================================
+            // Risk Distribution Chart
             const riskCounts = @json($riskCounts);
             const ctx1 = document.getElementById('riskDistributionChart').getContext('2d');
 
@@ -1647,10 +1413,8 @@
                     labels: ['🟢 Low Risk', '🟡 Medium Risk', '🔴 High Risk'],
                     datasets: [{
                         data: [riskCounts.Low, riskCounts.Medium, riskCounts.High],
-                        backgroundColor: [
-                            'rgba(16, 185, 129, 0.85)',
-                            'rgba(245, 158, 11, 0.85)',
-                            'rgba(239, 68, 68, 0.85)'
+                        backgroundColor: ['rgba(16,185,129,0.85)', 'rgba(245,158,11,0.85)',
+                            'rgba(239,68,68,0.85)'
                         ],
                         borderColor: 'white',
                         borderWidth: 3,
@@ -1674,7 +1438,7 @@
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            backgroundColor: 'rgba(15,23,42,0.9)',
                             titleFont: {
                                 size: 13,
                                 weight: '600'
@@ -1691,8 +1455,7 @@
                                     let total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     let percentage = total > 0 ? Math.round((value / total) * 100) : 0;
                                     return label.replace(/[🟢🟡🔴]\s*/, '') + ': ' + value +
-                                        ' students (' +
-                                        percentage + '%)';
+                                        ' students (' + percentage + '%)';
                                 }
                             }
                         }
@@ -1705,9 +1468,7 @@
                 }
             });
 
-            // ============================================================
-            // RISK TREND CHART
-            // ============================================================
+            // Risk Trend Chart
             const riskTrend = @json($riskTrend);
             const ctx2 = document.getElementById('riskTrendChart').getContext('2d');
 
@@ -1721,26 +1482,28 @@
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: '🔴 High Risk',
-                            data: highRisk,
-                            borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.08)',
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#ef4444',
-                            borderWidth: 3,
-                        }, {
-                            label: '🟡 Medium Risk',
-                            data: mediumRisk,
-                            borderColor: '#f59e0b',
-                            backgroundColor: 'rgba(245, 158, 11, 0.08)',
-                            fill: true,
-                            tension: 0.4,
-                            pointRadius: 4,
-                            pointBackgroundColor: '#f59e0b',
-                            borderWidth: 3,
-                        }]
+                                label: '🔴 High Risk',
+                                data: highRisk,
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239,68,68,0.08)',
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#ef4444',
+                                borderWidth: 3,
+                            },
+                            {
+                                label: '🟡 Medium Risk',
+                                data: mediumRisk,
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(245,158,11,0.08)',
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 4,
+                                pointBackgroundColor: '#f59e0b',
+                                borderWidth: 3,
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
@@ -1763,7 +1526,7 @@
                                 }
                             },
                             tooltip: {
-                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                backgroundColor: 'rgba(15,23,42,0.9)',
                                 titleFont: {
                                     size: 13,
                                     weight: '600'
@@ -1779,7 +1542,7 @@
                             y: {
                                 beginAtZero: true,
                                 grid: {
-                                    color: 'rgba(0, 0, 0, 0.04)'
+                                    color: 'rgba(0,0,0,0.04)'
                                 },
                                 ticks: {
                                     font: {
@@ -1806,9 +1569,7 @@
                 });
             }
 
-            // ============================================================
-            // CLIENT-SIDE FILTERING (Search + Dropdown Filters)
-            // ============================================================
+            // Client-side filtering (updated for 11 columns)
             const departmentFilter = document.getElementById('departmentFilter');
             const yearFilter = document.getElementById('yearFilter');
             const riskLevelFilter = document.getElementById('riskLevelFilter');
@@ -1832,8 +1593,9 @@
                         let show = true;
                         const cells = row.querySelectorAll('td');
 
-                        if (cells.length >= 6) {
-                            // Department filter (cells[1])
+                        // Expecting 11 columns (index 0..10)
+                        if (cells.length >= 11) {
+                            // Department: index 1
                             if (deptValue && deptValue !== '' && show) {
                                 const deptText = cells[1] ? cells[1].textContent.trim().toLowerCase() : '';
                                 const deptOption = departmentFilter.querySelector(
@@ -1845,7 +1607,7 @@
                                 }
                             }
 
-                            // Year filter (cells[2])
+                            // Year: index 2
                             if (yearValue && yearValue !== '' && show) {
                                 const yearText = cells[2] ? cells[2].textContent.trim() : '';
                                 if (yearText !== yearValue && !yearText.includes('All')) {
@@ -1853,15 +1615,15 @@
                                 }
                             }
 
-                            // Risk level filter (cells[5])
+                            // Risk Level: index 8
                             if (riskValue && riskValue !== '' && show) {
-                                const riskText = cells[5] ? cells[5].textContent.trim().toLowerCase() : '';
+                                const riskText = cells[8] ? cells[8].textContent.trim().toLowerCase() : '';
                                 if (!riskText.includes(riskValue.toLowerCase())) {
                                     show = false;
                                 }
                             }
 
-                            // Search filter - check all cells
+                            // Search: all cells
                             if (searchValue && searchValue !== '' && show) {
                                 let found = false;
                                 cells.forEach(cell => {
@@ -1873,19 +1635,20 @@
                                     show = false;
                                 }
                             }
+                        } else {
+                            // Fallback: if column count mismatch, show all
+                            show = true;
                         }
 
                         row.style.display = show ? '' : 'none';
                         if (show) visibleCount++;
                     });
 
-                    // Update the badge count
                     if (rowCountBadge) {
                         rowCountBadge.textContent = visibleCount + ' identified';
                     }
                 }
 
-                // Event listeners
                 if (departmentFilter) departmentFilter.addEventListener('change', filterTable);
                 if (yearFilter) yearFilter.addEventListener('change', filterTable);
                 if (riskLevelFilter) riskLevelFilter.addEventListener('change', filterTable);
@@ -1899,11 +1662,8 @@
             }
         });
 
-        // ============================================================
-        // QUICK MESSAGE FUNCTIONALITY
-        // ============================================================
+        // Quick Message Functions (unchanged)
         function openQuickMessage(studentId, studentName, studentEmail, riskLevel, riskScore) {
-            // Set student info
             document.getElementById('qmStudentName').textContent = studentName;
             document.getElementById('qmStudentEmail').textContent = studentEmail;
 
@@ -1916,7 +1676,6 @@
             riskSpan.textContent = riskLevel;
             riskSpan.style.color = colors[riskLevel] || '#64748b';
 
-            // Set default subject based on risk level
             const subjects = {
                 'High': '🚨 URGENT: Academic Intervention Required',
                 'Medium': '⚠️ Academic Support Needed',
@@ -1924,7 +1683,6 @@
             };
             document.getElementById('qmSubject').value = subjects[riskLevel] || 'Academic Support';
 
-            // Set default message template
             const templates = {
                 'High': `Dear ${studentName},\n\nThis is an urgent message regarding your academic progress. I need to meet with you as soon as possible to discuss your current situation and create a support plan.\n\nYour current risk score is ${riskScore} which requires immediate attention.\n\nPlease contact me immediately to schedule a meeting.\n\nBest regards,\nAcademic Support Team`,
 
@@ -1934,19 +1692,15 @@
             };
             document.getElementById('qmBody').value = templates[riskLevel] || templates['Low'];
 
-            // Store student ID for sending
             document.getElementById('qmSendBtn').dataset.studentId = studentId;
 
-            // Reset button state
             const sendBtn = document.getElementById('qmSendBtn');
             sendBtn.textContent = '📤 Send Message';
-            sendBtn.style.background = '#800000';
+            sendBtn.style.background = '#0A2463';
             sendBtn.disabled = false;
 
-            // Reset template highlights
             document.querySelectorAll('.btn-template').forEach(b => b.classList.remove('active'));
 
-            // Show modal
             const modal = new bootstrap.Modal(document.getElementById('quickMessageModal'));
             modal.show();
         }
@@ -1972,7 +1726,6 @@
 
                     document.getElementById('qmBody').value = templates[type] || '';
 
-                    // Highlight active template
                     document.querySelectorAll('.btn-template').forEach(b => b.classList.remove(
                         'active'));
                     this.classList.add('active');
@@ -1994,12 +1747,10 @@
                     return;
                 }
 
-                // Show sending state
                 this.textContent = '⏳ Sending...';
                 this.disabled = true;
                 this.style.background = '#6b7a8f';
 
-                // Send via AJAX
                 fetch('{{ route('admin.messages.send') }}', {
                         method: 'POST',
                         headers: {
@@ -2026,7 +1777,7 @@
                                     .getElementById('quickMessageModal'));
                                 modal.hide();
                                 this.textContent = '📤 Send Message';
-                                this.style.background = '#800000';
+                                this.style.background = '#0A2463';
                                 this.disabled = false;
                             }, 1500);
                         } else {
@@ -2036,7 +1787,7 @@
                                 'error');
                             setTimeout(() => {
                                 this.textContent = '📤 Send Message';
-                                this.style.background = '#800000';
+                                this.style.background = '#0A2463';
                                 this.disabled = false;
                             }, 2000);
                         }
@@ -2048,16 +1799,14 @@
                         showToast('❌ Error sending message. Please try again.', 'error');
                         setTimeout(() => {
                             this.textContent = '📤 Send Message';
-                            this.style.background = '#800000';
+                            this.style.background = '#0A2463';
                             this.disabled = false;
                         }, 2000);
                     });
             });
         });
 
-        // ============================================================
-        // TOAST NOTIFICATION SYSTEM
-        // ============================================================
+        // Toast Notification System
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const icons = {
@@ -2077,7 +1826,6 @@
 
             container.appendChild(toast);
 
-            // Auto dismiss after 5 seconds
             setTimeout(() => {
                 if (toast.parentElement) {
                     toast.style.animation = 'slideOut 0.3s ease forwards';
@@ -2094,7 +1842,7 @@
                     document.querySelectorAll('.btn-template').forEach(b => b.classList.remove('active'));
                     const sendBtn = document.getElementById('qmSendBtn');
                     sendBtn.textContent = '📤 Send Message';
-                    sendBtn.style.background = '#800000';
+                    sendBtn.style.background = '#0A2463';
                     sendBtn.disabled = false;
                 });
             }

@@ -10,6 +10,7 @@ use App\Models\AcademicCalendar;
 use App\Models\AttendanceSession;
 use App\Models\AttendanceRecord;
 use App\Models\AttendanceEvaluation;
+use App\Helpers\AttendanceHelper;
 use Carbon\Carbon;
 
 class CalculateRollCall extends Command
@@ -22,11 +23,11 @@ class CalculateRollCall extends Command
                             {--weekly : Calculate weekly instead of monthly}
                             {--test : Run in test mode with sample output}';
 
-    protected $description = 'Calculate roll call marks (MTU Myanmar System)';
+    protected $description = 'Calculate roll call marks using KG+12 Myanmar System';
 
     public function handle()
     {
-        $this->info('📊 Starting Roll Call Calculation...');
+        $this->info('📊 Starting KG+12 Roll Call Calculation...');
         $this->info('═══════════════════════════════════════════');
 
         $studentId = $this->option('student');
@@ -41,7 +42,6 @@ class CalculateRollCall extends Command
             return 0;
         }
 
-        // Build query
         $query = Enrollment::where('status', 'approved');
 
         if ($studentId) {
@@ -87,7 +87,6 @@ class CalculateRollCall extends Command
         $bar->finish();
         $this->newLine(2);
 
-        // Display summary
         $this->showSummary($results);
         $this->showBreakdown($results);
 
@@ -96,7 +95,6 @@ class CalculateRollCall extends Command
 
     private function calculateStudentRollCall($studentId, $courseId, $month, $year, $weekly = false)
     {
-        // Get timetable entries
         $timetable = TimetableEntry::where('course_id', $courseId)
             ->where('is_active', true)
             ->get();
@@ -107,7 +105,6 @@ class CalculateRollCall extends Command
 
         $daysOfWeek = $timetable->pluck('day_of_week')->unique()->toArray();
 
-        // Get date range
         if ($weekly) {
             $startDate = Carbon::now()->startOfWeek();
             $endDate = Carbon::now()->endOfWeek();
@@ -116,7 +113,6 @@ class CalculateRollCall extends Command
             $endDate = $startDate->copy()->endOfMonth();
         }
 
-        // Get holidays
         $holidays = AcademicCalendar::whereBetween('date', [$startDate, $endDate])
             ->whereIn('type', ['holiday', 'public_holiday', 'university_closure'])
             ->pluck('date')
@@ -125,7 +121,6 @@ class CalculateRollCall extends Command
             })
             ->toArray();
 
-        // Get attendance sessions
         $sessions = AttendanceSession::where('course_id', $courseId)
             ->whereBetween('session_date', [$startDate, $endDate])
             ->get();
@@ -140,7 +135,6 @@ class CalculateRollCall extends Command
                 return Carbon::parse($date)->format('Y-m-d');
             })->toArray();
 
-        // Calculate conducted periods
         $currentDate = $startDate->copy();
         $conductedPeriods = 0;
         $conductedDates = [];
@@ -149,24 +143,20 @@ class CalculateRollCall extends Command
             $dayName = $currentDate->format('l');
             $dateKey = $currentDate->format('Y-m-d');
 
-            // Skip holidays
             if (in_array($dateKey, $holidays)) {
                 $currentDate->addDay();
                 continue;
             }
 
-            // Check if it's a class day
             if (in_array($dayName, $daysOfWeek)) {
                 $entry = $timetable->firstWhere('day_of_week', $dayName);
                 $periodCount = $entry ? $entry->period_count : 4;
 
-                // Skip cancelled sessions
                 if (in_array($dateKey, $cancelledDates)) {
                     $currentDate->addDay();
                     continue;
                 }
 
-                // If session exists, use its conducted_periods, else use default
                 if (in_array($dateKey, $sessionDates)) {
                     $session = $sessions->firstWhere('session_date', $currentDate->format('Y-m-d'));
                     $conducted = $session ? $session->conducted_periods : $periodCount;
@@ -181,7 +171,6 @@ class CalculateRollCall extends Command
             $currentDate->addDay();
         }
 
-        // Calculate attended periods from QR records
         $attendedPeriods = 0;
         $attendedDates = [];
 
@@ -199,16 +188,69 @@ class CalculateRollCall extends Command
             }
         }
 
-        // Calculate percentage
         $percentage = $conductedPeriods > 0
             ? round(($attendedPeriods / $conductedPeriods) * 100, 2)
             : 0;
 
-        // Calculate roll call mark (MTU system)
-        $rollCallMark = $this->calculateRollCallMark($percentage);
+        // ============================================================
+        // KG+12 ROLL CALL CALCULATION
+        // ============================================================
 
-        // Determine eligibility
-        $eligibility = $this->determineEligibility($percentage);
+        $lateCount = AttendanceRecord::where('student_id', $studentId)
+            ->whereHas('session', function($q) use ($courseId) {
+                $q->where('course_id', $courseId);
+            })
+            ->where('status', 'late')
+            ->count();
+
+        $participationMark = 1.5; // Default moderate participation
+        $rollCall = AttendanceHelper::calculateRollCallMark($percentage, $lateCount, $participationMark);
+
+        $eligibility = AttendanceHelper::getEligibilityStatus($percentage);
+
+        $consecutiveAbsences = AttendanceHelper::getConsecutiveAbsences($studentId, $courseId);
+        $trend = AttendanceHelper::getAttendanceTrend($studentId, $courseId);
+
+        $riskScore = AttendanceHelper::calculateRiskScore(
+            $percentage,
+            $rollCall['total'],
+            $consecutiveAbsences,
+            $trend
+        );
+        $riskLevel = AttendanceHelper::getRiskLevel($riskScore);
+        $riskExplanation = AttendanceHelper::getRiskExplanation(
+            $percentage,
+            $rollCall['total'],
+            $consecutiveAbsences,
+            $trend,
+            $riskLevel
+        );
+
+        // Save to AttendanceEvaluation
+        AttendanceEvaluation::updateOrCreate(
+            [
+                'student_id' => $studentId,
+                'course_id' => $courseId,
+                'evaluation_date' => Carbon::today(),
+            ],
+            [
+                'total_sessions' => count($conductedDates),
+                'attended_sessions' => count($attendedDates),
+                'attendance_percentage' => $percentage,
+                'consistency_marks' => $rollCall['consistency'],
+                'punctuality_marks' => $rollCall['punctuality'],
+                'participation_marks' => $rollCall['participation'],
+                'roll_call_total' => $rollCall['total'],
+                'eligibility_status' => $eligibility,
+                'consecutive_absences' => $consecutiveAbsences,
+                'attendance_trend' => $trend,
+                'risk_score' => $riskScore,
+                'risk_level' => $riskLevel,
+                'risk_factors' => json_encode($riskExplanation),
+                'academic_health_score' => 0,
+                'recovery_status' => 'Stable',
+            ]
+        );
 
         return [
             'student_id' => $studentId,
@@ -217,54 +259,47 @@ class CalculateRollCall extends Command
             'conducted_periods' => $conductedPeriods,
             'attended_periods' => $attendedPeriods,
             'attendance_percentage' => $percentage,
-            'roll_call_mark' => $rollCallMark,
+            'roll_call_total' => $rollCall['total'],
+            'consistency' => $rollCall['consistency'],
+            'punctuality' => $rollCall['punctuality'],
+            'participation' => $rollCall['participation'],
             'eligibility' => $eligibility,
+            'risk_level' => $riskLevel,
+            'risk_score' => $riskScore,
             'conducted_dates' => $conductedDates,
             'attended_dates' => $attendedDates,
         ];
     }
 
-    private function calculateRollCallMark($percentage)
-    {
-        if ($percentage >= 95) return 10;
-        if ($percentage >= 90) return 9;
-        if ($percentage >= 85) return 8;
-        if ($percentage >= 80) return 7;
-        if ($percentage >= 75) return 6;
-        if ($percentage >= 70) return 5;
-        if ($percentage >= 65) return 4;
-        if ($percentage >= 60) return 3;
-        if ($percentage >= 55) return 2;
-        return 1;
-    }
-
-    private function determineEligibility($percentage)
-    {
-        if ($percentage >= 75) return '✅ Eligible';
-        if ($percentage >= 60) return '⚠️ Warning';
-        return '❌ Not Eligible';
-    }
-
     private function showSummary($results)
     {
-        $this->info('📊 SUMMARY');
+        $this->info('📊 KG+12 SUMMARY');
         $this->info('═══════════════════════════════════════════');
 
         $table = [];
         foreach ($results as $r) {
+            $eligibilityLabel = match($r['eligibility']) {
+                'eligible' => '✅ Eligible',
+                'warning' => '⚠️ Warning',
+                'not_eligible' => '❌ Not Eligible',
+                default => $r['eligibility'],
+            };
+
             $table[] = [
                 'Student' => $r['student_id'],
                 'Course' => $r['course_id'],
-                'Conducted' => $r['conducted_periods'],
-                'Attended' => $r['attended_periods'],
                 'Attendance %' => $r['attendance_percentage'] . '%',
-                'Roll Call' => $r['roll_call_mark'] . '/10',
-                'Eligibility' => $r['eligibility'],
+                'Roll Call' => $r['roll_call_total'] . '/10',
+                'Consistency' => $r['consistency'] . '/6',
+                'Punctuality' => $r['punctuality'] . '/2',
+                'Participation' => $r['participation'] . '/2',
+                'Risk' => $r['risk_level'],
+                'Eligibility' => $eligibilityLabel,
             ];
         }
 
         $this->table(
-            ['Student', 'Course', 'Conducted', 'Attended', 'Attendance %', 'Roll Call', 'Eligibility'],
+            ['Student', 'Course', 'Attendance %', 'Roll Call', 'Consistency', 'Punctuality', 'Participation', 'Risk', 'Eligibility'],
             $table
         );
     }
@@ -272,36 +307,33 @@ class CalculateRollCall extends Command
     private function showBreakdown($results)
     {
         $this->newLine();
-        $this->info('📋 DETAILED BREAKDOWN');
+        $this->info('📋 DETAILED KG+12 BREAKDOWN');
         $this->info('═══════════════════════════════════════════');
 
         foreach ($results as $r) {
             $this->line("\n👤 Student: {$r['student_id']} | Course: {$r['course_id']}");
             $this->line("📅 Period: {$r['period']}");
 
-            if (!empty($r['conducted_dates'])) {
-                $this->line("\n📖 Conducted Dates:");
-                foreach ($r['conducted_dates'] as $date => $periods) {
-                    $attended = isset($r['attended_dates'][$date]) ? '✅ Attended' : '❌ Absent';
-                    $this->line("   {$date}: {$periods} periods - {$attended}");
-                }
-            }
+            $this->line("\n📊 KG+12 Roll Call Components:");
+            $this->line("   • Attendance Consistency: {$r['consistency']}/6");
+            $this->line("   • Punctuality: {$r['punctuality']}/2");
+            $this->line("   • Participation: {$r['participation']}/2");
+            $this->line("   • Total Roll Call: {$r['roll_call_total']}/10");
 
             $this->line("\n📊 Total Conducted: {$r['conducted_periods']} periods");
             $this->line("✅ Total Attended: {$r['attended_periods']} periods");
             $this->line("📈 Attendance: {$r['attendance_percentage']}%");
-            $this->line("🎯 Roll Call: {$r['roll_call_mark']}/10");
+            $this->line("🎯 Risk Score: {$r['risk_score']} ({$r['risk_level']})");
             $this->line("🏷️ Eligibility: {$r['eligibility']}");
-            $this->line(str_repeat('─', 40));
+            $this->line(str_repeat('─', 50));
         }
     }
 
     private function runTestMode()
     {
-        $this->info('🧪 RUNNING TEST MODE');
+        $this->info('🧪 RUNNING TEST MODE (KG+12)');
         $this->info('═══════════════════════════════════════════');
 
-        // Test student 32, course 26, June 2026
         $result = $this->calculateStudentRollCall(32, 26, 6, 2026);
 
         if ($result) {
@@ -309,15 +341,17 @@ class CalculateRollCall extends Command
             $this->line("\n👤 Student: 32 (Eaindra Kyaw)");
             $this->line("📚 Course: 26 (Machine Learning)");
             $this->line("📅 Period: Monthly (June 2026)");
-            $this->line("\n📖 Conducted Dates:");
-            foreach ($result['conducted_dates'] as $date => $periods) {
-                $attended = isset($result['attended_dates'][$date]) ? '✅ Attended' : '❌ Absent';
-                $this->line("   {$date}: {$periods} periods - {$attended}");
-            }
+
+            $this->line("\n📊 KG+12 Roll Call Components:");
+            $this->line("   • Attendance Consistency: {$result['consistency']}/6");
+            $this->line("   • Punctuality: {$result['punctuality']}/2");
+            $this->line("   • Participation: {$result['participation']}/2");
+            $this->line("   • Total Roll Call: {$result['roll_call_total']}/10");
+
             $this->line("\n📊 Total Conducted: {$result['conducted_periods']} periods");
             $this->line("✅ Total Attended: {$result['attended_periods']} periods");
             $this->line("📈 Attendance: {$result['attendance_percentage']}%");
-            $this->line("🎯 Roll Call: {$result['roll_call_mark']}/10");
+            $this->line("🎯 Risk Score: {$result['risk_score']} ({$result['risk_level']})");
             $this->line("🏷️ Eligibility: {$result['eligibility']}");
         } else {
             $this->error('❌ No timetable found for course 26.');

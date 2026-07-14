@@ -7,6 +7,24 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Attendance Result</title>
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -15,7 +33,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, #800000 0%, #5f0000 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -24,7 +42,7 @@
         }
 
         .card {
-            background: white;
+            background: var(--white);
             border-radius: 24px;
             padding: 32px 24px;
             max-width: 400px;
@@ -56,11 +74,11 @@
             margin: 0 auto 20px;
             font-size: 48px;
             font-weight: bold;
-            color: white;
+            color: var(--white);
         }
 
         .icon-success {
-            background: #10b981;
+            background: var(--success);
         }
 
         .icon-success::before {
@@ -68,7 +86,7 @@
         }
 
         .icon-error {
-            background: #ef4444;
+            background: var(--danger);
         }
 
         .icon-error::before {
@@ -76,7 +94,7 @@
         }
 
         .icon-warning {
-            background: #f59e0b;
+            background: var(--warning);
         }
 
         .icon-warning::before {
@@ -84,7 +102,7 @@
         }
 
         .icon-info {
-            background: #3b82f6;
+            background: var(--info);
         }
 
         .icon-info::before {
@@ -94,19 +112,19 @@
         h2 {
             font-size: 24px;
             margin-bottom: 8px;
-            color: #1f2937;
+            color: var(--text-dark);
         }
 
         .message {
             font-size: 16px;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-bottom: 16px;
             line-height: 1.6;
         }
 
         .course-name {
             font-weight: 600;
-            color: #800000;
+            color: var(--primary);
             margin-bottom: 4px;
             font-size: 18px;
         }
@@ -127,7 +145,7 @@
         }
 
         .status-present {
-            background: #dcfce7;
+            background: #d1fae5;
             color: #166534;
         }
 
@@ -155,20 +173,20 @@
             font-weight: 600;
             cursor: pointer;
             border: none;
-            transition: all 0.2s;
+            transition: var(--transition);
             text-decoration: none;
             display: block;
         }
 
         .btn-primary {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
         }
 
         .btn-primary:hover {
-            background: #6b0000;
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.3);
         }
 
         .btn-secondary {

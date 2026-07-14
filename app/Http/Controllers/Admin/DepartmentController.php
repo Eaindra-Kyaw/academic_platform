@@ -127,9 +127,11 @@ class DepartmentController extends Controller
             ->pluck('current_year')
             ->toArray();
 
-        // Get all semesters
-        $semesters = Semester::orderBy('year')
-            ->orderBy('semester')
+        // ============================================================
+        // FIX: Use 'academic_year' and 'semester_number'
+        // ============================================================
+        $semesters = Semester::orderBy('academic_year')
+            ->orderBy('semester_number')
             ->get();
 
         return view('admin.departments.show', compact(
@@ -198,8 +200,7 @@ class DepartmentController extends Controller
         $semester = Semester::findOrFail($semesterId);
 
         $courses = Course::where('department_id', $department->id)
-            ->where('year', $semester->year_name)
-            ->where('semester', $semester->semester_name)
+            ->where('semester_id', $semester->id)  // Use semester_id instead of name matching
             ->with(['lecturer', 'students'])
             ->get()
             ->map(function($course) {

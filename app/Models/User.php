@@ -1,4 +1,5 @@
 <?php
+// app/Models/User.php
 
 namespace App\Models;
 
@@ -22,6 +23,7 @@ class User extends Authenticatable
         'is_active',
         'must_change_password',
         'email_verified_at',
+        'must_change_password',
     ];
 
     protected $hidden = [
@@ -70,10 +72,10 @@ class User extends Authenticatable
         return $this->hasManyThrough(
             User::class,
             Course::class,
-            'lecturer_id',  // Foreign key on courses table
-            'id',           // Foreign key on users table
-            'id',           // Local key on users table
-            'id'            // Local key on courses table
+            'lecturer_id',
+            'id',
+            'id',
+            'id'
         );
     }
 

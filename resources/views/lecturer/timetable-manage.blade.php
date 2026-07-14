@@ -43,8 +43,9 @@
             margin-bottom: 4px;
         }
 
+        .form-card .form-group input[list],
         .form-card .form-group select,
-        .form-card .form-group input {
+        .form-card .form-group input:not([list]) {
             width: 100%;
             padding: 8px 12px;
             border: 1px solid #e5e7eb;
@@ -56,14 +57,15 @@
             background: white;
         }
 
+        .form-card .form-group input[list]:focus,
         .form-card .form-group select:focus,
-        .form-card .form-group input:focus {
+        .form-card .form-group input:not([list]):focus {
             border-color: #800000;
             box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
         }
 
         .btn-primary {
-            background: #800000;
+            background: #0A2463;
             color: white;
             border: none;
             padding: 8px 20px;
@@ -234,7 +236,7 @@
 
         .alert-danger {
             background: #fee2e2;
-            color: #991b1b;
+            color: #0A2463;
             border: 1px solid #fecaca;
         }
 
@@ -265,17 +267,15 @@
                 @csrf
                 <div class="form-group">
                     <label>Select Course</label>
-                    <select name="course_id" required>
-                        <option value="">-- Choose a course --</option>
-                        @foreach ($courses as $course)
-                            <option value="{{ $course->id }}">
-                                {{ $course->course_code }} - {{ $course->course_name }}
-                                @if ($course->schedule_day)
-                                    (✓ Already scheduled on {{ $course->schedule_day }})
-                                @endif
+                    <input type="text" name="course_code" list="course-list" class="form-control"
+                        placeholder="Type or select a course code..." required autocomplete="off">
+                    <datalist id="course-list">
+                        @foreach ($allCourses as $course)
+                            <option value="{{ $course->course_code }}">
+                                {{ $course->course_code }} – {{ $course->course_name }}
                             </option>
                         @endforeach
-                    </select>
+                    </datalist>
                 </div>
 
                 <div class="form-group">
@@ -304,7 +304,7 @@
 
                 <div class="form-group">
                     <label>Room (optional)</label>
-                    <input type="text" name="room" placeholder="e.g., 1-3-7">
+                    <input type="text" name="room" placeholder="e.g., 8-5">
                 </div>
 
                 <div class="form-group">
@@ -325,38 +325,36 @@
 
         <!-- Current Schedule List -->
         <div class="form-card">
-            <h5><i class="bi bi-list-check"></i> My Timetable ({{ $scheduledCourses->count() }})</h5>
+            <h5><i class="bi bi-list-check"></i> My Timetable ({{ $scheduledEntries->count() }})</h5>
             <div class="schedule-list">
-                @if ($scheduledCourses->count() > 0)
-                    @foreach ($scheduledCourses as $course)
+                @if ($scheduledEntries->count() > 0)
+                    @foreach ($scheduledEntries as $entry)
                         @php
-                            $isInvalid = $course->schedule_time === $course->schedule_end_time;
-                            $sessionType = $course->session_type ?? 'lecture';
+                            $course = $entry->course;
+                            $sessionType = $entry->session_type ?? 'lecture';
                         @endphp
                         <div class="schedule-item">
                             <div class="info">
-                                <span class="course">{{ $course->course_code }}</span>
-                                <span class="day">{{ $course->schedule_day }}</span>
+                                <span class="course">{{ $course ? $course->course_code : 'N/A' }}</span>
+                                <span class="day">{{ $entry->day_of_week }}</span>
                                 <span class="time">
-                                    {{ date('h:i A', strtotime($course->schedule_time)) }} -
-                                    {{ date('h:i A', strtotime($course->schedule_end_time)) }}
+                                    {{ date('h:i A', strtotime($entry->start_time)) }} -
+                                    {{ date('h:i A', strtotime($entry->end_time)) }}
                                 </span>
-                                @if ($course->room)
-                                    <span class="room">📍 {{ $course->room }}</span>
+                                @if ($entry->room)
+                                    <span class="room">📍 {{ $entry->room }}</span>
                                 @endif
                                 <span class="type type-{{ $sessionType }}">
                                     {{ ucfirst($sessionType) }}
                                 </span>
-                                @if ($isInvalid)
-                                    <span style="color:#ef4444; font-size:11px;">⚠️ Invalid (same time)</span>
-                                @endif
                             </div>
                             <div class="actions">
-                                <form method="POST" action="{{ route('lecturer.timetable.remove', $course->id) }}">
+                                <form action="{{ route('lecturer.timetable.remove', $entry->id) }}" method="POST"
+                                    style="display: inline-block;"
+                                    onsubmit="return confirm('Remove this session from timetable?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-danger"
-                                        onclick="return confirm('Remove this entry?')">🗑️ Remove</button>
+                                    <button type="submit" class="btn-danger">🗑️ Remove</button>
                                 </form>
                             </div>
                         </div>
@@ -364,8 +362,8 @@
                 @else
                     <div class="empty-message">
                         <div class="icon"><i class="bi bi-calendar-plus"></i></div>
-                        <h6>No Schedule Added</h6>
-                        <p>Add your courses to the timetable using the form.</p>
+                        <h6>No Sessions Added</h6>
+                        <p>Add your course sessions to the timetable using the form.</p>
                     </div>
                 @endif
             </div>

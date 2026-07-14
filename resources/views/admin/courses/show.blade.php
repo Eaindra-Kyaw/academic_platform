@@ -10,25 +10,45 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .back-link-course {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #6b7a8f;
+            color: var(--text-gray);
             text-decoration: none;
             font-size: 0.8rem;
             font-weight: 500;
             padding: 0.3rem 0.8rem;
-            border-radius: 0.5rem;
-            background: white;
-            border: 1px solid #e9edf4;
-            transition: all 0.2s;
+            border-radius: 8px;
+            background: var(--white);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            transition: var(--transition);
             margin-bottom: 1.25rem;
         }
 
         .back-link-course:hover {
-            color: #800000;
-            border-color: #800000;
+            color: var(--primary);
+            border-color: var(--primary);
             transform: translateX(-3px);
         }
 
@@ -43,33 +63,21 @@
 
         .btn-action-course {
             padding: 0.4rem 1.2rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             font-size: 0.8rem;
             font-weight: 500;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            transition: all 0.2s;
+            transition: var(--transition);
             border: none;
             cursor: pointer;
         }
 
-        .btn-action-course-primary {
-            background: #800000;
-            color: white;
-        }
-
-        .btn-action-course-primary:hover {
-            background: #a00000;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
-        }
-
         .btn-action-course-edit {
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--primary-light);
+            color: whitesmoke;
         }
 
         .btn-action-course-edit:hover {
@@ -77,20 +85,24 @@
             transform: translateY(-2px);
         }
 
-        /* ===== COURSE DETAIL CARD ===== */
         .course-detail-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e9edf4;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
             overflow: hidden;
             margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .course-detail-card:hover {
+            box-shadow: var(--shadow-hover);
         }
 
         .course-detail-card .header {
             padding: 1.25rem 1.5rem;
             background: #fafbfc;
-            border-bottom: 1px solid #e9edf4;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -101,17 +113,34 @@
         .course-detail-card .header .title {
             font-size: 1.1rem;
             font-weight: 700;
-            color: #1a2332;
+            color: var(--text-dark);
         }
 
         .course-detail-card .header .title .code {
-            background: #fef3c7;
-            color: #800000;
+            background: rgba(212, 160, 23, 0.12);
+            color: var(--primary);
             padding: 0.1rem 0.6rem;
-            border-radius: 0.3rem;
+            border-radius: 6px;
             font-size: 0.7rem;
             font-weight: 700;
             margin-right: 0.5rem;
+        }
+
+        .course-detail-card .header .badge {
+            padding: 0.2rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .course-detail-card .header .badge.active {
+            background: var(--success-light);
+            color: #166534;
+        }
+
+        .course-detail-card .header .badge.inactive {
+            background: var(--danger-light);
+            color: var(--danger);
         }
 
         .course-detail-card .body {
@@ -130,7 +159,7 @@
         .course-detail-card .body .info-item .label {
             font-size: 0.6rem;
             text-transform: uppercase;
-            color: #6b7a8f;
+            color: var(--text-gray);
             letter-spacing: 0.5px;
             font-weight: 600;
         }
@@ -138,27 +167,9 @@
         .course-detail-card .body .info-item .value {
             font-size: 0.95rem;
             font-weight: 600;
-            color: #1a2332;
+            color: var(--text-dark);
         }
 
-        .course-detail-card .body .info-item .value .badge {
-            font-size: 0.7rem;
-            font-weight: 500;
-            padding: 0.1rem 0.6rem;
-            border-radius: 1rem;
-        }
-
-        .course-detail-card .body .info-item .value .badge.active {
-            background: #ecfdf5;
-            color: #10b981;
-        }
-
-        .course-detail-card .body .info-item .value .badge.inactive {
-            background: #fef2f2;
-            color: #ef4444;
-        }
-
-        /* ===== STATS GRID ===== */
         .stats-grid-course {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -167,51 +178,63 @@
         }
 
         .stat-course {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1rem 1.25rem;
-            border: 1px solid #e9edf4;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
             text-align: center;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .stat-course:hover {
-            border-color: #800000;
+            border-color: var(--primary);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.08);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-course .number {
             font-size: 1.5rem;
             font-weight: 800;
-            color: #800000;
+            color: var(--primary);
             line-height: 1.2;
+        }
+
+        .stat-course .number.danger {
+            color: var(--danger);
+        }
+
+        .stat-course .number.success {
+            color: var(--success);
         }
 
         .stat-course .label {
             font-size: 0.6rem;
-            color: #6b7a8f;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        /* ===== STUDENTS TABLE ===== */
         .students-table-wrap {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e9edf4;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
             overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .students-table-wrap:hover {
+            box-shadow: var(--shadow-hover);
         }
 
         .students-table-wrap .header {
             padding: 0.75rem 1.25rem;
             background: #fafbfc;
-            border-bottom: 1px solid #e9edf4;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             font-weight: 600;
             font-size: 0.85rem;
-            color: #1a2332;
+            color: var(--text-dark);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -220,7 +243,7 @@
         }
 
         .students-table-wrap .header i {
-            color: #800000;
+            color: var(--primary);
             margin-right: 0.4rem;
         }
 
@@ -234,8 +257,8 @@
             padding: 0.5rem 0.75rem;
             text-align: left;
             font-weight: 600;
-            color: #6b7a8f;
-            border-bottom: 1px solid #e9edf4;
+            color: var(--text-gray);
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -244,7 +267,7 @@
 
         .students-table tbody td {
             padding: 0.4rem 0.75rem;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
             vertical-align: middle;
         }
 
@@ -252,29 +275,29 @@
             background: #fafbfc;
         }
 
-        .students-table .badge-risk {
+        .badge-risk {
             padding: 0.1rem 0.6rem;
             border-radius: 1rem;
             font-size: 0.6rem;
             font-weight: 600;
         }
 
-        .students-table .badge-risk.low {
-            background: #ecfdf5;
-            color: #10b981;
+        .badge-risk.low {
+            background: var(--success-light);
+            color: #166534;
         }
 
-        .students-table .badge-risk.medium {
-            background: #fffbeb;
-            color: #f59e0b;
+        .badge-risk.medium {
+            background: var(--warning-light);
+            color: #92400e;
         }
 
-        .students-table .badge-risk.high {
-            background: #fef2f2;
-            color: #ef4444;
+        .badge-risk.high {
+            background: var(--danger-light);
+            color: #991b1b;
         }
 
-        .students-table .attendance-pill {
+        .attendance-pill {
             font-size: 0.65rem;
             font-weight: 600;
             padding: 0.1rem 0.6rem;
@@ -282,22 +305,21 @@
             display: inline-block;
         }
 
-        .students-table .attendance-pill.high {
-            background: #ecfdf5;
-            color: #10b981;
+        .attendance-pill.high {
+            background: var(--success-light);
+            color: #166534;
         }
 
-        .students-table .attendance-pill.medium {
-            background: #fffbeb;
-            color: #f59e0b;
+        .attendance-pill.medium {
+            background: var(--warning-light);
+            color: #92400e;
         }
 
-        .students-table .attendance-pill.low {
-            background: #fef2f2;
-            color: #ef4444;
+        .attendance-pill.low {
+            background: var(--danger-light);
+            color: #991b1b;
         }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .course-detail-card .body {
                 grid-template-columns: 1fr 1fr;
@@ -336,12 +358,10 @@
         }
     </style>
 
-    <!-- ===== BACK LINK ===== -->
     <a href="{{ route('admin.departments.courses.index', $department) }}" class="back-link-course">
         <i class="bi bi-arrow-left"></i> Back to Courses
     </a>
 
-    <!-- ===== ACTION BUTTONS ===== -->
     <div class="action-bar-course">
         <a href="{{ route('admin.departments.courses.edit', [$department, $course]) }}"
             class="btn-action-course btn-action-course-edit">
@@ -349,7 +369,6 @@
         </a>
     </div>
 
-    <!-- ===== COURSE DETAILS ===== -->
     <div class="course-detail-card">
         <div class="header">
             <div class="title">
@@ -402,20 +421,19 @@
         </div>
     </div>
 
-    <!-- ===== STATS ===== -->
     <div class="stats-grid-course">
         <div class="stat-course">
             <div class="number">{{ $students->total() }}</div>
             <div class="label">Total Students</div>
         </div>
         <div class="stat-course">
-            <div class="number">
+            <div class="number success">
                 {{ $students->filter(function ($s) {return ($s->pivot->attendance_percentage ?? 0) >= 75;})->count() }}
             </div>
             <div class="label">Eligible</div>
         </div>
         <div class="stat-course">
-            <div class="number">
+            <div class="number danger">
                 {{ $students->filter(function ($s) {return ($s->pivot->attendance_percentage ?? 0) < 60;})->count() }}
             </div>
             <div class="label">At Risk</div>
@@ -428,11 +446,10 @@
         </div>
     </div>
 
-    <!-- ===== STUDENTS TABLE ===== -->
     <div class="students-table-wrap">
         <div class="header">
             <span><i class="bi bi-people"></i> Enrolled Students</span>
-            <span style="font-size:0.7rem; color:#6b7a8f; font-weight:400;">
+            <span style="font-size:0.7rem; color:var(--text-gray); font-weight:400;">
                 {{ $students->total() }} students enrolled
             </span>
         </div>
@@ -457,21 +474,24 @@
                             $attendanceClass = $attendance >= 75 ? 'high' : ($attendance >= 60 ? 'medium' : 'low');
                             $eligibility = $student->pivot->eligibility_status ?? 'unknown';
                             $statusColors = [
-                                'eligible' => ['bg' => '#ecfdf5', 'color' => '#10b981'],
-                                'warning' => ['bg' => '#fffbeb', 'color' => '#f59e0b'],
-                                'not_eligible' => ['bg' => '#fef2f2', 'color' => '#ef4444'],
+                                'eligible' => ['bg' => 'var(--success-light)', 'color' => '#166534'],
+                                'warning' => ['bg' => 'var(--warning-light)', 'color' => '#92400e'],
+                                'not_eligible' => ['bg' => 'var(--danger-light)', 'color' => '#991b1b'],
                             ];
-                            $statusColor = $statusColors[$eligibility] ?? ['bg' => '#f3f4f6', 'color' => '#6b7a8f'];
+                            $statusColor = $statusColors[$eligibility] ?? [
+                                'bg' => '#f3f4f6',
+                                'color' => 'var(--text-gray)',
+                            ];
                         @endphp
                         <tr>
                             <td>
                                 <span
-                                    style="background:#f1f5f9; color:#6b7a8f; padding:0.1rem 0.5rem; border-radius:0.3rem; font-size:0.65rem; font-weight:600; font-family:monospace;">
+                                    style="background:#f1f5f9; color:var(--text-gray); padding:0.1rem 0.5rem; border-radius:6px; font-size:0.65rem; font-weight:600; font-family:monospace;">
                                     {{ $student->student_id ?? 'N/A' }}
                                 </span>
                             </td>
-                            <td style="font-weight:500; color:#1a2332;">{{ $student->name }}</td>
-                            <td style="color:#6b7a8f; font-size:0.75rem;">{{ $student->email }}</td>
+                            <td style="font-weight:500; color:var(--text-dark);">{{ $student->name }}</td>
+                            <td style="color:var(--text-gray); font-size:0.75rem;">{{ $student->email }}</td>
                             <td style="text-align:center;">
                                 <span class="attendance-pill {{ $attendanceClass }}">
                                     {{ number_format($attendance, 1) }}%
@@ -489,7 +509,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" style="text-align:center; padding:2rem; color:#9ca3af;">
+                            <td colspan="6" style="text-align:center; padding:2rem; color:var(--text-gray);">
                                 <i class="bi bi-people" style="font-size:1.5rem; display:block; margin-bottom:0.5rem;"></i>
                                 No students enrolled in this course yet
                             </td>
@@ -499,11 +519,10 @@
             </table>
         </div>
 
-        <!-- Pagination -->
         @if ($students->hasPages())
             <div
-                style="padding:0.75rem 1.25rem; border-top:1px solid #e9edf4; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; background:#fafbfc;">
-                <div style="font-size:0.75rem; color:#6b7a8f;">
+                style="padding:0.75rem 1.25rem; border-top:1px solid rgba(10, 36, 99, 0.06); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; background:#fafbfc;">
+                <div style="font-size:0.75rem; color:var(--text-gray);">
                     Showing <strong>{{ $students->firstItem() ?? 0 }}</strong> to
                     <strong>{{ $students->lastItem() ?? 0 }}</strong>
                     of <strong>{{ $students->total() }}</strong> students

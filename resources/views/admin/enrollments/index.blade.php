@@ -12,46 +12,26 @@
 
 @section('content')
     <style>
-        .breadcrumb-bar {
-            background: white;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1.25rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            flex-wrap: wrap;
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .breadcrumb-bar .breadcrumb-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.85rem;
-            color: #6b7280;
-        }
-
-        .breadcrumb-bar .breadcrumb-item a {
-            color: #800000;
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        .breadcrumb-bar .breadcrumb-item a:hover {
-            text-decoration: underline;
-        }
-
-        .breadcrumb-bar .breadcrumb-item .separator {
-            color: #d1d5db;
-        }
-
-        .breadcrumb-bar .breadcrumb-item.active {
-            color: #1f2937;
-            font-weight: 600;
-        }
-
-        /* Simple Stats */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -60,11 +40,18 @@
         }
 
         .stat-mini {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-mini:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-mini .number {
@@ -74,30 +61,29 @@
         }
 
         .stat-mini .number.pending {
-            color: #d97706;
+            color: var(--warning);
         }
 
         .stat-mini .number.approved {
-            color: #10b981;
+            color: var(--success);
         }
 
         .stat-mini .number.rejected {
-            color: #ef4444;
+            color: var(--danger);
         }
 
         .stat-mini .number.total {
-            color: #6366f1;
+            color: var(--info);
         }
 
         .stat-mini .label {
             font-size: 0.65rem;
-            color: #6b7280;
+            color: var(--text-gray);
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-top: 0.15rem;
         }
 
-        /* Department Cards - Clean Grid */
         .dept-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -105,20 +91,21 @@
         }
 
         .dept-card {
-            background: white;
-            border-radius: 0.75rem;
+            background: var(--white);
+            border-radius: var(--radius);
             padding: 1.25rem;
-            border: 2px solid #e5e7eb;
-            transition: all 0.2s;
+            border: 2px solid rgba(10, 36, 99, 0.06);
+            transition: var(--transition);
             text-decoration: none;
             color: inherit;
             display: block;
+            box-shadow: var(--shadow);
         }
 
         .dept-card:hover {
-            border-color: #800000;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
             text-decoration: none;
             color: inherit;
         }
@@ -126,16 +113,16 @@
         .dept-card .dept-name {
             font-weight: 600;
             font-size: 0.9rem;
-            color: #1f2937;
+            color: var(--text-dark);
         }
 
         .dept-card .dept-code {
             font-size: 0.65rem;
-            color: #9ca3af;
+            color: var(--text-gray);
             display: inline-block;
             background: #f3f4f6;
             padding: 0.1rem 0.5rem;
-            border-radius: 0.25rem;
+            border-radius: 6px;
             margin-top: 0.15rem;
         }
 
@@ -144,41 +131,40 @@
             gap: 1rem;
             margin-top: 0.5rem;
             padding-top: 0.5rem;
-            border-top: 1px solid #f3f4f6;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .dept-card .dept-stats span {
             font-size: 0.65rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .dept-card .dept-stats .num {
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
         }
 
         .dept-card .dept-stats .num.pending {
-            color: #d97706;
+            color: var(--warning);
         }
 
-        /* Alerts */
         .alert {
             padding: 0.6rem 1rem;
-            border-radius: 0.75rem;
+            border-radius: var(--radius);
             margin-bottom: 1rem;
             font-size: 0.85rem;
         }
 
         .alert-success {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
-            border: 1px solid #bbf7d0;
+            border: 1px solid #a7f3d0;
         }
 
         .alert-danger {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
-            border: 1px solid #fecaca;
+            border: 1px solid #fca5a5;
         }
 
         .alert-dismissible {
@@ -199,6 +185,28 @@
 
         .btn-close-alert:hover {
             opacity: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: #d1d5db;
+        }
+
+        .empty-state h3 {
+            color: var(--text-dark);
+            margin-top: 1rem;
+        }
+
+        .empty-state p {
+            color: var(--text-gray);
         }
 
         @media (max-width: 768px) {
@@ -287,10 +295,10 @@
 
     {{-- Empty State --}}
     @if ($departments->isEmpty())
-        <div style="text-align:center; padding:4rem 2rem; background:white; border-radius:1rem; border:1px solid #e5e7eb;">
-            <i class="bi bi-building" style="font-size:3rem; color:#d1d5db;"></i>
-            <h3 style="color:#374151; margin-top:1rem;">No Departments Found</h3>
-            <p style="color:#6b7280;">Please add departments to manage enrollments.</p>
+        <div class="empty-state">
+            <i class="bi bi-building"></i>
+            <h3>No Departments Found</h3>
+            <p>Please add departments to manage enrollments.</p>
         </div>
     @endif
 @endsection

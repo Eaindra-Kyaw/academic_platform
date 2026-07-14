@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Models\Enrollment;
 use App\Models\Announcement;
 use App\Models\TimetableEntry;
+use App\Models\AttendanceEvaluation;
+use App\Helpers\AttendanceHelper;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AttendanceRecord;
 use Illuminate\Support\Facades\DB;
@@ -20,15 +22,20 @@ class LecturerController extends Controller
     public function dashboard()
     {
         $lecturerId = Auth::id();
+        $lecturerName = Auth::user()->name;
 
-        // Get lecturer's courses
+        // Get lecturer's courses – deduplicate by ID
         $courses = Course::where('lecturer_id', $lecturerId)
-                        ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%')
-                        ->get();
+                        ->orWhere('lecturer_name', 'like', '%' . $lecturerName . '%')
+                        ->where('is_active', true)
+                        ->get()
+                        ->unique('id');
+
+        $courseIds = $courses->pluck('id')->toArray();
 
         // Get all enrolled students for manual attendance dropdown
-        $students = User::whereHas('enrollments', function($query) use ($courses) {
-            $query->whereIn('course_id', $courses->pluck('id'))
+        $students = User::whereHas('enrollments', function($query) use ($courseIds) {
+            $query->whereIn('course_id', $courseIds)
                   ->where('status', 'approved');
         })->get();
 
@@ -72,7 +79,6 @@ class LecturerController extends Controller
             ->limit(5)
             ->get();
 
-        // Mark announcements as read when viewed on dashboard
         foreach ($announcements as $announcement) {
             if (!$announcement->isReadBy(Auth::id())) {
                 $announcement->markAsRead(Auth::id());
@@ -119,27 +125,39 @@ class LecturerController extends Controller
                                          ->get();
         }
 
-        // Calculate overall stats from all courses
+        // ============================================================
+        // CALCULATE OVERALL STATS FROM REAL EVALUATIONS
+        // ============================================================
         foreach ($courses as $course) {
             $enrolledCount = Enrollment::where('course_id', $course->id)
                                       ->where('status', 'approved')
                                       ->count();
             $totalStudents += $enrolledCount;
 
-            $sessions = AttendanceSession::where('course_id', $course->id)->get();
-            $totalAttendance = 0;
-            foreach ($sessions as $session) {
-                $totalAttendance += $session->records()->count();
-            }
-            if ($sessions->count() > 0 && $enrolledCount > 0) {
-                $courseAvg = ($totalAttendance / ($sessions->count() * $enrolledCount)) * 100;
-                $avgAttendance += $courseAvg;
+            // Get latest evaluation for each student in this course
+            $evaluations = AttendanceEvaluation::where('course_id', $course->id)
+                ->where('evaluation_date', function($q) {
+                    $q->selectRaw('MAX(evaluation_date)')
+                        ->from('attendance_evaluations as ae2')
+                        ->whereColumn('ae2.student_id', 'attendance_evaluations.student_id')
+                        ->whereColumn('ae2.course_id', 'attendance_evaluations.course_id');
+                })
+                ->get();
 
-                if ($courseAvg < 60) {
-                    $atRiskStudents += $enrolledCount;
-                    $lowAlerts++;
-                }
+            $courseAvg = $evaluations->avg('attendance_percentage') ?? 0;
+            $avgAttendance += $courseAvg;
+
+            // Count high risk students
+            $highRiskCount = $evaluations->where('risk_level', 'High')->count();
+            $atRiskStudents += $highRiskCount;
+            if ($highRiskCount > 0) {
+                $lowAlerts++;
             }
+
+            // Store real data on the course object for the view
+            $course->average_attendance = round($courseAvg, 1);
+            $course->student_count = $enrolledCount;
+            $course->at_risk_count = $highRiskCount;
         }
 
         if ($courses->count() > 0) {
@@ -147,22 +165,40 @@ class LecturerController extends Controller
             $courseEngagement = round($avgAttendance, 0);
         }
 
-        // At-risk students list
+        // ============================================================
+        // At-risk students list – deduplicated by student ID
+        // ============================================================
         $atRiskList = collect();
-        foreach ($courses as $course) {
-            $students_in_course = User::whereHas('enrollments', function($q) use ($course) {
-                $q->where('course_id', $course->id)->where('status', 'approved');
-            })->get();
+        $seenStudentIds = [];
 
-            foreach ($students_in_course as $student) {
-                $attendancePercentage = $this->getStudentAttendancePercentage($student->id, $course->id);
-                if ($attendancePercentage < 60) {
-                    $atRiskList->push((object)[
-                        'student' => $student,
-                        'attendance_percentage' => $attendancePercentage,
-                        'risk_level' => $attendancePercentage < 40 ? 'High' : ($attendancePercentage < 60 ? 'Medium' : 'Low')
-                    ]);
+        foreach ($courses as $course) {
+            // Get all evaluations for this course with risk Medium or High
+            $evaluations = AttendanceEvaluation::where('course_id', $course->id)
+                ->whereIn('risk_level', ['Medium', 'High'])
+                ->with('student')
+                ->orderBy('risk_score', 'desc')
+                ->get();
+
+            foreach ($evaluations as $eval) {
+                $studentId = $eval->student->id ?? 0;
+                // Skip if we already have this student
+                if (in_array($studentId, $seenStudentIds)) {
+                    continue;
                 }
+                $seenStudentIds[] = $studentId;
+
+                $atRiskList->push((object)[
+                    'student' => $eval->student,
+                    'attendance_percentage' => $eval->attendance_percentage,
+                    'roll_call_total' => $eval->roll_call_total,
+                    'risk_level' => $eval->risk_level,
+                    'risk_score' => $eval->risk_score,
+                    'consistency' => $eval->consistency_marks,
+                    'punctuality' => $eval->punctuality_marks,
+                    'participation' => $eval->participation_marks,
+                    'consecutive_absences' => $eval->consecutive_absences,
+                    'trend' => $eval->attendance_trend,
+                ]);
             }
         }
 
@@ -177,16 +213,12 @@ class LecturerController extends Controller
 
     private function getStudentAttendancePercentage($studentId, $courseId)
     {
-        $totalSessions = AttendanceSession::where('course_id', $courseId)->count();
-        if ($totalSessions == 0) return 100;
+        $eval = AttendanceEvaluation::where('student_id', $studentId)
+            ->where('course_id', $courseId)
+            ->orderBy('evaluation_date', 'desc')
+            ->first();
 
-        $presentSessions = AttendanceSession::where('course_id', $courseId)
-            ->whereHas('records', function($q) use ($studentId) {
-                $q->where('student_id', $studentId)
-                  ->whereIn('status', ['present', 'late']);
-            })->count();
-
-        return round(($presentSessions / $totalSessions) * 100, 1);
+        return $eval ? $eval->attendance_percentage : 0;
     }
 
     public function generateQr(Request $request)
@@ -337,104 +369,150 @@ class LecturerController extends Controller
         ]);
     }
 
+    /**
+     * Display all students with KG+12 roll call data (only if evaluated)
+     */
     public function students()
-{
-    $lecturerId = Auth::id();
+    {
+        $lecturerId = Auth::id();
 
-    // Get lecturer's courses
-    $courses = Course::where('lecturer_id', $lecturerId)
-        ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%')
-        ->where('is_active', true)
-        ->get();
+        // Get lecturer's courses (by lecturer_id or name)
+        $courses = Course::where('lecturer_id', $lecturerId)
+            ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%')
+            ->where('is_active', true)
+            ->get()
+            ->unique('id');
 
-    $courseIds = $courses->pluck('id')->toArray();
+        $courseIds = $courses->pluck('id')->toArray();
 
-    // Get all students enrolled in these courses
-    $students = User::whereHas('enrollments', function($query) use ($courseIds) {
-        $query->whereIn('course_id', $courseIds)
-              ->where('status', 'approved');
-    })->with(['enrollments' => function($query) use ($courseIds) {
-        $query->whereIn('course_id', $courseIds)
-              ->where('status', 'approved');
-    }])->get();
+        // If no courses, return empty view
+        if (empty($courseIds)) {
+            $students = collect();
+            $totalStudents = 0;
+            $eligibleCount = 0;
+            $warningCount = 0;
+            $atRiskCount = 0;
 
-    // Calculate attendance for each student
-    foreach ($students as $student) {
-        $totalAttendance = 0;
-        $totalCourses = 0;
-        $totalConductedSessions = 0;
-        $totalAttendedSessions = 0;
-
-        foreach ($student->enrollments as $enrollment) {
-            // Count conducted sessions (exclude cancelled)
-            $conducted = AttendanceSession::where('course_id', $enrollment->course_id)
-                ->where('status', 'ended')
-                ->where('is_cancelled', false)
-                ->count();
-
-            // Count attended sessions
-            $attended = AttendanceRecord::where('student_id', $student->id)
-                ->whereHas('session', function($q) use ($enrollment) {
-                    $q->where('course_id', $enrollment->course_id);
-                })
-                ->whereIn('status', ['present', 'late'])
-                ->count();
-
-            $totalConductedSessions += $conducted;
-            $totalAttendedSessions += $attended;
-            $totalCourses++;
-
-            // Calculate per-course attendance
-            $percentage = $conducted > 0 ? round(($attended / $conducted) * 100, 2) : 0;
-            $enrollment->attendance_percentage = $percentage;
-            $enrollment->roll_call_mark = $this->calculateRollCallMark($percentage);
-
-            // Determine eligibility
-            $enrollment->eligibility_status = $percentage >= 75 ? 'Eligible' : ($percentage >= 60 ? 'Warning' : 'At Risk');
+            return view('lecturer.students', compact(
+                'students',
+                'courses',
+                'totalStudents',
+                'eligibleCount',
+                'warningCount',
+                'atRiskCount'
+            ));
         }
 
-        // Calculate overall attendance percentage
-        $student->attendance_percentage = $totalConductedSessions > 0
-            ? round(($totalAttendedSessions / $totalConductedSessions) * 100, 2)
-            : 0;
+        // Get all students enrolled in these courses (distinct)
+        $students = User::whereHas('enrollments', function($query) use ($courseIds) {
+            $query->whereIn('course_id', $courseIds)
+                  ->where('status', 'approved');
+        })->with(['enrollments' => function($query) use ($courseIds) {
+            $query->whereIn('course_id', $courseIds)
+                  ->where('status', 'approved');
+        }])->get();
 
-        // Determine overall status
-        $student->status = $student->attendance_percentage >= 75 ? 'Eligible'
-            : ($student->attendance_percentage >= 60 ? 'Warning' : 'At Risk');
+        // ✅ Calculate attendance and roll call using ONLY evaluations (no fallback to enrollment data)
+        foreach ($students as $student) {
+            $totalAttendance = 0;
+            $totalCourses = 0;
+            $avgRollCall = 0;
+            $consistencyTotal = 0;
+            $punctualityTotal = 0;
+            $participationTotal = 0;
+
+            foreach ($student->enrollments as $enrollment) {
+                // ✅ Get evaluation from attendance_evaluations (KG+12)
+                $eval = AttendanceEvaluation::where('student_id', $student->id)
+                    ->where('course_id', $enrollment->course_id)
+                    ->orderBy('evaluation_date', 'desc')
+                    ->first();
+
+                if ($eval) {
+                    // ✅ Use evaluation data
+                    $enrollment->attendance_percentage = $eval->attendance_percentage;
+                    $enrollment->roll_call_total = $eval->roll_call_total;
+                    $enrollment->consistency_marks = $eval->consistency_marks;
+                    $enrollment->punctuality_marks = $eval->punctuality_marks;
+                    $enrollment->participation_marks = $eval->participation_marks;
+                    $enrollment->eligibility_status = $eval->eligibility_status;
+                    $enrollment->risk_level = $eval->risk_level;
+                    $enrollment->risk_score = $eval->risk_score;
+
+                    $totalAttendance += $eval->attendance_percentage;
+                    $avgRollCall += $eval->roll_call_total;
+                    $consistencyTotal += $eval->consistency_marks;
+                    $punctualityTotal += $eval->punctuality_marks;
+                    $participationTotal += $eval->participation_marks;
+                    $totalCourses++;
+                } else {
+                    // ✅ NO evaluation → set to 0 (no random data from enrollment)
+                    $enrollment->attendance_percentage = 0;
+                    $enrollment->roll_call_total = 0;
+                    $enrollment->consistency_marks = 0;
+                    $enrollment->punctuality_marks = 0;
+                    $enrollment->participation_marks = 0;
+                    $enrollment->eligibility_status = 'not_eligible';
+                    $enrollment->risk_level = 'Low';
+                    $enrollment->risk_score = 0;
+
+                    // ⚠️ Do NOT add to totals because no evaluation exists
+                }
+            }
+
+            // Overall stats per student (only if they have evaluated courses)
+            if ($totalCourses > 0) {
+                $student->attendance_percentage = round($totalAttendance / $totalCourses, 1);
+                $student->roll_call_total = round($avgRollCall / $totalCourses, 1);
+                $student->consistency_marks = round($consistencyTotal / $totalCourses, 1);
+                $student->punctuality_marks = round($punctualityTotal / $totalCourses, 1);
+                $student->participation_marks = round($participationTotal / $totalCourses, 1);
+                $student->status = $student->attendance_percentage >= 75 ? 'Eligible'
+                    : ($student->attendance_percentage >= 60 ? 'Warning' : 'At Risk');
+            } else {
+                // No evaluated courses → show empty/zero
+                $student->attendance_percentage = 0;
+                $student->roll_call_total = 0;
+                $student->consistency_marks = 0;
+                $student->punctuality_marks = 0;
+                $student->participation_marks = 0;
+                $student->status = 'Not Evaluated';
+            }
+            $student->total_courses = $totalCourses;
+        }
+
+        // Statistics (only count students who have evaluations)
+        $totalStudents = $students->count();
+        $eligibleCount = $students->where('status', 'Eligible')->count();
+        $warningCount = $students->where('status', 'Warning')->count();
+        $atRiskCount = $students->where('status', 'At Risk')->count();
+
+        return view('lecturer.students', compact(
+            'students',
+            'courses',
+            'totalStudents',
+            'eligibleCount',
+            'warningCount',
+            'atRiskCount'
+        ));
     }
 
-    // Calculate stats
-    $totalStudents = $students->count();
-    $eligibleCount = $students->where('status', 'Eligible')->count();
-    $warningCount = $students->where('status', 'Warning')->count();
-    $atRiskCount = $students->where('status', 'At Risk')->count();
-
-    return view('lecturer.students', compact(
-        'students',
-        'courses',
-        'totalStudents',
-        'eligibleCount',
-        'warningCount',
-        'atRiskCount'
-    ));
-}
-
-/**
- * Calculate roll call mark based on MTU system
- */
-private function calculateRollCallMark($percentage)
-{
-    if ($percentage >= 95) return 10;
-    if ($percentage >= 90) return 9;
-    if ($percentage >= 85) return 8;
-    if ($percentage >= 80) return 7;
-    if ($percentage >= 75) return 6;
-    if ($percentage >= 70) return 5;
-    if ($percentage >= 65) return 4;
-    if ($percentage >= 60) return 3;
-    if ($percentage >= 55) return 2;
-    return 1;
-}
+    /**
+     * Calculate roll call mark based on KG+12 system (kept for backward compatibility)
+     */
+    private function calculateRollCallMark($percentage)
+    {
+        if ($percentage >= 95) return 10;
+        if ($percentage >= 90) return 9;
+        if ($percentage >= 85) return 8;
+        if ($percentage >= 80) return 7;
+        if ($percentage >= 75) return 6;
+        if ($percentage >= 70) return 5;
+        if ($percentage >= 65) return 4;
+        if ($percentage >= 60) return 3;
+        if ($percentage >= 55) return 2;
+        return 1;
+    }
 
     public function schedule()
     {
@@ -448,7 +526,8 @@ private function calculateRollCallMark($percentage)
         $courses = Course::where('lecturer_id', $lecturer->id)
             ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
             ->where('is_active', true)
-            ->get();
+            ->get()
+            ->unique('id');
 
         $sessions = AttendanceSession::where('lecturer_id', $lecturer->id)
             ->with(['course', 'records'])
@@ -481,36 +560,26 @@ private function calculateRollCallMark($percentage)
 
         $courseStats = [];
         foreach ($courses as $course) {
-            $courseSessions = AttendanceSession::where('course_id', $course->id)
-                ->with('records')
+            $evaluations = AttendanceEvaluation::where('course_id', $course->id)
+                ->where('evaluation_date', function($q) {
+                    $q->selectRaw('MAX(evaluation_date)')
+                        ->from('attendance_evaluations as ae2')
+                        ->whereColumn('ae2.student_id', 'attendance_evaluations.student_id')
+                        ->whereColumn('ae2.course_id', 'attendance_evaluations.course_id');
+                })
                 ->get();
-
-            $coursePresent = 0;
-            $courseTotal = 0;
-            $courseLate = 0;
-            $courseAbsent = 0;
-
-            foreach ($courseSessions as $session) {
-                $present = $session->records->where('status', 'present')->count();
-                $late = $session->records->where('status', 'late')->count();
-                $absent = $session->records->where('status', 'absent')->count();
-
-                $coursePresent += $present;
-                $courseLate += $late;
-                $courseAbsent += $absent;
-                $courseTotal += ($present + $late + $absent);
-            }
 
             $courseStats[$course->id] = [
                 'name' => $course->course_name,
                 'code' => $course->course_code,
-                'sessions' => $courseSessions->count(),
-                'attendance' => $courseTotal > 0 ? round(($coursePresent / $courseTotal) * 100) : 0,
+                'sessions' => AttendanceSession::where('course_id', $course->id)->count(),
+                'attendance' => round($evaluations->avg('attendance_percentage') ?? 0),
                 'students' => Enrollment::where('course_id', $course->id)->where('status', 'approved')->count(),
-                'present' => $coursePresent,
-                'late' => $courseLate,
-                'absent' => $courseAbsent,
-                'total' => $courseTotal,
+                'avg_roll_call' => round($evaluations->avg('roll_call_total') ?? 0, 1),
+                'high_risk' => $evaluations->where('risk_level', 'High')->count(),
+                'eligible' => $evaluations->where('eligibility_status', 'eligible')->count(),
+                'warning' => $evaluations->where('eligibility_status', 'warning')->count(),
+                'not_eligible' => $evaluations->where('eligibility_status', 'not_eligible')->count(),
             ];
         }
 
@@ -549,7 +618,8 @@ private function calculateRollCallMark($percentage)
 
         $courses = Course::where('lecturer_id', Auth::id())
             ->where('is_active', true)
-            ->get();
+            ->get()
+            ->unique('id');
 
         return view('lecturer.announcements.index', compact('announcements', 'courses'));
     }
@@ -566,7 +636,8 @@ private function calculateRollCallMark($percentage)
 
         $courses = Course::where('lecturer_id', Auth::id())
             ->where('is_active', true)
-            ->get();
+            ->get()
+            ->unique('id');
 
         return view('lecturer.announcements.show', compact('announcement', 'user', 'courses'));
     }
@@ -672,34 +743,26 @@ private function calculateRollCallMark($percentage)
         $lecturer = Auth::user();
         $lecturerId = $lecturer->id;
 
-        // Filters
         $academicYear = $request->input('academic_year');
         $semester = $request->input('semester');
         $sessionType = $request->input('session_type');
 
-        // Get all courses
         $courses = Course::where('lecturer_id', $lecturerId)
             ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
             ->where('is_active', true)
-            ->get();
+            ->get()
+            ->unique('id');
 
-        // ============================================
-        // GET TIMETABLE ENTRIES (Primary source)
-        // ============================================
         $timetableEntriesQuery = TimetableEntry::where('lecturer_id', $lecturerId)
-            ->where('is_active', true);
-
-        if ($academicYear) {
-            $timetableEntriesQuery->where('academic_year', $academicYear);
-        }
-
-        if ($semester) {
-            $timetableEntriesQuery->where('semester', $semester);
-        }
-
-        if ($sessionType) {
-            $timetableEntriesQuery->where('session_type', $sessionType);
-        }
+            ->when($academicYear, function($q) use ($academicYear) {
+                return $q->where('academic_year', $academicYear);
+            })
+            ->when($semester, function($q) use ($semester) {
+                return $q->where('semester', $semester);
+            })
+            ->when($sessionType, function($q) use ($sessionType) {
+                return $q->where('session_type', $sessionType);
+            });
 
         $timetableEntries = $timetableEntriesQuery
             ->with(['course', 'course.department'])
@@ -707,20 +770,17 @@ private function calculateRollCallMark($percentage)
             ->orderBy('start_time')
             ->get();
 
-        // ============================================
         // FALLBACK: If no timetable entries, use courses table
-        // ============================================
         if ($timetableEntries->isEmpty()) {
-            // Get scheduled courses from courses table
             $scheduledCourses = Course::where('lecturer_id', $lecturerId)
                 ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
                 ->where('is_active', true)
                 ->whereNotNull('schedule_day')
                 ->whereNotNull('schedule_time')
                 ->whereNotNull('schedule_end_time')
-                ->get();
+                ->get()
+                ->unique('id');
 
-            // Convert courses to timetable entries format
             $timetableEntries = $scheduledCourses->map(function($course) {
                 $entry = new TimetableEntry();
                 $entry->course_id = $course->id;
@@ -734,12 +794,10 @@ private function calculateRollCallMark($percentage)
                 $entry->end_time = $course->schedule_end_time;
                 $entry->room = $course->room;
                 $entry->session_type = 'lecture';
-                $entry->is_active = true;
                 $entry->course = $course;
                 return $entry;
             });
 
-            // Re-apply filters
             if ($academicYear) {
                 $timetableEntries = $timetableEntries->filter(function($entry) use ($academicYear) {
                     return $entry->academic_year === $academicYear;
@@ -766,11 +824,11 @@ private function calculateRollCallMark($percentage)
             ->whereNotNull('schedule_end_time')
             ->orderBy('schedule_day')
             ->orderBy('schedule_time')
-            ->get();
+            ->get()
+            ->unique('id');
 
         $availableCourses = $courses;
 
-        // Days
         $days = $this->getDays();
         $timeSlots = $this->getTimeSlots();
 
@@ -959,143 +1017,153 @@ private function calculateRollCallMark($percentage)
     }
 
     /**
-     * Manage Timetable - FIXED: Only shows courses assigned to the lecturer
-     */
-    public function manageTimetable()
-    {
-        $lecturer = Auth::user();
-        $lecturerId = $lecturer->id;
+ * Manage Timetable - Shows all courses and timetable entries
+ */
+public function manageTimetable()
+{
+    $lecturer = Auth::user();
+    $lecturerId = $lecturer->id;
+    $lecturerName = $lecturer->name;
 
-        // Get ONLY courses assigned to this lecturer (by lecturer_id)
-        $courses = Course::where('lecturer_id', $lecturerId)
-            ->where('is_active', true)
-            ->orderBy('course_code', 'asc')
-            ->get();
+    // All courses assigned to this lecturer
+    $allCourses = Course::where('lecturer_id', $lecturerId)
+        ->orWhere('lecturer_name', 'like', '%' . $lecturerName . '%')
+        ->where('is_active', true)
+        ->orderBy('course_code', 'asc')
+        ->get()
+        ->unique('id');
 
-        // Get scheduled courses (ONLY this lecturer's courses with schedule)
-        $scheduledCourses = Course::where('lecturer_id', $lecturerId)
-            ->where('is_active', true)
-            ->whereNotNull('schedule_day')
-            ->whereNotNull('schedule_time')
-            ->orderBy('schedule_day', 'asc')
-            ->orderBy('schedule_time', 'asc')
-            ->get();
+    // Get all timetable entries for this lecturer with course relation
+    $scheduledEntries = TimetableEntry::where('lecturer_id', $lecturerId)
+        ->with('course')
+        ->orderBy('day_of_week')
+        ->orderBy('start_time')
+        ->get();
 
-        return view('lecturer.timetable-manage', compact('courses', 'scheduledCourses'));
+    return view('lecturer.timetable-manage', compact('allCourses', 'scheduledEntries'));
+}
+
+/**
+ * Add a course session to the timetable
+ */
+public function addToTimetable(Request $request)
+{
+    $request->validate([
+        'course_code' => 'required|exists:courses,course_code',
+        'schedule_day' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+        'schedule_time' => 'required|date_format:H:i',
+        'schedule_end_time' => 'required|date_format:H:i|after:schedule_time',
+        'room' => 'nullable|string|max:50',
+        'session_type' => 'nullable|string|in:lecture,tutorial,lab,seminar,workshop,other',
+    ]);
+
+    if ($request->schedule_time === $request->schedule_end_time) {
+        return redirect()->back()->with('error', '⚠️ Start time and end time cannot be the same!');
     }
 
-    public function addToTimetable(Request $request)
-    {
-        $request->validate([
-            'course_id' => 'required|exists:courses,id',
-            'schedule_day' => 'required|string|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
-            'schedule_time' => 'required|date_format:H:i',
-            'schedule_end_time' => 'required|date_format:H:i|after:schedule_time',
-            'room' => 'nullable|string|max:50',
-            'session_type' => 'nullable|string|in:lecture,tutorial,lab,seminar,workshop,other',
-        ]);
+    // Find the course by code (must belong to this lecturer)
+    $course = Course::where('course_code', $request->course_code)
+        ->where(function($q) {
+            $q->where('lecturer_id', Auth::id())
+              ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%');
+        })
+        ->first();
 
-        if ($request->schedule_time === $request->schedule_end_time) {
-            return redirect()->back()->with('error', '⚠️ Start time and end time cannot be the same!');
-        }
+    if (!$course) {
+        return redirect()->back()->with('error', '❌ Course not found or not assigned to you.');
+    }
 
-        // Get the course - ensure it belongs to the lecturer
-        $course = Course::where('lecturer_id', Auth::id())
-            ->where('id', $request->course_id)
-            ->firstOrFail();
+    // Check for time conflict with existing timetable entries for this lecturer on that day
+    $conflict = TimetableEntry::where('lecturer_id', Auth::id())
+        ->where('day_of_week', $request->schedule_day)
+        ->where(function($q) use ($request) {
+            $q->where(function($sub) use ($request) {
+                $sub->where('start_time', '<=', $request->schedule_time)
+                    ->where('end_time', '>', $request->schedule_time);
+            })->orWhere(function($sub) use ($request) {
+                $sub->where('start_time', '<', $request->schedule_end_time)
+                    ->where('end_time', '>=', $request->schedule_end_time);
+            });
+        })
+        ->first();
 
-        if ($course->schedule_day) {
-            return redirect()->back()->with('error', '⚠️ "' . $course->course_code . '" is already scheduled.');
-        }
+    if ($conflict) {
+        $conflictCourse = $conflict->course;
+        return redirect()->back()->with('error',
+            '⚠️ Time conflict with "' . ($conflictCourse ? $conflictCourse->course_name : 'Unknown') . '" on ' . $request->schedule_day
+        );
+    }
 
-        // Check conflicts
-        $conflict = Course::where('lecturer_id', Auth::id())
-            ->where('id', '!=', $course->id)
-            ->where('schedule_day', $request->schedule_day)
-            ->where(function($q) use ($request) {
-                $q->where(function($sub) use ($request) {
-                    $sub->where('schedule_time', '<=', $request->schedule_time)
-                        ->where('schedule_end_time', '>', $request->schedule_time);
-                })->orWhere(function($sub) use ($request) {
-                    $sub->where('schedule_time', '<', $request->schedule_end_time)
-                        ->where('schedule_end_time', '>=', $request->schedule_end_time);
-                });
-            })
-            ->first();
+    // Create new timetable entry
+    $entry = TimetableEntry::create([
+        'course_id' => $course->id,
+        'lecturer_id' => Auth::id(),
+        'department_id' => $course->department_id,
+        'academic_year' => $course->academic_year,
+        'semester' => $course->semester,
+        'year_level' => $course->year,
+        'day_of_week' => $request->schedule_day,
+        'start_time' => $request->schedule_time,
+        'end_time' => $request->schedule_end_time,
+        'room' => $request->room ?? $course->room,
+        'session_type' => $request->session_type ?? 'lecture',
+        'is_active' => true,
+    ]);
 
-        if ($conflict) {
-            return redirect()->back()->with('error',
-                '⚠️ Time conflict with "' . $conflict->course_name . '" on ' . $request->schedule_day
-            );
-        }
-
-        // Update courses table
+    // Optionally update the course table if this is its first schedule (backward compatibility)
+    if (is_null($course->schedule_day)) {
         $course->schedule_day = $request->schedule_day;
         $course->schedule_time = $request->schedule_time;
         $course->schedule_end_time = $request->schedule_end_time;
         $course->room = $request->room ?? $course->room;
         $course->save();
-
-        // Save to timetable_entries
-        TimetableEntry::updateOrCreate(
-            [
-                'course_id' => $course->id,
-                'lecturer_id' => Auth::id(),
-            ],
-            [
-                'department_id' => $course->department_id,
-                'academic_year' => $course->academic_year,
-                'semester' => $course->semester,
-                'year_level' => $course->year,
-                'day_of_week' => $request->schedule_day,
-                'start_time' => $request->schedule_time,
-                'end_time' => $request->schedule_end_time,
-                'room' => $request->room ?? $course->room,
-                'session_type' => $request->session_type ?? 'lecture',
-                'is_active' => true,
-            ]
-        );
-
-        return redirect()->route('lecturer.timetable.manage')
-            ->with('success', '✅ ' . $course->course_code . ' added to timetable!');
     }
 
-    public function removeFromTimetable($id)
-    {
-        try {
-            $course = Course::where('lecturer_id', Auth::id())
-                ->where('id', $id)
-                ->first();
+    return redirect()->route('lecturer.timetable.manage')
+        ->with('success', '✅ ' . $course->course_code . ' added to timetable!');
+}
 
-            if (!$course) {
-                return redirect()->route('lecturer.timetable.manage')
-                    ->with('error', '❌ Course not found!');
-            }
+/**
+ * Remove a specific timetable entry by its ID
+ */
+public function removeFromTimetable($id)
+{
+    try {
+        $entry = TimetableEntry::where('id', $id)
+            ->where('lecturer_id', Auth::id())
+            ->first();
 
-            if (!$course->schedule_day) {
-                return redirect()->route('lecturer.timetable.manage')
-                    ->with('error', '⚠️ "' . $course->course_code . '" is not scheduled.');
-            }
+        if (!$entry) {
+            return redirect()->route('lecturer.timetable.manage')
+                ->with('error', '❌ Timetable entry not found!');
+        }
 
-            // Remove from courses table
+        $course = $entry->course;
+        $courseCode = $course ? $course->course_code : 'Unknown';
+
+        // Delete the entry
+        $entry->delete();
+
+        // If no more entries for this course, clear the course schedule fields
+        $remainingEntries = TimetableEntry::where('course_id', $entry->course_id)
+            ->where('lecturer_id', Auth::id())
+            ->count();
+
+        if ($remainingEntries == 0 && $course) {
             $course->schedule_day = null;
             $course->schedule_time = null;
             $course->schedule_end_time = null;
             $course->save();
-
-            // Remove from timetable_entries
-            TimetableEntry::where('course_id', $course->id)
-                ->where('lecturer_id', Auth::id())
-                ->delete();
-
-            return redirect()->route('lecturer.timetable.manage')
-                ->with('success', '🗑️ "' . $course->course_code . '" removed from timetable!');
-
-        } catch (\Exception $e) {
-            return redirect()->route('lecturer.timetable.manage')
-                ->with('error', '❌ Error: ' . $e->getMessage());
         }
+
+        return redirect()->route('lecturer.timetable.manage')
+            ->with('success', '🗑️ "' . $courseCode . '" session removed from timetable!');
+
+    } catch (\Exception $e) {
+        return redirect()->route('lecturer.timetable.manage')
+            ->with('error', '❌ Error: ' . $e->getMessage());
     }
+}
 
     public function addMultipleSessions(Request $request)
     {
@@ -1110,6 +1178,7 @@ private function calculateRollCallMark($percentage)
         ]);
 
         $course = Course::where('lecturer_id', Auth::id())
+            ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%')
             ->where('id', $request->course_id)
             ->firstOrFail();
 
@@ -1153,7 +1222,7 @@ private function calculateRollCallMark($percentage)
             $created[] = $entry;
         }
 
-        // Also update courses table with first session
+        // Update courses table with first session
         $firstSession = $request->sessions[0];
         $course->schedule_day = $firstSession['day_of_week'];
         $course->schedule_time = $firstSession['start_time'];
@@ -1174,7 +1243,6 @@ private function calculateRollCallMark($percentage)
         $semester = $request->input('semester');
 
         $timetableEntries = TimetableEntry::where('lecturer_id', $lecturerId)
-            ->where('is_active', true)
             ->when($academicYear, function($q) use ($academicYear) {
                 return $q->where('academic_year', $academicYear);
             })
@@ -1186,7 +1254,6 @@ private function calculateRollCallMark($percentage)
             ->orderBy('start_time')
             ->get();
 
-        // If no timetable entries, use courses table
         if ($timetableEntries->isEmpty()) {
             $timetableEntries = Course::where('lecturer_id', $lecturerId)
                 ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
@@ -1194,7 +1261,8 @@ private function calculateRollCallMark($percentage)
                 ->whereNotNull('schedule_day')
                 ->whereNotNull('schedule_time')
                 ->whereNotNull('schedule_end_time')
-                ->get();
+                ->get()
+                ->unique('id');
         }
 
         $filename = 'timetable_' . $lecturer->name . '_' . now()->format('Y-m-d') . '.csv';
@@ -1221,7 +1289,6 @@ private function calculateRollCallMark($percentage)
             ]);
 
             foreach ($timetableEntries as $entry) {
-                // For Course objects from courses table
                 if ($entry instanceof Course) {
                     fputcsv($file, [
                         $entry->course_code ?? 'N/A',
@@ -1236,7 +1303,6 @@ private function calculateRollCallMark($percentage)
                         $entry->academic_year ?? 'N/A',
                     ]);
                 } else {
-                    // For TimetableEntry objects
                     fputcsv($file, [
                         $entry->course->course_code ?? 'N/A',
                         $entry->course->course_name ?? 'N/A',
@@ -1267,7 +1333,6 @@ private function calculateRollCallMark($percentage)
         $semester = $request->input('semester');
 
         $timetableEntries = TimetableEntry::where('lecturer_id', $lecturerId)
-            ->where('is_active', true)
             ->when($academicYear, function($q) use ($academicYear) {
                 return $q->where('academic_year', $academicYear);
             })
@@ -1279,7 +1344,6 @@ private function calculateRollCallMark($percentage)
             ->orderBy('start_time')
             ->get();
 
-        // If no timetable entries, use courses table
         if ($timetableEntries->isEmpty()) {
             $timetableEntries = Course::where('lecturer_id', $lecturerId)
                 ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
@@ -1287,7 +1351,8 @@ private function calculateRollCallMark($percentage)
                 ->whereNotNull('schedule_day')
                 ->whereNotNull('schedule_time')
                 ->whereNotNull('schedule_end_time')
-                ->get();
+                ->get()
+                ->unique('id');
         }
 
         $grid = [];
@@ -1303,5 +1368,164 @@ private function calculateRollCallMark($percentage)
         }
 
         return view('lecturer.timetable-pdf', compact('grid', 'lecturer', 'academicYear', 'semester'));
+    }
+
+    /**
+     * Export report for a course (CSV)
+     */
+    public function exportReport(Request $request)
+    {
+        $courseId = $request->input('course_id');
+        $type = $request->input('type', 'csv');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        if (!$courseId) {
+            return redirect()->back()->with('error', 'Please select a course.');
+        }
+
+        $course = Course::where('lecturer_id', Auth::id())
+            ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%')
+            ->where('id', $courseId)
+            ->firstOrFail();
+
+        $query = AttendanceEvaluation::where('course_id', $courseId)
+            ->with('student');
+
+        if ($startDate) {
+            $query->whereDate('evaluation_date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('evaluation_date', '<=', $endDate);
+        }
+
+        $evaluations = $query->orderBy('evaluation_date', 'desc')->get();
+
+        $filename = 'attendance_report_' . $course->course_code . '_' . date('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function() use ($evaluations, $course) {
+            $file = fopen('php://output', 'w');
+            fwrite($file, "\xEF\xBB\xBF");
+
+            fputcsv($file, [
+                'Student ID',
+                'Student Name',
+                'Email',
+                'Attendance %',
+                'Consistency (0-6)',
+                'Punctuality (0-2)',
+                'Participation (0-2)',
+                'Total Roll Call (0-10)',
+                'Eligibility',
+                'Risk Level',
+                'Risk Score',
+                'Consecutive Absences',
+                'Trend',
+                'Evaluation Date'
+            ]);
+
+            foreach ($evaluations as $eval) {
+                fputcsv($file, [
+                    $eval->student->student_id ?? 'N/A',
+                    $eval->student->name ?? 'N/A',
+                    $eval->student->email ?? 'N/A',
+                    $eval->attendance_percentage . '%',
+                    $eval->consistency_marks ?? 0,
+                    $eval->punctuality_marks ?? 0,
+                    $eval->participation_marks ?? 0,
+                    $eval->roll_call_total ?? 0,
+                    ucfirst($eval->eligibility_status ?? 'N/A'),
+                    $eval->risk_level ?? 'N/A',
+                    $eval->risk_score ?? 0,
+                    $eval->consecutive_absences ?? 0,
+                    ucfirst($eval->attendance_trend ?? 'N/A'),
+                    $eval->evaluation_date ? $eval->evaluation_date->format('Y-m-d') : 'N/A'
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Export at-risk students report (CSV)
+     */
+    public function exportAtRiskReport(Request $request)
+    {
+        $courseId = $request->input('course_id');
+
+        $query = AttendanceEvaluation::whereIn('risk_level', ['High', 'Medium'])
+            ->with('student', 'course');
+
+        if ($courseId) {
+            $query->where('course_id', $courseId);
+        } else {
+            $courseIds = Course::where('lecturer_id', Auth::id())
+                ->orWhere('lecturer_name', 'like', '%' . Auth::user()->name . '%')
+                ->pluck('id')
+                ->toArray();
+            $query->whereIn('course_id', $courseIds);
+        }
+
+        $evaluations = $query->orderBy('risk_score', 'desc')->get();
+
+        $filename = 'at_risk_students_' . date('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function() use ($evaluations) {
+            $file = fopen('php://output', 'w');
+            fwrite($file, "\xEF\xBB\xBF");
+
+            fputcsv($file, [
+                'Student ID',
+                'Student Name',
+                'Email',
+                'Course',
+                'Attendance %',
+                'Roll Call (0-10)',
+                'Consistency (0-6)',
+                'Punctuality (0-2)',
+                'Participation (0-2)',
+                'Risk Level',
+                'Risk Score',
+                'Consecutive Absences',
+                'Trend',
+                'Eligibility'
+            ]);
+
+            foreach ($evaluations as $eval) {
+                fputcsv($file, [
+                    $eval->student->student_id ?? 'N/A',
+                    $eval->student->name ?? 'N/A',
+                    $eval->student->email ?? 'N/A',
+                    $eval->course->course_code ?? 'N/A',
+                    $eval->attendance_percentage . '%',
+                    $eval->roll_call_total ?? 0,
+                    $eval->consistency_marks ?? 0,
+                    $eval->punctuality_marks ?? 0,
+                    $eval->participation_marks ?? 0,
+                    $eval->risk_level ?? 'N/A',
+                    $eval->risk_score ?? 0,
+                    $eval->consecutive_absences ?? 0,
+                    ucfirst($eval->attendance_trend ?? 'N/A'),
+                    ucfirst($eval->eligibility_status ?? 'N/A')
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

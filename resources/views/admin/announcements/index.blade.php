@@ -12,23 +12,42 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .announcement-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 1.25rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             margin-bottom: 1rem;
             position: relative;
+            box-shadow: var(--shadow);
         }
 
         .announcement-card:hover {
-            border-color: #800000;
-            box-shadow: 0 4px 16px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
             transform: translateY(-2px);
         }
 
-        /* The clickable overlay - covers the entire card */
         .announcement-card .card-link {
             position: absolute;
             top: 0;
@@ -41,14 +60,12 @@
             overflow: hidden;
         }
 
-        /* Everything inside the card should be above the overlay but still clickable */
         .announcement-card .card-content {
             position: relative;
             z-index: 1;
             pointer-events: none;
         }
 
-        /* But we want links and buttons inside to still work, so we give them pointer-events: auto */
         .announcement-card .card-content a,
         .announcement-card .card-content .actions a,
         .announcement-card .card-content .actions button,
@@ -70,12 +87,12 @@
         .announcement-card .title {
             font-size: 1rem;
             font-weight: 600;
-            color: #1f2937;
+            color: var(--text-dark);
             margin: 0;
         }
 
         .announcement-card .title a {
-            color: #1f2937;
+            color: var(--text-dark);
             text-decoration: none;
             pointer-events: auto;
             position: relative;
@@ -83,7 +100,7 @@
         }
 
         .announcement-card .title a:hover {
-            color: #800000;
+            color: var(--primary);
             text-decoration: underline;
         }
 
@@ -99,10 +116,10 @@
             gap: 1rem;
             flex-wrap: wrap;
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-top: 0.5rem;
             padding-top: 0.5rem;
-            border-top: 1px solid #f3f4f6;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .badge {
@@ -118,7 +135,7 @@
 
         .badge-all {
             background: #e5e7eb;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         .badge-admin {
@@ -142,18 +159,18 @@
         }
 
         .badge-active {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
         .badge-inactive {
             background: #f3f4f6;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .badge-unread {
-            background: #ef4444;
-            color: white;
+            background: var(--danger);
+            color: var(--white);
             font-size: 0.5rem;
             padding: 0.1rem 0.4rem;
             animation: pulse 2s infinite;
@@ -175,7 +192,7 @@
 
         .btn-sm {
             padding: 0.2rem 0.6rem;
-            border-radius: 0.3rem;
+            border-radius: 6px;
             font-size: 0.7rem;
             font-weight: 500;
             border: none;
@@ -183,7 +200,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.2rem;
-            transition: all 0.2s;
+            transition: var(--transition);
             text-decoration: none;
             pointer-events: auto;
             position: relative;
@@ -191,8 +208,8 @@
         }
 
         .btn-edit {
-            background: #dbeafe;
-            color: #1e40af;
+            background: var(--info-light);
+            color: var(--info);
         }
 
         .btn-edit:hover {
@@ -200,17 +217,17 @@
         }
 
         .btn-delete {
-            background: #fee2e2;
-            color: #991b1b;
+            background: var(--danger-light);
+            color: var(--danger);
         }
 
         .btn-delete:hover {
-            background: #fecaca;
+            background: #fca5a5;
         }
 
         .btn-toggle {
             background: #f3f4f6;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         .btn-toggle:hover {
@@ -218,8 +235,8 @@
         }
 
         .btn-view {
-            background: #e0e7ff;
-            color: #3730a3;
+            background: var(--info-light);
+            color: var(--info);
         }
 
         .btn-view:hover {
@@ -243,7 +260,7 @@
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
-            color: #9ca3af;
+            color: var(--text-gray);
         }
 
         .empty-state i {
@@ -252,7 +269,7 @@
         }
 
         .empty-state h4 {
-            color: #374151;
+            color: var(--text-dark);
             margin-top: 1rem;
             margin-bottom: 0.5rem;
         }
@@ -263,21 +280,21 @@
 
         .alert {
             padding: 0.6rem 1rem;
-            border-radius: 0.75rem;
+            border-radius: var(--radius);
             margin-bottom: 1rem;
             font-size: 0.85rem;
         }
 
         .alert-success {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
-            border: 1px solid #bbf7d0;
+            border: 1px solid #a7f3d0;
         }
 
         .alert-danger {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
-            border: 1px solid #fecaca;
+            border: 1px solid #fca5a5;
         }
 
         .alert-dismissible {
@@ -310,10 +327,10 @@
         }
 
         .btn-create {
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             padding: 0.5rem 1.2rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             border: none;
             font-size: 0.85rem;
             font-weight: 500;
@@ -321,14 +338,14 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            transition: all 0.2s;
+            transition: var(--transition);
             text-decoration: none;
         }
 
         .btn-create:hover {
-            background: #5f0000;
-            transform: translateY(-1px);
-            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.25);
+            color: var(--white);
         }
 
         .pagination-wrapper {
@@ -341,7 +358,7 @@
         }
 
         .read-more {
-            color: #800000;
+            color: var(--primary);
             font-size: 0.8rem;
             font-weight: 500;
             pointer-events: auto;
@@ -404,7 +421,6 @@
     {{-- Announcements List --}}
     @forelse($announcements as $announcement)
         <div class="announcement-card">
-            {{-- Full card clickable link - covers the entire card --}}
             <a href="{{ route('admin.announcements.show', $announcement->id) }}" class="card-link"></a>
 
             <div class="card-content">

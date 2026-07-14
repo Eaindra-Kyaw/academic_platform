@@ -12,34 +12,53 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         .back-link {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: #800000;
+            color: var(--primary);
             text-decoration: none;
             font-weight: 500;
             margin-bottom: 1rem;
             padding: 0.5rem 1rem;
-            background: #fef7f7;
-            border-radius: 0.5rem;
-            border: 1px solid #fde2e2;
-            transition: all 0.2s;
+            background: rgba(10, 36, 99, 0.05);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            transition: var(--transition);
         }
 
         .back-link:hover {
-            background: #fde2e2;
+            background: rgba(10, 36, 99, 0.08);
             text-decoration: none;
-            color: #800000;
+            color: var(--primary);
         }
 
         .report-detail-card {
-            background: white;
-            border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
             padding: 2rem;
             max-width: 800px;
             margin: 0 auto;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
         }
 
         .report-detail-card .header {
@@ -48,7 +67,7 @@
             gap: 1rem;
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .report-detail-card .header .icon {
@@ -58,12 +77,12 @@
         .report-detail-card .header h2 {
             font-size: 1.3rem;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--text-dark);
             margin: 0;
         }
 
         .report-detail-card .header p {
-            color: #6b7280;
+            color: var(--text-gray);
             font-size: 0.85rem;
             margin: 0.2rem 0 0;
         }
@@ -82,7 +101,7 @@
         .report-detail-card .filters label {
             font-size: 0.75rem;
             font-weight: 600;
-            color: #4b5563;
+            color: var(--text-dark);
             display: block;
             margin-bottom: 0.3rem;
         }
@@ -91,18 +110,19 @@
         .report-detail-card .filters input {
             width: 100%;
             padding: 0.5rem 0.75rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            border-radius: 8px;
             font-size: 0.85rem;
-            background: white;
-            transition: all 0.2s;
+            background: var(--white);
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
         }
 
         .report-detail-card .filters select:focus,
         .report-detail-card .filters input:focus {
             outline: none;
-            border-color: #800000;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .report-detail-card .actions {
@@ -110,12 +130,12 @@
             gap: 0.75rem;
             flex-wrap: wrap;
             padding-top: 1rem;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .btn-generate {
             padding: 0.6rem 1.5rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             font-size: 0.85rem;
             font-weight: 600;
             cursor: pointer;
@@ -123,24 +143,24 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            transition: all 0.2s;
+            transition: var(--transition);
             text-decoration: none;
         }
 
         .btn-generate.csv {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
         }
 
         .btn-generate.csv:hover {
-            background: #5f0000;
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.3);
         }
 
         .btn-generate.pdf {
-            background: #dc2626;
-            color: white;
+            background: var(--danger);
+            color: var(--white);
         }
 
         .btn-generate.pdf:hover {
@@ -150,12 +170,12 @@
         }
 
         .btn-generate.excel {
-            background: #16a34a;
-            color: white;
+            background: var(--success);
+            color: var(--white);
         }
 
         .btn-generate.excel:hover {
-            background: #15803d;
+            background: #059669;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
         }
@@ -168,21 +188,21 @@
 
         .alert {
             padding: 0.6rem 1rem;
-            border-radius: 0.75rem;
+            border-radius: var(--radius);
             margin-bottom: 1rem;
             font-size: 0.85rem;
         }
 
         .alert-success {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
-            border: 1px solid #bbf7d0;
+            border: 1px solid #a7f3d0;
         }
 
         .alert-danger {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
-            border: 1px solid #fecaca;
+            border: 1px solid #fca5a5;
         }
 
         .alert-dismissible {
@@ -207,12 +227,12 @@
 
         .report-info {
             background: #f8fafc;
-            border-radius: 0.5rem;
+            border-radius: 8px;
             padding: 0.75rem 1rem;
             margin-bottom: 1rem;
             font-size: 0.8rem;
-            color: #6b7280;
-            border: 1px solid #e5e7eb;
+            color: var(--text-gray);
+            border: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         @media (max-width: 768px) {
@@ -234,7 +254,6 @@
         }
     </style>
 
-    {{-- Alerts --}}
     @if (session('success'))
         <div class="alert alert-success alert-dismissible">
             <i class="bi bi-check-circle"></i> {{ session('success') }}
@@ -249,7 +268,6 @@
         </div>
     @endif
 
-    {{-- Back Link --}}
     <a href="{{ route('admin.reports') }}" class="back-link">
         <i class="bi bi-arrow-left"></i> Back to Reports
     </a>
@@ -269,7 +287,6 @@
 
         <form action="{{ route('admin.reports.export', ['type' => $reportType]) }}" method="GET" target="_blank">
             <div class="filters">
-                {{-- Department Filter --}}
                 @if (in_array('department', $availableFilters))
                     <div>
                         <label>Department</label>
@@ -282,7 +299,6 @@
                     </div>
                 @endif
 
-                {{-- Course Filter --}}
                 @if (in_array('course', $availableFilters))
                     <div>
                         <label>Course</label>
@@ -296,7 +312,6 @@
                     </div>
                 @endif
 
-                {{-- Year Filter --}}
                 @if (in_array('year', $availableFilters))
                     <div>
                         <label>Year</label>
@@ -312,7 +327,6 @@
                     </div>
                 @endif
 
-                {{-- Status Filter --}}
                 @if (in_array('status', $availableFilters))
                     <div>
                         <label>Status</label>
@@ -326,7 +340,6 @@
                     </div>
                 @endif
 
-                {{-- Date Range Filters --}}
                 @if (in_array('date_range', $availableFilters))
                     <div>
                         <label>Date From</label>
@@ -338,7 +351,6 @@
                     </div>
                 @endif
 
-                {{-- Risk Level Filter --}}
                 @if (in_array('risk_level', $availableFilters))
                     <div>
                         <label>Risk Level</label>
@@ -351,7 +363,6 @@
                     </div>
                 @endif
 
-                {{-- Attendance Below Filter --}}
                 @if (in_array('attendance_below', $availableFilters))
                     <div>
                         <label>Attendance Below (%)</label>
@@ -359,7 +370,6 @@
                     </div>
                 @endif
 
-                {{-- Health Score Below Filter --}}
                 @if (in_array('score_below', $availableFilters))
                     <div>
                         <label>Health Score Below</label>
@@ -367,7 +377,6 @@
                     </div>
                 @endif
 
-                {{-- Academic Year Filter --}}
                 @if (in_array('academic_year', $availableFilters))
                     <div>
                         <label>Academic Year</label>
@@ -380,7 +389,6 @@
                     </div>
                 @endif
 
-                {{-- Semester Filter --}}
                 @if (in_array('semester', $availableFilters))
                     <div>
                         <label>Semester</label>
@@ -392,7 +400,6 @@
                     </div>
                 @endif
 
-                {{-- Format Filter (for Semester Summary) --}}
                 @if (in_array('format', $availableFilters))
                     <div>
                         <label>Export Format</label>

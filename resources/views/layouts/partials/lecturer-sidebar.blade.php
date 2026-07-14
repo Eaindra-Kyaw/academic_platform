@@ -7,8 +7,15 @@
 <a href="{{ route('lecturer.attendance.take') }}" class="nav-item @if (request()->routeIs('lecturer.attendance.take')) active @endif">
     <i class="bi bi-qr-code"></i><span>Take Attendance</span>
 </a>
+{{-- <a href="{{ route('lecturer.semester-qr.management') }}" class="nav-item @if (request()->routeIs('lecturer.semester-qr*')) active @endif">
+    <i class="bi bi-book"></i><span>Semester QR</span>
+</a> --}}
 <a href="{{ route('lecturer.attendance.sessions') }}" class="nav-item @if (request()->routeIs('lecturer.attendance.sessions')) active @endif">
     <i class="bi bi-clock-history"></i><span>Session History</span>
+</a>
+
+<a href="{{ route('lecturer.attendance.records') }}" class="nav-item @if (request()->routeIs('lecturer.attendance.records')) active @endif">
+    <i class="bi bi-clock-history"></i><span>All Records</span>
 </a>
 
 <div class="nav-label">Management</div>

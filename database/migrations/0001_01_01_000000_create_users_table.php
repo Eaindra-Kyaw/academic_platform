@@ -31,6 +31,7 @@ return new class extends Migration
             $table->text('address')->nullable();
 
             // Academic Information
+            $table->string('specialization', 255)->nullable()->comment('For lecturers - their specialization/field');
             $table->integer('current_year')->nullable()->comment('1=1st Year, 2=2nd Year, 3=3rd Year, 4=4th Year, 5=5th Year, 6=6th Year');
             $table->year('enrollment_year')->nullable();
 

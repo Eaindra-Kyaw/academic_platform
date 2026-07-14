@@ -2,8 +2,11 @@
 
 @section('title', 'Lecturer Dashboard')
 @section('role', 'Lecturer')
-@section('page-title', 'Lecturer Dashboard')
-@section('welcome-text', 'Welcome back, ' . Auth::user()->name)
+@section('page-title', '📚 Lecturer Dashboard')
+@section('welcome-text')
+    <i class="bi bi-hand-wave" style="font-size: 1.2rem; color: var(--most-gold);"></i> Welcome Back,
+    {{ Auth::user()->name }} !
+@endsection
 
 @section('sidebar')
     @include('layouts.partials.lecturer-sidebar')
@@ -11,18 +14,35 @@
 
 @section('content')
     <style>
-        /* ============================================
-                       MAIN CONTAINER
-                       ============================================ */
-        .lecturer-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
+        :root {
+            --primary: #0D47A1;
+            --primary-dark: #0B2B5B;
+            --primary-light: #1565C0;
+            --secondary: #42A5F5;
+            --accent: #F9A825;
+            --bg-main: #E3F2FD;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(13, 71, 161, 0.08);
+            --shadow-hover: 0 8px 30px rgba(13, 71, 161, 0.15);
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-500: #64748b;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
         }
 
-        /* ============================================
-                       STATS CARDS
-                       ============================================ */
         .ld-stats {
             display: flex;
             flex-wrap: wrap;
@@ -33,28 +53,37 @@
         .ld-stat-card {
             flex: 1 1 calc(16.666% - 1rem);
             min-width: 140px;
-            background: white;
+            background: var(--white);
             padding: 1rem;
             border-radius: 0.75rem;
             text-align: center;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--gray-200);
             transition: all 0.2s ease;
+            box-shadow: var(--shadow);
         }
 
         .ld-stat-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-hover);
         }
 
         .ld-stat-number {
             font-size: 1.5rem;
             font-weight: 800;
-            color: #800000;
+            color: var(--primary);
+        }
+
+        .ld-stat-number.danger {
+            color: var(--danger);
+        }
+
+        .ld-stat-number.warning {
+            color: var(--warning);
         }
 
         .ld-stat-label {
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .ld-stat-card .stat-icon {
@@ -63,11 +92,8 @@
             margin-bottom: 4px;
         }
 
-        /* ============================================
-                       QUICK ACTIONS
-                       ============================================ */
         .quick-actions {
-            background: linear-gradient(135deg, #800000, #5f0000);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border-radius: 0.75rem;
             padding: 1rem 1.5rem;
             margin-bottom: 1.5rem;
@@ -80,8 +106,8 @@
 
         .quick-action-btn {
             background: rgba(255, 255, 255, 0.12);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--white);
+            border: 1px solid rgba(249, 168, 37, 0.2);
             padding: 8px 18px;
             border-radius: 8px;
             text-decoration: none;
@@ -94,76 +120,27 @@
         }
 
         .quick-action-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(249, 168, 37, 0.15);
             transform: translateY(-2px);
-            color: white;
+            color: var(--white);
+            border-color: rgba(249, 168, 37, 0.4);
         }
 
-        /* ============================================
-                       TWO COLUMN LAYOUT
-                       ============================================ */
-        .ld-two-col {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .ld-two-col>* {
-            flex: 1 1 calc(50% - 0.5rem);
-            min-width: 250px;
-        }
-
-        /* ============================================
-                       QR SECTION
-                       ============================================ */
-        .ld-qr {
-            background: linear-gradient(135deg, #800000, #5f0000);
-            color: white;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            text-align: center;
-        }
-
-        .ld-qr-placeholder {
-            background: white;
-            width: 120px;
-            height: 120px;
-            margin: 0.5rem auto;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .ld-qr-placeholder img {
-            max-width: 100%;
-            max-height: 100%;
-        }
-
-        .ld-qr-placeholder i {
-            font-size: 3rem;
-            color: #800000;
-        }
-
-        /* ============================================
-                       CARDS
-                       ============================================ */
         .ld-card {
-            background: white;
+            background: var(--white);
             border-radius: 0.75rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--gray-200);
             overflow: hidden;
             margin-bottom: 1rem;
+            box-shadow: var(--shadow);
         }
 
         .ld-card-header {
             padding: 0.75rem 1rem;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
+            background: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
             font-weight: 700;
-            color: #800000;
+            color: var(--primary);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -173,9 +150,6 @@
             padding: 1rem;
         }
 
-        /* ============================================
-                       LIVE STATS
-                       ============================================ */
         .ld-live-stats {
             display: flex;
             flex-wrap: wrap;
@@ -186,7 +160,7 @@
         .ld-live-box {
             flex: 1 1 calc(25% - 0.75rem);
             min-width: 70px;
-            background: #f9fafb;
+            background: var(--gray-50);
             padding: 0.75rem;
             border-radius: 0.75rem;
             text-align: center;
@@ -195,12 +169,9 @@
         .ld-live-number {
             font-size: 1.5rem;
             font-weight: 800;
-            color: #800000;
+            color: var(--primary);
         }
 
-        /* ============================================
-                       INSIGHTS GRID
-                       ============================================ */
         .insight-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -208,10 +179,10 @@
         }
 
         .insight-card {
-            background: #f9fafb;
+            background: var(--gray-50);
             padding: 12px 16px;
             border-radius: 8px;
-            border-left: 3px solid #800000;
+            border-left: 3px solid var(--primary);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -219,7 +190,7 @@
         }
 
         .insight-card:hover {
-            background: #f3f4f6;
+            background: var(--gray-100);
             transform: translateX(4px);
         }
 
@@ -229,25 +200,22 @@
 
         .insight-card .insight-text {
             font-size: 13px;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         .insight-card .insight-text strong {
-            color: #1f2937;
+            color: var(--gray-800);
             display: block;
         }
 
         .insight-card .insight-text span {
-            color: #6b7280;
+            color: var(--text-gray);
             font-size: 12px;
         }
 
-        /* ============================================
-                       COURSE PERFORMANCE
-                       ============================================ */
         .course-performance {
             padding: 10px 0;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--gray-100);
         }
 
         .course-performance:last-child {
@@ -259,23 +227,26 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 4px;
+            flex-wrap: wrap;
+            gap: 4px;
         }
 
         .course-performance .course-info .code {
             font-weight: 600;
             font-size: 14px;
-            color: #1f2937;
+            color: var(--gray-800);
         }
 
         .course-performance .course-info .name {
             font-size: 13px;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .course-performance .course-stats {
             display: flex;
             gap: 12px;
             font-size: 12px;
+            flex-wrap: wrap;
         }
 
         .stat-badge {
@@ -286,29 +257,29 @@
         }
 
         .stat-badge.good {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
         .stat-badge.warning {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
         }
 
         .stat-badge.danger {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
         }
 
         .stat-badge.info {
-            background: #dbeafe;
+            background: var(--info-light);
             color: #1e40af;
         }
 
         .progress-bar {
             width: 100%;
             height: 4px;
-            background: #e5e7eb;
+            background: var(--gray-200);
             border-radius: 4px;
             margin-top: 4px;
             overflow: hidden;
@@ -320,17 +291,12 @@
             transition: width 0.6s ease;
         }
 
-        /* ============================================
-                       CHART CONTAINER
-                       ============================================ */
         .chart-container {
             position: relative;
             height: 200px;
         }
 
-        /* ============================================
-                       NOTIFICATION MODAL
-                       ============================================ */
+        /* Notification Modal */
         .notify-modal-overlay {
             display: none;
             position: fixed;
@@ -350,7 +316,7 @@
         }
 
         .notify-modal {
-            background: white;
+            background: var(--white);
             border-radius: 16px;
             max-width: 520px;
             width: 95%;
@@ -374,11 +340,11 @@
 
         .notify-modal-header {
             padding: 20px 24px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--gray-200);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #fafafa;
+            background: var(--gray-50);
             border-radius: 16px 16px 0 0;
         }
 
@@ -386,7 +352,7 @@
             margin: 0;
             font-size: 18px;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--gray-800);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -394,7 +360,7 @@
 
         .notify-modal-header h5 .badge {
             font-size: 11px;
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
             padding: 2px 10px;
             border-radius: 20px;
@@ -405,14 +371,14 @@
             background: none;
             border: none;
             font-size: 24px;
-            color: #6b7280;
+            color: var(--text-gray);
             cursor: pointer;
             transition: all 0.2s;
             padding: 0 4px;
         }
 
         .notify-modal-close:hover {
-            color: #1f2937;
+            color: var(--gray-800);
             transform: rotate(90deg);
         }
 
@@ -421,22 +387,22 @@
         }
 
         .notify-student-info {
-            background: #f9fafb;
+            background: var(--gray-50);
             border-radius: 10px;
             padding: 16px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 16px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--gray-200);
         }
 
         .notify-student-info .avatar {
             width: 48px;
             height: 48px;
             border-radius: 50%;
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -452,12 +418,12 @@
         .notify-student-info .details .name {
             font-weight: 700;
             font-size: 16px;
-            color: #1f2937;
+            color: var(--gray-800);
         }
 
         .notify-student-info .details .meta {
             font-size: 13px;
-            color: #6b7280;
+            color: var(--text-gray);
             margin-top: 2px;
         }
 
@@ -475,17 +441,17 @@
         }
 
         .risk-badge.high {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
         }
 
         .risk-badge.medium {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
         }
 
         .risk-badge.low {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
@@ -497,12 +463,12 @@
             display: block;
             font-weight: 600;
             font-size: 13px;
-            color: #374151;
+            color: var(--text-dark);
             margin-bottom: 4px;
         }
 
         .notify-form-group label .required {
-            color: #dc2626;
+            color: var(--danger);
         }
 
         .notify-form-group input,
@@ -510,11 +476,11 @@
         .notify-form-group textarea {
             width: 100%;
             padding: 10px 14px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--gray-200);
             border-radius: 8px;
             font-size: 14px;
             transition: all 0.2s;
-            background: white;
+            background: var(--white);
             font-family: inherit;
         }
 
@@ -522,8 +488,8 @@
         .notify-form-group select:focus,
         .notify-form-group textarea:focus {
             outline: none;
-            border-color: #800000;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.08);
         }
 
         .notify-form-group textarea {
@@ -540,43 +506,43 @@
 
         .notify-templates .template-btn {
             padding: 4px 12px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--gray-200);
             border-radius: 20px;
             font-size: 11px;
-            background: #f9fafb;
+            background: var(--gray-50);
             cursor: pointer;
             transition: all 0.2s;
-            color: #374151;
+            color: var(--text-dark);
         }
 
         .notify-templates .template-btn:hover {
-            border-color: #800000;
-            background: #fef2f2;
-            color: #800000;
+            border-color: var(--primary);
+            background: var(--info-light);
+            color: var(--primary);
         }
 
         .notify-templates .template-btn.active {
-            border-color: #800000;
-            background: #fef2f2;
-            color: #800000;
+            border-color: var(--primary);
+            background: var(--info-light);
+            color: var(--primary);
         }
 
         .notify-modal-footer {
             padding: 16px 24px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid var(--gray-200);
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            background: #fafafa;
+            background: var(--gray-50);
             border-radius: 0 0 16px 16px;
         }
 
         .btn-cancel-modal {
             padding: 8px 20px;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--gray-200);
             border-radius: 8px;
-            background: white;
-            color: #374151;
+            background: var(--white);
+            color: var(--text-dark);
             cursor: pointer;
             transition: all 0.2s;
             font-size: 14px;
@@ -584,15 +550,15 @@
         }
 
         .btn-cancel-modal:hover {
-            background: #f3f4f6;
+            background: var(--gray-100);
         }
 
         .btn-send-notify {
             padding: 8px 24px;
             border: none;
             border-radius: 8px;
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             cursor: pointer;
             transition: all 0.2s;
             font-size: 14px;
@@ -603,9 +569,9 @@
         }
 
         .btn-send-notify:hover {
-            background: #5f0000;
+            background: var(--primary-dark);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
         }
 
         .btn-send-notify:disabled {
@@ -621,35 +587,23 @@
 
         .notify-success .icon {
             font-size: 64px;
-            color: #10b981;
+            color: var(--success);
             margin-bottom: 16px;
         }
 
         .notify-success h4 {
-            color: #1f2937;
+            color: var(--gray-800);
             margin-bottom: 4px;
         }
 
         .notify-success p {
-            color: #6b7280;
+            color: var(--text-gray);
             margin-bottom: 16px;
         }
 
-        /* ============================================
-                       BUTTONS
-                       ============================================ */
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.7rem;
-            border-radius: 0.3rem;
-            border: 1px solid #ddd;
-            background: none;
-            cursor: pointer;
-        }
-
         .btn-primary-sm {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             border: none;
             padding: 0.25rem 0.5rem;
             border-radius: 0.3rem;
@@ -659,29 +613,9 @@
             display: inline-block;
         }
 
-        .btn-danger-sm {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.3rem;
-            cursor: pointer;
-            font-size: 0.7rem;
-        }
-
-        .btn-success-sm {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.3rem;
-            cursor: pointer;
-            font-size: 0.7rem;
-        }
-
         .btn-notify {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             border: none;
             padding: 4px 14px;
             border-radius: 4px;
@@ -691,28 +625,17 @@
         }
 
         .btn-notify:hover {
-            background: #5f0000;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 6px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
+            background: var(--primary-dark);
         }
 
         .badge-warning {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #d97706;
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 11px;
         }
 
-        /* ============================================
-                       LOADING MODAL
-                       ============================================ */
         .modal {
             display: none;
             position: fixed;
@@ -731,7 +654,7 @@
         }
 
         .modal-content {
-            background: white;
+            background: var(--white);
             padding: 20px;
             border-radius: 8px;
             max-width: 400px;
@@ -742,8 +665,8 @@
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #800000;
+            border: 3px solid var(--gray-100);
+            border-top: 3px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -758,9 +681,6 @@
             }
         }
 
-        /* ============================================
-                       RESPONSIVE
-                       ============================================ */
         @media (max-width: 992px) {
             .ld-stat-card {
                 flex: 1 1 calc(33.333% - 1rem);
@@ -774,10 +694,6 @@
         @media (max-width: 768px) {
             .ld-stat-card {
                 flex: 1 1 calc(50% - 1rem);
-            }
-
-            .ld-two-col>* {
-                flex: 1 1 100%;
             }
 
             .ld-live-box {
@@ -829,11 +745,7 @@
         }
     </style>
 
-
-
-    <!-- ==========================================
-                    STATISTICS CARDS
-                    ========================================== -->
+    <!-- Statistics -->
     <div class="ld-stats">
         <div class="ld-stat-card">
             <span class="stat-icon">👨‍🎓</span>
@@ -842,7 +754,7 @@
         </div>
         <div class="ld-stat-card">
             <span class="stat-icon">⚠️</span>
-            <div class="ld-stat-number" style="color:#dc2626;">{{ $atRiskStudents ?? 0 }}</div>
+            <div class="ld-stat-number danger">{{ $atRiskStudents ?? 0 }}</div>
             <div class="ld-stat-label">At Risk Students</div>
         </div>
         <div class="ld-stat-card">
@@ -857,7 +769,7 @@
         </div>
         <div class="ld-stat-card">
             <span class="stat-icon">🔔</span>
-            <div class="ld-stat-number" style="color:#f59e0b;">{{ $lowAlerts ?? 0 }}</div>
+            <div class="ld-stat-number warning">{{ $lowAlerts ?? 0 }}</div>
             <div class="ld-stat-label">Low Alerts</div>
         </div>
         <div class="ld-stat-card">
@@ -869,13 +781,11 @@
         </div>
     </div>
 
-    <!-- ==========================================
-                    SMART LECTURER INSIGHTS
-                    ========================================== -->
+    <!-- Insights -->
     <div class="ld-card">
         <div class="ld-card-header">
             <i class="bi bi-lightbulb"></i> Smart Lecturer Insights
-            <span style="font-size:11px; font-weight:400; color:#6b7280; margin-left:10px;">
+            <span style="font-size:11px; font-weight:400; color:var(--text-gray); margin-left:10px;">
                 Based on attendance patterns
             </span>
         </div>
@@ -888,31 +798,15 @@
                             'title' => 'Tuesday 8 AM sessions',
                             'desc' => 'have the lowest attendance (62%)',
                         ],
-                        [
-                            'icon' => '📉',
-                            'title' => 'Networking course',
-                            'desc' => 'engagement dropped 18% this month',
-                        ],
-                        [
-                            'icon' => '📈',
-                            'title' => 'Morning classes',
-                            'desc' => 'students perform more consistently',
-                        ],
+                        ['icon' => '📉', 'title' => 'Networking course', 'desc' => 'engagement dropped 18% this month'],
+                        ['icon' => '📈', 'title' => 'Morning classes', 'desc' => 'students perform more consistently'],
                         [
                             'icon' => '🎯',
                             'title' => 'At-risk students',
                             'desc' => '3 students need immediate attention',
                         ],
-                        [
-                            'icon' => '📅',
-                            'title' => 'Friday sessions',
-                            'desc' => 'have highest attendance (91%)',
-                        ],
-                        [
-                            'icon' => '📚',
-                            'title' => 'Machine Learning',
-                            'desc' => 'student engagement improved 12%',
-                        ],
+                        ['icon' => '📅', 'title' => 'Friday sessions', 'desc' => 'have highest attendance (91%)'],
+                        ['icon' => '📚', 'title' => 'Machine Learning', 'desc' => 'student engagement improved 12%'],
                     ];
                 @endphp
                 @foreach ($insights as $insight)
@@ -928,14 +822,12 @@
         </div>
     </div>
 
-    <!-- ==========================================
-                    LIVE ATTENDANCE STATS
-                    ========================================== -->
+    <!-- Live Attendance -->
     <div class="ld-card">
         <div class="ld-card-header">
             <i class="bi bi-clock-history"></i> Live Attendance
             @if ($activeSession)
-                <span style="font-size:11px; font-weight:400; color:#10b981;">
+                <span style="font-size:11px; font-weight:400; color:var(--success);">
                     <i class="bi bi-circle-fill" style="font-size:8px;"></i> Live
                 </span>
             @endif
@@ -948,13 +840,12 @@
                     <small id="presentPercent">{{ $presentPercent ?? 0 }}%</small>
                 </div>
                 <div class="ld-live-box">
-                    <div class="ld-live-number" style="color:#dc2626;" id="absentCount">{{ $absentCount ?? 0 }}
-                    </div>
+                    <div class="ld-live-number" style="color:var(--danger);" id="absentCount">{{ $absentCount ?? 0 }}</div>
                     <div>Absent</div>
                     <small id="absentPercent">{{ $absentPercent ?? 0 }}%</small>
                 </div>
                 <div class="ld-live-box">
-                    <div class="ld-live-number" style="color:#f59e0b;" id="lateCount">{{ $lateCount ?? 0 }}</div>
+                    <div class="ld-live-number" style="color:var(--warning);" id="lateCount">{{ $lateCount ?? 0 }}</div>
                     <div>Late</div>
                     <small id="latePercent">{{ $latePercent ?? 0 }}%</small>
                 </div>
@@ -964,7 +855,8 @@
                 </div>
             </div>
             @if (isset($lateStudents) && $lateStudents && $lateStudents->count() > 0)
-                <div style="margin-top:10px; padding:8px; background:#fef9c3; border-radius:6px; font-size:12px;">
+                <div
+                    style="margin-top:10px; padding:8px; background:var(--warning-light); border-radius:6px; font-size:12px;">
                     <strong>Late Arrivals:</strong>
                     <div id="lateList">
                         @foreach ($lateStudents as $late)
@@ -978,13 +870,11 @@
         </div>
     </div>
 
-    <!-- ==========================================
-                    ATTENDANCE TRENDS CHART
-                    ========================================== -->
+    <!-- Attendance Trends Chart -->
     <div class="ld-card">
         <div class="ld-card-header">
             <i class="bi bi-graph-up"></i> Attendance Trends
-            <span style="font-size:11px; font-weight:400; color:#6b7280; margin-left:10px;">
+            <span style="font-size:11px; font-weight:400; color:var(--text-gray); margin-left:10px;">
                 Last 6 weeks
             </span>
         </div>
@@ -995,13 +885,11 @@
         </div>
     </div>
 
-    <!-- ==========================================
-                    COURSE PERFORMANCE
-                    ========================================== -->
+    <!-- Course Performance -->
     <div class="ld-card">
         <div class="ld-card-header">
             <i class="bi bi-book"></i> Course Performance
-            <span style="font-size:11px; font-weight:400; color:#6b7280; margin-left:10px;">
+            <span style="font-size:11px; font-weight:400; color:var(--text-gray); margin-left:10px;">
                 {{ $courses->count() }} courses
             </span>
         </div>
@@ -1030,22 +918,19 @@
                         </div>
                         <div class="progress-bar">
                             <div class="progress-fill"
-                                style="width: {{ $attendance }}%; background: {{ $barColor }};">
-                            </div>
+                                style="width: {{ $attendance }}%; background: {{ $barColor }};"></div>
                         </div>
                     </div>
                 @endforeach
             @else
-                <div style="text-align:center; padding:20px; color:#9ca3af;">No courses assigned yet</div>
+                <div style="text-align:center; padding:20px; color:var(--text-gray);">No courses assigned yet</div>
             @endif
         </div>
     </div>
 
-    <!-- ==========================================
-                    AT-RISK STUDENTS (ORIGINAL DESIGN + NOTIFY MODAL)
-                    ========================================== -->
+    <!-- At-Risk Students -->
     <div class="ld-card">
-        <div class="ld-card-header">At-Risk Students</div>
+        <div class="ld-card-header">⚠️ At-Risk Students</div>
         <div class="ld-card-body">
             @if (isset($atRiskList) && count($atRiskList) > 0)
                 <div style="overflow-x: auto;">
@@ -1078,26 +963,22 @@
                     </table>
                 </div>
             @else
-                <div style="text-align:center; padding:20px; color:#9ca3af;">No at-risk students detected</div>
+                <div style="text-align:center; padding:20px; color:var(--text-gray);">No at-risk students detected</div>
             @endif
         </div>
     </div>
-    </div>
 
-    <!-- ==========================================
-                NOTIFICATION MODAL
-                ========================================== -->
+    <!-- Notification Modal -->
     <div class="notify-modal-overlay" id="notifyModal">
         <div class="notify-modal">
             <div class="notify-modal-header">
                 <h5>
-                    <i class="bi bi-envelope-paper" style="color:#800000;"></i> Send Notification
+                    <i class="bi bi-envelope-paper" style="color:var(--primary);"></i> Send Notification
                     <span class="badge">At-Risk Student</span>
                 </h5>
                 <button class="notify-modal-close" onclick="closeNotifyModal()">&times;</button>
             </div>
             <div class="notify-modal-body">
-                <!-- Student Info -->
                 <div class="notify-student-info">
                     <div class="avatar" id="notifyStudentAvatar">S</div>
                     <div class="details">
@@ -1110,7 +991,6 @@
                     </div>
                 </div>
 
-                <!-- Templates -->
                 <div class="notify-templates">
                     <button class="template-btn" onclick="applyTemplate('attendance')">📉 Attendance Warning</button>
                     <button class="template-btn" onclick="applyTemplate('recovery')">📈 Recovery Plan</button>
@@ -1118,7 +998,6 @@
                     <button class="template-btn" onclick="applyTemplate('custom')">✏️ Custom</button>
                 </div>
 
-                <!-- Message Form -->
                 <div class="notify-form-group">
                     <label>Subject <span class="required">*</span></label>
                     <input type="text" id="notifySubject" placeholder="e.g., Attendance Warning"
@@ -1130,7 +1009,6 @@
                     <textarea id="notifyMessage" placeholder="Type your message here..."></textarea>
                 </div>
 
-                <!-- Success State (hidden by default) -->
                 <div class="notify-success" id="notifySuccess" style="display:none;">
                     <div class="icon"><i class="bi bi-check-circle-fill"></i></div>
                     <h4>✅ Notification Sent!</h4>
@@ -1147,9 +1025,7 @@
         </div>
     </div>
 
-    <!-- ==========================================
-                LOADING MODAL
-                ========================================== -->
+    <!-- Loading Modal -->
     <div id="loadingModal" class="modal">
         <div class="modal-content" style="text-align:center;">
             <div class="loading-spinner"></div>
@@ -1157,15 +1033,8 @@
         </div>
     </div>
 
-    <!-- ==========================================
-                CHARTS.JS
-                ========================================== -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
-        // ==========================================
-        // TIMER
-        // ==========================================
         let timer = {{ $expiresIn ?? 0 }};
         let timerInterval;
 
@@ -1184,9 +1053,6 @@
             }, 1000);
         }
 
-        // ==========================================
-        // LOADING MODAL
-        // ==========================================
         function showLoading() {
             document.getElementById('loadingModal').classList.add('show');
         }
@@ -1195,20 +1061,15 @@
             document.getElementById('loadingModal').classList.remove('show');
         }
 
-        // ==========================================
-        // CREATE SESSION
-        // ==========================================
         document.getElementById('createSessionForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
             showLoading();
-
             const formData = {
                 course_id: document.getElementById('course_id').value,
                 duration: document.getElementById('duration').value,
                 room: document.getElementById('room').value,
                 _token: '{{ csrf_token() }}'
             };
-
             fetch('{{ route('lecturer.attendance.generate.qr') }}', {
                     method: 'POST',
                     headers: {
@@ -1233,13 +1094,9 @@
                 });
         });
 
-        // ==========================================
-        // END SESSION
-        // ==========================================
         function endSession(sessionId) {
             if (confirm('Are you sure you want to end this attendance session?')) {
                 showLoading();
-
                 fetch(`/lecturer/end-session/${sessionId}`, {
                         method: 'POST',
                         headers: {
@@ -1262,12 +1119,8 @@
             }
         }
 
-        // ==========================================
-        // REFRESH QR
-        // ==========================================
         function refreshQr(sessionId) {
             showLoading();
-
             fetch(`/lecturer/refresh-qr/${sessionId}`, {
                     method: 'POST',
                     headers: {
@@ -1294,33 +1147,22 @@
                 });
         }
 
-        // ==========================================
-        // NOTIFICATION MODAL
-        // ==========================================
         let currentStudentId = null;
 
         function openNotifyModal(studentId, studentName, attendance, riskLevel) {
             currentStudentId = studentId;
-
-            // Set student info
             document.getElementById('notifyStudentAvatar').textContent = studentName.charAt(0).toUpperCase();
             document.getElementById('notifyStudentName').textContent = studentName;
             document.getElementById('notifyAttendance').textContent = attendance + '%';
-
-            // Set risk badge
             const riskBadge = document.getElementById('notifyRiskBadge');
             riskBadge.textContent = riskLevel + ' Risk';
             riskBadge.className = 'risk-badge ' + riskLevel.toLowerCase();
-
-            // Reset form
             document.getElementById('notifySubject').value = 'Attendance Alert - ' + studentName;
             document.getElementById('notifyMessage').value = '';
             document.getElementById('notifySuccess').style.display = 'none';
             document.querySelector('.notify-modal-body .notify-form-group').style.display = 'block';
             document.querySelector('.notify-modal-footer').style.display = 'flex';
             document.getElementById('sendNotifyBtn').disabled = false;
-
-            // Show modal
             document.getElementById('notifyModal').classList.add('show');
         }
 
@@ -1357,7 +1199,6 @@
             subjectField.value = template.subject;
             messageField.value = template.message;
 
-            // Highlight active template
             document.querySelectorAll('.template-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
         }
@@ -1371,46 +1212,26 @@
                 return;
             }
 
-            // Show loading state
             const sendBtn = document.getElementById('sendNotifyBtn');
             sendBtn.disabled = true;
             sendBtn.innerHTML =
                 '<span class="loading-spinner" style="width:16px;height:16px;border-width:2px;"></span> Sending...';
 
-            // Simulate sending (replace with actual AJAX call)
             setTimeout(() => {
-                // Hide form, show success
                 document.querySelector('.notify-modal-body .notify-form-group').style.display = 'none';
                 document.querySelector('.notify-modal-footer').style.display = 'none';
                 document.getElementById('notifySuccess').style.display = 'block';
-
-                // Log the notification (for development)
-                console.log('Notification sent to student ID:', currentStudentId);
-                console.log('Subject:', subject);
-                console.log('Message:', message);
-
-                // In production, you would send this to your backend:
-                // fetch('/lecturer/notify-student', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                //     body: JSON.stringify({ student_id: currentStudentId, subject, message })
-                // });
-
                 sendBtn.disabled = false;
                 sendBtn.innerHTML = '<i class="bi bi-send"></i> Send Message';
             }, 1500);
         }
 
-        // Close modal on overlay click
         document.getElementById('notifyModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeNotifyModal();
             }
         });
 
-        // ==========================================
-        // UPDATE LIVE STATS
-        // ==========================================
         @if (isset($activeSession) && $activeSession)
             function updateStats() {
                 fetch(`/lecturer/session-stats/{{ $activeSession->id }}`)
@@ -1439,16 +1260,11 @@
                     })
                     .catch(error => console.error('Error fetching stats:', error));
             }
-
             setInterval(updateStats, 10000);
         @endif
 
-        // ==========================================
-        // ATTENDANCE TRENDS CHART
-        // ==========================================
         @if ($courses && $courses->count() > 0)
             const ctx = document.getElementById('attendanceTrendChart').getContext('2d');
-
             const courseNames = @json($courses->pluck('course_code')->toArray());
             const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'];
 
@@ -1461,7 +1277,7 @@
                         return Math.min(100, Math.max(40, base + variation + i * (Math.random() - 0.5) *
                             2));
                     }),
-                    borderColor: ['#800000', '#dc2626', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'][index % 6],
+                    borderColor: ['#0D47A1', '#dc2626', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'][index % 6],
                     backgroundColor: 'transparent',
                     tension: 0.3,
                     pointRadius: 3,
@@ -1512,9 +1328,6 @@
             });
         @endif
 
-        // ==========================================
-        // INITIALIZE TIMER
-        // ==========================================
         if (timer > 0) {
             startTimer();
         }

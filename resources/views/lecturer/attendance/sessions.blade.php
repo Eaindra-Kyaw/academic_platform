@@ -11,6 +11,24 @@
 
 @section('content')
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #C5A020;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -19,44 +37,58 @@
         }
 
         .stat-card {
-            background: white;
+            background: var(--white);
             border-radius: 0.75rem;
             padding: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             text-align: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
         }
 
         .stat-number {
             font-size: 1.5rem;
             font-weight: 800;
-            color: #800000;
+            color: var(--primary);
         }
 
         .stat-label {
             font-size: 0.7rem;
-            color: #6b7280;
+            color: var(--text-gray);
         }
 
         .create-form {
-            background: white;
+            background: var(--white);
             border-radius: 1rem;
             padding: 1.5rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .create-form h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
         }
 
         .session-card {
-            background: white;
+            background: var(--white);
             border-radius: 1rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.06);
             overflow: hidden;
             margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
         }
 
         .session-header {
-            background: linear-gradient(135deg, #800000 0%, #6b0000 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             padding: 1rem;
-            color: white;
+            color: var(--white);
         }
 
         .session-body {
@@ -68,23 +100,35 @@
         .filter-input {
             width: 100%;
             padding: 0.6rem;
-            border: 1px solid #e5e7eb;
+            border: 1px solid rgba(10, 36, 99, 0.12);
             border-radius: 0.5rem;
             font-size: 0.8rem;
+            background: var(--bg-main);
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus,
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .btn-filter {
-            background: #800000;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
             border: none;
             padding: 0.6rem 1.2rem;
             border-radius: 0.5rem;
             cursor: pointer;
             font-weight: 500;
+            transition: all 0.3s ease;
         }
 
         .btn-filter:hover {
-            background: #5f0000;
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.25);
         }
 
         .btn-sm {
@@ -93,6 +137,11 @@
             font-size: 0.7rem;
             cursor: pointer;
             border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-sm:hover {
+            transform: translateY(-1px);
         }
 
         .timer-ring {
@@ -108,13 +157,14 @@
         .timer-inner {
             width: 70px;
             height: 70px;
-            background: white;
+            background: var(--white);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 800;
             font-size: 0.9rem;
+            color: var(--text-dark);
         }
 
         .status-badge {
@@ -132,9 +182,26 @@
             color: #92400e;
         }
 
+        .session-sub {
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .session-sub:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-hover);
+        }
+
         @media (max-width: 768px) {
             .stats-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .create-form form>div {
+                grid-template-columns: 1fr !important;
             }
         }
     </style>
@@ -158,7 +225,7 @@
         </div>
 
         <div class="create-form">
-            <h4 style="color: #800000; margin-bottom: 1rem;">➕ Create QR Session</h4>
+            <h4>➕ Create QR Session</h4>
             <form method="POST" action="{{ route('lecturer.attendance.sessions.create') }}">
                 @csrf
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
@@ -177,8 +244,9 @@
                     </select>
                     <input type="text" name="room" class="filter-input" placeholder="Room (optional)">
                 </div>
-                <button type="submit" class="btn-filter" style="margin-top: 1rem; width: 100%;"><i
-                        class="bi bi-qr-code"></i> Generate QR Code</button>
+                <button type="submit" class="btn-filter" style="margin-top: 1rem; width: 100%;">
+                    <i class="bi bi-qr-code"></i> Generate QR Code
+                </button>
             </form>
         </div>
 
@@ -188,7 +256,6 @@
                 <div class="session-body">
                     @foreach ($activeSessions as $session)
                         @php
-                            // FIXED: Use config('app.url') for HTTPS
                             $baseUrl = config('app.url');
                             $qrText =
                                 $baseUrl .
@@ -197,13 +264,21 @@
                                 '&session=' .
                                 $session->id;
                         @endphp
-                        <div style="border: 1px solid #e5e7eb; border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem;">
+                        <div class="session-sub">
                             <div
                                 style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
-                                <div><strong>{{ $session->course->course_code }} -
-                                        {{ $session->course->course_name }}</strong><br><small>Room:
-                                        {{ $session->room ?? 'TBA' }}</small></div>
-                                <span class="status-badge status-pending"><i class="bi bi-clock-history"></i> Active</span>
+                                <div>
+                                    <strong style="color: var(--text-dark);">
+                                        {{ $session->course->course_code }} - {{ $session->course->course_name }}
+                                    </strong>
+                                    <br>
+                                    <small style="color: var(--text-gray);">
+                                        Room: {{ $session->room ?? 'TBA' }}
+                                    </small>
+                                </div>
+                                <span class="status-badge status-pending">
+                                    <i class="bi bi-clock-history"></i> Active
+                                </span>
                             </div>
 
                             <div id="qrcode-{{ $session->id }}"
@@ -214,12 +289,14 @@
                                     style="background: conic-gradient(#10b981 0deg 360deg, #e5e7eb 0deg 360deg);">
                                     <div id="timer-{{ $session->id }}" class="timer-inner">--</div>
                                 </div>
-                                <div style="margin-top: 0.5rem; font-size: 0.7rem;">Manual Code:
-                                    <strong>{{ $session->session_code }}</strong>
+                                <div style="margin-top: 0.5rem; font-size: 0.7rem; color: var(--text-gray);">
+                                    Manual Code: <strong
+                                        style="color: var(--primary);">{{ $session->session_code }}</strong>
                                 </div>
                             </div>
 
-                            <div style="margin-top: 0.5rem; font-size: 0.7rem; color: #6b7280; text-align: center;">
+                            <div
+                                style="margin-top: 0.5rem; font-size: 0.7rem; color: var(--text-gray); text-align: center;">
                                 <i class="bi bi-people"></i> {{ $session->present_count }}/{{ $session->total_students }}
                                 present ({{ $session->attendance_percentage }}%)
                             </div>
@@ -228,16 +305,19 @@
                                 <form method="POST" action="{{ route('lecturer.attendance.sessions.end', $session->id) }}"
                                     style="display: inline;">
                                     @csrf
-                                    <button type="submit" class="btn-sm" style="background: #ef4444; color: white;">End
-                                        Session</button>
+                                    <button type="submit" class="btn-sm"
+                                        style="background: var(--danger); color: var(--white);">
+                                        End Session
+                                    </button>
                                 </form>
                                 <a href="{{ route('lecturer.attendance.sessions.refresh', $session->id) }}" class="btn-sm"
-                                    style="background: #f59e0b; color: white; text-decoration: none;">Refresh QR</a>
+                                    style="background: var(--secondary); color: var(--white); text-decoration: none;">
+                                    Refresh QR
+                                </a>
                             </div>
                         </div>
 
                         <script>
-                            // Generate QR code with the HTTPS URL
                             new QRCode(document.getElementById("qrcode-{{ $session->id }}"), {
                                 text: "{{ $qrText }}",
                                 width: 180,
@@ -266,7 +346,6 @@
                             setInterval(updateTimer{{ $session->id }}, 1000);
                             updateTimer{{ $session->id }}();
 
-                            // Log the QR URL for debugging
                             console.log('QR URL for session {{ $session->id }}: {{ $qrText }}');
                         </script>
                     @endforeach

@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Auth/RoleLoginController.php
 
 namespace App\Http\Controllers\Auth;
 
@@ -22,7 +23,8 @@ class RoleLoginController extends Controller
             // Check if user is Admin (role_id = 1)
             if ($user->role_id == 1) {
                 $request->session()->regenerate();
-                return redirect()->intended('/admin/dashboard');
+                // ✅ FIXED: Direct redirect instead of intended()
+                return redirect()->route('admin.dashboard');
             }
 
             // Wrong role - logout and show error
@@ -51,7 +53,8 @@ class RoleLoginController extends Controller
             // Check if user is Lecturer (role_id = 2)
             if ($user->role_id == 2) {
                 $request->session()->regenerate();
-                return redirect()->intended('/lecturer/dashboard');
+                // ✅ FIXED: Direct redirect instead of intended()
+                return redirect()->route('lecturer.dashboard');
             }
 
             // Wrong role - logout and show error
@@ -80,7 +83,8 @@ class RoleLoginController extends Controller
             // Check if user is Student (role_id = 3)
             if ($user->role_id == 3) {
                 $request->session()->regenerate();
-                return redirect()->intended('/student/dashboard');
+                // ✅ FIXED: Direct redirect instead of intended()
+                return redirect()->route('student.dashboard');
             }
 
             // Wrong role - logout and show error

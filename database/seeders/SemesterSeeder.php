@@ -30,16 +30,16 @@ class SemesterSeeder extends Seeder
             $endDate2 = Carbon::create($baseYear + 1, 9, 30);
 
             // Only Second Semesters have courses, so only they should be active
-            // First Semester is always inactive (0 courses)
             $isActive1 = false;
             $isActive2 = true;
 
-            // Current semester: First Year - Second Semester (if we're in 2026)
-            $isCurrent = ($year == 1 && $semester == 2);
+            // ✅ FIXED: Use $year directly (not $semester variable)
+            $isCurrent = ($year == 1); // First Year is current
 
             $semesters[] = [
-                'year' => $year,
-                'semester' => 1,
+                'year_name' => $this->getYearName($year),
+                'semester_number' => 1,
+                'semester_name' => 'First Semester',
                 'code' => 'Y' . $year . 'S1',
                 'academic_year' => $currentYear . '-' . ($currentYear + 1),
                 'start_date' => $startDate1,
@@ -51,8 +51,9 @@ class SemesterSeeder extends Seeder
             ];
 
             $semesters[] = [
-                'year' => $year,
-                'semester' => 2,
+                'year_name' => $this->getYearName($year),
+                'semester_number' => 2,
+                'semester_name' => 'Second Semester',
                 'code' => 'Y' . $year . 'S2',
                 'academic_year' => $currentYear . '-' . ($currentYear + 1),
                 'start_date' => $startDate2,
@@ -69,5 +70,18 @@ class SemesterSeeder extends Seeder
         $this->command->info('✅ 12 semesters created successfully!');
         $this->command->info('📚 Only Second Semester of each year is active (has courses).');
         $this->command->info('⭐ First Year - Second Semester is set as current.');
+    }
+
+    private function getYearName($yearNumber)
+    {
+        $map = [
+            1 => 'First Year',
+            2 => 'Second Year',
+            3 => 'Third Year',
+            4 => 'Fourth Year',
+            5 => 'Fifth Year',
+            6 => 'Sixth Year',
+        ];
+        return $map[$yearNumber] ?? 'Unknown Year';
     }
 }

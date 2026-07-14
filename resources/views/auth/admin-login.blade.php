@@ -4,10 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Admin Login - MTU</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-light: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,7 +29,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #800000 0%, #4a0000 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -25,10 +38,10 @@
         }
 
         .card {
-            background: white;
+            background: var(--white);
             border-radius: 24px;
             padding: 40px;
-            max-width: 500px;
+            max-width: 450px;
             width: 100%;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
@@ -41,45 +54,50 @@
         .logo-icon {
             width: 60px;
             height: 60px;
-            background: #800000;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 15px;
-            color: #FFD700;
+            color: var(--accent);
             font-size: 24px;
             font-weight: bold;
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.2);
         }
 
         .logo h2 {
-            color: #800000;
+            color: var(--primary);
             font-size: 20px;
             margin-top: 10px;
+            font-weight: 700;
         }
 
         .logo p {
-            color: #666;
+            color: var(--text-gray);
             font-size: 12px;
             margin-top: 5px;
         }
 
+        .logo p .gold {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
         .role-badge {
-            background: #e0f2fe;
-            color: #0369a1;
+            background: var(--bg-light);
+            color: var(--primary);
             padding: 10px;
             border-radius: 12px;
             text-align: center;
             margin-bottom: 20px;
             font-weight: 600;
+            font-size: 14px;
         }
 
-        h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #800000;
-            text-align: center;
-            margin-bottom: 10px;
+        .role-badge i {
+            color: var(--accent);
+            margin-right: 6px;
         }
 
         .input-group {
@@ -96,48 +114,63 @@
 
         input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
             border-radius: 10px;
             font-size: 14px;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
         }
 
         input:focus {
             outline: none;
-            border-color: #800000;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .btn {
             width: 100%;
             padding: 12px;
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             border: none;
             border-radius: 10px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn:hover {
-            background: #5f0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.3);
         }
 
         .back-link {
             text-align: center;
             margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
         }
 
         .back-link a {
-            color: #800000;
+            color: var(--primary);
             text-decoration: none;
             font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .back-link a:hover {
+            color: var(--accent);
+            text-decoration: underline;
         }
 
         .alert-danger {
             background: #fee2e2;
             color: #991b1b;
-            padding: 12px;
+            padding: 12px 16px;
             border-radius: 10px;
             margin-bottom: 20px;
             font-size: 14px;
@@ -147,18 +180,23 @@
         .alert-danger p {
             margin: 0;
         }
+
+        .alert-danger i {
+            margin-right: 6px;
+        }
     </style>
 </head>
 
 <body>
     <div class="card">
         <div class="logo">
-            <div class="logo-icon">Uni</div>
-            <h2>Academic Portal</h2>
+            <div class="logo-icon">MTU</div>
+            <h2>Mandalay Technological University</h2>
+            <p><span class="gold">✦</span> Ministry of Science and Technology <span class="gold">✦</span></p>
         </div>
 
         <div class="role-badge">
-            <i class="bi bi-shield-lock-fill"></i> Administrator Login
+            <i class="bi bi-shield-lock-fill"></i> Admin Login
         </div>
 
         @if ($errors->any())
@@ -184,7 +222,9 @@
         </form>
 
         <div class="back-link">
-            <a href="{{ url('/') }}"><i class="bi bi-arrow-left"></i> Back to Home</a>
+            <a href="{{ route('home') }}">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
         </div>
     </div>
 </body>

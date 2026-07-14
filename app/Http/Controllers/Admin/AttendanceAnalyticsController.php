@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Admin/AttendanceAnalyticsController.php
 
 namespace App\Http\Controllers\Admin;
 
@@ -110,7 +109,11 @@ class AttendanceAnalyticsController extends Controller
         // Get filter options
         $departments = Department::orderBy('name')->get();
         $courses = Course::where('is_active', true)->orderBy('course_code')->get();
-        $semesters = Semester::orderBy('year')->orderBy('semester')->get();
+
+        // ✅ FIXED: Use correct column names for semesters
+        $semesters = Semester::orderBy('academic_year', 'desc')
+            ->orderBy('semester_number', 'asc')
+            ->get();
 
         return view('admin.attendance.analytics', compact(
             'stats',
@@ -131,6 +134,48 @@ class AttendanceAnalyticsController extends Controller
             'dateTo',
             'yearLabels'
         ));
+    }
+
+    /**
+     * Display all attendance records across the university
+     */
+    public function records(Request $request)
+    {
+        $query = AttendanceRecord::with(['session.course', 'student']);
+
+        // Filter by department
+        if ($request->filled('department_id')) {
+            $query->whereHas('session.course', function($q) use ($request) {
+                $q->where('department_id', $request->department_id);
+            });
+        }
+
+        // Filter by course
+        if ($request->filled('course_id')) {
+            $query->whereHas('session', function($q) use ($request) {
+                $q->where('course_id', $request->course_id);
+            });
+        }
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $records = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        $departments = Department::orderBy('name')->get();
+        $courses = Course::where('is_active', true)->orderBy('course_code')->get();
+
+        return view('admin.attendance.records', compact('records', 'departments', 'courses'));
     }
 
     /**
@@ -176,7 +221,6 @@ class AttendanceAnalyticsController extends Controller
             // Get session IDs
             $sessionIds = $sessionQuery->pluck('id')->toArray();
 
-            // ✅ FIXED: Use attendance_session_id instead of session_id
             $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
                 ->whereIn('status', ['present', 'late']);
 
@@ -235,7 +279,6 @@ class AttendanceAnalyticsController extends Controller
         }
         $sessionIds = $sessionQuery->pluck('id')->toArray();
 
-        // ✅ FIXED: Use attendance_session_id instead of session_id
         $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
             ->whereIn('status', ['present', 'late']);
 
@@ -252,7 +295,6 @@ class AttendanceAnalyticsController extends Controller
             $weekEnd = Carbon::now()->subWeeks($i)->endOfWeek();
             $label = $weekStart->format('d M');
 
-            // Count sessions in this week
             $weekSessionQuery = AttendanceSession::whereBetween('created_at', [$weekStart, $weekEnd]);
             if ($departmentId) {
                 $weekSessionQuery->whereHas('course', function($q) use ($departmentId) {
@@ -264,7 +306,6 @@ class AttendanceAnalyticsController extends Controller
             }
             $weekSessionIds = $weekSessionQuery->pluck('id')->toArray();
 
-            // ✅ FIXED: Use attendance_session_id instead of session_id
             $weekRecords = $records->filter(function($record) use ($weekSessionIds) {
                 return in_array($record->attendance_session_id, $weekSessionIds);
             });
@@ -314,7 +355,6 @@ class AttendanceAnalyticsController extends Controller
             $sessions = $sessionQuery->count();
             $sessionIds = $sessionQuery->pluck('id')->toArray();
 
-            // ✅ FIXED: Use attendance_session_id instead of session_id
             $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
                 ->whereIn('status', ['present', 'late']);
 
