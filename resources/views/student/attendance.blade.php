@@ -2,8 +2,8 @@
 
 @section('title', 'My Attendance')
 @section('role', 'Student')
-@section('page-title', '📊 My Attendance')
-@section('welcome-text', 'Track your attendance across all courses with roll call breakdown')
+@section('page-title', 'My Attendance')
+@section('welcome-text', 'Track your attendance across all courses')
 
 @section('sidebar')
     @include('layouts.partials.student-sidebar')
@@ -13,28 +13,22 @@
     <style>
         :root {
             --primary: #0A2463;
-            --primary-dark: #061840;
-            --primary-light: #1E3A8A;
-            --secondary: #C5A020;
-            --accent: #D4A017;
-            --bg-main: #EEF2F7;
-            --white: #FFFFFF;
-            --text-gray: #64748b;
-            --text-dark: #1e293b;
-            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
-            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
-            --success: #10b981;
-            --success-light: #d1fae5;
-            --warning: #f59e0b;
-            --warning-light: #fef3c7;
-            --danger: #ef4444;
-            --danger-light: #fee2e2;
-            --info: #3b82f6;
-            --info-light: #dbeafe;
+            --bg-main: #f4f7fc;
+            --card-bg: #ffffff;
+            --shadow: 0 2px 12px rgba(10, 36, 99, 0.07);
             --radius: 12px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e9edf4;
+            --green: #10b981;
+            --green-bg: #d1fae5;
+            --amber: #f59e0b;
+            --amber-bg: #fef3c7;
+            --red: #ef4444;
+            --red-bg: #fee2e2;
         }
 
+        /* ── Stats Row ── */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -43,206 +37,239 @@
         }
 
         .stat-card {
-            background: var(--white);
+            background: var(--card-bg);
             border-radius: var(--radius);
-            padding: 1rem;
-            border: 1px solid rgba(10, 36, 99, 0.06);
-            text-align: center;
+            padding: 0.9rem 1.2rem;
             box-shadow: var(--shadow);
-            transition: var(--transition);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .stat-card:hover {
-            box-shadow: var(--shadow-hover);
-            border-color: var(--primary);
-        }
-
-        .stat-number {
+        .stat-card .left .number {
             font-size: 1.8rem;
             font-weight: 700;
-            color: var(--primary);
+            color: var(--text-dark);
+            line-height: 1.2;
         }
 
-        .stat-number.green {
-            color: var(--success);
-        }
-
-        .stat-number.yellow {
-            color: var(--warning);
-        }
-
-        .stat-number.red {
-            color: var(--danger);
-        }
-
-        .stat-label {
+        .stat-card .left .label {
             font-size: 0.7rem;
-            color: var(--text-gray);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .stat-card .icon {
+            font-size: 1.6rem;
+            opacity: 0.6;
+        }
+
+        .stat-card.present .icon {
+            color: var(--green);
+        }
+
+        .stat-card.late .icon {
+            color: var(--amber);
+        }
+
+        .stat-card.absent .icon {
+            color: var(--red);
+        }
+
+        /* ── Course Table ── */
+        .course-table-wrap {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .course-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .course-table thead {
+            background: #f8fafc;
+        }
+
+        .course-table th {
+            padding: 0.6rem 1rem;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border);
         }
 
-        .course-list {
-            background: var(--white);
-            border-radius: var(--radius);
-            border: 1px solid rgba(10, 36, 99, 0.06);
-            overflow: hidden;
-            box-shadow: var(--shadow);
+        .course-table th:first-child {
+            width: 32%;
         }
 
-        .course-list .header {
-            padding: 0.75rem 1rem;
-            background: var(--bg-main);
-            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
-            font-weight: 700;
-            color: var(--primary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .course-table th:nth-child(2) {
+            width: 30%;
         }
 
-        .course-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
-            transition: var(--transition);
-            flex-wrap: wrap;
-            gap: 0.5rem;
+        .course-table th:nth-child(3) {
+            width: 14%;
+            text-align: center;
         }
 
-        .course-item:last-child {
+        .course-table th:nth-child(4) {
+            width: 12%;
+            text-align: center;
+        }
+
+        .course-table th:last-child {
+            width: 12%;
+            text-align: center;
+        }
+
+        .course-table td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: var(--text-dark);
+            vertical-align: middle;
+        }
+
+        .course-table tbody tr {
+            transition: background 0.15s;
+        }
+
+        .course-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .course-table tbody tr:last-child td {
             border-bottom: none;
         }
 
-        .course-item:hover {
-            background: var(--bg-main);
-        }
-
-        .course-item .course-name {
+        /* Course column */
+        .course-table .course-name {
             font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-dark);
+            font-size: 0.85rem;
+            display: block;
         }
 
-        .course-item .course-code {
-            font-size: 0.65rem;
-            color: var(--text-gray);
-        }
-
-        .attendance-pill {
-            padding: 0.2rem 0.7rem;
-            border-radius: 1rem;
+        .course-table .course-code {
             font-size: 0.7rem;
-            font-weight: 600;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 0.05rem;
+        }
+
+        /* Attendance column */
+        .course-table .attendance-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .course-table .attendance-cell .percent {
+            font-weight: 700;
+            font-size: 0.95rem;
+            min-width: 50px;
+        }
+
+        .course-table .attendance-cell .bar-track {
+            flex: 1;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+            min-width: 50px;
+        }
+
+        .course-table .attendance-cell .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.6s;
+        }
+
+        /* Roll Call column */
+        .course-table .rollcall {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .course-table .rollcall span {
+            font-weight: 400;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Eligibility & Risk columns */
+        .course-table td:not(:first-child):not(:nth-child(2)) {
+            text-align: center;
+        }
+
+        .badge {
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
             display: inline-block;
         }
 
-        .attendance-pill.high {
-            background: var(--success-light);
-            color: #166534;
-        }
-
-        .attendance-pill.medium {
-            background: var(--warning-light);
-            color: #92400e;
-        }
-
-        .attendance-pill.low {
-            background: var(--danger-light);
-            color: #991b1b;
-        }
-
-        .progress-bar-custom {
-            height: 6px;
-            background: #e5e7eb;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 0.25rem;
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.8s ease;
-        }
-
         .badge-eligible {
-            background: var(--success-light);
-            color: #166534;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
+            background: var(--green-bg);
+            color: #065f46;
         }
 
         .badge-warning {
-            background: var(--warning-light);
-            color: #854d0e;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
+            background: var(--amber-bg);
+            color: #92400e;
         }
 
         .badge-not_eligible {
-            background: var(--danger-light);
+            background: var(--red-bg);
             color: #991b1b;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
         }
 
         .badge-low {
-            background: var(--success-light);
-            color: #166534;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
+            background: var(--green-bg);
+            color: #065f46;
         }
 
         .badge-medium {
-            background: var(--warning-light);
-            color: #854d0e;
+            background: var(--amber-bg);
+            color: #92400e;
         }
 
         .badge-high {
-            background: var(--danger-light);
+            background: var(--red-bg);
             color: #991b1b;
         }
 
-        .rollcall-mini {
-            display: flex;
-            gap: 0.3rem;
-            justify-content: center;
-            font-size: 0.65rem;
-            color: var(--text-gray);
-        }
-
-        .rollcall-mini span {
-            background: var(--gray-100);
-            padding: 0.05rem 0.4rem;
-            border-radius: 10px;
-        }
-
-        .rollcall-mini .total {
-            background: rgba(10, 36, 99, 0.08);
-            font-weight: 700;
-            color: var(--primary);
-        }
-
+        /* ── Empty State ── */
         .empty-state {
             text-align: center;
-            padding: 2rem;
-            color: var(--text-gray);
+            padding: 2rem 1rem;
+            color: var(--text-muted);
         }
 
         .empty-state i {
             font-size: 2rem;
+            display: block;
+            margin-bottom: 0.5rem;
             color: #d1d5db;
         }
 
-        .empty-state p {
-            font-size: 0.85rem;
+        /* ── Responsive ── */
+        @media (max-width: 992px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
         @media (max-width: 768px) {
@@ -250,10 +277,18 @@
                 grid-template-columns: 1fr 1fr;
             }
 
-            .course-item {
-                flex-direction: column;
-                text-align: center;
-                gap: 0.5rem;
+            .course-table-wrap {
+                overflow-x: auto;
+            }
+
+            .course-table {
+                min-width: 600px;
+            }
+
+            .course-table th,
+            .course-table td {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.8rem;
             }
         }
 
@@ -264,100 +299,106 @@
         }
     </style>
 
+    {{-- Stats --}}
+    @php
+        $overall = $overallAttendance ?? 0;
+        $present = $presentCount ?? 0;
+        $late = $lateCount ?? 0;
+        $absent = $absentCount ?? 0;
+    @endphp
+
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-number">{{ $overallAttendance ?? 0 }}%</div>
-            <div class="stat-label">Overall Attendance</div>
-            <div class="progress-bar-custom mt-1">
-                @php
-                    $att = $overallAttendance ?? 0;
-                    $attClass = $att >= 75 ? 'success' : ($att >= 60 ? 'warning' : 'danger');
-                @endphp
-                <div class="progress-fill {{ $attClass }}" style="width:{{ $att }}%"></div>
+            <div class="left">
+                <div class="number">{{ $overall }}%</div>
+                <div class="label">Overall Attendance</div>
             </div>
+            <div class="icon"><i class="bi bi-graph-up-arrow"></i></div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-number green">{{ $presentCount ?? 0 }}</div>
-            <div class="stat-label">✅ Present</div>
+        <div class="stat-card present">
+            <div class="left">
+                <div class="number">{{ $present }}</div>
+                <div class="label">✅ Present</div>
+            </div>
+            <div class="icon"><i class="bi bi-check-circle"></i></div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-number yellow">{{ $lateCount ?? 0 }}</div>
-            <div class="stat-label">⏰ Late</div>
+        <div class="stat-card late">
+            <div class="left">
+                <div class="number">{{ $late }}</div>
+                <div class="label">⏰ Late</div>
+            </div>
+            <div class="icon"><i class="bi bi-clock"></i></div>
         </div>
-
-        <div class="stat-card">
-            <div class="stat-number red">{{ $absentCount ?? 0 }}</div>
-            <div class="stat-label">❌ Absent</div>
+        <div class="stat-card absent">
+            <div class="left">
+                <div class="number">{{ $absent }}</div>
+                <div class="label">❌ Absent</div>
+            </div>
+            <div class="icon"><i class="bi bi-x-circle"></i></div>
         </div>
     </div>
 
-    <!-- Course Attendance with Roll Call Breakdown -->
-    <div class="course-list">
-        <div class="header">
-            <span><i class="bi bi-book"></i> Course Attendance & Roll Call</span>
-            <span style="font-size:0.7rem; color:var(--text-gray); font-weight:400;">
-                {{ isset($courseData) ? count($courseData) : 0 }} courses
-            </span>
-        </div>
-
-        @if (isset($courseData) && count($courseData) > 0)
-            @foreach ($courseData as $data)
-                @php
-                    $attendance = $data['attendance'] ?? 0;
-                    $attClass = $attendance >= 75 ? 'high' : ($attendance >= 60 ? 'medium' : 'low');
-                    $color =
-                        $attendance >= 75 ? 'var(--success)' : ($attendance >= 60 ? 'var(--warning)' : 'var(--danger)');
-                    $eligibility = $data['eligibility'] ?? 'not_eligible';
-                    $eligLabels = [
-                        'eligible' => ['label' => 'Eligible', 'class' => 'eligible'],
-                        'warning' => ['label' => 'Warning', 'class' => 'warning'],
-                        'not_eligible' => ['label' => 'Not Eligible', 'class' => 'not_eligible'],
-                    ];
-                    $elig = $eligLabels[$eligibility] ?? $eligLabels['not_eligible'];
-                    $riskLevel = $data['risk_level'] ?? 'Low';
-                    $riskClass = strtolower($riskLevel);
-                    $course = $data['course'] ?? null;
-                @endphp
-                <div class="course-item">
-                    <div>
-                        <div class="course-name">{{ $course->course_name ?? 'Unknown' }}</div>
-                        <div class="course-code">{{ $course->course_code ?? 'N/A' }}</div>
-                    </div>
-
-                    <div style="text-align:center; min-width:100px;">
-                        <span class="attendance-pill {{ $attClass }}">
-                            {{ number_format($attendance, 1) }}%
-                        </span>
-                        <div class="progress-bar-custom mt-1">
-                            <div class="progress-fill {{ $attClass }}"
-                                style="width:{{ $attendance }}%; background:{{ $color }};"></div>
-                        </div>
-                    </div>
-
-                    <div style="text-align:center; min-width:120px;">
-                        <span style="font-weight:700; font-size:0.9rem;">{{ $data['roll_call_total'] ?? 0 }}/10</span>
-                        <div class="rollcall-mini">
-                            <span>C:{{ $data['consistency'] ?? 0 }}</span>
-                            <span>P:{{ $data['punctuality'] ?? 0 }}</span>
-                            <span>R:{{ $data['participation'] ?? 0 }}</span>
-                            <span class="total">{{ $data['roll_call_total'] ?? 0 }}</span>
-                        </div>
-                    </div>
-
-                    <div style="text-align:center;">
-                        <span class="badge-{{ $elig['class'] }}">{{ $elig['label'] }}</span>
-                        <br>
-                        <span class="badge-{{ $riskClass }}" style="font-size:0.6rem;">{{ $riskLevel }}</span>
-                    </div>
-                </div>
-            @endforeach
-        @else
-            <div class="empty-state">
-                <i class="bi bi-book"></i>
-                <p>No courses enrolled yet</p>
-            </div>
-        @endif
+    {{-- Course Table --}}
+    <div class="course-table-wrap">
+        <table class="course-table">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Attendance</th>
+                    <th style="text-align:center;">Roll Call</th>
+                    <th style="text-align:center;">Eligibility</th>
+                    <th style="text-align:center;">Risk</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (isset($courseData) && count($courseData) > 0)
+                    @foreach ($courseData as $data)
+                        @php
+                            $att = $data['attendance'] ?? 0;
+                            $color = $att >= 75 ? 'var(--green)' : ($att >= 60 ? 'var(--amber)' : 'var(--red)');
+                            $elig = $data['eligibility'] ?? 'not_eligible';
+                            $risk = $data['risk_level'] ?? 'Low';
+                            $course = $data['course'] ?? null;
+                            $rollcall = $data['roll_call_total'] ?? 0;
+                        @endphp
+                        <tr>
+                            <td>
+                                <span class="course-name">{{ $course->course_name ?? 'Unknown' }}</span>
+                                <span class="course-code">{{ $course->course_code ?? 'N/A' }}</span>
+                            </td>
+                            <td>
+                                <div class="attendance-cell">
+                                    <span class="percent">{{ number_format($att, 1) }}%</span>
+                                    <div class="bar-track">
+                                        <div class="bar-fill"
+                                            style="width:{{ $att }}%; background:{{ $color }};"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="rollcall">{{ $rollcall }} <span>/ 10</span></td>
+                            <td>
+                                <span class="badge badge-{{ $elig }}">
+                                    {{ strtoupper(str_replace('_', ' ', $elig)) }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge badge-{{ strtolower($risk) }}">
+                                    {{ strtoupper($risk) }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                @else
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <i class="bi bi-book"></i>
+                                <p>You are not enrolled in any courses yet.</p>
+                            </div>
+                        </td>
+                    </tr>
+                @endif
+            </tbody>
+        </table>
     </div>
 @endsection
