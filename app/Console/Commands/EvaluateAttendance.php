@@ -14,16 +14,24 @@ use Carbon\Carbon;
 class EvaluateAttendance extends Command
 {
     protected $signature = 'attendance:evaluate {--student= : Evaluate specific student} {--course= : Evaluate specific course}';
-    protected $description = 'Calculate attendance evaluations with KG+12 roll call and risk';
+    protected $description = 'Calculate attendance evaluations with KG+12 roll call and risk (PERIOD-BASED)';
 
     public function handle()
     {
-        $this->info('📊 Starting KG+12 Attendance Evaluation...');
+        $this->info('📊 Starting KG+12 Period-Based Evaluation...');
 
         $studentsQuery = User::where('role_id', 3);
 
         if ($this->option('student')) {
             $studentsQuery->where('id', $this->option('student'));
+        }
+
+        if ($this->option('course')) {
+            $courseId = $this->option('course');
+            $studentIds = Enrollment::where('course_id', $courseId)
+                ->where('status', 'approved')
+                ->pluck('student_id');
+            $studentsQuery->whereIn('id', $studentIds);
         }
 
         $students = $studentsQuery->get();
@@ -74,25 +82,44 @@ class EvaluateAttendance extends Command
 
     private function evaluateStudentCourse($student, $course)
     {
+        // Get all ended, non-cancelled sessions for this course
         $sessions = AttendanceSession::where('course_id', $course->id)
             ->where('status', 'ended')
+            ->where('is_cancelled', false)
             ->get();
 
-        $totalSessions = $sessions->count();
-        if ($totalSessions == 0) return;
+        if ($sessions->isEmpty()) {
+            return;
+        }
 
-        $records = AttendanceRecord::where('student_id', $student->id)
-            ->whereIn('attendance_session_id', $sessions->pluck('id'))
-            ->get();
+        // ✅ PERIOD-BASED CALCULATION
+        $totalPeriods = $sessions->sum('conducted_periods');
+        if ($totalPeriods == 0) {
+            return;
+        }
 
-        $attended = $records->whereIn('status', ['present', 'late'])->count();
-        $lateCount = $records->where('status', 'late')->count();
+        $attendedPeriods = 0;
+        $lateCount = 0;
 
-        $attendancePercentage = round(($attended / max($totalSessions, 1)) * 100, 1);
+        foreach ($sessions as $session) {
+            $record = AttendanceRecord::where('student_id', $student->id)
+                ->where('attendance_session_id', $session->id)
+                ->first();
 
-        // KG+12 Roll Call
-        $participationMark = 1.5;
-        $rollCall = AttendanceHelper::calculateRollCallMark($attendancePercentage, $lateCount, $participationMark);
+            if ($record && in_array($record->status, ['present', 'late'])) {
+                // ✅ Add the session's conducted periods
+                $attendedPeriods += $session->conducted_periods;
+                if ($record->status === 'late') {
+                    $lateCount++;
+                }
+            }
+        }
+
+        // ✅ Attendance % = (attendedPeriods / totalPeriods) * 100
+        $attendancePercentage = round(($attendedPeriods / max($totalPeriods, 1)) * 100, 1);
+
+        // === KG+12 ROLL CALL (uses period percentage for consistency) ===
+        $rollCall = AttendanceHelper::calculateRollCallMark($attendancePercentage, $lateCount, 1.5);
 
         $eligibilityStatus = AttendanceHelper::getEligibilityStatus($attendancePercentage);
 
@@ -139,17 +166,17 @@ class EvaluateAttendance extends Command
             [
                 'student_id' => $student->id,
                 'course_id' => $course->id,
-                'evaluation_date' => Carbon::today(),
             ],
             [
+                'evaluation_date' => Carbon::today()->toDateString(),
                 'attendance_percentage' => $attendancePercentage,
                 'consistency_marks' => $rollCall['consistency'],
                 'punctuality_marks' => $rollCall['punctuality'],
                 'participation_marks' => $rollCall['participation'],
                 'roll_call_total' => $rollCall['total'],
                 'eligibility_status' => $eligibilityStatus,
-                'attended_sessions' => $attended,
-                'total_sessions' => $totalSessions,
+                'attended_sessions' => $attendedPeriods,
+                'total_sessions' => $totalPeriods,
                 'consecutive_absences' => $consecutiveAbsences,
                 'attendance_trend' => $trend,
                 'risk_score' => $riskScore,

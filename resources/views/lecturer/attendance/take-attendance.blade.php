@@ -469,7 +469,6 @@
             color: #93c5fd;
         }
 
-        /* Roll Call Styles */
         .rollcall-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -614,6 +613,7 @@
     <div class="row">
         <div class="col-md-6">
             @if ($activeSession && !$showCreateForm)
+                <!-- Active session display – unchanged -->
                 <div class="top-actions">
                     <a href="{{ route('lecturer.attendance.take') }}?back=1" class="btn-back-to-form">
                         <i class="bi bi-arrow-left"></i> Back to Create New QR
@@ -621,6 +621,7 @@
                 </div>
 
                 @if ($activeSession->qr_mode == 'semester')
+                    <!-- Semester QR display – unchanged -->
                     <div class="qr-container-semester">
                         <span class="mode-badge semester"><i class="bi bi-book"></i> Semester QR (Static)</span>
                         <h4><i class="bi bi-qr-code"></i> Semester QR Code</h4>
@@ -677,6 +678,7 @@
                         </div>
                     </div>
                 @else
+                    <!-- Dynamic QR display – unchanged -->
                     <div class="qr-container">
                         <span class="mode-badge dynamic"><i class="bi bi-arrow-repeat"></i> Session QR (Dynamic)</span>
                         <h4><i class="bi bi-qr-code"></i> Dynamic QR Code</h4>
@@ -725,7 +727,7 @@
                     </div>
                 @endif
 
-                {{-- Live Attendance Statistics --}}
+                <!-- Live Attendance Statistics – unchanged -->
                 <div class="mode-selector">
                     <h5 style="color: var(--primary);"><i class="bi bi-graph-up"></i> Live Attendance Statistics</h5>
                     <div class="stats-grid">
@@ -828,6 +830,7 @@
                     </div>
                 </div>
             @else
+                <!-- QR Creation Form -->
                 <div class="mode-selector">
                     <h5 style="color: var(--primary); margin-bottom: 15px;">
                         <i class="bi bi-sliders2"></i> Select QR Mode
@@ -864,7 +867,33 @@
                             </label>
                         </div>
 
+                        {{-- ⭐ Number of Class Periods (for attendance calculation) --}}
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 4px;">
+                                Number of Class Periods
+                            </label>
+                            <select name="period_count" class="form-control" required>
+                                <option value="1">1 period (50 min)</option>
+                                <option value="2">2 periods (1h 40m)</option>
+                                <option value="3">3 periods (2h 30m)</option>
+                                <option value="4" selected>4 periods (3h 20m)</option>
+                                <option value="5">5 periods (4h 10m)</option>
+                                <option value="6">6 periods (5h)</option>
+                                <option value="7">7 periods (5h 50m)</option>
+                                <option value="8">8 periods (6h 40m)</option>
+                            </select>
+                            {{-- <small style="color: var(--text-gray); font-size: 12px;">
+                                <i class="bi bi-info-circle"></i>
+                                How many class periods (50 min each) does this session cover?
+                                This affects attendance calculation.
+                            </small> --}}
+                        </div>
+
+                        {{-- ⭐ QR Duration (how long QR is active for scanning) --}}
                         <div id="durationField">
+                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 4px;">
+                                QR Active Duration
+                            </label>
                             <select name="duration" class="form-control" required>
                                 <option value="15">15 minutes</option>
                                 <option value="30" selected>30 minutes</option>
@@ -873,6 +902,10 @@
                                 <option value="90">90 minutes</option>
                                 <option value="120">120 minutes</option>
                             </select>
+                            {{-- <small style="color: var(--text-gray); font-size: 12px;">
+                                <i class="bi bi-info-circle"></i>
+                                How long will the QR code be available for students to scan?
+                            </small> --}}
                         </div>
 
                         <input type="text" name="room" class="form-control" placeholder="Room (optional)">

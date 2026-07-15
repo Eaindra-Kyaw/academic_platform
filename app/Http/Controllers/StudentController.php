@@ -353,6 +353,70 @@ class StudentController extends Controller
         return view('student.attendance-history', compact('records', 'courses'));
     }
 
+    // ============================================================
+    // PERIOD-BASED ATTENDANCE (Weekly/Monthly with navigation)
+    // ============================================================
+    public function attendancePeriod(Request $request)
+    {
+        $student = Auth::user();
+        $period = $request->input('period', 'weekly');
+        $offset = (int) $request->input('offset', 0);
+
+        if ($period === 'weekly') {
+            $start = Carbon::now()->startOfWeek()->addWeeks($offset);
+            $end = Carbon::now()->endOfWeek()->addWeeks($offset);
+        } elseif ($period === 'monthly') {
+            $start = Carbon::now()->startOfMonth()->addMonths($offset);
+            $end = Carbon::now()->endOfMonth()->addMonths($offset);
+        } else {
+            // Custom
+            $start = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : Carbon::now()->subDays(7);
+            $end = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : Carbon::now();
+        }
+
+        $enrollments = Enrollment::where('student_id', $student->id)
+            ->where('status', 'approved')
+            ->with('course')
+            ->get();
+
+        $courseData = [];
+        $totalAttended = 0;
+        $totalPeriods = 0;
+
+        foreach ($enrollments as $enrollment) {
+            $data = AttendanceHelper::calculateAttendanceForPeriod(
+                $student->id,
+                $enrollment->course_id,
+                $start,
+                $end
+            );
+
+            $courseData[] = [
+                'course' => $enrollment->course,
+                'attendance' => $data['percentage'],
+                'attended' => $data['attended'],
+                'total' => $data['total'],
+                'eligibility' => AttendanceHelper::getEligibilityStatus($data['percentage']),
+            ];
+
+            $totalAttended += $data['attended'];
+            $totalPeriods += $data['total'];
+        }
+
+        $overall = $totalPeriods > 0 ? round(($totalAttended / $totalPeriods) * 100, 1) : 0;
+        $periodLabel = $start->format('M d, Y') . ' – ' . $end->format('M d, Y');
+
+        return view('student.attendance-period', compact(
+            'courseData',
+            'overall',
+            'period',
+            'offset',
+            'start',
+            'end',
+            'periodLabel'
+        ));
+    }
+
     /**
      * Calculate Academic Health Score (using KG+12 roll call)
      */

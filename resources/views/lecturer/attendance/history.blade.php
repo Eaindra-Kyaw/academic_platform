@@ -502,7 +502,7 @@
 
         <div class="stat-box">
             <div class="label">Active</div>
-            <div class="value">{{ $activeSessions ?? 0 }}</div>
+            <div class="value">{{ $activeSessions->count() }}</div>
             <span class="trend up">● Live</span>
         </div>
 
@@ -537,13 +537,13 @@
         @if ($sessions && $sessions->count() > 0)
             <div class="table-scroll">
                 <table class="session-table" id="sessionTable">
-                    <!-- Inside the session table, add Roll Call column -->
                     <thead>
                         <tr>
                             <th>Course</th>
                             <th>Code</th>
                             <th>Room</th>
                             <th>Date & Time</th>
+                            <th>Periods</th>
                             <th>Status</th>
                             <th>Attendance</th>
                             <th>Roll Call</th>
@@ -556,8 +556,21 @@
                                 $present = $session->records->where('status', 'present')->count();
                                 $late = $session->records->where('status', 'late')->count();
                                 $absent = $session->records->where('status', 'absent')->count();
-                                $total = $present + $late + $absent;
-                                $percentage = $total > 0 ? round(($present / $total) * 100) : 0;
+
+                                // ✅ FIX: Get total enrolled students from database if $total_students is empty
+                                $totalEnrolled = $session->total_students ?? 0;
+                                if ($totalEnrolled == 0) {
+                                    $totalEnrolled = \App\Models\Enrollment::where('course_id', $session->course_id)
+                                        ->where('status', 'approved')
+                                        ->count();
+                                }
+
+                                $periods = $session->conducted_periods ?? 1;
+                                $attendedPeriods = ($present + $late) * $periods;
+                                $totalPeriods = $totalEnrolled * $periods;
+                                $percentage = $totalPeriods > 0 ? round(($attendedPeriods / $totalPeriods) * 100) : 0;
+
+                                // Roll call based on percentage (KG+12 consistency)
                                 $rollCall =
                                     $percentage >= 95
                                         ? 10
@@ -578,6 +591,7 @@
                                                                     : ($percentage >= 55
                                                                         ? 2
                                                                         : 1))))))));
+
                                 $barColor = $percentage >= 75 ? '#10b981' : ($percentage >= 50 ? '#f59e0b' : '#ef4444');
                             @endphp
                             <tr data-status="{{ $session->status }}"
@@ -598,6 +612,13 @@
                                     <small style="color: var(--text-gray); font-size: 11px;">
                                         {{ $session->started_at ? \Carbon\Carbon::parse($session->started_at)->format('h:i A') : '' }}
                                         · {{ $session->duration }}m
+                                    </small>
+                                </td>
+                                <td data-label="Periods" style="text-align:center;">
+                                    {{ $periods }}
+                                    <br>
+                                    <small style="color: var(--text-gray); font-size: 10px;">
+                                        conducted
                                     </small>
                                 </td>
                                 <td data-label="Status">

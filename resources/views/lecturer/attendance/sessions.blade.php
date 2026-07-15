@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'QR Attendance Sessions')
+@section('title', 'Active QR Sessions')
 @section('role', 'Lecturer')
-@section('page-title', 'QR Attendance Sessions')
-@section('welcome-text', 'Create and manage QR attendance sessions')
+@section('page-title', 'Active QR Sessions')
+@section('welcome-text', 'Create and manage active QR attendance sessions')
 
 @section('sidebar')
     @include('layouts.partials.lecturer-sidebar')
@@ -219,8 +219,8 @@
                 <div class="stat-label">Your Courses</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">{{ $recentSessions->count() }}</div>
-                <div class="stat-label">Recent Sessions</div>
+                <div class="stat-number">{{ $sessions->count() }}</div>
+                <div class="stat-label">Total Sessions</div>
             </div>
         </div>
 
@@ -241,8 +241,27 @@
                         <option value="30" selected>30 minutes</option>
                         <option value="45">45 minutes</option>
                         <option value="60">60 minutes</option>
+                        <option value="90">90 minutes</option>
+                        <option value="120">120 minutes</option>
                     </select>
                     <input type="text" name="room" class="filter-input" placeholder="Room (optional)">
+                </div>
+                <div style="margin-top: 0.5rem;">
+                    <label style="font-weight: 600; font-size: 0.8rem; color: var(--text-dark);">Number of Class
+                        Periods</label>
+                    <select name="period_count" class="filter-select">
+                        <option value="1">1 period (50 min)</option>
+                        <option value="2">2 periods (1h 40m)</option>
+                        <option value="3">3 periods (2h 30m)</option>
+                        <option value="4" selected>4 periods (3h 20m)</option>
+                        <option value="5">5 periods (4h 10m)</option>
+                        <option value="6">6 periods (5h)</option>
+                        <option value="7">7 periods (5h 50m)</option>
+                        <option value="8">8 periods (6h 40m)</option>
+                    </select>
+                    <small style="color: var(--text-gray); font-size: 10px;">
+                        How many 50-minute class periods does this session cover?
+                    </small>
                 </div>
                 <button type="submit" class="btn-filter" style="margin-top: 1rem; width: 100%;">
                     <i class="bi bi-qr-code"></i> Generate QR Code
@@ -263,6 +282,23 @@
                                 $session->session_token .
                                 '&session=' .
                                 $session->id;
+
+                            $present = $session->records->where('status', 'present')->count();
+                            $late = $session->records->where('status', 'late')->count();
+
+                            // ✅ FIX: Get total enrolled students from database if $total_students is empty
+                            $totalEnrolled = $session->total_students ?? 0;
+                            if ($totalEnrolled == 0) {
+                                $totalEnrolled = \App\Models\Enrollment::where('course_id', $session->course_id)
+                                    ->where('status', 'approved')
+                                    ->count();
+                            }
+
+                            $periods = $session->conducted_periods ?? 1;
+                            $attendedPeriods = ($present + $late) * $periods;
+                            $totalPeriods = $totalEnrolled * $periods;
+                            $attendancePercentage =
+                                $totalPeriods > 0 ? round(($attendedPeriods / $totalPeriods) * 100) : 0;
                         @endphp
                         <div class="session-sub">
                             <div
@@ -273,7 +309,8 @@
                                     </strong>
                                     <br>
                                     <small style="color: var(--text-gray);">
-                                        Room: {{ $session->room ?? 'TBA' }}
+                                        Room: {{ $session->room ?? 'TBA' }} &bull;
+                                        Periods: {{ $periods }}
                                     </small>
                                 </div>
                                 <span class="status-badge status-pending">
@@ -297,8 +334,13 @@
 
                             <div
                                 style="margin-top: 0.5rem; font-size: 0.7rem; color: var(--text-gray); text-align: center;">
-                                <i class="bi bi-people"></i> {{ $session->present_count }}/{{ $session->total_students }}
-                                present ({{ $session->attendance_percentage }}%)
+                                <i class="bi bi-people"></i>
+                                {{ $present + $late }}/{{ $totalEnrolled }} attended
+                                ({{ $attendancePercentage }}%)
+                                @if ($periods > 1)
+                                    <br>
+                                    <small>Periods: {{ $attendedPeriods }}/{{ $totalPeriods }}</small>
+                                @endif
                             </div>
 
                             <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">

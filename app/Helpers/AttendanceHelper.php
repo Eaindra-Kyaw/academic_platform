@@ -8,14 +8,61 @@ use Carbon\Carbon;
 
 class AttendanceHelper
 {
-    // Attendance percentage
+    // ============================================================
+    // ATTENDANCE PERCENTAGE – SESSION-BASED
+    // ============================================================
+
+    /**
+     * Calculate attendance percentage from attended and total sessions.
+     * Each class period = 1 session.
+     */
     public static function calculateAttendance($attendedSessions, $totalSessions)
     {
         if ($totalSessions == 0) return 0;
         return round(($attendedSessions / $totalSessions) * 100, 1);
     }
 
-    // Eligibility (KG+12)
+    /**
+     * Calculate session-based attendance for a student over a date range.
+     * Each class period = 1 session.
+     */
+    public static function calculateAttendanceForPeriod($studentId, $courseId, $startDate, $endDate)
+    {
+        $sessions = AttendanceSession::where('course_id', $courseId)
+            ->where('status', 'ended')
+            ->where('is_cancelled', false)
+            ->whereBetween('session_date', [$startDate, $endDate])
+            ->get();
+
+        // Count SESSIONS (each class period = 1 session)
+        $totalSessions = $sessions->count();
+        if ($totalSessions == 0) {
+            return ['percentage' => 0, 'attended' => 0, 'total' => 0];
+        }
+
+        $attendedSessions = 0;
+        foreach ($sessions as $session) {
+            $record = AttendanceRecord::where('student_id', $studentId)
+                ->where('attendance_session_id', $session->id)
+                ->whereIn('status', ['present', 'late'])
+                ->first();
+            if ($record) {
+                $attendedSessions++;
+            }
+        }
+
+        $percentage = round(($attendedSessions / $totalSessions) * 100, 1);
+        return [
+            'percentage' => $percentage,
+            'attended'   => $attendedSessions,
+            'total'      => $totalSessions,
+        ];
+    }
+
+    // ============================================================
+    // ELIGIBILITY (KG+12)
+    // ============================================================
+
     public static function getEligibilityStatus($attendancePercentage)
     {
         if ($attendancePercentage >= 75) return 'eligible';
@@ -33,7 +80,10 @@ class AttendanceHelper
         };
     }
 
-    // KG+12 Roll Call (max 10)
+    // ============================================================
+    // KG+12 ROLL CALL (max 10)
+    // ============================================================
+
     public static function calculateRollCallMark($attendancePercentage, $lateCount = 0, $participationMark = 1.5)
     {
         // Consistency (max 6)
@@ -64,67 +114,38 @@ class AttendanceHelper
         ];
     }
 
-    // Risk Score (four factors)
-    public static function attendanceToRiskPoints($attendancePercentage)
+    // ============================================================
+    // RISK SCORE
+    // ============================================================
+
+    public static function calculateRiskScore($attendancePercentage, $rollCallTotal = null, $consecutiveAbsences = null, $trend = null)
     {
-        if ($attendancePercentage >= 90) return 0;
-        if ($attendancePercentage >= 80) return 25;
-        if ($attendancePercentage >= 75) return 39;
-        if ($attendancePercentage >= 70) return 50;
-        if ($attendancePercentage >= 65) return 60;
-        if ($attendancePercentage >= 60) return 69;
-        if ($attendancePercentage >= 55) return 80;
-        if ($attendancePercentage >= 50) return 90;
-        return 100;
+        if ($attendancePercentage >= 75) {
+            return 20;  // Low Risk
+        } elseif ($attendancePercentage >= 60) {
+            return 50;  // Medium Risk
+        } elseif ($attendancePercentage >= 40) {
+            return 75;  // High Risk
+        } else {
+            return 90;  // Very High Risk
+        }
     }
 
-    public static function rollCallToRiskPoints($rollCallTotal)
+    public static function getRiskLevelFromAttendance($attendancePercentage)
     {
-        if ($rollCallTotal >= 9) return 0;
-        if ($rollCallTotal >= 7) return 25;
-        if ($rollCallTotal >= 5) return 50;
-        if ($rollCallTotal >= 3) return 75;
-        return 100;
-    }
-
-    public static function consecutiveAbsencesToRiskPoints($consecutiveAbsences)
-    {
-        if ($consecutiveAbsences == 0) return 0;
-        if ($consecutiveAbsences <= 2) return 25;
-        if ($consecutiveAbsences <= 4) return 75;
-        return 100;
-    }
-
-    public static function trendToRiskPoints($trend)
-    {
-        return match($trend) {
-            'improving' => 0,
-            'stable'    => 25,
-            'declining' => 75,
-            'critical'  => 100,
-            default     => 25,
-        };
-    }
-
-    public static function calculateRiskScore($attendancePercentage, $rollCallTotal, $consecutiveAbsences, $trend)
-    {
-        $attRisk = self::attendanceToRiskPoints($attendancePercentage);
-        $rollRisk = self::rollCallToRiskPoints($rollCallTotal);
-        $absRisk = self::consecutiveAbsencesToRiskPoints($consecutiveAbsences);
-        $trendRisk = self::trendToRiskPoints($trend);
-
-        return round(
-            ($attRisk * 0.40) +
-            ($rollRisk * 0.25) +
-            ($absRisk * 0.20) +
-            ($trendRisk * 0.15)
-        );
+        if ($attendancePercentage >= 75) {
+            return 'Low';
+        } elseif ($attendancePercentage >= 60) {
+            return 'Medium';
+        } else {
+            return 'High';
+        }
     }
 
     public static function getRiskLevel($riskScore)
     {
-        if ($riskScore <= 39) return 'Low';
-        if ($riskScore <= 69) return 'Medium';
+        if ($riskScore <= 35) return 'Low';
+        if ($riskScore <= 65) return 'Medium';
         return 'High';
     }
 
@@ -157,7 +178,7 @@ class AttendanceHelper
         } elseif ($attendancePercentage >= 60) {
             $explanations[] = '⚠️ Attendance below 75% (needs improvement)';
         } else {
-            $explanations[] = '❌ Attendance critically low';
+            $explanations[] = '❌ Attendance critically low (' . $attendancePercentage . '%)';
         }
 
         if ($rollCallTotal >= 7) {
@@ -196,6 +217,10 @@ class AttendanceHelper
 
         return $explanations;
     }
+
+    // ============================================================
+    // CONSECUTIVE ABSENCES & TREND
+    // ============================================================
 
     public static function getConsecutiveAbsences($studentId, $courseId)
     {

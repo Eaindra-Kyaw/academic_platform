@@ -7,23 +7,19 @@
 <a href="{{ route('lecturer.attendance.take') }}" class="nav-item @if (request()->routeIs('lecturer.attendance.take')) active @endif">
     <i class="bi bi-qr-code"></i><span>Take Attendance</span>
 </a>
-{{-- <a href="{{ route('lecturer.semester-qr.management') }}" class="nav-item @if (request()->routeIs('lecturer.semester-qr*')) active @endif">
-    <i class="bi bi-book"></i><span>Semester QR</span>
-</a> --}}
 <a href="{{ route('lecturer.attendance.sessions') }}" class="nav-item @if (request()->routeIs('lecturer.attendance.sessions')) active @endif">
     <i class="bi bi-clock-history"></i><span>Session History</span>
 </a>
-
 <a href="{{ route('lecturer.attendance.records') }}" class="nav-item @if (request()->routeIs('lecturer.attendance.records')) active @endif">
-    <i class="bi bi-clock-history"></i><span>All Records</span>
+    <i class="bi bi-list-ul"></i><span>Attendance Logs</span>
+</a>
+<a href="{{ route('lecturer.students') }}" class="nav-item @if (request()->routeIs('lecturer.students')) active @endif">
+    <i class="bi bi-graph-up-arrow"></i><span>Attendance Overview</span>
 </a>
 
 <div class="nav-label">Management</div>
 <a href="{{ route('lecturer.enrollments.index') }}" class="nav-item @if (request()->routeIs('lecturer.enrollments*')) active @endif">
     <i class="bi bi-list-check"></i><span>Enrollments</span>
-</a>
-<a href="{{ route('lecturer.students') }}" class="nav-item @if (request()->routeIs('lecturer.students')) active @endif">
-    <i class="bi bi-people"></i><span>All Students</span>
 </a>
 <a href="{{ route('lecturer.timetable.index') }}" class="nav-item @if (request()->routeIs('lecturer.timetable*')) active @endif">
     <i class="bi bi-calendar-week"></i><span>Timetable</span>

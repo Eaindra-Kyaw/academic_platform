@@ -25,6 +25,10 @@
     <i class="bi bi-clock-history"></i> Attendance History
 </a>
 
+<a href="{{ route('student.attendance.period') }}" class="btn btn-sm btn-outline-primary">
+    <i class="bi bi-calendar-week"></i> Weekly/Monthly View
+</a>
+
 <div class="nav-label">Academic</div>
 <a href="{{ route('student.timetable') }}" class="nav-item @if (request()->routeIs('student.timetable')) active @endif">
     <i class="bi bi-clock"></i><span>Timetable</span>

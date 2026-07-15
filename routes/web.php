@@ -187,7 +187,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         // Semester courses route
         Route::get('/semester/{semester}/courses', [DepartmentController::class, 'semesterCourses'])->name('departments.semester.courses');
 
-        // ✅ ADD THIS LINE:
         Route::get('/courses/export', [CourseController::class, 'export'])->name('departments.courses.export');
 
         Route::resource('/courses', CourseController::class)->names([
@@ -259,7 +258,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/analytics', [AttendanceAnalyticsController::class, 'index'])->name('analytics');
         Route::get('/chart-data', [AttendanceAnalyticsController::class, 'chartData'])->name('chart-data');
         Route::post('/evaluate/date-range', [AttendanceEvaluationController::class, 'evaluateByDateRange'])
-    ->name('attendance.evaluate.date-range');
+            ->name('attendance.evaluate.date-range');
     });
 
     // ============================================================
@@ -340,7 +339,8 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     // ============================================================
     // STUDENT MANAGEMENT
     // ============================================================
-    Route::get('/students', [LecturerController::class, 'students'])->name('students');
+    // ⭐ RENAMED: students → monitoring (but keeping route name for compatibility)
+    Route::get('/students', [LecturerController::class, 'monitoring'])->name('students');
     Route::get('/schedule', [LecturerController::class, 'schedule'])->name('schedule');
     Route::get('/reports', [LecturerController::class, 'reports'])->name('reports');
 
@@ -391,7 +391,7 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     Route::get('/messages/unread/count', [LecturerMessageController::class, 'unreadCount'])->name('messages.unread');
 
     // ============================================================
-    // REPORTS (Lecturer) – already defined above, but keep both
+    // REPORTS (Lecturer)
     // ============================================================
     Route::get('/reports', [LecturerController::class, 'reports'])->name('reports');
     Route::get('/reports/export', [LecturerController::class, 'exportReport'])->name('reports.export');
@@ -401,6 +401,12 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     // ANNOUNCEMENT UNREAD COUNT ROUTE (Lecturer)
     // ============================================================
     Route::get('/announcements/unread-count', [AnnouncementController::class, 'unreadCount'])->name('announcements.unread');
+
+    // ============================================================
+    // ⭐ PERIOD-BASED COURSE ATTENDANCE (Lecturer)
+    // ============================================================
+    Route::get('/course/{courseId}/attendance-period', [LecturerController::class, 'courseAttendancePeriod'])
+        ->name('course.attendance.period');
 });
 
 // ============================================================
@@ -416,6 +422,11 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::get('/timetable', [StudentController::class, 'timetable'])->name('timetable');
     Route::get('/progress', [StudentController::class, 'progress'])->name('progress');
     Route::get('/attendance/history', [StudentController::class, 'attendanceHistory'])->name('attendance.history');
+
+    // ============================================================
+    // ⭐ PERIOD-BASED ATTENDANCE (Student)
+    // ============================================================
+    Route::get('/attendance/period', [StudentController::class, 'attendancePeriod'])->name('attendance.period');
 
     // ============================================================
     // ENROLLMENT ROUTES (Student)

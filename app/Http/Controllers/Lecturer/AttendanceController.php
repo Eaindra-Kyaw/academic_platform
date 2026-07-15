@@ -103,7 +103,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Session History
+     * Session History (Paginated list of all sessions)
      */
     public function sessions()
     {
@@ -114,10 +114,13 @@ class AttendanceController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        $totalSessions = AttendanceSession::where('lecturer_id', $lecturer->id)->count();
         $activeSessions = AttendanceSession::where('lecturer_id', $lecturer->id)
             ->where('status', 'active')
-            ->count();
+            ->with(['course', 'records'])
+            ->get();
+
+        $totalSessions = AttendanceSession::where('lecturer_id', $lecturer->id)->count();
+        $activeSessionsCount = $activeSessions->count();
 
         $totalStudents = 0;
         $totalPresent = 0;
@@ -132,17 +135,25 @@ class AttendanceController extends Controller
             ? round(($totalPresent / $totalStudents) * 100)
             : 0;
 
+        $courses = Course::where('lecturer_id', $lecturer->id)
+            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+            ->where('is_active', true)
+            ->get()
+            ->unique('id');
+
         return view('lecturer.attendance.history', compact(
             'sessions',
-            'totalSessions',
             'activeSessions',
+            'totalSessions',
+            'activeSessionsCount',
             'averageAttendance',
-            'totalStudents'
+            'totalStudents',
+            'courses'
         ));
     }
 
     /**
-     * Display all attendance records for lecturer's courses
+     * Display all attendance records for lecturer's courses (raw logs)
      */
     public function allRecords(Request $request)
     {
@@ -183,20 +194,23 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Create a new attendance session
+     * Create a new attendance session (with period_count)
      */
     public function createSession(Request $request)
     {
         $request->validate([
             'course_id' => 'required|exists:courses,id',
             'qr_mode' => 'required|in:session,semester',
+            'period_count' => 'required|integer|min:1|max:8',
             'duration' => 'required_if:qr_mode,session|integer|min:5|max:120',
             'room' => 'nullable|string|max:50',
         ]);
 
         $lecturer = Auth::user();
         $course = Course::findOrFail($request->course_id);
+        $periodCount = (int) $request->period_count;
 
+        // End any existing active session for this course
         $existingSession = AttendanceSession::where('course_id', $course->id)
             ->where('status', 'active')
             ->first();
@@ -222,32 +236,21 @@ class AttendanceController extends Controller
 
         session()->forget('show_create_form');
 
-        $periodCount = 4;
-        $timetable = TimetableEntry::where('course_id', $course->id)
-            ->where('is_active', true)
-            ->first();
-        if ($timetable) {
-            $periodCount = $timetable->period_count ?? 4;
-        }
-
         $sessionToken = AttendanceSession::generateSessionToken();
         $sessionCode = AttendanceSession::generateSessionCode();
 
+        // Determine QR expiry duration
         if ($request->qr_mode == 'semester') {
-            $duration = 480;
+            $duration = 480; // 8 hours
             $expiresAt = Carbon::now()->addHours(8);
             $qrExpiresAt = Carbon::now()->addHours(8);
-
-            if (!$course->semester_qr_token) {
-                $course->semester_qr_token = $sessionToken;
-                $course->save();
-            }
         } else {
             $duration = (int) $request->duration;
             $expiresAt = Carbon::now()->addMinutes($duration);
             $qrExpiresAt = Carbon::now()->addMinutes($duration);
         }
 
+        // Create session with period_count and conducted_periods
         $session = AttendanceSession::create([
             'course_id' => $course->id,
             'lecturer_id' => $lecturer->id,
@@ -271,6 +274,12 @@ class AttendanceController extends Controller
                 ->count(),
         ]);
 
+        // If semester QR, save token on course
+        if ($request->qr_mode == 'semester' && !$course->semester_qr_token) {
+            $course->semester_qr_token = $sessionToken;
+            $course->save();
+        }
+
         AuditLog::log(
             Auth::id(),
             'create_session',
@@ -280,6 +289,7 @@ class AttendanceController extends Controller
                 'qr_mode' => $request->qr_mode,
                 'session_id' => $session->id,
                 'manual_code' => $session->manual_code,
+                'period_count' => $periodCount,
                 'duration' => $duration,
             ],
             $session,
@@ -287,8 +297,8 @@ class AttendanceController extends Controller
         );
 
         $message = $request->qr_mode == 'semester'
-            ? 'Semester QR activated! Use the same QR code for all sessions.'
-            : 'Dynamic QR session created! Expires in ' . $duration . ' minutes.';
+            ? 'Semester QR activated! Periods: ' . $periodCount
+            : 'Dynamic QR session created! Expires in ' . $duration . ' minutes. Periods: ' . $periodCount;
 
         return redirect()->route('lecturer.attendance.take')
             ->with('success', $message)
@@ -344,7 +354,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Recalculate KG+12 evaluations for all students in a course.
+     * Recalculate KG+12 evaluations for all students in a course (period-based)
      */
     private function recalculateCourseEvaluations($courseId)
     {
@@ -363,8 +373,8 @@ class AttendanceController extends Controller
             ->orderBy('session_date', 'asc')
             ->get();
 
-        $totalSessions = $sessions->count();
-        if ($totalSessions == 0) {
+        $totalPeriods = $sessions->sum('conducted_periods');
+        if ($totalPeriods == 0) {
             foreach ($enrollments as $enrollment) {
                 DB::table('attendance_evaluations')->updateOrInsert(
                     ['student_id' => $enrollment->student_id, 'course_id' => $courseId],
@@ -402,11 +412,20 @@ class AttendanceController extends Controller
                 ->get()
                 ->keyBy('attendance_session_id');
 
-            $attendedCount = $records->whereIn('status', ['present', 'late'])->count();
-            $lateCount = $records->where('status', 'late')->count();
+            $attendedPeriods = 0;
+            $lateCount = 0;
 
-            // All calculations using AttendanceHelper
-            $attendancePercentage = AttendanceHelper::calculateAttendance($attendedCount, $totalSessions);
+            foreach ($sessions as $session) {
+                $record = $records->get($session->id);
+                if ($record && in_array($record->status, ['present', 'late'])) {
+                    $attendedPeriods += $session->conducted_periods;
+                    if ($record->status === 'late') {
+                        $lateCount++;
+                    }
+                }
+            }
+
+            $attendancePercentage = round(($attendedPeriods / max($totalPeriods, 1)) * 100, 1);
             $rollCall = AttendanceHelper::calculateRollCallMark($attendancePercentage, $lateCount, 1.5);
             $consecutiveAbsences = AttendanceHelper::getConsecutiveAbsences($studentId, $courseId);
             $trend = AttendanceHelper::getAttendanceTrend($studentId, $courseId);
@@ -433,8 +452,8 @@ class AttendanceController extends Controller
             DB::table('attendance_evaluations')->updateOrInsert(
                 ['student_id' => $studentId, 'course_id' => $courseId],
                 [
-                    'total_sessions' => $totalSessions,
-                    'attended_sessions' => $attendedCount,
+                    'total_sessions' => $totalPeriods,
+                    'attended_sessions' => $attendedPeriods,
                     'attendance_percentage' => $attendancePercentage,
                     'consistency_marks' => $rollCall['consistency'],
                     'punctuality_marks' => $rollCall['punctuality'],
@@ -661,13 +680,8 @@ class AttendanceController extends Controller
         $expiresAt = Carbon::now()->addMinutes($duration);
         $qrExpiresAt = Carbon::now()->addMinutes($duration);
 
-        $periodCount = 4;
-        $timetable = TimetableEntry::where('course_id', $course->id)
-            ->where('is_active', true)
-            ->first();
-        if ($timetable) {
-            $periodCount = $timetable->period_count ?? 4;
-        }
+        // For AJAX, default period_count to 1 (or read from input)
+        $periodCount = $request->input('period_count', 1);
 
         $sessionToken = AttendanceSession::generateSessionToken();
         $sessionCode = AttendanceSession::generateSessionCode();
@@ -744,49 +758,43 @@ class AttendanceController extends Controller
         ]);
     }
 
+    /**
+     * Get session stats for live attendance (period-based)
+     */
     public function getSessionStats($id)
     {
-        $session = AttendanceSession::findOrFail($id);
+        $session = AttendanceSession::with(['course', 'records.student'])
+            ->findOrFail($id);
 
-        $presentCount = AttendanceRecord::where('attendance_session_id', $id)
-            ->where('status', 'present')
-            ->count();
+        $presentCount = $session->records->where('status', 'present')->count();
+        $lateCount = $session->records->where('status', 'late')->count();
+        $totalStudents = $session->total_students ?? 0;
 
-        $lateCount = AttendanceRecord::where('attendance_session_id', $id)
-            ->where('status', 'late')
-            ->count();
+        $periods = $session->conducted_periods ?? 1;
+        $attendedPeriods = ($presentCount + $lateCount) * $periods;
+        $totalPeriods = $totalStudents * $periods;
+        $percentage = $totalPeriods > 0 ? round(($attendedPeriods / $totalPeriods) * 100, 1) : 0;
 
-        $absentCount = AttendanceRecord::where('attendance_session_id', $id)
-            ->where('status', 'absent')
-            ->count();
-
-        $totalStudents = Enrollment::where('course_id', $session->course_id)
-            ->where('status', 'approved')
-            ->count();
-
-        $percentage = $totalStudents > 0 ? round(($presentCount / $totalStudents) * 100) : 0;
-
-        $records = AttendanceRecord::where('attendance_session_id', $id)
-            ->with('student')
-            ->orderBy('created_at', 'asc')
-            ->get();
+        $records = $session->records->map(function($record) {
+            return [
+                'student_name' => $record->student->name ?? 'Unknown',
+                'student_email' => $record->student->email ?? 'N/A',
+                'status' => $record->status,
+                'scanned_at' => $record->created_at ? $record->created_at->toDateTimeString() : null,
+                'is_manual' => $record->is_manual ?? false,
+            ];
+        });
 
         return response()->json([
             'success' => true,
             'present' => $presentCount,
             'late' => $lateCount,
-            'absent' => $absentCount,
             'total' => $totalStudents,
             'percentage' => $percentage,
-            'records' => $records->map(function($record) {
-                return [
-                    'student_name' => $record->student->name ?? 'Unknown',
-                    'student_email' => $record->student->email ?? 'N/A',
-                    'status' => $record->status,
-                    'scanned_at' => $record->scanned_at ? $record->scanned_at->toDateTimeString() : null,
-                    'is_manual' => $record->is_manual ?? false,
-                ];
-            })
+            'periods' => $periods,
+            'attended_periods' => $attendedPeriods,
+            'total_periods' => $totalPeriods,
+            'records' => $records,
         ]);
     }
 

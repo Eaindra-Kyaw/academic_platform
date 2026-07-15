@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\EvaluateAttendance::class,
+        \App\Console\Commands\GenerateAttendanceSessions::class,
     ];
 
     /**
