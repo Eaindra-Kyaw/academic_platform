@@ -205,6 +205,26 @@
             background: rgba(10, 36, 99, 0.04);
         }
 
+        .btn-reset-student {
+            background: #f3f4f6;
+            color: var(--text-dark);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-reset-student:hover {
+            background: #e5e7eb;
+        }
+
         .chart-grid-premium {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -354,6 +374,7 @@
             color: #991b1b;
         }
 
+        /* ===== RISK ALERTS TABS ===== */
         .risk-alerts-section {
             background: var(--white);
             border-radius: var(--radius);
@@ -381,23 +402,77 @@
             gap: 0.5rem;
         }
 
-        .risk-alerts-section .alerts-header .badge-count {
-            background: var(--danger);
-            color: white;
-            padding: 0.1rem 0.6rem;
+        .risk-alerts-section .alerts-header .title .bell-icon {
+            color: var(--danger);
+        }
+
+        .risk-alerts-section .alerts-header .title .course-badge {
+            font-size: 0.6rem;
+            font-weight: 400;
+            color: var(--text-gray);
+            margin-left: 0.5rem;
+            background: #f1f5f9;
+            padding: 0.05rem 0.6rem;
             border-radius: 1rem;
-            font-size: 0.65rem;
-            font-weight: 700;
         }
 
-        .risk-alerts-section .alerts-header .badge-count.success {
-            background: var(--success);
+        .alert-tabs {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            background: #fafbfc;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
         }
 
-        .risk-alerts-section .alerts-body {
+        .alert-tab {
+            padding: 0.3rem 1rem;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-gray);
+            background: transparent;
+            border: none;
+            transition: var(--transition);
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .alert-tab:hover {
+            color: var(--text-dark);
+            background: #f1f5f9;
+        }
+
+        .alert-tab.active {
+            color: var(--primary);
+            background: var(--white);
+        }
+
+        .alert-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .alert-panel {
+            display: none;
+        }
+
+        .alert-panel.active {
+            display: block;
+        }
+
+        .alerts-body {
             padding: 0.5rem;
         }
 
+        /* ===== ALERT ITEMS - Overall ===== */
         .alert-item {
             display: flex;
             align-items: center;
@@ -428,16 +503,16 @@
             flex-shrink: 0;
         }
 
-        .alert-item .alert-avatar.low {
-            background: var(--success);
+        .alert-item .alert-avatar.high {
+            background: var(--danger);
         }
 
         .alert-item .alert-avatar.medium {
             background: var(--warning);
         }
 
-        .alert-item .alert-avatar.high {
-            background: var(--danger);
+        .alert-item .alert-avatar.low {
+            background: var(--success);
         }
 
         .alert-item .alert-info {
@@ -454,37 +529,43 @@
         .alert-item .alert-info .student-detail {
             font-size: 0.7rem;
             color: var(--text-gray);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .alert-item .alert-info .student-detail .level-badge {
+            display: inline-block;
+            padding: 0.05rem 0.5rem;
+            border-radius: 1rem;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .alert-item .alert-info .student-detail .level-badge.high {
+            background: var(--danger-light);
+            color: #991b1b;
+        }
+
+        .alert-item .alert-info .student-detail .level-badge.medium {
+            background: var(--warning-light);
+            color: #92400e;
+        }
+
+        .alert-item .alert-info .student-detail .level-badge.low {
+            background: var(--success-light);
+            color: #166534;
         }
 
         .alert-item .alert-info .alert-recommendation {
             font-size: 0.6rem;
             color: var(--text-gray);
             margin-top: 0.1rem;
-        }
-
-        .alert-item .alert-badge {
-            padding: 0.1rem 0.6rem;
-            border-radius: 1rem;
-            font-size: 0.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-        }
-
-        .alert-item .alert-badge.high {
-            background: var(--danger-light);
-            color: #991b1b;
-        }
-
-        .alert-item .alert-badge.medium {
-            background: var(--warning-light);
-            color: #92400e;
-        }
-
-        .alert-item .alert-badge.low {
-            background: var(--success-light);
-            color: #166534;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
         }
 
         .alert-item .alert-action {
@@ -506,141 +587,109 @@
             color: white;
         }
 
-        .table-wrapper-premium {
-            overflow-x: auto;
-            border-radius: var(--radius);
-            border: 1px solid rgba(10, 36, 99, 0.06);
-        }
-
-        .table-premium {
-            width: 100%;
-            font-size: 0.78rem;
-            border-collapse: collapse;
-            min-width: 1100px;
-        }
-
-        .table-premium thead {
-            background: linear-gradient(135deg, #fafbfc, #f1f5f9);
-        }
-
-        .table-premium th {
-            text-align: left;
-            padding: 0.5rem 0.75rem;
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            color: var(--text-gray);
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            border-bottom: 2px solid rgba(10, 36, 99, 0.06);
-            background: #fafbfc;
-            white-space: nowrap;
-        }
-
-        .table-premium td {
-            padding: 0.4rem 0.75rem;
+        /* ===== WEEKLY/MONTHLY ALERT ITEMS ===== */
+        .alert-item-small {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.6rem 1rem;
             border-bottom: 1px solid rgba(10, 36, 99, 0.04);
-            vertical-align: middle;
-        }
-
-        .table-premium tbody tr {
             transition: var(--transition);
         }
 
-        .table-premium tbody tr:hover {
-            background: rgba(10, 36, 99, 0.02);
+        .alert-item-small:hover {
+            background: #fafbfc;
         }
 
-        .risk-badge-premium {
+        .alert-item-small:last-child {
+            border-bottom: none;
+        }
+
+        .alert-item-small .alert-avatar-sm {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.7rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .alert-item-small .alert-avatar-sm.high {
+            background: var(--danger);
+        }
+
+        .alert-item-small .alert-avatar-sm.medium {
+            background: var(--warning);
+        }
+
+        .alert-item-small .alert-info-sm {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .alert-item-small .alert-info-sm .student-name {
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+        }
+
+        .alert-item-small .alert-info-sm .student-detail {
+            font-size: 0.65rem;
+            color: var(--text-gray);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .alert-item-small .alert-risk-badge {
             display: inline-block;
-            padding: 0.15rem 0.6rem;
+            padding: 0.1rem 0.6rem;
             border-radius: 1rem;
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             white-space: nowrap;
         }
 
-        .risk-badge-premium.high {
+        .alert-item-small .alert-risk-badge.high {
             background: var(--danger-light);
             color: #991b1b;
         }
 
-        .risk-badge-premium.medium {
+        .alert-item-small .alert-risk-badge.medium {
             background: var(--warning-light);
             color: #92400e;
         }
 
-        .risk-badge-premium.low {
+        .alert-item-small .alert-risk-badge.low {
             background: var(--success-light);
             color: #166534;
         }
 
-        .btn-action {
-            padding: 0.2rem 0.5rem;
-            border-radius: 8px;
-            font-size: 0.65rem;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-weight: 500;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-action.view {
-            background: rgba(59, 130, 246, 0.08);
-            color: var(--info);
-        }
-
-        .btn-action.view:hover {
-            background: rgba(59, 130, 246, 0.15);
-            transform: translateY(-1px);
-        }
-
-        .btn-action.intervene {
-            background: rgba(10, 36, 99, 0.08);
-            color: var(--primary);
-        }
-
-        .btn-action.intervene:hover {
-            background: rgba(10, 36, 99, 0.15);
-            transform: translateY(-1px);
-        }
-
-        .risk-factor-pill {
-            display: inline-block;
-            padding: 0.05rem 0.4rem;
-            border-radius: 1rem;
-            font-size: 0.55rem;
-            font-weight: 500;
-            background: #f1f5f9;
+        .alert-item-small .alert-period {
+            font-size: 0.6rem;
             color: var(--text-gray);
-            border: 1px solid transparent;
-            transition: var(--transition);
             white-space: nowrap;
         }
 
-        .risk-factor-pill:hover {
-            border-color: var(--primary);
-            background: rgba(10, 36, 99, 0.04);
+        .alert-empty {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-gray);
         }
 
-        .risk-factor-pill.critical {
-            background: var(--danger-light);
-            color: #991b1b;
-            border-color: #fecaca;
+        .alert-empty .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
         }
 
-        .risk-factor-pill.warning {
-            background: var(--warning-light);
-            color: #92400e;
-            border-color: #fde68a;
-        }
-
+        /* ===== SEARCHABLE DROPDOWN ===== */
         .searchable-dropdown {
             position: relative;
             flex: 2;
@@ -730,6 +779,7 @@
             background: #fde68a;
         }
 
+        /* ===== MODAL STYLES ===== */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -859,18 +909,7 @@
         .risk-modal-stat .number {
             font-size: 1.5rem;
             font-weight: 700;
-        }
-
-        .risk-modal-stat .number.high {
-            color: var(--danger);
-        }
-
-        .risk-modal-stat .number.medium {
-            color: var(--warning);
-        }
-
-        .risk-modal-stat .number.low {
-            color: var(--success);
+            color: var(--text-dark);
         }
 
         .risk-modal-stat .label {
@@ -1141,22 +1180,23 @@
                 grid-template-columns: 1fr;
             }
 
-            .table-premium {
-                font-size: 0.65rem;
-                min-width: 800px;
+            .alert-item {
+                flex-wrap: wrap;
+                gap: 0.5rem;
             }
 
-            .btn-action .btn-text {
-                display: none;
+            .alert-item-small {
+                flex-wrap: wrap;
+                gap: 0.3rem;
             }
 
-            .btn-action {
-                padding: 0.15rem 0.35rem;
-                font-size: 0.6rem;
+            .alert-tabs {
+                flex-wrap: wrap;
             }
 
-            .btn-action .btn-icon {
-                font-size: 0.65rem;
+            .alert-tab {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.6rem;
             }
 
             .modal-monthly-stats {
@@ -1259,7 +1299,7 @@
             </div>
         </div>
         <div class="stat-card-compact animate-in">
-            <div class="stat-icon success"><i class="bi bi-shield-check"></i></div>
+            <div class="stat-icon success"><i class="bi bi-check-circle-fill"></i></div>
             <div class="stat-info">
                 <div class="stat-number">{{ number_format($stats['low_risk'] ?? 0) }}</div>
                 <div class="stat-label">Low Risk</div>
@@ -1281,15 +1321,28 @@
         </div>
     </div>
 
-    {{-- Filter Bar --}}
+    {{-- Filter Bar with Course Filter --}}
     <form class="filter-bar-premium" method="GET" action="{{ route('admin.risk.index') }}">
         <div class="filter-group">
             <label><i class="bi bi-building"></i> Department</label>
-            <select name="department">
+            <select name="department" id="departmentFilter" onchange="this.form.submit()">
                 <option value="">All</option>
                 @foreach ($departments as $dept)
                     <option value="{{ $dept->id }}" {{ $departmentId == $dept->id ? 'selected' : '' }}>
                         {{ $dept->name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Course Filter --}}
+        <div class="filter-group">
+            <label><i class="bi bi-book"></i> Course</label>
+            <select name="course_id" id="courseFilter" onchange="this.form.submit()">
+                <option value="">All Courses</option>
+                @foreach ($courses as $course)
+                    <option value="{{ $course->id }}" {{ $courseId == $course->id ? 'selected' : '' }}>
+                        {{ $course->course_code }} - {{ $course->course_name }}
                     </option>
                 @endforeach
             </select>
@@ -1324,12 +1377,18 @@
         </div>
     </form>
 
-    {{-- Student Quick Actions --}}
+    {{-- Student Quick Actions with Reset Button --}}
     <div class="chart-card-premium" style="margin-bottom:1.5rem;">
         <div class="card-header">
             <span class="title">
                 <i class="bi bi-person" style="color:var(--primary);"></i>
                 View each student's risk level
+                @if ($courseId)
+                    <span class="course-badge">
+                        <i class="bi bi-book"></i>
+                        {{ $courses->firstWhere('id', $courseId)->course_code ?? 'Selected Course' }}
+                    </span>
+                @endif
             </span>
         </div>
         <div class="card-body">
@@ -1349,52 +1408,28 @@
                 <button class="btn-view-risk" onclick="viewQuickRisk()">
                     <i class="bi bi-shield-exclamation"></i> View Risk
                 </button>
+                {{-- Reset Button --}}
+                <button class="btn-reset-student" onclick="resetStudentSelection()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
             </div>
         </div>
     </div>
 
-    {{-- Risk Summary Cards --}}
-    <div class="risk-summary-grid">
-        @php
-            $total = $stats['total_students'] ?? 1;
-            $lowPct = $total > 0 ? round(($stats['low_risk'] / $total) * 100) : 0;
-            $mediumPct = $total > 0 ? round(($stats['medium_risk'] / $total) * 100) : 0;
-            $highPct = $total > 0 ? round(($stats['high_risk'] / $total) * 100) : 0;
-        @endphp
-
-        <div class="risk-summary-card">
-            <div class="risk-icon">🟢</div>
-            <div class="risk-count low">{{ number_format($stats['low_risk'] ?? 0) }}</div>
-            <div class="risk-label">Low Risk Students</div>
-            <div class="risk-percentage" style="color:var(--success);">{{ $lowPct }}% of total</div>
-            <div class="risk-status low">On Track</div>
-        </div>
-
-        <div class="risk-summary-card">
-            <div class="risk-icon">🟡</div>
-            <div class="risk-count medium">{{ number_format($stats['medium_risk'] ?? 0) }}</div>
-            <div class="risk-label">Medium Risk Students</div>
-            <div class="risk-percentage" style="color:var(--warning);">{{ $mediumPct }}% of total</div>
-            <div class="risk-status medium">Needs Attention</div>
-        </div>
-
-        <div class="risk-summary-card">
-            <div class="risk-icon">🔴</div>
-            <div class="risk-count high">{{ number_format($stats['high_risk'] ?? 0) }}</div>
-            <div class="risk-label">High Risk Students</div>
-            <div class="risk-percentage" style="color:var(--danger);">{{ $highPct }}% of total</div>
-            <div class="risk-status high">Urgent</div>
-        </div>
-    </div>
-
-    {{-- Charts (Restored) --}}
+    {{-- Charts --}}
     <div class="chart-grid-premium">
         <div class="chart-card-premium">
             <div class="card-header">
                 <span class="title">
                     <i class="bi bi-pie-chart-fill" style="color:var(--primary);"></i>
                     Risk Distribution
-                    <span class="badge">Current snapshot</span>
+                    <span class="badge">
+                        @if ($courseId)
+                            {{ $courses->firstWhere('id', $courseId)->course_code ?? 'Current' }}
+                        @else
+                            Current snapshot
+                        @endif
+                    </span>
                 </span>
                 <span class="subtitle">Student risk level breakdown</span>
             </div>
@@ -1422,252 +1457,155 @@
         </div>
     </div>
 
-    {{-- Risk Alerts --}}
+    {{-- ===== RISK ALERTS (Red bell icon, no attendance %, no helper text) ===== --}}
     <div class="risk-alerts-section">
         <div class="alerts-header">
             <span class="title">
-                <i class="bi bi-bell-fill" style="color:var(--warning);"></i>
+                <i class="bi bi-bell-fill bell-icon"></i>
                 Risk Alerts
-                <span
-                    class="badge-count {{ ($stats['medium_risk'] ?? 0) + ($stats['high_risk'] ?? 0) > 0 ? '' : 'success' }}">
-                    {{ ($stats['medium_risk'] ?? 0) + ($stats['high_risk'] ?? 0) }}
-                </span>
+                @if ($courseId)
+                    <span class="course-badge">
+                        <i class="bi bi-book"></i> {{ $courses->firstWhere('id', $courseId)->course_code ?? '' }}
+                    </span>
+                @endif
             </span>
             <span style="font-size:0.65rem; color:var(--text-gray);">
-                @if (($stats['medium_risk'] ?? 0) + ($stats['high_risk'] ?? 0) > 0)
-                    <i class="bi bi-exclamation-triangle"></i> Action needed
-                @else
-                    <i class="bi bi-check-circle" style="color:var(--success);"></i> No alerts
-                @endif
+                <i class="bi bi-info-circle"></i>
+                <span id="alertTabLabel">Current risk status</span>
             </span>
         </div>
-        <div class="alerts-body">
-            @php
-                $hasAlerts = false;
-            @endphp
 
-            @foreach ($riskData as $data)
-                @if ($data['level'] == 'Medium' || $data['level'] == 'High')
-                    @php
-                        $hasAlerts = true;
-                        $initial = strtoupper(substr($data['student']->name ?? 'U', 0, 1));
-                        $riskClass = strtolower($data['level']);
-                        $attendance = $data['attendance'] ?? 0;
-                        $recommendation =
-                            $data['level'] == 'High'
-                                ? '🚨 Immediate meeting required. Contact student urgently.'
-                                : '📋 Schedule a meeting to discuss attendance improvement.';
-                    @endphp
-                    <div class="alert-item">
-                        <div class="alert-avatar {{ $riskClass }}">{{ $initial }}</div>
-                        <div class="alert-info">
-                            <div class="student-name">{{ $data['student']->name ?? 'Unknown' }}</div>
-                            <div class="student-detail">
-                                {{ $data['student']->student_id ?? 'N/A' }} •
-                                {{ $data['student']->department->name ?? 'N/A' }} •
-                                Attendance: <strong>{{ $attendance }}%</strong>
+        {{-- Tabs --}}
+        <div class="alert-tabs">
+            <button class="alert-tab active" data-tab="overall" onclick="switchAlertTab('overall')">
+                <i class="bi bi-bar-chart-fill"></i> Overall
+            </button>
+            <button class="alert-tab" data-tab="weekly" onclick="switchAlertTab('weekly')">
+                <i class="bi bi-calendar-week"></i> Weekly
+            </button>
+            <button class="alert-tab" data-tab="monthly" onclick="switchAlertTab('monthly')">
+                <i class="bi bi-calendar-month"></i> Monthly
+            </button>
+        </div>
+
+        {{-- Panel: Overall (No attendance %) --}}
+        <div class="alert-panel active" id="panel-overall">
+            <div class="alerts-body">
+                @if (count($overallAlerts) > 0)
+                    @foreach ($overallAlerts as $alert)
+                        <div class="alert-item">
+                            <div class="alert-avatar {{ strtolower($alert['level']) }}">
+                                {{ Str::upper(substr($alert['student']->name ?? 'U', 0, 1)) }}
                             </div>
-                            <div class="alert-recommendation">
-                                💡 {{ $recommendation }}
+                            <div class="alert-info">
+                                <div class="student-name">{{ $alert['student']->name ?? 'Unknown' }}</div>
+                                <div class="student-detail">
+                                    <span>{{ $alert['student']->student_id ?? 'N/A' }}</span>
+                                    <span>•</span>
+                                    <span>{{ $alert['student']->department->name ?? 'N/A' }}</span>
+                                    @if ($courseId && isset($alert['course']))
+                                        <span>•</span>
+                                        <span>{{ $alert['course']->course_code ?? '' }}</span>
+                                    @endif
+                                    <span
+                                        class="level-badge {{ strtolower($alert['level']) }}">{{ $alert['level'] }}</span>
+                                </div>
+                                <div class="alert-recommendation">
+                                    @if ($alert['level'] == 'High')
+                                        <i class="bi bi-exclamation-octagon-fill" style="color:var(--danger);"></i>
+                                        Immediate meeting required. Contact student urgently.
+                                    @else
+                                        <i class="bi bi-chat-dots-fill" style="color:var(--warning);"></i>
+                                        Schedule a meeting to discuss attendance improvement.
+                                    @endif
+                                </div>
                             </div>
+                            <a href="{{ route('admin.students.show', $alert['student']->id) }}" class="alert-action"
+                                title="View Profile">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                            <button class="alert-action"
+                                onclick="openQuickMessage('{{ $alert['student']->id }}', '{{ addslashes($alert['student']->name) }}', '{{ addslashes($alert['student']->email) }}', '{{ $alert['level'] }}', 0)"
+                                title="Send Message">
+                                <i class="bi bi-envelope"></i> Message
+                            </button>
                         </div>
-                        <span class="alert-badge {{ $riskClass }}">{{ $data['level'] }}</span>
-                        <a href="{{ route('admin.students.show', $data['student']->id) }}" class="alert-action"
-                            title="View Profile">
-                            <i class="bi bi-eye"></i> View
-                        </a>
-                        <button class="alert-action"
-                            onclick="openQuickMessage('{{ $data['student']->id }}', '{{ addslashes($data['student']->name) }}', '{{ addslashes($data['student']->email) }}', '{{ $data['level'] }}', '{{ $data['score'] }}')"
-                            title="Send Message">
-                            <i class="bi bi-envelope"></i> Message
-                        </button>
-                    </div>
-                @endif
-            @endforeach
-
-            @if (!$hasAlerts)
-                <div style="text-align:center; padding:2rem; color:var(--text-gray);">
-                    <div style="font-size:2.5rem; margin-bottom:0.5rem;">🎉</div>
-                    <div style="font-weight:600; color:var(--success);">No Risk Alerts</div>
-                    <div style="font-size:0.85rem;">All students are on track. Keep up the good work!</div>
-                    <div style="margin-top:0.5rem; font-size:0.7rem; color:var(--text-gray);">
-                        <i class="bi bi-check-circle" style="color:var(--success);"></i>
-                        {{ number_format($stats['low_risk'] ?? 0) }} students are performing well
-                    </div>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- Student Risk Trend Chart --}}
-    <div class="chart-card-premium" id="studentRiskChartSection" style="{{ $studentId ? '' : 'display:none;' }}">
-        <div class="card-header">
-            <span class="title">
-                <i class="bi bi-person-lines-fill" style="color:var(--primary);"></i>
-                Student Risk Trend
-                <span class="badge" id="studentRiskName">
-                    @if ($studentId && isset($students))
-                        @php $selectedStudent = $students->firstWhere('id', $studentId); @endphp
-                        {{ $selectedStudent ? $selectedStudent->name . ' (' . ($selectedStudent->student_id ?? 'N/A') . ')' : '—' }}
-                    @else
-                        —
-                    @endif
-                </span>
-            </span>
-            <span class="subtitle">
-                <i class="bi bi-clock"></i> Weekly risk level
-                <span id="studentRiskLoading" style="display:none; margin-left:8px;">
-                    <span class="spinner-border spinner-border-sm" role="status"></span>
-                </span>
-            </span>
-        </div>
-        <div class="card-body">
-            <div class="chart-container-premium" style="height:220px;">
-                <canvas id="studentRiskChart"></canvas>
-            </div>
-            <div class="monthly-risk-stats" id="studentRiskMonthlyStats">
-                @if ($studentId)
-                    <div class="monthly-risk-stat" style="grid-column:1/-1; text-align:center; color:var(--text-gray);">
-                        <i class="bi bi-hourglass"></i> Loading data...
-                    </div>
+                    @endforeach
                 @else
-                    <div class="monthly-risk-stat" style="grid-column:1/-1; text-align:center; color:var(--text-gray);">
-                        <i class="bi bi-info-circle"></i> Select a student above
+                    <div class="alert-empty">
+                        <div class="icon"><i class="bi bi-check-circle-fill"
+                                style="font-size:2rem; color:var(--success);"></i></div>
+                        <div style="font-weight:600; color:var(--success);">No at-risk students</div>
+                        <div style="font-size:0.85rem;">All students are on track.</div>
                     </div>
                 @endif
             </div>
         </div>
-    </div>
 
-    {{-- At-Risk Students Table --}}
-    <div class="chart-card-premium" style="margin-bottom:2rem;">
-        <div class="card-header">
-            <span class="title">
-                <i class="bi bi-person-exclamation" style="color:var(--primary);"></i>
-                At-Risk Student Registry
-                <span class="badge" id="rowCount">{{ count($riskData) }} identified</span>
-            </span>
+        {{-- Panel: Weekly (No helper text) --}}
+        <div class="alert-panel" id="panel-weekly">
+            <div class="alerts-body" style="padding:0.5rem;">
+                @if (count($weeklyAlerts) > 0)
+                    @foreach ($weeklyAlerts as $alert)
+                        <div class="alert-item-small">
+                            <div class="alert-avatar-sm {{ strtolower($alert['current_level']) }}">
+                                {{ Str::upper(substr($alert['student']->name ?? 'U', 0, 1)) }}
+                            </div>
+                            <div class="alert-info-sm">
+                                <div class="student-name">{{ $alert['student']->name ?? 'Unknown' }}</div>
+                                <div class="student-detail">
+                                    <span>{{ $alert['student']->student_id ?? 'N/A' }}</span>
+                                    <span>•</span>
+                                    <span>{{ $alert['student']->department->name ?? 'N/A' }}</span>
+                                </div>
+                            </div>
+                            <span class="alert-risk-badge {{ strtolower($alert['current_level']) }}">
+                                {{ $alert['current_level'] }}
+                            </span>
+                            <div class="alert-period">{{ $alert['period_label'] }}</div>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="alert-empty">
+                        <div class="icon"><i class="bi bi-check-circle-fill"
+                                style="font-size:2rem; color:var(--success);"></i></div>
+                        <div style="font-weight:600; color:var(--success);">No at-risk students this week</div>
+                    </div>
+                @endif
+            </div>
         </div>
-        <div class="card-body" style="padding:0;">
-            @if (count($riskData) > 0)
-                <div class="table-wrapper-premium">
-                    <table class="table-premium" id="riskTable">
-                        <thead>
-                            <tr>
-                                <th>Student</th>
-                                <th>Department</th>
-                                <th style="text-align:center;">Year</th>
-                                <th style="text-align:center;">Attendance</th>
-                                <th style="text-align:center;">Roll Call<br><small>/10</small></th>
-                                <th style="text-align:center;">Consistency<br><small>6 max</small></th>
-                                <th style="text-align:center;">Punctuality<br><small>2 max</small></th>
-                                <th style="text-align:center;">Participation<br><small>2 max</small></th>
-                                <th style="text-align:center;">Risk Level</th>
-                                <th>Risk Factors</th>
-                                <th style="text-align:center;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="riskTableBody">
-                            @foreach ($riskData as $data)
-                                <tr>
-                                    <td>
-                                        <div style="display:flex; align-items:center; gap:0.5rem;">
-                                            <div
-                                                style="width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg, var(--primary), var(--primary-light)); color:var(--white); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.7rem; flex-shrink:0;">
-                                                {{ Str::upper(substr($data['student']->name ?? 'U', 0, 1)) }}
-                                            </div>
-                                            <div>
-                                                <div
-                                                    style="font-weight:600; color:var(--text-dark); font-size:0.78rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">
-                                                    {{ $data['student']->name ?? 'Unknown' }}
-                                                </div>
-                                                <div
-                                                    style="font-size:0.6rem; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:140px;">
-                                                    {{ $data['student']->email ?? '' }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td style="font-size:0.75rem; color:var(--text-gray);">
-                                        {{ $data['student']->department->name ?? 'N/A' }}
-                                    </td>
-                                    <td style="text-align:center; font-size:0.7rem; color:var(--text-gray);">
-                                        {{ $data['student']->current_year ?? 'N/A' }}
-                                    </td>
-                                    <td class="attendance-cell" style="text-align:center;">
-                                        <div
-                                            class="attendance-value {{ $data['attendance'] >= 70 ? 'high' : ($data['attendance'] >= 60 ? 'medium' : 'low') }}">
-                                            {{ $data['attendance'] }}%
-                                        </div>
-                                    </td>
-                                    <td class="roll-call-cell" style="text-align:center;">
-                                        <span class="roll-value">{{ $data['roll_call'] ?? '0' }}</span>
-                                    </td>
-                                    <td style="text-align:center; font-size:0.7rem; color:var(--text-gray);">
-                                        {{ $data['consistency'] ?? '0' }}
-                                    </td>
-                                    <td style="text-align:center; font-size:0.7rem; color:var(--text-gray);">
-                                        {{ $data['punctuality'] ?? '0' }}
-                                    </td>
-                                    <td style="text-align:center; font-size:0.7rem; color:var(--text-gray);">
-                                        {{ $data['participation'] ?? '0' }}
-                                    </td>
-                                    <td style="text-align:center;">
-                                        <span class="risk-badge-premium {{ strtolower($data['level']) }}">
-                                            @if ($data['level'] == 'High')
-                                                🚨
-                                            @endif
-                                            @if ($data['level'] == 'Medium')
-                                                ⚠️
-                                            @endif
-                                            @if ($data['level'] == 'Low')
-                                                ✅
-                                            @endif
-                                            {{ $data['level'] }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div style="display:flex; gap:0.2rem; flex-wrap:wrap;">
-                                            @foreach ($data['factors'] as $factor)
-                                                <span
-                                                    class="risk-factor-pill {{ str_contains($factor, 'critical') || str_contains($factor, '3+') ? 'critical' : 'warning' }}">
-                                                    {{ $factor }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    </td>
-                                    <td style="text-align:center;">
-                                        <div style="display:flex; gap:0.3rem; justify-content:center;">
-                                            <a href="{{ route('admin.students.show', $data['student']->id) }}"
-                                                class="btn-action view" title="View Profile">
-                                                <span class="btn-icon">👤</span>
-                                                <span class="btn-text">Profile</span>
-                                            </a>
-                                            <button class="btn-action intervene" title="Send Message"
-                                                onclick="openQuickMessage('{{ $data['student']->id }}', '{{ addslashes($data['student']->name) }}', '{{ addslashes($data['student']->email) }}', '{{ $data['level'] }}', '{{ $data['score'] }}')">
-                                                <span class="btn-icon">✉️</span>
-                                                <span class="btn-text">Message</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @else
-                <div style="text-align:center; padding:3rem 2rem;">
-                    <div style="font-size:3.5rem; margin-bottom:1rem;">🎉</div>
-                    <div style="color:var(--text-dark); font-weight:700; font-size:1.25rem;">No Students Currently At Risk
+
+        {{-- Panel: Monthly (No helper text) --}}
+        <div class="alert-panel" id="panel-monthly">
+            <div class="alerts-body" style="padding:0.5rem;">
+                @if (count($monthlyAlerts) > 0)
+                    @foreach ($monthlyAlerts as $alert)
+                        <div class="alert-item-small">
+                            <div class="alert-avatar-sm {{ strtolower($alert['current_level']) }}">
+                                {{ Str::upper(substr($alert['student']->name ?? 'U', 0, 1)) }}
+                            </div>
+                            <div class="alert-info-sm">
+                                <div class="student-name">{{ $alert['student']->name ?? 'Unknown' }}</div>
+                                <div class="student-detail">
+                                    <span>{{ $alert['student']->student_id ?? 'N/A' }}</span>
+                                    <span>•</span>
+                                    <span>{{ $alert['student']->department->name ?? 'N/A' }}</span>
+                                </div>
+                            </div>
+                            <span class="alert-risk-badge {{ strtolower($alert['current_level']) }}">
+                                {{ $alert['current_level'] }}
+                            </span>
+                            <div class="alert-period">{{ $alert['period_label'] }}</div>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="alert-empty">
+                        <div class="icon"><i class="bi bi-check-circle-fill"
+                                style="font-size:2rem; color:var(--success);"></i></div>
+                        <div style="font-weight:600; color:var(--success);">No at-risk students this month</div>
                     </div>
-                    <div style="color:var(--text-gray); font-size:0.9rem; margin-top:0.25rem;">All students have good
-                        attendance records</div>
-                    <div
-                        style="margin-top:1rem; padding:0.5rem 1.5rem; background:var(--success-light); border-radius:8px; display:inline-block; border:1px solid #a7f3d0;">
-                        <span style="color:#166534; font-weight:500;">✅ Risk Rate: 0% — Excellent</span>
-                    </div>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
     </div>
 
@@ -1827,6 +1765,14 @@
                     return null;
                 };
 
+                // ====== Reset Student Selection ======
+                window.resetStudentSelection = function() {
+                    input.value = '';
+                    selectedId = null;
+                    items.forEach(i => i.classList.remove('selected'));
+                    list.classList.remove('show');
+                };
+
                 // ====== Quick Risk Action ======
                 window.viewQuickRisk = function() {
                     const id = window.getRiskSelectedStudentId();
@@ -1888,10 +1834,20 @@
 
                             let html = '';
 
-                            const avgRisk = data.weekly.reduce((sum, w) => sum + w.risk_score, 0) / (data.weekly
-                                .length || 1);
-                            const riskLevel = avgRisk >= 70 ? 'High' : (avgRisk >= 40 ? 'Medium' : 'Low');
-                            const riskClass = riskLevel.toLowerCase();
+                            const riskLevels = data.weekly.map(w => w.risk_level);
+                            const levelCounts = {};
+                            riskLevels.forEach(l => {
+                                levelCounts[l] = (levelCounts[l] || 0) + 1;
+                            });
+                            let overallRisk = 'Low';
+                            let maxCount = 0;
+                            for (const [level, count] of Object.entries(levelCounts)) {
+                                if (count > maxCount) {
+                                    maxCount = count;
+                                    overallRisk = level;
+                                }
+                            }
+                            const riskClass = overallRisk.toLowerCase();
 
                             html += `
                             <div class="risk-modal-stats">
@@ -1905,7 +1861,7 @@
                                 </div>
                                 <div class="risk-modal-stat">
                                     <div>
-                                        <span class="status-badge ${riskClass}">${riskLevel}</span>
+                                        <span class="status-badge ${riskClass}">${overallRisk}</span>
                                     </div>
                                     <div class="label">Overall Risk Level</div>
                                 </div>
@@ -1918,14 +1874,11 @@
 
                             if (data.monthly && data.monthly.length > 0) {
                                 data.monthly.forEach(m => {
-                                    const mClass = m.risk_score >= 70 ? 'high' : (m.risk_score >= 40 ?
-                                        'medium' : 'low');
-                                    const mStatus = m.risk_score >= 70 ? 'High' : (m.risk_score >= 40 ?
-                                        'Medium' : 'Low');
+                                    const mClass = m.risk_level.toLowerCase();
                                     html += `
                                     <div class="modal-monthly-stat">
                                         <div class="m-label">${m.label}</div>
-                                        <div class="m-status ${mClass}">${mStatus}</div>
+                                        <div class="m-status ${mClass}">${m.risk_level}</div>
                                     </div>
                                 `;
                                 });
@@ -1948,15 +1901,23 @@
                             }
                             const ctx = document.getElementById('riskModalChart');
                             if (ctx && data.weekly && data.weekly.length > 0) {
-                                const colors = data.weekly.map(w => w.risk_score >= 70 ? '#ef4444' : (w
-                                    .risk_score >= 40 ? '#f59e0b' : '#10b981'));
+                                const colors = data.weekly.map(w => {
+                                    if (w.risk_level === 'High') return '#ef4444';
+                                    if (w.risk_level === 'Medium') return '#f59e0b';
+                                    return '#10b981';
+                                });
+                                const levelValues = data.weekly.map(w => {
+                                    if (w.risk_level === 'High') return 100;
+                                    if (w.risk_level === 'Medium') return 50;
+                                    return 0;
+                                });
                                 riskModalChart = new Chart(ctx, {
                                     type: 'line',
                                     data: {
                                         labels: data.weekly.map(w => w.label),
                                         datasets: [{
                                             label: 'Risk Level',
-                                            data: data.weekly.map(w => w.risk_score),
+                                            data: levelValues,
                                             borderColor: '#0A2463',
                                             backgroundColor: 'rgba(10,36,99,0.08)',
                                             borderWidth: 2.5,
@@ -1979,9 +1940,8 @@
                                                 callbacks: {
                                                     label: function(context) {
                                                         const value = context.parsed.y;
-                                                        const level = value >= 70 ? 'High' :
-                                                            (value >= 40 ? 'Medium' :
-                                                                'Low');
+                                                        const level = value >= 75 ? 'High' : (value >=
+                                                            25 ? 'Medium' : 'Low');
                                                         return 'Risk Level: ' + level;
                                                     }
                                                 }
@@ -1995,7 +1955,13 @@
                                                     font: {
                                                         size: 9
                                                     },
-                                                    stepSize: 20
+                                                    stepSize: 25,
+                                                    callback: function(value) {
+                                                        if (value === 0) return 'Low';
+                                                        if (value === 50) return 'Medium';
+                                                        if (value === 100) return 'High';
+                                                        return '';
+                                                    }
                                                 },
                                                 grid: {
                                                     color: 'rgba(0,0,0,0.05)'
@@ -2027,165 +1993,8 @@
                         });
                 }
 
-                // ====== Student Risk Chart ======
-                const studentRiskCtx = document.getElementById('studentRiskChart');
-                let studentRiskChart = null;
-                const riskLoadingIndicator = document.getElementById('studentRiskLoading');
-
-                function loadStudentRiskData(studentId) {
-                    if (!studentId) {
-                        document.getElementById('studentRiskChartSection').style.display = 'none';
-                        return;
-                    }
-                    const section = document.getElementById('studentRiskChartSection');
-                    section.style.display = 'block';
-                    document.getElementById('studentRiskName').textContent = 'Loading...';
-                    if (riskLoadingIndicator) riskLoadingIndicator.style.display = 'inline-block';
-
-                    const monthlyContainer = document.getElementById('studentRiskMonthlyStats');
-                    monthlyContainer.innerHTML = `
-                        <div class="monthly-risk-stat" style="grid-column:1/-1; text-align:center; color:var(--text-gray);">
-                            <i class="bi bi-hourglass"></i> Loading monthly data...
-                        </div>
-                    `;
-
-                    fetch(`/admin/risk/student-risk/${studentId}`)
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network error');
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (riskLoadingIndicator) riskLoadingIndicator.style.display = 'none';
-                            if (!data.success) throw new Error(data.message || 'Failed to load');
-
-                            document.getElementById('studentRiskName').textContent = data.student.name + ' (' + data
-                                .student.student_id + ')';
-
-                            monthlyContainer.innerHTML = '';
-                            if (data.monthly && data.monthly.length > 0) {
-                                data.monthly.forEach(m => {
-                                    const div = document.createElement('div');
-                                    div.className = 'monthly-risk-stat';
-                                    const riskColor = m.risk_score >= 70 ? 'high' : (m.risk_score >= 40 ?
-                                        'medium' : 'low');
-                                    const status = m.risk_score >= 70 ? 'High' : (m.risk_score >= 40 ?
-                                        'Medium' : 'Low');
-                                    div.innerHTML = `
-                                        <div class="m-label">${m.label}</div>
-                                        <div class="m-status ${riskColor}">${status}</div>
-                                    `;
-                                    monthlyContainer.appendChild(div);
-                                });
-                            } else {
-                                monthlyContainer.innerHTML = `
-                                    <div class="monthly-risk-stat" style="grid-column:1/-1; text-align:center; color:var(--text-gray);">
-                                        <i class="bi bi-info-circle"></i> No monthly data
-                                    </div>
-                                `;
-                            }
-
-                            if (studentRiskChart) {
-                                studentRiskChart.destroy();
-                                studentRiskChart = null;
-                            }
-                            if (!studentRiskCtx) return;
-
-                            if (data.weekly && data.weekly.length > 0) {
-                                const colors = data.weekly.map(w => w.risk_score >= 70 ? '#ef4444' : (w
-                                    .risk_score >= 40 ? '#f59e0b' : '#10b981'));
-                                studentRiskChart = new Chart(studentRiskCtx, {
-                                    type: 'line',
-                                    data: {
-                                        labels: data.weekly.map(w => w.label),
-                                        datasets: [{
-                                            label: 'Risk Level',
-                                            data: data.weekly.map(w => w.risk_score),
-                                            borderColor: '#0A2463',
-                                            backgroundColor: 'rgba(10,36,99,0.08)',
-                                            borderWidth: 2.5,
-                                            fill: true,
-                                            tension: 0.3,
-                                            pointBackgroundColor: colors,
-                                            pointBorderColor: 'white',
-                                            pointBorderWidth: 2,
-                                            pointRadius: 4,
-                                        }]
-                                    },
-                                    options: {
-                                        responsive: true,
-                                        maintainAspectRatio: false,
-                                        plugins: {
-                                            legend: {
-                                                display: false
-                                            },
-                                            tooltip: {
-                                                callbacks: {
-                                                    label: function(context) {
-                                                        const value = context.parsed.y;
-                                                        const level = value >= 70 ?
-                                                            'High' : (value >= 40 ?
-                                                                'Medium' :
-                                                                'Low');
-                                                        return 'Risk Level: ' + level;
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        scales: {
-                                            y: {
-                                                beginAtZero: true,
-                                                max: 100,
-                                                ticks: {
-                                                    font: {
-                                                        size: 9
-                                                    },
-                                                    stepSize: 20
-                                                },
-                                                grid: {
-                                                    color: 'rgba(0,0,0,0.05)'
-                                                }
-                                            },
-                                            x: {
-                                                grid: {
-                                                    display: false
-                                                },
-                                                ticks: {
-                                                    font: {
-                                                        size: 9
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            if (riskLoadingIndicator) riskLoadingIndicator.style.display = 'none';
-                            console.error('Error:', error);
-                            document.getElementById('studentRiskName').textContent = 'Error loading data';
-                            monthlyContainer.innerHTML = `
-                                <div class="monthly-risk-stat" style="grid-column:1/-1; text-align:center; color:var(--danger);">
-                                    <i class="bi bi-exclamation-triangle"></i> ${error.message || 'Failed to load'}
-                                </div>
-                            `;
-                        });
-                }
-
-                const initialStudentId = {{ $studentId ?? 'null' }};
-                if (initialStudentId) {
-                    loadStudentRiskData(initialStudentId);
-                }
-
-                items.forEach(item => {
-                    item.addEventListener('click', function() {
-                        const id = this.dataset.id;
-                        if (id) loadStudentRiskData(id);
-                    });
-                });
-
                 // ====== Quick Message Functions ======
-                function openQuickMessage(studentId, studentName, studentEmail, riskLevel, riskScore) {
+                window.openQuickMessage = function(studentId, studentName, studentEmail, riskLevel, riskScore) {
                     document.getElementById('qmStudentName').textContent = studentName;
                     document.getElementById('qmStudentEmail').textContent = studentEmail;
 
@@ -2222,8 +2031,7 @@
 
                     const modal = new bootstrap.Modal(document.getElementById('quickMessageModal'));
                     modal.show();
-                }
-                window.openQuickMessage = openQuickMessage;
+                };
 
                 document.querySelectorAll('.btn-template').forEach(btn => {
                     btn.addEventListener('click', function() {
@@ -2279,8 +2087,8 @@
                                 if (data.success) {
                                     this.textContent = 'Sent!';
                                     this.style.background = '#10b981';
-                                    showToast('Message sent to ' + document.getElementById(
-                                        'qmStudentName').textContent, 'success');
+                                    showToast('Message sent to ' + document.getElementById('qmStudentName')
+                                        .textContent, 'success');
                                     setTimeout(() => {
                                         const modal = bootstrap.Modal.getInstance(document
                                             .getElementById('quickMessageModal'));
@@ -2340,6 +2148,23 @@
                         }
                     }, 5000);
                 }
+
+                // ====== Tab Switcher ======
+                window.switchAlertTab = function(tab) {
+                    document.querySelectorAll('.alert-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelector(`.alert-tab[data-tab="${tab}"]`).classList.add('active');
+
+                    document.querySelectorAll('.alert-panel').forEach(p => p.classList.remove('active'));
+                    document.getElementById(`panel-${tab}`).classList.add('active');
+
+                    const label = document.getElementById('alertTabLabel');
+                    const labels = {
+                        'overall': 'Current risk status',
+                        'weekly': 'Weekly risk levels (current week)',
+                        'monthly': 'Monthly risk levels (current month)'
+                    };
+                    label.textContent = labels[tab] || 'Current risk status';
+                };
 
                 // ====== Charts: Risk Distribution ======
                 const riskCounts = @json($riskCounts);

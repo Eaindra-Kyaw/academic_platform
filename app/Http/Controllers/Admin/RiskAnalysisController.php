@@ -18,12 +18,12 @@ use Carbon\Carbon;
 class RiskAnalysisController extends Controller
 {
     /**
-     * Display risk analysis dashboard
-     * ✅ FIXED: Risk Distribution and Risk Trend now count DISTINCT students
+     * Display risk analysis dashboard with course filter
      */
     public function index(Request $request)
     {
         $departmentId = $request->input('department');
+        $courseId = $request->input('course_id');
         $year = $request->input('year');
         $riskLevel = $request->input('risk_level');
         $studentId = $request->input('student_id');
@@ -38,10 +38,18 @@ class RiskAnalysisController extends Controller
         ];
 
         $departments = Department::all();
+
+        // Get all courses for filter (filtered by department if selected)
+        $coursesQuery = Course::where('is_active', true);
+        if ($departmentId) {
+            $coursesQuery->where('department_id', $departmentId);
+        }
+        $courses = $coursesQuery->orderBy('course_code')->get();
+
         $students = User::where('role_id', 3)->orderBy('name')->get(['id', 'name', 'student_id']);
 
         // ============================================================
-        // 1. Get ALL students (with filters)
+        // 1. Get all students (with filters)
         // ============================================================
         $studentQuery = User::where('role_id', 3);
         if ($departmentId) {
@@ -50,194 +58,155 @@ class RiskAnalysisController extends Controller
         if ($year) {
             $studentQuery->where('current_year', $year);
         }
+        if ($courseId) {
+            // Only students enrolled in this course
+            $enrolledStudentIds = Enrollment::where('course_id', $courseId)
+                ->where('status', 'approved')
+                ->pluck('student_id')
+                ->toArray();
+            $studentQuery->whereIn('id', $enrolledStudentIds);
+        }
         $allStudents = $studentQuery->get();
         $allStudentIds = $allStudents->pluck('id')->toArray();
 
         // ============================================================
-        // 2. RISK DISTRIBUTION - DISTINCT STUDENTS (highest risk level)
+        // 2. Risk Distribution - DISTINCT STUDENTS
         // ============================================================
-        $studentRiskLevels = [];
         $riskCounts = ['Low' => 0, 'Medium' => 0, 'High' => 0];
 
         foreach ($allStudents as $student) {
-            // Get all evaluations for this student (latest per course)
-            $evals = AttendanceEvaluation::where('student_id', $student->id)
+            // If course filter is applied, only get evaluations for that course
+            $evalQuery = AttendanceEvaluation::where('student_id', $student->id)
                 ->where('evaluation_date', function($q) {
                     $q->selectRaw('MAX(evaluation_date)')
                         ->from('attendance_evaluations as ae2')
                         ->whereColumn('ae2.student_id', 'attendance_evaluations.student_id')
                         ->whereColumn('ae2.course_id', 'attendance_evaluations.course_id');
-                })
-                ->get();
+                });
 
-            if ($evals->isEmpty()) {
-                continue; // No evaluations yet
+            if ($courseId) {
+                $evalQuery->where('course_id', $courseId);
             }
 
-            // Determine overall risk level for this student (highest/majority)
+            $evals = $evalQuery->get();
+
+            if ($evals->isEmpty()) continue;
+
             $levels = $evals->pluck('risk_level')->toArray();
             $levelCounts = array_count_values($levels);
             arsort($levelCounts);
             $overallRisk = key($levelCounts) ?? 'Low';
 
-            $studentRiskLevels[] = [
-                'student_id' => $student->id,
-                'risk_level' => $overallRisk,
-            ];
-
-            if (isset($riskCounts[$overallRisk])) {
-                $riskCounts[$overallRisk]++;
-            }
+            if (isset($riskCounts[$overallRisk])) $riskCounts[$overallRisk]++;
         }
 
         // ============================================================
-        // 3. RISK TREND - DISTINCT STUDENTS PER MONTH (last 6 months)
+        // 3. Risk Trend (6 months) - DISTINCT STUDENTS
         // ============================================================
         $riskTrend = [];
-        $months = 6;
-
-        for ($i = $months - 1; $i >= 0; $i--) {
+        for ($i = 5; $i >= 0; $i--) {
             $month = Carbon::now()->subMonths($i);
-            $monthStart = $month->copy()->startOfMonth();
             $monthEnd = $month->copy()->endOfMonth();
-
-            $monthCounts = ['Low' => 0, 'Medium' => 0, 'High' => 0];
+            $counts = ['Low' => 0, 'Medium' => 0, 'High' => 0];
 
             foreach ($allStudentIds as $sid) {
-                // Get ALL evaluations up to this month for this student
-                $allEvalsUpToMonth = AttendanceEvaluation::where('student_id', $sid)
-                    ->where('evaluation_date', '<=', $monthEnd)
-                    ->get();
+                $evalQuery = AttendanceEvaluation::where('student_id', $sid)
+                    ->where('evaluation_date', '<=', $monthEnd);
 
-                if ($allEvalsUpToMonth->isEmpty()) {
-                    continue;
+                if ($courseId) {
+                    $evalQuery->where('course_id', $courseId);
                 }
 
-                // Determine overall risk for this student up to this month (highest/majority)
-                $levels = $allEvalsUpToMonth->pluck('risk_level')->toArray();
+                $allEvals = $evalQuery->get();
+                if ($allEvals->isEmpty()) continue;
+
+                $levels = $allEvals->pluck('risk_level')->toArray();
                 $levelCounts = array_count_values($levels);
                 arsort($levelCounts);
                 $overall = key($levelCounts) ?? 'Low';
-
-                if (isset($monthCounts[$overall])) {
-                    $monthCounts[$overall]++;
-                }
+                if (isset($counts[$overall])) $counts[$overall]++;
             }
 
             $riskTrend[] = [
                 'month' => $month->format('M'),
-                'low_risk' => $monthCounts['Low'],
-                'medium_risk' => $monthCounts['Medium'],
-                'high_risk' => $monthCounts['High'],
+                'low_risk' => $counts['Low'],
+                'medium_risk' => $counts['Medium'],
+                'high_risk' => $counts['High'],
             ];
         }
 
         // ============================================================
-        // 4. STATS (for summary cards) - using distinct students
+        // 4. Stats for cards
         // ============================================================
         $stats = [
             'total_students' => count($allStudentIds),
-            'total_courses' => Course::where('is_active', true)->count(),
             'low_risk' => $riskCounts['Low'],
             'medium_risk' => $riskCounts['Medium'],
             'high_risk' => $riskCounts['High'],
-            'eligible' => 0,
-            'warning' => 0,
-            'not_eligible' => 0,
-            'recovering' => 0,
-            'declining' => 0,
-            'critical' => 0,
         ];
 
         // ============================================================
-        // 5. RISK DATA FOR TABLE (Medium/High risk students only)
+        // 5. Overall Alerts (Medium/High risk students)
         // ============================================================
-        $riskData = [];
+        $overallAlerts = [];
         $latestEval = AttendanceEvaluation::select('student_id', DB::raw('MAX(evaluation_date) as latest_date'))
             ->groupBy('student_id')
             ->pluck('latest_date', 'student_id');
 
-        // Apply student filter if set
-        $filteredStudentIds = $allStudentIds;
-
         foreach ($latestEval as $sid => $date) {
-            // Skip if student is not in filtered list
-            if (!in_array($sid, $filteredStudentIds)) {
-                continue;
+            if (!in_array($sid, $allStudentIds)) continue;
+
+            $evalQuery = AttendanceEvaluation::where('student_id', $sid)
+                ->where('evaluation_date', $date);
+
+            if ($courseId) {
+                $evalQuery->where('course_id', $courseId);
             }
 
-            $eval = AttendanceEvaluation::where('student_id', $sid)
-                ->where('evaluation_date', $date)
-                ->first();
+            $eval = $evalQuery->first();
 
-            if ($eval && ($eval->risk_level == 'Medium' || $eval->risk_level == 'High')) {
-                // Apply risk level filter if set
-                if ($riskLevel && $eval->risk_level !== $riskLevel) {
-                    continue;
-                }
+            if ($eval && in_array($eval->risk_level, ['Medium', 'High'])) {
+                if ($riskLevel && $eval->risk_level !== $riskLevel) continue;
 
-                $riskData[] = [
+                $overallAlerts[] = [
                     'student' => $eval->student,
-                    'attendance' => $eval->attendance_percentage,
-                    'roll_call' => $eval->roll_call_total ?? 0,
-                    'consistency' => $eval->consistency_marks ?? 0,
-                    'punctuality' => $eval->punctuality_marks ?? 0,
-                    'participation' => $eval->participation_marks ?? 0,
+                    'course' => $eval->course,
                     'level' => $eval->risk_level,
-                    'score' => $eval->risk_score,
-                    'factors' => $eval->risk_factors ?? [],
+                    'attendance' => $eval->attendance_percentage,
                 ];
             }
         }
 
-        usort($riskData, function($a, $b) {
-            $order = ['High' => 0, 'Medium' => 1, 'Low' => 2];
+        usort($overallAlerts, function($a, $b) {
+            $order = ['High' => 0, 'Medium' => 1];
             return $order[$a['level']] - $order[$b['level']];
         });
 
         // ============================================================
-        // 6. DEPARTMENT RISK DISTRIBUTION (for bars - optional)
+        // 6. Weekly Alerts - ALL STUDENTS (with current risk level)
         // ============================================================
-        $riskByDepartment = Department::with(['courses' => function($q) {
-            $q->with(['evaluations' => function($q2) {
-                $q2->where('evaluation_date', function($q3) {
-                    $q3->selectRaw('MAX(evaluation_date)')
-                        ->from('attendance_evaluations as ae2')
-                        ->whereColumn('ae2.student_id', 'attendance_evaluations.student_id')
-                        ->whereColumn('ae2.course_id', 'attendance_evaluations.course_id');
-                });
-            }]);
-        }])->get()->map(function($dept) {
-            $evals = $dept->courses->flatMap->evaluations;
-            return [
-                'name' => $dept->code,
-                'total' => $evals->count(),
-                'Low' => $evals->where('risk_level', 'Low')->count(),
-                'Medium' => $evals->where('risk_level', 'Medium')->count(),
-                'High' => $evals->where('risk_level', 'High')->count(),
-            ];
-        })->filter(function($item) {
-            return $item['total'] > 0;
-        })->values();
+        $weeklyAlerts = $this->getWeeklyAlerts($allStudentIds, $courseId);
 
         // ============================================================
-        // 7. RISK FACTORS (for future use)
+        // 7. Monthly Alerts - ALL STUDENTS (with current risk level)
         // ============================================================
-        $riskFactors = [];
+        $monthlyAlerts = $this->getMonthlyAlerts($allStudentIds, $courseId);
 
         // ============================================================
-        // 8. RETURN VIEW
+        // 8. VIEW
         // ============================================================
         return view('admin.risk.index', compact(
             'departments',
+            'courses',
             'students',
             'stats',
             'riskCounts',
-            'riskFactors',
             'riskTrend',
-            'riskData',
-            'riskByDepartment',
+            'overallAlerts',
+            'weeklyAlerts',
+            'monthlyAlerts',
             'departmentId',
+            'courseId',
             'year',
             'riskLevel',
             'studentId',
@@ -246,14 +215,124 @@ class RiskAnalysisController extends Controller
     }
 
     /**
-     * Get student risk history (weekly/monthly) - PERIOD-BASED
+     * Get weekly alerts for all students (with current risk level)
+     */
+    private function getWeeklyAlerts($studentIds, $courseId = null)
+    {
+        $alerts = [];
+        $weekStart = Carbon::now()->startOfWeek();
+        $weekEnd = Carbon::now()->endOfWeek();
+        $monday = Carbon::now()->startOfWeek();
+        $friday = Carbon::now()->startOfWeek()->addDays(4);
+
+        foreach ($studentIds as $sid) {
+            // Get this week's risk level
+            $query = AttendanceEvaluation::where('student_id', $sid)
+                ->whereBetween('evaluation_date', [$weekStart, $weekEnd]);
+            if ($courseId) {
+                $query->where('course_id', $courseId);
+            }
+            $thisWeekEvals = $query->get();
+
+            if ($thisWeekEvals->isNotEmpty()) {
+                $levels = $thisWeekEvals->pluck('risk_level')->toArray();
+                $levelCounts = array_count_values($levels);
+                arsort($levelCounts);
+                $currentLevel = key($levelCounts) ?? 'Low';
+            } else {
+                // If no evaluation this week, use the latest overall evaluation
+                $latestQuery = AttendanceEvaluation::where('student_id', $sid);
+                if ($courseId) {
+                    $latestQuery->where('course_id', $courseId);
+                }
+                $latestEval = $latestQuery->orderBy('evaluation_date', 'desc')->first();
+                $currentLevel = $latestEval ? $latestEval->risk_level : 'Low';
+            }
+
+            // Only include students with Medium/High risk (since we only show at-risk students)
+            if ($currentLevel !== 'Medium' && $currentLevel !== 'High') continue;
+
+            $student = User::find($sid);
+            if ($student) {
+                $alerts[] = [
+                    'student' => $student,
+                    'current_level' => $currentLevel,
+                    'period_label' => $monday->format('M d') . ' - ' . $friday->format('M d'),
+                ];
+            }
+        }
+
+        // Sort: High first, then Medium
+        usort($alerts, function($a, $b) {
+            $order = ['High' => 0, 'Medium' => 1];
+            return $order[$a['current_level']] - $order[$b['current_level']];
+        });
+
+        return $alerts;
+    }
+
+    /**
+     * Get monthly alerts for all students (with current risk level)
+     */
+    private function getMonthlyAlerts($studentIds, $courseId = null)
+    {
+        $alerts = [];
+        $thisMonthStart = Carbon::now()->startOfMonth();
+        $thisMonthEnd = Carbon::now()->endOfMonth();
+
+        foreach ($studentIds as $sid) {
+            // Get this month's risk level
+            $query = AttendanceEvaluation::where('student_id', $sid)
+                ->whereBetween('evaluation_date', [$thisMonthStart, $thisMonthEnd]);
+            if ($courseId) {
+                $query->where('course_id', $courseId);
+            }
+            $thisMonthEvals = $query->get();
+
+            if ($thisMonthEvals->isNotEmpty()) {
+                $levels = $thisMonthEvals->pluck('risk_level')->toArray();
+                $levelCounts = array_count_values($levels);
+                arsort($levelCounts);
+                $currentLevel = key($levelCounts) ?? 'Low';
+            } else {
+                // If no evaluation this month, use the latest overall evaluation
+                $latestQuery = AttendanceEvaluation::where('student_id', $sid);
+                if ($courseId) {
+                    $latestQuery->where('course_id', $courseId);
+                }
+                $latestEval = $latestQuery->orderBy('evaluation_date', 'desc')->first();
+                $currentLevel = $latestEval ? $latestEval->risk_level : 'Low';
+            }
+
+            // Only include students with Medium/High risk
+            if ($currentLevel !== 'Medium' && $currentLevel !== 'High') continue;
+
+            $student = User::find($sid);
+            if ($student) {
+                $alerts[] = [
+                    'student' => $student,
+                    'current_level' => $currentLevel,
+                    'period_label' => $thisMonthStart->format('M Y'),
+                ];
+            }
+        }
+
+        usort($alerts, function($a, $b) {
+            $order = ['High' => 0, 'Medium' => 1];
+            return $order[$a['current_level']] - $order[$b['current_level']];
+        });
+
+        return $alerts;
+    }
+
+    /**
+     * Get student risk history for modal AJAX
      */
     public function studentRiskHistory($studentId)
     {
         try {
             $student = User::findOrFail($studentId);
 
-            // Get all courses the student is enrolled in
             $courseIds = Enrollment::where('student_id', $studentId)
                 ->where('status', 'approved')
                 ->pluck('course_id')
@@ -268,7 +347,6 @@ class RiskAnalysisController extends Controller
                 ]);
             }
 
-            // Get all ended sessions for those courses (last 12 weeks)
             $weeks = 12;
             $startDate = Carbon::now()->subWeeks($weeks)->startOfWeek();
 
@@ -294,7 +372,6 @@ class RiskAnalysisController extends Controller
                 ->get()
                 ->keyBy('attendance_session_id');
 
-            // Build weekly trend (period-based)
             $weekly = [];
             $monthlyGroup = [];
 
@@ -308,14 +385,13 @@ class RiskAnalysisController extends Controller
                 });
 
                 if ($weekSessions->isEmpty()) {
-                    $weekly[] = ['label' => $label, 'attendance' => 0, 'risk_score' => 0];
+                    $weekly[] = ['label' => $label, 'attendance' => 0, 'risk_level' => 'Low'];
                     continue;
                 }
 
                 $totalPeriods = 0;
                 $attendedPeriods = 0;
-                $riskSum = 0;
-                $riskCount = 0;
+                $riskLevels = [];
 
                 foreach ($weekSessions as $session) {
                     $periods = $session->conducted_periods ?? 1;
@@ -326,48 +402,61 @@ class RiskAnalysisController extends Controller
                         $attendedPeriods += $periods;
                     }
 
-                    // Get evaluation for this course (latest)
                     $eval = AttendanceEvaluation::where('student_id', $studentId)
                         ->where('course_id', $session->course_id)
                         ->orderBy('evaluation_date', 'desc')
                         ->first();
 
                     if ($eval) {
-                        $riskSum += $eval->risk_score;
-                        $riskCount++;
+                        $riskLevels[] = $eval->risk_level;
                     }
                 }
 
                 $attendance = $totalPeriods > 0 ? round(($attendedPeriods / $totalPeriods) * 100, 1) : 0;
-                $avgRisk = $riskCount > 0 ? round($riskSum / $riskCount, 1) : 0;
+
+                $riskLevel = 'Low';
+                if (!empty($riskLevels)) {
+                    $levelCounts = array_count_values($riskLevels);
+                    arsort($levelCounts);
+                    $riskLevel = key($levelCounts) ?? 'Low';
+                }
 
                 $weekly[] = [
                     'label' => $label,
                     'attendance' => $attendance,
-                    'risk_score' => $avgRisk,
+                    'risk_level' => $riskLevel,
                 ];
 
-                // Monthly grouping
                 $monthKey = $weekStart->format('Y-m');
                 if (!isset($monthlyGroup[$monthKey])) {
                     $monthlyGroup[$monthKey] = [
                         'label' => $weekStart->format('M Y'),
                         'attendance_sum' => 0,
-                        'risk_sum' => 0,
+                        'risk_levels' => [],
                         'count' => 0,
                     ];
                 }
                 $monthlyGroup[$monthKey]['attendance_sum'] += $attendance;
-                $monthlyGroup[$monthKey]['risk_sum'] += $avgRisk;
+                if (!empty($riskLevels)) {
+                    $monthlyGroup[$monthKey]['risk_levels'] = array_merge($monthlyGroup[$monthKey]['risk_levels'], $riskLevels);
+                }
                 $monthlyGroup[$monthKey]['count']++;
             }
 
             $monthly = [];
             foreach ($monthlyGroup as $key => $data) {
+                $avgAttendance = $data['count'] > 0 ? round($data['attendance_sum'] / $data['count'], 1) : 0;
+                $riskLevel = 'Low';
+                if (!empty($data['risk_levels'])) {
+                    $levelCounts = array_count_values($data['risk_levels']);
+                    arsort($levelCounts);
+                    $riskLevel = key($levelCounts) ?? 'Low';
+                }
+
                 $monthly[] = [
                     'label' => $data['label'],
-                    'attendance' => $data['count'] > 0 ? round($data['attendance_sum'] / $data['count'], 1) : 0,
-                    'risk_score' => $data['count'] > 0 ? round($data['risk_sum'] / $data['count'], 1) : 0,
+                    'attendance' => $avgAttendance,
+                    'risk_level' => $riskLevel,
                 ];
             }
 
@@ -385,9 +474,10 @@ class RiskAnalysisController extends Controller
         }
     }
 
-    /**
-     * Get risk details for a specific student
-     */
+    // ============================================================
+    // Legacy methods – kept for backward compatibility
+    // ============================================================
+
     public function studentRisk($studentId)
     {
         $student = User::findOrFail($studentId);
@@ -404,7 +494,6 @@ class RiskAnalysisController extends Controller
             'latest_evaluation' => $latest,
             'total_courses' => $evaluations->count(),
             'avg_attendance' => round($evaluations->avg('attendance_percentage'), 1),
-            'avg_risk_score' => round($evaluations->avg('risk_score'), 1),
             'overall_risk' => $this->getOverallRisk($evaluations),
             'overall_eligibility' => $this->getOverallEligibility($evaluations),
             'courses' => $evaluations->map(function($e) {
@@ -412,7 +501,6 @@ class RiskAnalysisController extends Controller
                     'course' => $e->course,
                     'attendance' => $e->attendance_percentage,
                     'risk_level' => $e->risk_level,
-                    'risk_score' => $e->risk_score,
                     'eligibility' => $e->eligibility_status,
                     'recovery' => $e->recovery_status,
                     'date' => $e->evaluation_date,
@@ -424,9 +512,6 @@ class RiskAnalysisController extends Controller
         return view('admin.risk-analysis.student', compact('summary'));
     }
 
-    /**
-     * Get risk by department
-     */
     public function departmentRisk($departmentId)
     {
         $department = Department::findOrFail($departmentId);
@@ -464,9 +549,6 @@ class RiskAnalysisController extends Controller
         return view('admin.risk-analysis.department', compact('department', 'stats', 'courses'));
     }
 
-    /**
-     * Export risk report
-     */
     public function export(Request $request)
     {
         $departmentId = $request->input('department');
@@ -504,8 +586,7 @@ class RiskAnalysisController extends Controller
             fputcsv($handle, [
                 'Student ID', 'Student Name', 'Email', 'Year',
                 'Course Code', 'Course Name',
-                'Attendance %', 'Roll Call', 'Consistency', 'Punctuality', 'Participation',
-                'Risk Level', 'Risk Score',
+                'Attendance %', 'Risk Level',
                 'Eligibility', 'Recovery Status'
             ]);
 
@@ -518,12 +599,7 @@ class RiskAnalysisController extends Controller
                     $e->course->course_code,
                     $e->course->course_name,
                     $e->attendance_percentage,
-                    $e->roll_call_total ?? 0,
-                    $e->consistency_marks ?? 0,
-                    $e->punctuality_marks ?? 0,
-                    $e->participation_marks ?? 0,
                     $e->risk_level,
-                    $e->risk_score,
                     $e->eligibility_status,
                     $e->recovery_status,
                 ]);
@@ -535,14 +611,17 @@ class RiskAnalysisController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    // ============================================================
     // Helper methods
+    // ============================================================
+
     private function getOverallRisk($evaluations)
     {
         if ($evaluations->isEmpty()) return 'Low';
-        $avgRisk = $evaluations->avg('risk_score');
-        if ($avgRisk < 40) return 'Low';
-        if ($avgRisk < 70) return 'Medium';
-        return 'High';
+        $levels = $evaluations->pluck('risk_level')->toArray();
+        $levelCounts = array_count_values($levels);
+        arsort($levelCounts);
+        return key($levelCounts) ?? 'Low';
     }
 
     private function getOverallEligibility($evaluations)
@@ -563,9 +642,13 @@ class RiskAnalysisController extends Controller
             ->get()
             ->groupBy('evaluation_date')
             ->map(function($group, $date) {
+                $levels = $group->pluck('risk_level')->toArray();
+                $levelCounts = array_count_values($levels);
+                arsort($levelCounts);
+                $overall = key($levelCounts) ?? 'Low';
                 return [
                     'date' => $date,
-                    'avg_risk' => round($group->avg('risk_score'), 1),
+                    'avg_risk' => $overall,
                     'avg_attendance' => round($group->avg('attendance_percentage'), 1),
                     'low' => $group->where('risk_level', 'Low')->count(),
                     'medium' => $group->where('risk_level', 'Medium')->count(),
