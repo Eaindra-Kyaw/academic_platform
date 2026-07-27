@@ -17,23 +17,17 @@ use Carbon\Carbon;
 
 class AttendanceAnalyticsController extends Controller
 {
-    /**
-     * Display attendance analytics dashboard
-     */
     public function index(Request $request)
     {
-        // Get current semester
         $currentSemester = Semester::where('is_current', true)->first();
         $selectedSemester = $request->input('semester_id', $currentSemester ? $currentSemester->id : null);
 
-        // Get filters
         $departmentId = $request->input('department_id');
         $courseId = $request->input('course_id');
         $year = $request->input('year');
         $studentId = $request->input('student_id');
         $dateRange = $request->input('date_range', 'this_month');
 
-        // Build date range
         $dateFrom = null;
         $dateTo = null;
         switch ($dateRange) {
@@ -61,44 +55,57 @@ class AttendanceAnalyticsController extends Controller
                 break;
         }
 
-        // Get statistics
-        $totalSessions = AttendanceSession::count();
-        $totalRecords = AttendanceRecord::count();
-        $presentCount = AttendanceRecord::where('status', 'present')->count();
-        $lateCount = AttendanceRecord::where('status', 'late')->count();
-        $absentCount = AttendanceRecord::where('status', 'absent')->count();
+        // ============================================================
+        // 1. STATISTICS (filtered)
+        // ============================================================
+        $stats = $this->getStats($departmentId, $courseId, $year, $dateFrom, $dateTo);
 
-        // Calculate average attendance
-        $totalStudents = User::where('role_id', 3)->count();
-        $totalPossible = $totalStudents * $totalSessions;
-        $avgAttendance = $totalPossible > 0 ? round((($presentCount + $lateCount) / $totalPossible) * 100, 1) : 0;
+        // Add filtered student and course counts
+        $filteredStudents = User::where('role_id', 3);
+        if ($departmentId) {
+            $filteredStudents->where('department_id', $departmentId);
+        }
+        if ($year) {
+            $filteredStudents->where('current_year', $year);
+        }
+        if ($courseId) {
+            $filteredStudents->whereHas('enrollments', function ($q) use ($courseId) {
+                $q->where('course_id', $courseId)->where('status', 'approved');
+            });
+        }
+        $stats['total_students'] = $filteredStudents->count();
 
-        // Get department attendance
+        $filteredCourses = Course::where('is_active', true);
+        if ($departmentId) {
+            $filteredCourses->where('department_id', $departmentId);
+        }
+        $stats['total_courses'] = $filteredCourses->count();
+
+        // ============================================================
+        // 2. DEPARTMENT ATTENDANCE (unique departments, no duplicates)
+        // ============================================================
         $departmentAttendance = $this->getDepartmentAttendance($departmentId, $dateFrom, $dateTo);
 
-        // Weekly trend – if a student is selected, get that student's weekly attendance
+        // ============================================================
+        // 3. WEEKLY TREND
+        // ============================================================
         $weeklyTrend = $this->getWeeklyTrend($departmentId, $courseId, $year, $dateFrom, $dateTo, $studentId);
 
-        // Course ranking
+        // ============================================================
+        // 4. COURSE RANKING
+        // ============================================================
         $courseRanking = $this->getCourseRanking($departmentId, $dateFrom, $dateTo);
 
-        // At-risk students
+        // ============================================================
+        // 5. AT-RISK STUDENTS (computed but NOT shown)
+        // ============================================================
         $atRiskStudents = $this->getAtRiskStudents($departmentId, $year);
 
-        // Eligibility stats
+        // ============================================================
+        // 6. ELIGIBILITY STATS (not used)
+        // ============================================================
         $eligibilityStats = $this->getEligibilityStats($departmentId);
 
-        // Stats array for view
-        $stats = [
-            'total_sessions' => $totalSessions,
-            'total_records' => $totalRecords,
-            'present_count' => $presentCount,
-            'late_count' => $lateCount,
-            'absent_count' => $absentCount,
-            'avg_attendance' => $avgAttendance,
-        ];
-
-        // Year labels for filter
         $yearLabels = [
             1 => 'First Year',
             2 => 'Second Year',
@@ -108,14 +115,9 @@ class AttendanceAnalyticsController extends Controller
             6 => 'Sixth Year',
         ];
 
-        // Get filter options
         $departments = Department::orderBy('name')->get();
         $courses = Course::where('is_active', true)->orderBy('course_code')->get();
-
-        // Students for dropdown
         $students = User::where('role_id', 3)->orderBy('name')->get(['id', 'name', 'student_id']);
-
-        // Semesters
         $semesters = Semester::orderBy('academic_year', 'desc')
             ->orderBy('semester_number', 'asc')
             ->get();
@@ -129,13 +131,13 @@ class AttendanceAnalyticsController extends Controller
             'eligibilityStats',
             'departments',
             'courses',
+            'students',
             'semesters',
             'selectedSemester',
             'departmentId',
             'courseId',
             'year',
             'studentId',
-            'students',
             'dateRange',
             'dateFrom',
             'dateTo',
@@ -144,53 +146,58 @@ class AttendanceAnalyticsController extends Controller
     }
 
     /**
-     * Display all attendance records across the university
+     * Get statistics from attendance evaluations (filtered)
      */
-    public function records(Request $request)
+    private function getStats($departmentId = null, $courseId = null, $year = null, $dateFrom = null, $dateTo = null)
     {
-        $query = AttendanceRecord::with(['session.course', 'student']);
+        $query = DB::table('attendance_evaluations')
+            ->join('users', 'users.id', '=', 'attendance_evaluations.student_id')
+            ->join('courses', 'courses.id', '=', 'attendance_evaluations.course_id')
+            ->where('users.role_id', 3);
 
-        // Filter by department
-        if ($request->filled('department_id')) {
-            $query->whereHas('session.course', function($q) use ($request) {
-                $q->where('department_id', $request->department_id);
-            });
+        if ($departmentId) {
+            $query->where('courses.department_id', $departmentId);
+        }
+        if ($courseId) {
+            $query->where('attendance_evaluations.course_id', $courseId);
+        }
+        if ($year) {
+            $query->where('users.current_year', $year);
+        }
+        if ($dateFrom) {
+            $query->whereDate('evaluation_date', '>=', $dateFrom);
+        }
+        if ($dateTo) {
+            $query->whereDate('evaluation_date', '<=', $dateTo);
         }
 
-        // Filter by course
-        if ($request->filled('course_id')) {
-            $query->whereHas('session', function($q) use ($request) {
-                $q->where('course_id', $request->course_id);
-            });
-        }
+        $totalRecords = $query->count();
+        $avgAttendance = round($query->avg('attendance_percentage') ?? 0, 1);
+        $totalSessions = $query->sum('total_sessions');
+        $presentCount = $query->sum('attended_sessions');
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Filter by date range
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        $records = $query->orderBy('created_at', 'desc')->paginate(20);
-
-        $departments = Department::orderBy('name')->get();
-        $courses = Course::where('is_active', true)->orderBy('course_code')->get();
-
-        return view('admin.attendance.records', compact('records', 'departments', 'courses'));
+        return [
+            'total_sessions' => $totalSessions,
+            'total_records' => $totalRecords,
+            'avg_attendance' => $avgAttendance,
+            'present_count' => $presentCount,
+        ];
     }
 
     /**
-     * Get department attendance data
+     * Department attendance – clean, unique departments only
      */
     private function getDepartmentAttendance($filterDepartmentId = null, $dateFrom = null, $dateTo = null)
     {
-        $departments = Department::all();
+        // Only get departments with a valid code and at least one student
+        $departments = Department::whereNotNull('code')
+            ->where('code', '!=', '')
+            ->whereHas('users', function ($q) {
+                $q->where('role_id', 3);
+            })
+            ->orderBy('code')
+            ->get();
+
         $result = [];
 
         foreach ($departments as $dept) {
@@ -198,56 +205,35 @@ class AttendanceAnalyticsController extends Controller
                 continue;
             }
 
-            $courseIds = Course::where('department_id', $dept->id)->pluck('id')->toArray();
-            $totalStudents = User::where('role_id', 3)
+            $students = User::where('role_id', 3)
                 ->where('department_id', $dept->id)
-                ->count();
+                ->pluck('id');
 
-            if (empty($courseIds) || $totalStudents == 0) {
-                $result[] = [
-                    'id' => $dept->id,
-                    'name' => $dept->code,
-                    'full_name' => $dept->name,
-                    'attendance' => 0,
-                    'total_students' => $totalStudents,
-                    'total_courses' => 0,
-                    'sessions' => 0,
-                ];
+            if ($students->isEmpty()) {
                 continue;
             }
 
-            $sessionQuery = AttendanceSession::whereIn('course_id', $courseIds);
+            $evalQuery = DB::table('attendance_evaluations')
+                ->whereIn('student_id', $students);
             if ($dateFrom) {
-                $sessionQuery->whereDate('created_at', '>=', $dateFrom);
+                $evalQuery->whereDate('evaluation_date', '>=', $dateFrom);
             }
             if ($dateTo) {
-                $sessionQuery->whereDate('created_at', '<=', $dateTo);
+                $evalQuery->whereDate('evaluation_date', '<=', $dateTo);
             }
-            $sessions = $sessionQuery->count();
 
-            // Get session IDs
-            $sessionIds = $sessionQuery->pluck('id')->toArray();
-
-            $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
-                ->whereIn('status', ['present', 'late']);
-
-            $records = $recordQuery->count();
-
-            $expected = $sessions * $totalStudents;
-            $attendance = $expected > 0 ? round(($records / $expected) * 100, 1) : 0;
+            $avgAtt = $evalQuery->avg('attendance_percentage') ?? 0;
 
             $result[] = [
                 'id' => $dept->id,
                 'name' => $dept->code,
-                'full_name' => $dept->name,
-                'attendance' => $attendance,
-                'total_students' => $totalStudents,
-                'total_courses' => count($courseIds),
-                'sessions' => $sessions,
+                'attendance' => round($avgAtt, 1),
+                'total_students' => $students->count(),
             ];
         }
 
-        usort($result, function($a, $b) {
+        // Sort by attendance descending
+        usort($result, function ($a, $b) {
             return $b['attendance'] - $a['attendance'];
         });
 
@@ -262,11 +248,8 @@ class AttendanceAnalyticsController extends Controller
         $weeks = 12;
         $trend = [];
 
-        // If a student is selected, compute trend from attendance records
         if ($studentId) {
             $startDate = $dateFrom ? Carbon::parse($dateFrom)->subWeeks($weeks) : Carbon::now()->subWeeks($weeks);
-
-            // Get all session IDs that the student has records for
             $sessionIds = AttendanceRecord::where('student_id', $studentId)
                 ->pluck('attendance_session_id')
                 ->unique()
@@ -282,7 +265,7 @@ class AttendanceAnalyticsController extends Controller
                 $weekEnd = Carbon::now()->subWeeks($i)->endOfWeek();
                 $label = $weekStart->format('d M');
 
-                $weekSessions = $sessions->filter(function($s) use ($weekStart, $weekEnd) {
+                $weekSessions = $sessions->filter(function ($s) use ($weekStart, $weekEnd) {
                     return Carbon::parse($s->session_date)->between($weekStart, $weekEnd);
                 });
 
@@ -302,7 +285,7 @@ class AttendanceAnalyticsController extends Controller
             return $trend;
         }
 
-        // Otherwise, university-wide trend
+        // University-wide trend
         $startDate = $dateFrom ? Carbon::parse($dateFrom)->subWeeks($weeks) : Carbon::now()->subWeeks($weeks);
 
         $totalStudents = User::where('role_id', 3)->count();
@@ -317,7 +300,7 @@ class AttendanceAnalyticsController extends Controller
             $sessionQuery->whereDate('created_at', '<=', $dateTo);
         }
         if ($departmentId) {
-            $sessionQuery->whereHas('course', function($q) use ($departmentId) {
+            $sessionQuery->whereHas('course', function ($q) use ($departmentId) {
                 $q->where('department_id', $departmentId);
             });
         }
@@ -330,7 +313,7 @@ class AttendanceAnalyticsController extends Controller
             ->whereIn('status', ['present', 'late']);
 
         if ($year) {
-            $recordQuery->whereHas('student', function($q) use ($year) {
+            $recordQuery->whereHas('student', function ($q) use ($year) {
                 $q->where('current_year', $year);
             });
         }
@@ -344,7 +327,7 @@ class AttendanceAnalyticsController extends Controller
 
             $weekSessionQuery = AttendanceSession::whereBetween('created_at', [$weekStart, $weekEnd]);
             if ($departmentId) {
-                $weekSessionQuery->whereHas('course', function($q) use ($departmentId) {
+                $weekSessionQuery->whereHas('course', function ($q) use ($departmentId) {
                     $q->where('department_id', $departmentId);
                 });
             }
@@ -353,7 +336,7 @@ class AttendanceAnalyticsController extends Controller
             }
             $weekSessionIds = $weekSessionQuery->pluck('id')->toArray();
 
-            $weekRecords = $records->filter(function($record) use ($weekSessionIds) {
+            $weekRecords = $records->filter(function ($record) use ($weekSessionIds) {
                 return in_array($record->attendance_session_id, $weekSessionIds);
             });
 
@@ -373,8 +356,154 @@ class AttendanceAnalyticsController extends Controller
     }
 
     /**
+     * Get course attendance ranking
+     */
+    private function getCourseRanking($departmentId = null, $dateFrom = null, $dateTo = null)
+    {
+        $query = Course::with(['department'])
+            ->where('is_active', true);
+
+        if ($departmentId) {
+            $query->where('department_id', $departmentId);
+        }
+
+        $courses = $query->get();
+        $ranking = [];
+
+        foreach ($courses as $course) {
+            $totalStudents = Enrollment::where('course_id', $course->id)
+                ->where('status', 'approved')
+                ->count();
+
+            $sessionQuery = AttendanceSession::where('course_id', $course->id);
+            if ($dateFrom) {
+                $sessionQuery->whereDate('created_at', '>=', $dateFrom);
+            }
+            if ($dateTo) {
+                $sessionQuery->whereDate('created_at', '<=', $dateTo);
+            }
+            $sessions = $sessionQuery->count();
+            $sessionIds = $sessionQuery->pluck('id')->toArray();
+
+            $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
+                ->whereIn('status', ['present', 'late']);
+
+            $records = $recordQuery->count();
+
+            $expected = $sessions * $totalStudents;
+            $attendance = $expected > 0 ? round(($records / $expected) * 100, 1) : 0;
+
+            if ($sessions > 0) {
+                $ranking[] = [
+                    'course_id' => $course->id,
+                    'course_code' => $course->course_code,
+                    'course_name' => $course->course_name,
+                    'department' => $course->department->code ?? 'N/A',
+                    'attendance' => $attendance,
+                    'students' => $totalStudents,
+                    'sessions' => $sessions,
+                    'records' => $records,
+                ];
+            }
+        }
+
+        usort($ranking, function ($a, $b) {
+            return $b['attendance'] - $a['attendance'];
+        });
+
+        return array_slice($ranking, 0, 20);
+    }
+
+    /**
+     * Get at-risk students based on attendance
+     */
+    private function getAtRiskStudents($departmentId = null, $year = null)
+    {
+        $query = User::where('role_id', 3)
+            ->with(['department', 'enrollments.course']);
+
+        if ($departmentId) {
+            $query->where('department_id', $departmentId);
+        }
+
+        if ($year) {
+            $query->where('current_year', $year);
+        }
+
+        $students = $query->get();
+        $result = [];
+
+        foreach ($students as $student) {
+            $enrollments = $student->enrollments()->where('status', 'approved')->get();
+            $totalEnrollments = $enrollments->count();
+
+            if ($totalEnrollments === 0) {
+                continue;
+            }
+
+            $attendance = $enrollments->avg('attendance_percentage') ?? 0;
+            $riskLevel = $attendance >= 75 ? 'Low' : ($attendance >= 60 ? 'Medium' : 'High');
+
+            if ($riskLevel !== 'Low') {
+                $result[] = [
+                    'student' => $student,
+                    'attendance' => round($attendance, 1),
+                    'risk_level' => $riskLevel,
+                    'enrollments' => $totalEnrollments,
+                    'department' => $student->department->name ?? 'N/A',
+                    'year' => $student->current_year ?? 'N/A',
+                ];
+            }
+        }
+
+        usort($result, function ($a, $b) {
+            $riskOrder = ['High' => 0, 'Medium' => 1, 'Low' => 2];
+            return $riskOrder[$a['risk_level']] - $riskOrder[$b['risk_level']];
+        });
+
+        return $result;
+    }
+
+    /**
+     * Get eligibility statistics
+     */
+    private function getEligibilityStats($departmentId = null)
+    {
+        $query = Enrollment::where('status', 'approved');
+
+        if ($departmentId) {
+            $query->whereHas('course', function ($q) use ($departmentId) {
+                $q->where('department_id', $departmentId);
+            });
+        }
+
+        $enrollments = $query->get();
+
+        $eligible = $enrollments->filter(function ($e) {
+            return $e->eligibility_status === 'eligible';
+        })->count();
+
+        $warning = $enrollments->filter(function ($e) {
+            return $e->eligibility_status === 'warning';
+        })->count();
+
+        $notEligible = $enrollments->filter(function ($e) {
+            return $e->eligibility_status === 'not_eligible';
+        })->count();
+
+        $total = $enrollments->count();
+
+        return [
+            'eligible' => $eligible,
+            'warning' => $warning,
+            'not_eligible' => $notEligible,
+            'total' => $total,
+            'eligible_percentage' => $total > 0 ? round(($eligible / $total) * 100, 1) : 0,
+        ];
+    }
+
+    /**
      * Get student attendance data for charts (AJAX)
-     * ✅ FIXED: Period-based calculation per student
      */
     public function studentAttendanceData($studentId)
     {
@@ -459,7 +588,7 @@ class AttendanceAnalyticsController extends Controller
                 $label = $weekStart->format('d M');
 
                 // Sessions in this week for the student's courses
-                $weekSessions = $allSessions->filter(function($s) use ($weekStart, $weekEnd) {
+                $weekSessions = $allSessions->filter(function ($s) use ($weekStart, $weekEnd) {
                     $sessionDate = Carbon::parse($s->session_date);
                     return $sessionDate->between($weekStart, $weekEnd);
                 });
@@ -594,150 +723,45 @@ class AttendanceAnalyticsController extends Controller
     }
 
     /**
-     * Get course attendance ranking
+     * Display all attendance records across the university
      */
-    private function getCourseRanking($departmentId = null, $dateFrom = null, $dateTo = null)
+    public function records(Request $request)
     {
-        $query = Course::with(['department'])
-            ->where('is_active', true);
+        $query = AttendanceRecord::with(['session.course', 'student']);
 
-        if ($departmentId) {
-            $query->where('department_id', $departmentId);
-        }
-
-        $courses = $query->get();
-        $ranking = [];
-
-        foreach ($courses as $course) {
-            $totalStudents = Enrollment::where('course_id', $course->id)
-                ->where('status', 'approved')
-                ->count();
-
-            $sessionQuery = AttendanceSession::where('course_id', $course->id);
-            if ($dateFrom) {
-                $sessionQuery->whereDate('created_at', '>=', $dateFrom);
-            }
-            if ($dateTo) {
-                $sessionQuery->whereDate('created_at', '<=', $dateTo);
-            }
-            $sessions = $sessionQuery->count();
-            $sessionIds = $sessionQuery->pluck('id')->toArray();
-
-            $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
-                ->whereIn('status', ['present', 'late']);
-
-            $records = $recordQuery->count();
-
-            $expected = $sessions * $totalStudents;
-            $attendance = $expected > 0 ? round(($records / $expected) * 100, 1) : 0;
-
-            if ($sessions > 0) {
-                $ranking[] = [
-                    'course_id' => $course->id,
-                    'course_code' => $course->course_code,
-                    'course_name' => $course->course_name,
-                    'department' => $course->department->code ?? 'N/A',
-                    'attendance' => $attendance,
-                    'students' => $totalStudents,
-                    'sessions' => $sessions,
-                    'records' => $records,
-                ];
-            }
-        }
-
-        usort($ranking, function($a, $b) {
-            return $b['attendance'] - $a['attendance'];
-        });
-
-        return array_slice($ranking, 0, 20);
-    }
-
-    /**
-     * Get at-risk students based on attendance
-     */
-    private function getAtRiskStudents($departmentId = null, $year = null)
-    {
-        $query = User::where('role_id', 3)
-            ->with(['department', 'enrollments.course']);
-
-        if ($departmentId) {
-            $query->where('department_id', $departmentId);
-        }
-
-        if ($year) {
-            $query->where('current_year', $year);
-        }
-
-        $students = $query->get();
-        $result = [];
-
-        foreach ($students as $student) {
-            $enrollments = $student->enrollments()->where('status', 'approved')->get();
-            $totalEnrollments = $enrollments->count();
-
-            if ($totalEnrollments === 0) {
-                continue;
-            }
-
-            $attendance = $enrollments->avg('attendance_percentage') ?? 0;
-            $riskLevel = $attendance >= 75 ? 'Low' : ($attendance >= 60 ? 'Medium' : 'High');
-
-            if ($riskLevel !== 'Low') {
-                $result[] = [
-                    'student' => $student,
-                    'attendance' => round($attendance, 1),
-                    'risk_level' => $riskLevel,
-                    'enrollments' => $totalEnrollments,
-                    'department' => $student->department->name ?? 'N/A',
-                    'year' => $student->current_year ?? 'N/A',
-                ];
-            }
-        }
-
-        usort($result, function($a, $b) {
-            $riskOrder = ['High' => 0, 'Medium' => 1, 'Low' => 2];
-            return $riskOrder[$a['risk_level']] - $riskOrder[$b['risk_level']];
-        });
-
-        return $result;
-    }
-
-    /**
-     * Get eligibility statistics
-     */
-    private function getEligibilityStats($departmentId = null)
-    {
-        $query = Enrollment::where('status', 'approved');
-
-        if ($departmentId) {
-            $query->whereHas('course', function($q) use ($departmentId) {
-                $q->where('department_id', $departmentId);
+        // Filter by department
+        if ($request->filled('department_id')) {
+            $query->whereHas('session.course', function ($q) use ($request) {
+                $q->where('department_id', $request->department_id);
             });
         }
 
-        $enrollments = $query->get();
+        // Filter by course
+        if ($request->filled('course_id')) {
+            $query->whereHas('session', function ($q) use ($request) {
+                $q->where('course_id', $request->course_id);
+            });
+        }
 
-        $eligible = $enrollments->filter(function($e) {
-            return $e->eligibility_status === 'eligible';
-        })->count();
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
 
-        $warning = $enrollments->filter(function($e) {
-            return $e->eligibility_status === 'warning';
-        })->count();
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
 
-        $notEligible = $enrollments->filter(function($e) {
-            return $e->eligibility_status === 'not_eligible';
-        })->count();
+        $records = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        $total = $enrollments->count();
+        $departments = Department::orderBy('name')->get();
+        $courses = Course::where('is_active', true)->orderBy('course_code')->get();
 
-        return [
-            'eligible' => $eligible,
-            'warning' => $warning,
-            'not_eligible' => $notEligible,
-            'total' => $total,
-            'eligible_percentage' => $total > 0 ? round(($eligible / $total) * 100, 1) : 0,
-        ];
+        return view('admin.attendance.records', compact('records', 'departments', 'courses'));
     }
 
     /**

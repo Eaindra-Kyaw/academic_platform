@@ -163,6 +163,26 @@
             background: #e5e7eb;
         }
 
+        .btn-reset-student {
+            background: #f3f4f6;
+            color: var(--text-dark);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-reset-student:hover {
+            background: #e5e7eb;
+        }
+
         .chart-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -175,7 +195,6 @@
             border-radius: var(--radius);
             border: 1px solid rgba(10, 36, 99, 0.06);
             overflow: visible !important;
-            /* FIX: allow dropdown to overflow */
             box-shadow: var(--shadow);
             transition: var(--transition);
         }
@@ -199,84 +218,11 @@
         .chart-card .card-body {
             padding: 1rem;
             overflow: visible !important;
-            /* FIX */
         }
 
         .chart-container {
             position: relative;
             height: 250px;
-        }
-
-        .ranking-table {
-            width: 100%;
-            font-size: 0.8rem;
-            border-collapse: collapse;
-        }
-
-        .ranking-table th {
-            text-align: left;
-            padding: 0.4rem 0.5rem;
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            color: var(--text-gray);
-            font-weight: 600;
-            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
-        }
-
-        .ranking-table td {
-            padding: 0.3rem 0.5rem;
-            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
-        }
-
-        .ranking-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .ranking-table .rank-num {
-            font-weight: 700;
-            color: var(--text-gray);
-            font-size: 0.7rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        .ranking-table .rank-1 {
-            color: var(--accent);
-        }
-
-        .ranking-table .rank-2 {
-            color: #9ca3af;
-        }
-
-        .ranking-table .rank-3 {
-            color: #d97706;
-        }
-
-        .attendance-bar {
-            height: 6px;
-            background: #f3f4f6;
-            border-radius: 3px;
-            overflow: hidden;
-            width: 80px;
-            display: inline-block;
-        }
-
-        .attendance-bar .fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width 0.5s ease;
-        }
-
-        .attendance-bar .fill.high {
-            background: var(--success);
-        }
-
-        .attendance-bar .fill.medium {
-            background: var(--warning);
-        }
-
-        .attendance-bar .fill.low {
-            background: var(--danger);
         }
 
         .dept-card-grid {
@@ -304,54 +250,6 @@
             font-size: 1.1rem;
             font-weight: 700;
             margin: 0.1rem 0;
-        }
-
-        .risk-badge {
-            display: inline-block;
-            padding: 0.1rem 0.5rem;
-            border-radius: 1rem;
-            font-size: 0.6rem;
-            font-weight: 600;
-        }
-
-        .risk-high {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .risk-medium {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .risk-low {
-            background: #d1fae5;
-            color: #166534;
-        }
-
-        .risk-table {
-            width: 100%;
-            font-size: 0.8rem;
-            border-collapse: collapse;
-        }
-
-        .risk-table th {
-            text-align: left;
-            padding: 0.3rem 0.5rem;
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            color: var(--text-gray);
-            font-weight: 600;
-            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
-        }
-
-        .risk-table td {
-            padding: 0.3rem 0.5rem;
-            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
-        }
-
-        .risk-table tr:last-child td {
-            border-bottom: none;
         }
 
         /* ===== SEARCHABLE DROPDOWN ===== */
@@ -558,7 +456,7 @@
 
         .modal-stats-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 0.75rem;
             margin-bottom: 1rem;
         }
@@ -599,7 +497,7 @@
         .modal-chart-container {
             position: relative;
             height: 200px;
-            margin: 1rem 0;
+            margin: 0.5rem 0 1rem 0;
         }
 
         .modal-monthly-stats {
@@ -716,30 +614,30 @@
         }
     </style>
 
-    {{-- Stats --}}
+    {{-- Stats Cards --}}
     <div class="stats-grid">
         <div class="stat-card">
+            <div class="stat-number blue">{{ number_format($stats['total_students'] ?? 0) }}</div>
+            <div class="stat-label"><i class="bi bi-people-fill"></i> Total Students</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number purple">{{ number_format($stats['total_courses'] ?? 0) }}</div>
+            <div class="stat-label"><i class="bi bi-book-fill"></i> Total Courses</div>
+        </div>
+        <div class="stat-card">
             <div class="stat-number blue">{{ $stats['total_sessions'] ?? 0 }}</div>
-            <div class="stat-label"> Total Sessions</div>
+            <div class="stat-label"><i class="bi bi-calendar-event-fill"></i> Total Sessions</div>
         </div>
         <div class="stat-card">
             <div class="stat-number purple">{{ $stats['total_records'] ?? 0 }}</div>
-            <div class="stat-label"> Total Records</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number green">{{ $stats['avg_attendance'] ?? 0 }}%</div>
-            <div class="stat-label"> Avg Attendance</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number yellow">{{ $stats['present_count'] ?? 0 }}</div>
-            <div class="stat-label"> Present</div>
+            <div class="stat-label"><i class="bi bi-list-check"></i> Total Records</div>
         </div>
     </div>
 
     {{-- Filter Bar --}}
     <form class="filter-bar" method="GET" action="{{ route('admin.attendance.analytics') }}">
         <div class="filter-group">
-            <label>Department</label>
+            <label><i class="bi bi-building"></i> Department</label>
             <select name="department_id">
                 <option value="">All</option>
                 @foreach ($departments as $dept)
@@ -751,7 +649,7 @@
         </div>
 
         <div class="filter-group">
-            <label>Course</label>
+            <label><i class="bi bi-book"></i> Course</label>
             <select name="course_id">
                 <option value="">All</option>
                 @foreach ($courses as $course)
@@ -763,7 +661,7 @@
         </div>
 
         <div class="filter-group">
-            <label>Year</label>
+            <label><i class="bi bi-calendar3"></i> Year</label>
             <select name="year">
                 <option value="">All</option>
                 @for ($i = 1; $i <= 6; $i++)
@@ -775,7 +673,7 @@
         </div>
 
         <div class="filter-group">
-            <label>Date</label>
+            <label><i class="bi bi-calendar-range"></i> Date</label>
             <select name="date_range">
                 <option value="today" {{ $dateRange == 'today' ? 'selected' : '' }}>Today</option>
                 <option value="this_week" {{ $dateRange == 'this_week' ? 'selected' : '' }}>This Week</option>
@@ -792,11 +690,10 @@
         </div>
     </form>
 
-    {{-- ===== STUDENT QUICK ACTIONS (FIXED DROPDOWN) ===== --}}
+    {{-- Student Quick Actions with Reset Button --}}
     <div class="chart-card" style="margin-bottom:1.5rem;">
         <div class="card-header">
             <span><i class="bi bi-person"></i> View each student's attendance</span>
-            {{-- <span style="font-size:0.65rem; color:var(--text-gray);">Start typing to search, or click to select</span> --}}
         </div>
         <div class="card-body">
             <div class="quick-action-wrapper">
@@ -816,6 +713,10 @@
                 <button class="btn-view-attendance" onclick="viewQuickAttendance()">
                     <i class="bi bi-calendar-check"></i> View Attendance
                 </button>
+                {{-- Reset Button --}}
+                <button class="btn-reset-student" onclick="resetStudentSelection()">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
             </div>
         </div>
     </div>
@@ -824,7 +725,7 @@
     <div class="chart-grid">
         <div class="chart-card">
             <div class="card-header">
-                <span>📈 Weekly Attendance Trend</span>
+                <span><i class="bi bi-graph-up"></i> Weekly Attendance Trend</span>
                 <span style="font-size:0.65rem; color:var(--text-gray);">Last 12 weeks</span>
             </div>
             <div class="card-body">
@@ -836,7 +737,7 @@
 
         <div class="chart-card">
             <div class="card-header">
-                <span>🏛️ Department Attendance</span>
+                <span><i class="bi bi-building"></i> Department Attendance</span>
                 <span style="font-size:0.65rem; color:var(--text-gray);">Ranking</span>
             </div>
             <div class="card-body" style="max-height: 300px; overflow-y: auto;">
@@ -853,132 +754,28 @@
                             @endphp
                             <div class="dept-card">
                                 <div class="dept-code">{{ $dept['name'] }}</div>
-                                <div class="dept-attendance" style="color:{{ $color }};">{{ $dept['attendance'] }}%
+                                <div class="dept-attendance" style="color:{{ $color }};">
+                                    {{ $dept['attendance'] }}%
                                 </div>
-                                <div style="font-size:0.55rem; color:var(--text-gray);">{{ $dept['total_students'] }}
-                                    students</div>
+                                <div style="font-size:0.55rem; color:var(--text-gray);">
+                                    {{ $dept['total_students'] }} students
+                                </div>
                             </div>
                         @endforeach
                     </div>
                 @else
-                    <div style="text-align:center; padding:1rem; color:var(--text-gray);">No department data available</div>
+                    <div style="text-align:center; padding:1rem; color:var(--text-gray);">
+                        No department data available
+                    </div>
                 @endif
             </div>
         </div>
     </div>
 
-    {{-- Course Ranking Table --}}
-    <div class="chart-card" style="margin-bottom:1.5rem;">
-        <div class="card-header">
-            <span>📚 Course Attendance Ranking</span>
-            <span style="font-size:0.65rem; color:var(--text-gray);">Top 20 courses</span>
-        </div>
-        <div class="card-body" style="padding:0;">
-            @if (count($courseRanking) > 0)
-                <table class="ranking-table">
-                    <thead>
-                        <tr>
-                            <th style="width:30px;">#</th>
-                            <th>Course</th>
-                            <th>Dept</th>
-                            <th style="text-align:center;">Students</th>
-                            <th style="text-align:center;">Sessions</th>
-                            <th style="text-align:center;">Attendance</th>
-                            <th style="text-align:center;">Progress</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($courseRanking as $index => $course)
-                            @php
-                                $rankClass =
-                                    $index == 0 ? 'rank-1' : ($index == 1 ? 'rank-2' : ($index == 2 ? 'rank-3' : ''));
-                                $barClass =
-                                    $course['attendance'] >= 75
-                                        ? 'high'
-                                        : ($course['attendance'] >= 60
-                                            ? 'medium'
-                                            : 'low');
-                            @endphp
-                            <tr>
-                                <td class="rank-num {{ $rankClass }}">{{ $index + 1 }}</td>
-                                <td>
-                                    <div style="font-weight:600; font-size:0.8rem; color:var(--text-dark);">
-                                        {{ $course['course_code'] }}</div>
-                                    <div style="font-size:0.65rem; color:var(--text-gray);">
-                                        {{ Str::limit($course['course_name'], 25) }}</div>
-                                </td>
-                                <td style="font-size:0.7rem; color:var(--text-gray);">{{ $course['department'] }}</td>
-                                <td style="text-align:center; font-size:0.75rem;">{{ $course['students'] }}</td>
-                                <td style="text-align:center; font-size:0.75rem;">{{ $course['sessions'] }}</td>
-                                <td style="text-align:center; font-weight:600; font-size:0.85rem;">
-                                    {{ $course['attendance'] }}%</td>
-                                <td>
-                                    <div class="attendance-bar">
-                                        <div class="fill {{ $barClass }}"
-                                            style="width: {{ $course['attendance'] }}%;"></div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @else
-                <div style="text-align:center; padding:2rem; color:var(--text-gray);">No course data available</div>
-            @endif
-        </div>
-    </div>
-
-    {{-- At-Risk Students --}}
-    <div class="chart-card" style="margin-bottom:1.5rem;">
-        <div class="card-header">
-            <span>⚠️ Students At Risk</span>
-            <span style="font-size:0.65rem; color:var(--text-gray);">{{ count($atRiskStudents) }} students at risk</span>
-        </div>
-        <div class="card-body" style="padding:0;">
-            @if (count($atRiskStudents) > 0)
-                <table class="risk-table">
-                    <thead>
-                        <tr>
-                            <th>Student</th>
-                            <th>Department</th>
-                            <th>Year</th>
-                            <th style="text-align:center;">Attendance</th>
-                            <th style="text-align:center;">Risk</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($atRiskStudents as $student)
-                            <tr>
-                                <td>
-                                    <div style="font-weight:600; font-size:0.8rem; color:var(--text-dark);">
-                                        {{ $student['student']->name }}</div>
-                                    <div style="font-size:0.65rem; color:var(--text-gray);">
-                                        {{ $student['student']->email }}</div>
-                                </td>
-                                <td style="font-size:0.75rem; color:var(--text-gray);">{{ $student['department'] }}</td>
-                                <td style="font-size:0.75rem; color:var(--text-gray);">{{ $student['year'] }}</td>
-                                <td style="text-align:center; font-weight:600; font-size:0.85rem;">
-                                    {{ $student['attendance'] }}%</td>
-                                <td style="text-align:center;">
-                                    <span
-                                        class="risk-badge risk-{{ strtolower($student['risk_level']) }}">{{ $student['risk_level'] }}</span>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @else
-                <div style="text-align:center; padding:2rem; color:var(--text-gray);">
-                    <i class="bi bi-check-circle"
-                        style="font-size:2rem; color:var(--success); display:block; margin-bottom:0.5rem;"></i>
-                    No students at risk! All students have good attendance.
-                </div>
-            @endif
-        </div>
-    </div>
+    {{-- ===== Course Attendance Ranking REMOVED ===== --}}
 
     <!-- ============================================================ -->
-    <!-- ATTENDANCE MODAL -->
+    <!-- ATTENDANCE MODAL (Updated: 3 cards, no Status, text label below chart) -->
     <!-- ============================================================ -->
     <div class="modal-overlay" id="attendanceModal">
         <div class="modal-content">
@@ -999,31 +796,6 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-close-modal" onclick="closeModal('attendanceModal')">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- RISK MODAL (not used but kept) -->
-    <!-- ============================================================ -->
-    <div class="modal-overlay" id="riskModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4>
-                    <i class="bi bi-shield-exclamation" style="color:var(--warning);"></i>
-                    Risk Analysis: <span class="student-name" id="riskStudentName">Student</span>
-                    <span style="font-size:0.7rem; font-weight:400; color:var(--text-gray);" id="riskStudentId"></span>
-                </h4>
-                <button class="modal-close" onclick="closeModal('riskModal')">&times;</button>
-            </div>
-            <div class="modal-body" id="riskModalBody">
-                <div class="text-center" style="padding:2rem;">
-                    <div class="loading-spinner"></div>
-                    <p style="margin-top:0.5rem; color:var(--text-gray);">Loading risk data...</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-close-modal" onclick="closeModal('riskModal')">Close</button>
             </div>
         </div>
     </div>
@@ -1083,6 +855,14 @@
                 input.addEventListener('focus', function() {
                     if (this.value.length > 0) filterItems(this.value);
                 });
+
+                // Reset student selection
+                window.resetStudentSelection = function() {
+                    input.value = '';
+                    selectedId = null;
+                    items.forEach(i => i.classList.remove('selected'));
+                    list.classList.remove('show');
+                };
 
                 window.getSelectedStudentId = function() {
                     if (selectedId) return selectedId;
@@ -1160,26 +940,40 @@
                             const attClass = avgAttendance >= 75 ? 'low' : (avgAttendance >= 60 ? 'medium' :
                                 'high');
 
+                            // Determine status text
+                            let statusText = '';
+                            let statusIcon = '';
+                            if (avgAttendance >= 75) {
+                                statusText = 'Good attendance';
+                                statusIcon = '✅';
+                            } else if (avgAttendance >= 60) {
+                                statusText = 'Needs improvement';
+                                statusIcon = '⚠️';
+                            } else {
+                                statusText = 'Low attendance';
+                                statusIcon = '🚨';
+                            }
+
                             html += `
                             <div class="modal-stats-grid">
                                 <div class="modal-stat">
                                     <div class="number ${attClass}">${Math.round(avgAttendance)}%</div>
-                                    <div class="label">Avg Attendance</div>
+                                    <div class="label"><i class="bi bi-percent"></i> Avg Attendance</div>
                                 </div>
                                 <div class="modal-stat">
                                     <div class="number">${data.weekly.length}</div>
-                                    <div class="label">Weeks Tracked</div>
+                                    <div class="label"><i class="bi bi-calendar-week"></i> Weeks Tracked</div>
                                 </div>
                                 <div class="modal-stat">
                                     <div class="number">${data.monthly.length}</div>
-                                    <div class="label">Months Tracked</div>
-                                </div>
-                                <div class="modal-stat">
-                                    <div class="number ${attClass}">${avgAttendance >= 75 ? '✅ Good' : (avgAttendance >= 60 ? '⚠️ Moderate' : '🚨 Low')}</div>
-                                    <div class="label">Status</div>
+                                    <div class="label"><i class="bi bi-calendar-month"></i> Months Tracked</div>
                                 </div>
                             </div>
-                            <div style="margin-bottom:0.5rem;"><strong style="font-size:0.8rem; color:var(--text-dark);">📊 Monthly Summary</strong></div>
+                            <div style="margin-bottom:0.5rem;">
+                                <strong style="font-size:0.8rem; color:var(--text-dark);">
+                                    <i class="bi bi-calendar-month"></i> Monthly Summary
+                                </strong>
+                            </div>
                             <div class="modal-monthly-stats">`;
                             if (data.monthly && data.monthly.length > 0) {
                                 data.monthly.forEach(m => {
@@ -1195,7 +989,11 @@
                                     `<div class="modal-monthly-stat" style="grid-column:1/-1; text-align:center; color:var(--text-gray);">No monthly data</div>`;
                             }
                             html += `</div>
-                            <div class="modal-chart-container"><canvas id="attendanceModalChart"></canvas></div>`;
+                            <div class="modal-chart-container"><canvas id="attendanceModalChart"></canvas></div>
+                            <div style="text-align:center; font-size:0.6rem; color:var(--text-gray); margin-top:0.25rem;">
+                                <i class="bi bi-info-circle"></i>
+                                ${statusIcon} ${statusText}
+                            </div>`;
 
                             body.innerHTML = html;
 
