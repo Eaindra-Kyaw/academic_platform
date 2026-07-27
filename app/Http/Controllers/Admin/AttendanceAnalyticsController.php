@@ -55,9 +55,7 @@ class AttendanceAnalyticsController extends Controller
                 break;
         }
 
-        // ============================================================
-        // 1. STATISTICS (filtered)
-        // ============================================================
+        // 1. STATISTICS
         $stats = $this->getStats($departmentId, $courseId, $year, $dateFrom, $dateTo);
 
         // Add filtered student and course counts
@@ -81,29 +79,16 @@ class AttendanceAnalyticsController extends Controller
         }
         $stats['total_courses'] = $filteredCourses->count();
 
-        // ============================================================
-        // 2. DEPARTMENT ATTENDANCE (unique departments, no duplicates)
-        // ============================================================
+        // 2. DEPARTMENT ATTENDANCE
         $departmentAttendance = $this->getDepartmentAttendance($departmentId, $dateFrom, $dateTo);
 
-        // ============================================================
-        // 3. WEEKLY TREND
-        // ============================================================
-        $weeklyTrend = $this->getWeeklyTrend($departmentId, $courseId, $year, $dateFrom, $dateTo, $studentId);
+        // 3. COURSE RANKING – now applies course filter
+        $courseRanking = $this->getCourseRanking($departmentId, $courseId, $dateFrom, $dateTo);
 
-        // ============================================================
-        // 4. COURSE RANKING
-        // ============================================================
-        $courseRanking = $this->getCourseRanking($departmentId, $dateFrom, $dateTo);
-
-        // ============================================================
-        // 5. AT-RISK STUDENTS (computed but NOT shown)
-        // ============================================================
+        // 4. AT-RISK STUDENTS (hidden but kept)
         $atRiskStudents = $this->getAtRiskStudents($departmentId, $year);
 
-        // ============================================================
-        // 6. ELIGIBILITY STATS (not used)
-        // ============================================================
+        // 5. ELIGIBILITY STATS (not used)
         $eligibilityStats = $this->getEligibilityStats($departmentId);
 
         $yearLabels = [
@@ -125,7 +110,6 @@ class AttendanceAnalyticsController extends Controller
         return view('admin.attendance.analytics', compact(
             'stats',
             'departmentAttendance',
-            'weeklyTrend',
             'courseRanking',
             'atRiskStudents',
             'eligibilityStats',
@@ -185,16 +169,13 @@ class AttendanceAnalyticsController extends Controller
     }
 
     /**
-     * Department attendance – clean, unique departments only
+     * Department attendance – shows ALL departments with valid codes.
+     * Departments with no students show 0% attendance.
      */
     private function getDepartmentAttendance($filterDepartmentId = null, $dateFrom = null, $dateTo = null)
     {
-        // Only get departments with a valid code and at least one student
         $departments = Department::whereNotNull('code')
             ->where('code', '!=', '')
-            ->whereHas('users', function ($q) {
-                $q->where('role_id', 3);
-            })
             ->orderBy('code')
             ->get();
 
@@ -210,6 +191,12 @@ class AttendanceAnalyticsController extends Controller
                 ->pluck('id');
 
             if ($students->isEmpty()) {
+                $result[] = [
+                    'id' => $dept->id,
+                    'name' => $dept->code,
+                    'attendance' => 0,
+                    'total_students' => 0,
+                ];
                 continue;
             }
 
@@ -232,7 +219,6 @@ class AttendanceAnalyticsController extends Controller
             ];
         }
 
-        // Sort by attendance descending
         usort($result, function ($a, $b) {
             return $b['attendance'] - $a['attendance'];
         });
@@ -241,170 +227,78 @@ class AttendanceAnalyticsController extends Controller
     }
 
     /**
-     * Get weekly attendance trend – supports student_id filter
+     * Get course attendance ranking – PERIOD‑BASED and respects course filter.
      */
-    private function getWeeklyTrend($departmentId = null, $courseId = null, $year = null, $dateFrom = null, $dateTo = null, $studentId = null)
+    private function getCourseRanking($departmentId = null, $courseId = null, $dateFrom = null, $dateTo = null)
     {
-        $weeks = 12;
-        $trend = [];
-
-        if ($studentId) {
-            $startDate = $dateFrom ? Carbon::parse($dateFrom)->subWeeks($weeks) : Carbon::now()->subWeeks($weeks);
-            $sessionIds = AttendanceRecord::where('student_id', $studentId)
-                ->pluck('attendance_session_id')
-                ->unique()
-                ->toArray();
-
-            $sessions = AttendanceSession::whereIn('id', $sessionIds)
-                ->where('created_at', '>=', $startDate)
-                ->orderBy('session_date', 'asc')
-                ->get();
-
-            for ($i = $weeks; $i >= 0; $i--) {
-                $weekStart = Carbon::now()->subWeeks($i)->startOfWeek();
-                $weekEnd = Carbon::now()->subWeeks($i)->endOfWeek();
-                $label = $weekStart->format('d M');
-
-                $weekSessions = $sessions->filter(function ($s) use ($weekStart, $weekEnd) {
-                    return Carbon::parse($s->session_date)->between($weekStart, $weekEnd);
-                });
-
-                $weekRecords = AttendanceRecord::where('student_id', $studentId)
-                    ->whereIn('attendance_session_id', $weekSessions->pluck('id')->toArray())
-                    ->whereIn('status', ['present', 'late'])
-                    ->count();
-
-                $totalPossible = $weekSessions->count();
-                $attendance = $totalPossible > 0 ? round(($weekRecords / $totalPossible) * 100, 1) : 0;
-
-                $trend[] = [
-                    'label' => $label,
-                    'attendance' => $attendance,
-                ];
-            }
-            return $trend;
-        }
-
-        // University-wide trend
-        $startDate = $dateFrom ? Carbon::parse($dateFrom)->subWeeks($weeks) : Carbon::now()->subWeeks($weeks);
-
-        $totalStudents = User::where('role_id', 3)->count();
-        if ($departmentId) {
-            $totalStudents = User::where('role_id', 3)
-                ->where('department_id', $departmentId)
-                ->count();
-        }
-
-        $sessionQuery = AttendanceSession::where('created_at', '>=', $startDate);
-        if ($dateTo) {
-            $sessionQuery->whereDate('created_at', '<=', $dateTo);
-        }
-        if ($departmentId) {
-            $sessionQuery->whereHas('course', function ($q) use ($departmentId) {
-                $q->where('department_id', $departmentId);
-            });
-        }
-        if ($courseId) {
-            $sessionQuery->where('course_id', $courseId);
-        }
-        $sessionIds = $sessionQuery->pluck('id')->toArray();
-
-        $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
-            ->whereIn('status', ['present', 'late']);
-
-        if ($year) {
-            $recordQuery->whereHas('student', function ($q) use ($year) {
-                $q->where('current_year', $year);
-            });
-        }
-
-        $records = $recordQuery->get();
-
-        for ($i = $weeks; $i >= 0; $i--) {
-            $weekStart = Carbon::now()->subWeeks($i)->startOfWeek();
-            $weekEnd = Carbon::now()->subWeeks($i)->endOfWeek();
-            $label = $weekStart->format('d M');
-
-            $weekSessionQuery = AttendanceSession::whereBetween('created_at', [$weekStart, $weekEnd]);
-            if ($departmentId) {
-                $weekSessionQuery->whereHas('course', function ($q) use ($departmentId) {
-                    $q->where('department_id', $departmentId);
-                });
-            }
-            if ($courseId) {
-                $weekSessionQuery->where('course_id', $courseId);
-            }
-            $weekSessionIds = $weekSessionQuery->pluck('id')->toArray();
-
-            $weekRecords = $records->filter(function ($record) use ($weekSessionIds) {
-                return in_array($record->attendance_session_id, $weekSessionIds);
-            });
-
-            $expected = $totalStudents * count($weekSessionIds);
-            $attendance = $expected > 0 ? round(($weekRecords->count() / $expected) * 100, 1) : 0;
-
-            $trend[] = [
-                'label' => $label,
-                'attendance' => $attendance,
-                'records' => $weekRecords->count(),
-                'expected' => $expected,
-                'sessions' => count($weekSessionIds),
-            ];
-        }
-
-        return $trend;
-    }
-
-    /**
-     * Get course attendance ranking
-     */
-    private function getCourseRanking($departmentId = null, $dateFrom = null, $dateTo = null)
-    {
-        $query = Course::with(['department'])
+        $query = Course::with('department')
             ->where('is_active', true);
 
         if ($departmentId) {
             $query->where('department_id', $departmentId);
+        }
+        if ($courseId) {
+            $query->where('id', $courseId);
         }
 
         $courses = $query->get();
         $ranking = [];
 
         foreach ($courses as $course) {
+            // Count approved enrolled students (all time)
             $totalStudents = Enrollment::where('course_id', $course->id)
                 ->where('status', 'approved')
                 ->count();
 
-            $sessionQuery = AttendanceSession::where('course_id', $course->id);
+            // Get sessions in the date range (using session_date)
+            $sessionQuery = AttendanceSession::where('course_id', $course->id)
+                ->where('status', 'ended')
+                ->where('is_cancelled', false);
+
             if ($dateFrom) {
-                $sessionQuery->whereDate('created_at', '>=', $dateFrom);
+                $sessionQuery->whereDate('session_date', '>=', $dateFrom);
             }
             if ($dateTo) {
-                $sessionQuery->whereDate('created_at', '<=', $dateTo);
+                $sessionQuery->whereDate('session_date', '<=', $dateTo);
             }
-            $sessions = $sessionQuery->count();
-            $sessionIds = $sessionQuery->pluck('id')->toArray();
 
-            $recordQuery = AttendanceRecord::whereIn('attendance_session_id', $sessionIds)
-                ->whereIn('status', ['present', 'late']);
-
-            $records = $recordQuery->count();
-
-            $expected = $sessions * $totalStudents;
-            $attendance = $expected > 0 ? round(($records / $expected) * 100, 1) : 0;
-
-            if ($sessions > 0) {
-                $ranking[] = [
-                    'course_id' => $course->id,
-                    'course_code' => $course->course_code,
-                    'course_name' => $course->course_name,
-                    'department' => $course->department->code ?? 'N/A',
-                    'attendance' => $attendance,
-                    'students' => $totalStudents,
-                    'sessions' => $sessions,
-                    'records' => $records,
-                ];
+            $sessions = $sessionQuery->get();
+            if ($sessions->isEmpty()) {
+                continue; // skip courses with no sessions
             }
+
+            // Calculate total periods and attended periods
+            $totalPeriods = $sessions->sum('conducted_periods') ?: 0;
+            if ($totalPeriods == 0) {
+                continue;
+            }
+
+            $sessionIds = $sessions->pluck('id')->toArray();
+
+            // For each session, count present/late records
+            // attended periods = sum(conducted_periods * number of present/late records)
+            $attendedPeriods = 0;
+            foreach ($sessions as $session) {
+                $recordsCount = AttendanceRecord::where('attendance_session_id', $session->id)
+                    ->whereIn('status', ['present', 'late'])
+                    ->count();
+                $attendedPeriods += $session->conducted_periods * $recordsCount;
+            }
+
+            $expectedPeriods = $totalPeriods * $totalStudents;
+            $attendance = $expectedPeriods > 0 ? round(($attendedPeriods / $expectedPeriods) * 100, 1) : 0;
+
+            $ranking[] = [
+                'course_id'    => $course->id,
+                'course_code'  => $course->course_code,
+                'course_name'  => $course->course_name,
+                'department'   => $course->department->code ?? 'N/A',
+                'attendance'   => $attendance,
+                'students'     => $totalStudents,
+                'sessions'     => $sessions->count(),      // number of class sessions
+                'periods'      => $totalPeriods,           // total conducted periods
+                'records'      => $attendedPeriods,        // total attended periods (sum over students)
+            ];
         }
 
         usort($ranking, function ($a, $b) {
@@ -503,16 +397,13 @@ class AttendanceAnalyticsController extends Controller
     }
 
     /**
-     * Get student attendance data for charts (AJAX)
+     * Get student attendance data for charts (AJAX) – period‑based, respects date filters.
      */
-    public function studentAttendanceData($studentId)
+    public function studentAttendanceData($studentId, Request $request)
     {
         try {
             $student = User::with('department')->findOrFail($studentId);
 
-            // ============================================================
-            // 1. Get ALL courses the student is enrolled in (approved)
-            // ============================================================
             $courseIds = Enrollment::where('student_id', $studentId)
                 ->where('status', 'approved')
                 ->pluck('course_id')
@@ -536,23 +427,33 @@ class AttendanceAnalyticsController extends Controller
                 ]);
             }
 
-            // ============================================================
-            // 2. Get all ENDED sessions for those courses (last 12 weeks)
-            // ============================================================
-            $weeks = 12;
-            $startDate = Carbon::now()->subWeeks($weeks)->startOfWeek();
+            // Get date range from request, fallback to last 12 weeks
+            $dateFrom = $request->input('date_from');
+            $dateTo   = $request->input('date_to');
+            if (!$dateFrom) {
+                $dateFrom = Carbon::now()->subWeeks(12)->startOfWeek();
+            } else {
+                $dateFrom = Carbon::parse($dateFrom);
+            }
+            if ($dateTo) {
+                $dateTo = Carbon::parse($dateTo);
+            } else {
+                $dateTo = Carbon::now();
+            }
 
+            // Fetch all sessions for the student's courses within the date range
             $allSessions = AttendanceSession::whereIn('course_id', $courseIds)
                 ->where('status', 'ended')
                 ->where('is_cancelled', false)
-                ->where('session_date', '>=', $startDate)
+                ->whereDate('session_date', '>=', $dateFrom)
+                ->whereDate('session_date', '<=', $dateTo)
                 ->orderBy('session_date', 'asc')
                 ->get();
 
             if ($allSessions->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No attendance sessions found for this student.',
+                    'message' => 'No attendance sessions found for this student in the selected period.',
                     'weekly' => [],
                     'monthly' => [],
                     'summary' => [
@@ -567,38 +468,31 @@ class AttendanceAnalyticsController extends Controller
                 ]);
             }
 
-            // ============================================================
-            // 3. Get the student's attendance records for these sessions
-            // ============================================================
             $sessionIds = $allSessions->pluck('id')->toArray();
             $records = AttendanceRecord::where('student_id', $studentId)
                 ->whereIn('attendance_session_id', $sessionIds)
                 ->get()
                 ->keyBy('attendance_session_id');
 
-            // ============================================================
-            // 4. Build weekly trend (period-based)
-            // ============================================================
+            // Build weekly trend (period‑based)
+            $weeks = 12;
             $trend = [];
             $monthlyGroup = [];
 
-            for ($i = $weeks; $i >= 0; $i--) {
-                $weekStart = Carbon::now()->subWeeks($i)->startOfWeek();
-                $weekEnd = Carbon::now()->subWeeks($i)->endOfWeek();
+            $startDate = Carbon::parse($dateFrom)->startOfWeek();
+            $endDate = Carbon::parse($dateTo)->endOfWeek();
+            $currentWeek = $startDate->copy();
+
+            while ($currentWeek <= $endDate) {
+                $weekStart = $currentWeek->copy()->startOfWeek();
+                $weekEnd = $currentWeek->copy()->endOfWeek();
                 $label = $weekStart->format('d M');
 
-                // Sessions in this week for the student's courses
                 $weekSessions = $allSessions->filter(function ($s) use ($weekStart, $weekEnd) {
                     $sessionDate = Carbon::parse($s->session_date);
                     return $sessionDate->between($weekStart, $weekEnd);
                 });
 
-                if ($weekSessions->isEmpty()) {
-                    $trend[] = ['label' => $label, 'attendance' => 0];
-                    continue;
-                }
-
-                // Count total periods and attended periods
                 $totalPeriods = 0;
                 $attendedPeriods = 0;
 
@@ -613,7 +507,10 @@ class AttendanceAnalyticsController extends Controller
                 }
 
                 $attendance = $totalPeriods > 0 ? round(($attendedPeriods / $totalPeriods) * 100, 1) : 0;
-                $trend[] = ['label' => $label, 'attendance' => $attendance];
+                $trend[] = [
+                    'label' => $label,
+                    'attendance' => $attendance,
+                ];
 
                 // Group by month for monthly summary
                 $monthKey = $weekStart->format('Y-m');
@@ -626,9 +523,10 @@ class AttendanceAnalyticsController extends Controller
                 }
                 $monthlyGroup[$monthKey]['sum'] += $attendance;
                 $monthlyGroup[$monthKey]['count']++;
+
+                $currentWeek->addWeek();
             }
 
-            // Build monthly summary
             $monthly = [];
             foreach ($monthlyGroup as $key => $data) {
                 $monthly[] = [
@@ -637,9 +535,7 @@ class AttendanceAnalyticsController extends Controller
                 ];
             }
 
-            // ============================================================
-            // 5. Calculate overall stats from evaluations
-            // ============================================================
+            // Summary from evaluations (if any)
             $evaluations = DB::table('attendance_evaluations')
                 ->where('student_id', $studentId)
                 ->get();
@@ -651,7 +547,6 @@ class AttendanceAnalyticsController extends Controller
                 $riskLevel = AttendanceHelper::getRiskLevel($overallRisk);
                 $eligibility = AttendanceHelper::getEligibilityStatus($avgAttendance);
 
-                // Collect risk factors
                 $allFactors = [];
                 foreach ($evaluations as $eval) {
                     $factors = json_decode($eval->risk_factors ?? '[]', true);
@@ -670,7 +565,6 @@ class AttendanceAnalyticsController extends Controller
                     'risk_factors' => $uniqueFactors,
                 ];
 
-                // Per-course breakdown
                 $courses = [];
                 foreach ($evaluations as $eval) {
                     $course = Course::find($eval->course_id);
@@ -686,7 +580,6 @@ class AttendanceAnalyticsController extends Controller
                     }
                 }
             } else {
-                // No evaluations – use trend data
                 $avgAttendance = collect($trend)->avg('attendance') ?? 0;
                 $summary = [
                     'average_attendance' => round($avgAttendance, 1),
@@ -699,9 +592,6 @@ class AttendanceAnalyticsController extends Controller
                 $courses = [];
             }
 
-            // ============================================================
-            // 6. Return JSON
-            // ============================================================
             return response()->json([
                 'success' => true,
                 'student' => [
@@ -723,32 +613,130 @@ class AttendanceAnalyticsController extends Controller
     }
 
     /**
-     * Display all attendance records across the university
+     * Get students of a specific course with their attendance – PERIOD-BASED.
      */
+    public function courseStudents($courseId, Request $request)
+    {
+        try {
+            $course = Course::findOrFail($courseId);
+            $dateFrom = $request->input('date_from');
+            $dateTo   = $request->input('date_to');
+
+            // Get all approved enrollments for this course
+            $enrollments = Enrollment::where('course_id', $courseId)
+                ->where('status', 'approved')
+                ->with('student')
+                ->get();
+
+            if ($enrollments->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No students enrolled in this course.',
+                    'students' => [],
+                ]);
+            }
+
+            // Get all sessions for this course in the date range
+            $sessionQuery = AttendanceSession::where('course_id', $courseId)
+                ->where('status', 'ended')
+                ->where('is_cancelled', false);
+            if ($dateFrom) {
+                $sessionQuery->whereDate('session_date', '>=', $dateFrom);
+            }
+            if ($dateTo) {
+                $sessionQuery->whereDate('session_date', '<=', $dateTo);
+            }
+            $sessions = $sessionQuery->get();
+            $sessionIds = $sessions->pluck('id')->toArray();
+
+            if (empty($sessionIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No sessions held for this course in the selected period.',
+                    'students' => [],
+                ]);
+            }
+
+            $totalPeriods = $sessions->sum('conducted_periods') ?: 0;
+            if ($totalPeriods == 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Total periods is zero.',
+                    'students' => [],
+                ]);
+            }
+
+            $periodsMap = $sessions->pluck('conducted_periods', 'id')->toArray();
+
+            $studentData = [];
+            foreach ($enrollments as $enrollment) {
+                $student = $enrollment->student;
+                if (!$student) continue;
+
+                $records = AttendanceRecord::where('student_id', $student->id)
+                    ->whereIn('attendance_session_id', $sessionIds)
+                    ->whereIn('status', ['present', 'late'])
+                    ->get()
+                    ->keyBy('attendance_session_id');
+
+                $attendedPeriods = 0;
+                foreach ($periodsMap as $sessionId => $periods) {
+                    if ($records->has($sessionId)) {
+                        $attendedPeriods += $periods;
+                    }
+                }
+
+                $attendance = $totalPeriods > 0 ? round(($attendedPeriods / $totalPeriods) * 100, 1) : 0;
+
+                $studentData[] = [
+                    'id' => $student->id,
+                    'name' => $student->name,
+                    'student_id' => $student->student_id ?? 'N/A',
+                    'attendance' => $attendance,
+                    'records' => $attendedPeriods,
+                ];
+            }
+
+            usort($studentData, function ($a, $b) {
+                return $b['attendance'] - $a['attendance'];
+            });
+
+            return response()->json([
+                'success' => true,
+                'course' => [
+                    'code' => $course->course_code,
+                    'name' => $course->course_name,
+                ],
+                'total_students' => count($studentData),
+                'total_sessions' => $sessions->count(),
+                'total_periods' => $totalPeriods,
+                'students' => $studentData,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     public function records(Request $request)
     {
         $query = AttendanceRecord::with(['session.course', 'student']);
 
-        // Filter by department
         if ($request->filled('department_id')) {
             $query->whereHas('session.course', function ($q) use ($request) {
                 $q->where('department_id', $request->department_id);
             });
         }
-
-        // Filter by course
         if ($request->filled('course_id')) {
             $query->whereHas('session', function ($q) use ($request) {
                 $q->where('course_id', $request->course_id);
             });
         }
-
-        // Filter by status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-
-        // Filter by date range
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
@@ -764,9 +752,6 @@ class AttendanceAnalyticsController extends Controller
         return view('admin.attendance.records', compact('records', 'departments', 'courses'));
     }
 
-    /**
-     * Get chart data for AJAX requests
-     */
     public function chartData(Request $request)
     {
         $type = $request->input('type', 'weekly');

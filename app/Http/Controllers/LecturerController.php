@@ -222,9 +222,10 @@ class LecturerController extends Controller
         return $eval ? $eval->attendance_percentage : 0;
     }
 
-        // ============================================================
+    // ============================================================
     // ATTENDANCE OVERVIEW (formerly "students" page)
-    // Supports period filtering: weekly (default), monthly, custom, overall
+    // Supports period filtering: weekly, monthly, custom, overall
+    // PERIOD-BASED (uses AttendanceHelper::calculateAttendanceForPeriod)
     // ============================================================
     public function monitoring(Request $request)
     {
@@ -232,12 +233,10 @@ class LecturerController extends Controller
         $lecturerId = $lecturer->id;
         $lecturerName = $lecturer->name;
 
-        // Get period and offset – DEFAULT IS NOW 'weekly'
         $period = $request->input('period', 'weekly');
         $offset = (int) $request->input('offset', 0);
         $courseId = $request->input('course_id');
 
-        // Calculate date range based on period
         $startDate = null;
         $endDate = null;
         $periodLabel = 'This Week';
@@ -258,7 +257,7 @@ class LecturerController extends Controller
             $periodLabel = 'Semester';
         }
 
-        // Get ALL lecturer's courses (for dropdown) – UNFILTERED
+        // Get ALL lecturer's courses (for dropdown)
         $allCourses = Course::where('lecturer_id', $lecturerId)
             ->orWhere('lecturer_name', 'like', '%' . $lecturerName . '%')
             ->where('is_active', true)
@@ -266,7 +265,7 @@ class LecturerController extends Controller
             ->unique('id')
             ->values();
 
-        // Filter courses for display if a specific course is selected
+        // Filter courses if a specific one is selected
         if (!empty($courseId)) {
             $courses = $allCourses->filter(function($course) use ($courseId) {
                 return $course->id == $courseId;
@@ -277,7 +276,6 @@ class LecturerController extends Controller
 
         $courseIds = $courses->pluck('id')->toArray();
 
-        // If no courses, return empty
         if (empty($courseIds)) {
             $students = collect();
             $totalStudents = 0;
@@ -313,7 +311,7 @@ class LecturerController extends Controller
                   ->where('status', 'approved');
         }])->get();
 
-        // Compute attendance and risk for each student per course
+        // Compute attendance and risk per student (PERIOD-BASED)
         foreach ($students as $student) {
             $totalAttendance = 0;
             $totalCourses = 0;
@@ -328,7 +326,7 @@ class LecturerController extends Controller
                 $enrollmentCourseId = $enrollment->course_id;
 
                 if ($period === 'overall') {
-                    // Use evaluation data but RECALCULATE risk on the fly
+                    // Use evaluation data (already period-based)
                     $eval = AttendanceEvaluation::where('student_id', $student->id)
                         ->where('course_id', $enrollmentCourseId)
                         ->orderBy('evaluation_date', 'desc')
@@ -344,7 +342,6 @@ class LecturerController extends Controller
                         $consecutiveAbsences = $eval->consecutive_absences ?? 0;
                         $trend = $eval->attendance_trend ?? 'stable';
 
-                        // ⭐ RECALCULATE RISK BASED ON ATTENDANCE PERCENTAGE
                         $riskLevel = AttendanceHelper::getRiskLevelFromAttendance($attPercentage);
                         $riskScore = AttendanceHelper::calculateRiskScore(
                             $attPercentage,
@@ -383,7 +380,7 @@ class LecturerController extends Controller
                         $enrollment->risk_score = 0;
                     }
                 } else {
-                    // Weekly, Monthly, or Custom – compute on the fly
+                    // PERIOD-BASED helper – sums conducted_periods
                     $data = AttendanceHelper::calculateAttendanceForPeriod(
                         $student->id,
                         $enrollmentCourseId,
@@ -498,7 +495,6 @@ class LecturerController extends Controller
     {
         $lecturer = Auth::user();
 
-        // Ensure this course belongs to the lecturer
         $course = Course::where('id', $courseId)
             ->where(function($q) use ($lecturer) {
                 $q->where('lecturer_id', $lecturer->id)
@@ -516,7 +512,6 @@ class LecturerController extends Controller
             $start = Carbon::now()->startOfMonth()->addMonths($offset);
             $end = Carbon::now()->endOfMonth()->addMonths($offset);
         } else {
-            // Custom
             $start = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : Carbon::now()->subDays(7);
             $end = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : Carbon::now();
         }
@@ -582,6 +577,10 @@ class LecturerController extends Controller
             'courseStats'
         ));
     }
+
+    // ============================================================
+    // QR SESSION MANAGEMENT
+    // ============================================================
 
     public function generateQr(Request $request)
     {
@@ -731,6 +730,10 @@ class LecturerController extends Controller
         ]);
     }
 
+    // ============================================================
+    // SCHEDULE & REPORTS
+    // ============================================================
+
     public function schedule()
     {
         return view('lecturer.schedule');
@@ -814,6 +817,10 @@ class LecturerController extends Controller
         ));
     }
 
+    // ============================================================
+    // ANNOUNCEMENTS
+    // ============================================================
+
     public function announcements()
     {
         $user = Auth::user();
@@ -859,9 +866,9 @@ class LecturerController extends Controller
         return view('lecturer.announcements.show', compact('announcement', 'user', 'courses'));
     }
 
-    // ============================================
+    // ============================================================
     // TIMETABLE METHODS
-    // ============================================
+    // ============================================================
 
     private function getDays()
     {

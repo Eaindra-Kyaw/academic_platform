@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\DB;
 class AdminController extends Controller
 {
     /**
-     * Display admin dashboard with real-time data (KG+12 full risk)
+     * Display admin dashboard with period‑based attendance data.
      */
     public function dashboard()
     {
@@ -37,25 +37,33 @@ class AdminController extends Controller
         $totalDepartments = Department::count();
 
         // ============================================
-        // ATTENDANCE CALCULATIONS (REAL-TIME)
+        // ATTENDANCE CALCULATIONS (PERIOD‑BASED)
         // ============================================
 
-        $totalAttendanceRecords = AttendanceRecord::count();
-        $totalSessions = AttendanceSession::count();
+        $totalPeriods = AttendanceSession::where('status', 'ended')
+            ->where('is_cancelled', false)
+            ->sum('conducted_periods') ?: 0;
+
+        $attendedPeriods = 0;
+        $sessions = AttendanceSession::where('status', 'ended')
+            ->where('is_cancelled', false)
+            ->with('records')
+            ->get();
+        foreach ($sessions as $session) {
+            $presentLate = $session->records->whereIn('status', ['present', 'late'])->count();
+            $attendedPeriods += $session->conducted_periods * $presentLate;
+        }
+
         $totalEnrolledStudents = Enrollment::where('status', 'approved')->distinct('student_id')->count('student_id');
 
-        // Calculate university attendance rate
-        if ($totalSessions > 0 && $totalEnrolledStudents > 0) {
-            $totalPossible = $totalSessions * $totalEnrolledStudents;
-            $universityAttendance = $totalPossible > 0
-                ? round(($totalAttendanceRecords / $totalPossible) * 100)
-                : 0;
-        } else {
-            $universityAttendance = 0;
+        $universityAttendance = 0;
+        if ($totalPeriods > 0 && $totalEnrolledStudents > 0) {
+            $totalPossible = $totalPeriods * $totalEnrolledStudents;
+            $universityAttendance = $totalPossible > 0 ? round(($attendedPeriods / $totalPossible) * 100) : 0;
         }
 
         // ============================================
-        // AT-RISK STUDENTS (from evaluations – full risk)
+        // AT-RISK STUDENTS (from evaluations)
         // ============================================
 
         $latestEval = AttendanceEvaluation::select('student_id', DB::raw('MAX(evaluation_date) as latest_date'))
@@ -74,7 +82,7 @@ class AdminController extends Controller
         $atRiskStudents = count($atRiskStudentIds);
 
         // ============================================
-        // ELIGIBILITY RATE (from evaluations)
+        // ELIGIBILITY RATE
         // ============================================
 
         $eligibleCount = AttendanceEvaluation::whereIn('student_id', function($q) {
@@ -87,18 +95,16 @@ class AdminController extends Controller
             ->count();
 
         $totalEvaluatedStudents = AttendanceEvaluation::distinct('student_id')->count();
-        $eligibilityRate = $totalEvaluatedStudents > 0
-            ? round(($eligibleCount / $totalEvaluatedStudents) * 100)
-            : 0;
+        $eligibilityRate = $totalEvaluatedStudents > 0 ? round(($eligibleCount / $totalEvaluatedStudents) * 100) : 0;
 
         // ============================================
-        // ACTIVE SESSIONS (REAL-TIME)
+        // ACTIVE SESSIONS
         // ============================================
 
         $activeSessions = AttendanceSession::where('status', 'active')->count();
 
         // ============================================
-        // DEPARTMENT ATTENDANCE (REAL-TIME)
+        // DEPARTMENT ATTENDANCE (PERIOD‑BASED)
         // ============================================
 
         $departmentAttendance = [];
@@ -115,25 +121,50 @@ class AdminController extends Controller
                 ->where('department_id', $dept->id)
                 ->count();
 
-            $deptSessions = AttendanceSession::whereIn('course_id', $courseIds)->count();
+            $deptSessions = AttendanceSession::whereIn('course_id', $courseIds)
+                ->where('status', 'ended')
+                ->where('is_cancelled', false)
+                ->get();
 
-            $deptRecords = AttendanceRecord::whereHas('session', function($q) use ($courseIds) {
-                $q->whereIn('course_id', $courseIds);
-            })->count();
+            $totalPeriodsDept = $deptSessions->sum('conducted_periods');
+            if ($totalPeriodsDept == 0) {
+                $attendance = 0;
+                $change = 0;
+            } else {
+                $attendedPeriodsDept = 0;
+                foreach ($deptSessions as $session) {
+                    $presentLate = AttendanceRecord::where('attendance_session_id', $session->id)
+                        ->whereIn('status', ['present', 'late'])
+                        ->count();
+                    $attendedPeriodsDept += $session->conducted_periods * $presentLate;
+                }
+                $expected = $totalPeriodsDept * $deptStudents;
+                $attendance = $expected > 0 ? round(($attendedPeriodsDept / $expected) * 100) : 0;
+            }
 
-            $expected = $deptSessions * $deptStudents;
-            $attendance = $expected > 0 ? round(($deptRecords / $expected) * 100) : 0;
-
-            // Calculate change from previous month
-            $lastMonthRecords = AttendanceRecord::whereHas('session', function($q) use ($courseIds) {
-                $q->whereIn('course_id', $courseIds)
-                  ->whereBetween('created_at', [Carbon::now()->subMonth(), Carbon::now()]);
-            })->count();
-
-            $previousMonthExpected = $deptSessions * $deptStudents;
-            $previousAttendance = $previousMonthExpected > 0 ? round(($lastMonthRecords / $previousMonthExpected) * 100) : 0;
-
-            $change = $previousAttendance > 0 ? round($attendance - $previousAttendance) : 0;
+            // Change from previous month
+            $lastMonthStart = Carbon::now()->subMonth()->startOfMonth();
+            $lastMonthEnd = Carbon::now()->subMonth()->endOfMonth();
+            $lastMonthSessions = AttendanceSession::whereIn('course_id', $courseIds)
+                ->where('status', 'ended')
+                ->where('is_cancelled', false)
+                ->whereBetween('session_date', [$lastMonthStart, $lastMonthEnd])
+                ->get();
+            $lastMonthPeriods = $lastMonthSessions->sum('conducted_periods');
+            if ($lastMonthPeriods > 0) {
+                $lastMonthAttended = 0;
+                foreach ($lastMonthSessions as $session) {
+                    $presentLate = AttendanceRecord::where('attendance_session_id', $session->id)
+                        ->whereIn('status', ['present', 'late'])
+                        ->count();
+                    $lastMonthAttended += $session->conducted_periods * $presentLate;
+                }
+                $lastMonthExpected = $lastMonthPeriods * $deptStudents;
+                $previousAttendance = $lastMonthExpected > 0 ? round(($lastMonthAttended / $lastMonthExpected) * 100) : 0;
+                $change = $previousAttendance > 0 ? round($attendance - $previousAttendance) : 0;
+            } else {
+                $change = 0;
+            }
 
             $departmentAttendance[] = [
                 'id' => $dept->id,
@@ -142,8 +173,8 @@ class AdminController extends Controller
                 'attendance' => $attendance,
                 'change' => $change,
                 'students' => $deptStudents,
-                'sessions' => $deptSessions,
-                'records' => $deptRecords,
+                'sessions' => $deptSessions->count(),
+                'records' => $attendedPeriodsDept ?? 0,
             ];
         }
 
@@ -152,11 +183,10 @@ class AdminController extends Controller
         });
 
         // ============================================
-        // RISK DISTRIBUTION (from evaluations)
+        // RISK DISTRIBUTION
         // ============================================
 
         $riskDistribution = ['Low' => 0, 'Medium' => 0, 'High' => 0];
-
         foreach ($latestEval as $studentId => $date) {
             $eval = AttendanceEvaluation::where('student_id', $studentId)
                 ->where('evaluation_date', $date)
@@ -167,7 +197,7 @@ class AdminController extends Controller
         }
 
         // ============================================
-        // RECENT SESSIONS (REAL-TIME)
+        // RECENT SESSIONS
         // ============================================
 
         $recentSessions = AttendanceSession::with(['course', 'records'])
@@ -176,17 +206,20 @@ class AdminController extends Controller
             ->get()
             ->map(function($session) {
                 $present = $session->records->where('status', 'present')->count();
-                $total = $session->records->count();
+                $totalEnrolled = Enrollment::where('course_id', $session->course_id)
+                    ->where('status', 'approved')
+                    ->count();
+                $presentPercent = $totalEnrolled > 0 ? ($present / $totalEnrolled) * 100 : 0;
                 return [
                     'course_name' => $session->course->course_name ?? 'N/A',
                     'present' => $present,
-                    'total' => $total,
-                    'status' => $present > ($total / 2) ? 'Improving' : 'Declining',
+                    'total' => $totalEnrolled,
+                    'status' => $presentPercent >= 50 ? 'Improving' : 'Declining',
                 ];
             });
 
         // ============================================
-        // BUSIEST CLASSROOMS (REAL-TIME)
+        // BUSIEST CLASSROOMS
         // ============================================
 
         $classroomUsage = AttendanceSession::where('room', '!=', '')
@@ -204,13 +237,13 @@ class AdminController extends Controller
             });
 
         // ============================================
-        // PENDING ENROLLMENTS (REAL-TIME)
+        // PENDING ENROLLMENTS
         // ============================================
 
         $pendingEnrollments = Enrollment::where('status', 'pending')->count();
 
         // ============================================
-        // ATTENDANCE TREND DATA (LAST 6 MONTHS) - CORRECTED
+        // ATTENDANCE TREND (LAST 6 MONTHS) – PERIOD‑BASED
         // ============================================
 
         $trendData = [];
@@ -219,27 +252,24 @@ class AdminController extends Controller
             $monthStart = $month->copy()->startOfMonth();
             $monthEnd = $month->copy()->endOfMonth();
 
-            // Get all sessions that occurred in this month
-            $sessionsInMonth = AttendanceSession::whereBetween('created_at', [$monthStart, $monthEnd])
+            $sessionsInMonth = AttendanceSession::whereBetween('session_date', [$monthStart, $monthEnd])
                 ->where('status', 'ended')
+                ->where('is_cancelled', false)
                 ->get();
 
             $totalExpected = 0;
             $totalAttended = 0;
 
             foreach ($sessionsInMonth as $session) {
-                // Count approved enrollments for this course (students who should attend)
                 $enrolledCount = Enrollment::where('course_id', $session->course_id)
                     ->where('status', 'approved')
                     ->count();
-
-                // Count attendance records for this session (present + late)
                 $attendedCount = AttendanceRecord::where('attendance_session_id', $session->id)
                     ->whereIn('status', ['present', 'late'])
                     ->count();
-
-                $totalExpected += $enrolledCount;
-                $totalAttended += $attendedCount;
+                $periods = $session->conducted_periods ?? 1;
+                $totalExpected += $periods * $enrolledCount;
+                $totalAttended += $periods * $attendedCount;
             }
 
             $attendancePercentage = $totalExpected > 0 ? round(($totalAttended / $totalExpected) * 100) : 0;
@@ -251,7 +281,7 @@ class AdminController extends Controller
         }
 
         // ============================================
-        // MAKE SURE ALL VARIABLES ARE PASSED
+        // RETURN VIEW
         // ============================================
 
         return view('admin.dashboard', compact(
@@ -304,16 +334,11 @@ class AdminController extends Controller
             'current_year' => 'nullable|integer|min:1|max:6',
         ]);
 
-        // Validate student ID for students
         if ($validated['role_id'] == 3 && empty($validated['student_id'])) {
             return back()->withErrors(['student_id' => 'Student ID is required for students.']);
         }
 
-        // ✅ Set must_change_password based on role
-        // Admins: false (they already have password), Students/Lecturers: true (must set password)
         $mustChangePassword = ($validated['role_id'] == 1) ? false : true;
-
-        // Generate a temporary password
         $tempPassword = Str::random(10);
 
         $user = User::create([
@@ -329,20 +354,17 @@ class AdminController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        // ✅ Generate setup token (STORED AS PLAIN TEXT - NOT HASHED)
-        // We use plain text because we compare the token from URL directly
         $token = Str::random(60);
         DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
             [
-                'token' => $token, // ✅ Plain text - NOT hashed
+                'token' => $token,
                 'created_at' => now(),
             ]
         );
 
         $setupLink = url('/password/setup/' . $token . '?email=' . $user->email);
 
-        // Log the action
         \App\Models\AuditLog::log(
             Auth::id(),
             'create_user',
@@ -356,7 +378,6 @@ class AdminController extends Controller
             'success'
         );
 
-        // Return with enhanced success message and share buttons
         return redirect()->route('admin.users.index')
             ->with('success', '
                 <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; border: 2px solid #10b981;">
@@ -422,7 +443,6 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Generate token if not exists
         $tokenData = DB::table('password_reset_tokens')
             ->where('email', $user->email)
             ->first();
@@ -432,12 +452,11 @@ class AdminController extends Controller
             DB::table('password_reset_tokens')->updateOrInsert(
                 ['email' => $user->email],
                 [
-                    'token' => $token, // ✅ Plain text - NOT hashed
+                    'token' => $token,
                     'created_at' => now(),
                 ]
             );
         } else {
-            // Regenerate new token
             $token = Str::random(60);
             DB::table('password_reset_tokens')
                 ->where('email', $user->email)
@@ -518,7 +537,6 @@ class AdminController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Prevent deleting yourself
         if ($user->id == Auth::id()) {
             return back()->with('error', 'You cannot delete your own account.');
         }
@@ -552,7 +570,7 @@ class AdminController extends Controller
         DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
             [
-                'token' => $token, // ✅ Plain text - NOT hashed
+                'token' => $token,
                 'created_at' => now(),
             ]
         );
@@ -576,7 +594,6 @@ class AdminController extends Controller
      */
     public function reportDetail($type)
     {
-        // Define report types
         $reportConfigs = [
             'students' => [
                 'title' => 'Student Report',
@@ -627,8 +644,6 @@ class AdminController extends Controller
         }
 
         $config = $reportConfigs[$type];
-
-        // Get departments and courses for filters
         $departments = Department::orderBy('name')->get();
         $courses = Course::orderBy('course_code')->get();
 
@@ -670,129 +685,67 @@ class AdminController extends Controller
         }
     }
 
-    /**
-     * Export Students Report with filters
-     */
+    // ============================================================
+    // EXPORT HELPERS (unchanged)
+    // ============================================================
+
     private function exportStudents($format, $request)
     {
-        $query = User::where('role_id', 3)
-            ->with(['department', 'enrollments.course']);
-
-        // Apply filters
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
-        if ($request->filled('year')) {
-            $query->where('current_year', $request->year);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('is_active', $request->status === 'active');
-        }
-
+        $query = User::where('role_id', 3)->with(['department', 'enrollments.course']);
+        if ($request->filled('department_id')) $query->where('department_id', $request->department_id);
+        if ($request->filled('year')) $query->where('current_year', $request->year);
+        if ($request->filled('status')) $query->where('is_active', $request->status === 'active');
         $students = $query->get();
-
         $filename = 'students_report_' . Carbon::now()->format('Y-m-d') . '.csv';
-
         if ($format === 'csv') {
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
-            ];
-
+            $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"$filename\""];
             $callback = function() use ($students) {
                 $file = fopen('php://output', 'w');
-
-                fputcsv($file, [
-                    'Student ID',
-                    'Name',
-                    'Email',
-                    'Department',
-                    'Current Year',
-                    'Total Enrollments',
-                    'Attendance %',
-                    'Eligibility Status',
-                    'Created At'
-                ]);
-
+                fputcsv($file, ['Student ID','Name','Email','Department','Current Year','Total Enrollments','Attendance %','Eligibility Status','Created At']);
                 foreach ($students as $student) {
-                    $totalEnrollments = $student->enrollments()->count();
                     $avgAttendance = $student->enrollments()->avg('attendance_percentage') ?? 0;
                     $eligibilityStatus = $student->enrollments()->first()->eligibility_status ?? 'N/A';
-
                     fputcsv($file, [
                         $student->student_id ?? 'N/A',
                         $student->name,
                         $student->email,
                         $student->department->name ?? 'N/A',
                         $student->current_year ?? 'N/A',
-                        $totalEnrollments,
+                        $student->enrollments()->count(),
                         round($avgAttendance, 2) . '%',
                         $eligibilityStatus,
                         $student->created_at->format('Y-m-d'),
                     ]);
                 }
-
                 fclose($file);
             };
-
             return response()->stream($callback, 200, $headers);
         }
-
-        return back()->with('error', 'Only CSV format is supported for this report.');
+        return back()->with('error', 'Only CSV format is supported.');
     }
 
-    /**
-     * Export Attendance Report with filters
-     */
     private function exportAttendance($format, $request)
     {
         $query = AttendanceRecord::with(['session.course', 'student']);
-
-        // Apply filters
         if ($request->filled('department_id')) {
             $query->whereHas('session.course', function($q) use ($request) {
                 $q->where('department_id', $request->department_id);
             });
         }
-
         if ($request->filled('course_id')) {
             $query->whereHas('session', function($q) use ($request) {
                 $q->where('course_id', $request->course_id);
             });
         }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
+        if ($request->filled('date_from')) $query->whereDate('created_at', '>=', $request->date_from);
+        if ($request->filled('date_to')) $query->whereDate('created_at', '<=', $request->date_to);
         $attendanceRecords = $query->orderBy('created_at', 'desc')->get();
-
         $filename = 'attendance_report_' . Carbon::now()->format('Y-m-d') . '.csv';
-
         if ($format === 'csv') {
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
-            ];
-
+            $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"$filename\""];
             $callback = function() use ($attendanceRecords) {
                 $file = fopen('php://output', 'w');
-
-                fputcsv($file, [
-                    'Student Name',
-                    'Student ID',
-                    'Course',
-                    'Session Date',
-                    'Status',
-                    'Check-in Time',
-                ]);
-
+                fputcsv($file, ['Student Name','Student ID','Course','Session Date','Status','Check-in Time']);
                 foreach ($attendanceRecords as $record) {
                     fputcsv($file, [
                         $record->student->name ?? 'N/A',
@@ -803,70 +756,35 @@ class AdminController extends Controller
                         $record->scanned_at ? $record->scanned_at->format('H:i:s') : 'N/A',
                     ]);
                 }
-
                 fclose($file);
             };
-
             return response()->stream($callback, 200, $headers);
         }
-
-        return back()->with('error', 'Only CSV format is supported for this report.');
+        return back()->with('error', 'Only CSV format is supported.');
     }
 
-    /**
-     * Export Enrollments Report with filters
-     */
     private function exportEnrollments($format, $request)
     {
         $query = Enrollment::with(['student', 'course.department']);
-
-        // Apply filters
         if ($request->filled('department_id')) {
             $query->whereHas('course', function($q) use ($request) {
                 $q->where('department_id', $request->department_id);
             });
         }
-
-        if ($request->filled('course_id')) {
-            $query->where('course_id', $request->course_id);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
+        if ($request->filled('course_id')) $query->where('course_id', $request->course_id);
+        if ($request->filled('status')) $query->where('status', $request->status);
         if ($request->filled('year')) {
             $query->whereHas('student', function($q) use ($request) {
                 $q->where('current_year', $request->year);
             });
         }
-
         $enrollments = $query->orderBy('created_at', 'desc')->get();
-
         $filename = 'enrollments_report_' . Carbon::now()->format('Y-m-d') . '.csv';
-
         if ($format === 'csv') {
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
-            ];
-
+            $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"$filename\""];
             $callback = function() use ($enrollments) {
                 $file = fopen('php://output', 'w');
-
-                fputcsv($file, [
-                    'Student Name',
-                    'Student ID',
-                    'Course Code',
-                    'Course Name',
-                    'Department',
-                    'Status',
-                    'Enrollment Date',
-                    'Attendance %',
-                    'Roll Call Mark',
-                    'Eligibility'
-                ]);
-
+                fputcsv($file, ['Student Name','Student ID','Course Code','Course Name','Department','Status','Enrollment Date','Attendance %','Roll Call Mark','Eligibility']);
                 foreach ($enrollments as $enrollment) {
                     fputcsv($file, [
                         $enrollment->student->name ?? 'N/A',
@@ -881,59 +799,29 @@ class AdminController extends Controller
                         $enrollment->eligibility_status ?? 'N/A',
                     ]);
                 }
-
                 fclose($file);
             };
-
             return response()->stream($callback, 200, $headers);
         }
-
-        return back()->with('error', 'Only CSV format is supported for this report.');
+        return back()->with('error', 'Only CSV format is supported.');
     }
 
-    /**
-     * Export Departments Report with filters
-     */
     private function exportDepartments($format, $request)
     {
         $query = Department::withCount([
-            'users as student_count' => function($q) {
-                $q->where('role_id', 3);
-            },
-            'users as lecturer_count' => function($q) {
-                $q->where('role_id', 2);
-            },
+            'users as student_count' => function($q) { $q->where('role_id', 3); },
+            'users as lecturer_count' => function($q) { $q->where('role_id', 2); },
             'courses',
             'enrollments'
         ]);
-
-        if ($request->filled('department_id')) {
-            $query->where('id', $request->department_id);
-        }
-
+        if ($request->filled('department_id')) $query->where('id', $request->department_id);
         $departments = $query->get();
-
         $filename = 'departments_report_' . Carbon::now()->format('Y-m-d') . '.csv';
-
         if ($format === 'csv') {
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
-            ];
-
+            $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"$filename\""];
             $callback = function() use ($departments) {
                 $file = fopen('php://output', 'w');
-
-                fputcsv($file, [
-                    'Department Code',
-                    'Department Name',
-                    'Head of Department',
-                    'Total Students',
-                    'Total Lecturers',
-                    'Total Courses',
-                    'Total Enrollments',
-                ]);
-
+                fputcsv($file, ['Department Code','Department Name','Head of Department','Total Students','Total Lecturers','Total Courses','Total Enrollments']);
                 foreach ($departments as $dept) {
                     fputcsv($file, [
                         $dept->code ?? 'N/A',
@@ -945,19 +833,13 @@ class AdminController extends Controller
                         $dept->enrollments_count ?? 0,
                     ]);
                 }
-
                 fclose($file);
             };
-
             return response()->stream($callback, 200, $headers);
         }
-
-        return back()->with('error', 'Only CSV format is supported for this report.');
+        return back()->with('error', 'Only CSV format is supported.');
     }
 
-    /**
-     * Export Risk Analysis Report with filters
-     */
     private function exportRiskAnalysis($format, $request)
     {
         $query = User::where('role_id', 3)
@@ -967,55 +849,20 @@ class AdminController extends Controller
                   ->orWhere('eligibility_status', 'not_eligible')
                   ->orWhere('eligibility_status', 'warning');
             });
-
-        // Apply filters
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
+        if ($request->filled('department_id')) $query->where('department_id', $request->department_id);
         $students = $query->get();
-
         $filename = 'risk_analysis_report_' . Carbon::now()->format('Y-m-d') . '.csv';
-
         if ($format === 'csv') {
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
-            ];
-
+            $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"$filename\""];
             $callback = function() use ($students, $request) {
                 $file = fopen('php://output', 'w');
-
-                fputcsv($file, [
-                    'Student Name',
-                    'Student ID',
-                    'Department',
-                    'Current Year',
-                    'Attendance %',
-                    'Eligibility Status',
-                    'Risk Level',
-                ]);
-
+                fputcsv($file, ['Student Name','Student ID','Department','Current Year','Attendance %','Eligibility Status','Risk Level']);
                 foreach ($students as $student) {
                     $avgAttendance = $student->enrollments()->avg('attendance_percentage') ?? 0;
                     $eligibility = $student->enrollments()->first()->eligibility_status ?? 'eligible';
-
-                    // Apply attendance filter
-                    if ($request->filled('attendance_below') && $avgAttendance >= $request->attendance_below) {
-                        continue;
-                    }
-
+                    if ($request->filled('attendance_below') && $avgAttendance >= $request->attendance_below) continue;
                     $riskLevel = $avgAttendance < 60 ? 'Critical' : ($avgAttendance < 75 ? 'Moderate' : 'Low');
-
-                    // Apply risk level filter
-                    if ($request->filled('risk_level')) {
-                        $filterRisk = strtolower($request->risk_level);
-                        $studentRisk = strtolower($riskLevel);
-                        if ($filterRisk !== $studentRisk) {
-                            continue;
-                        }
-                    }
-
+                    if ($request->filled('risk_level') && strtolower($request->risk_level) !== strtolower($riskLevel)) continue;
                     fputcsv($file, [
                         $student->name,
                         $student->student_id ?? 'N/A',
@@ -1026,59 +873,25 @@ class AdminController extends Controller
                         $riskLevel,
                     ]);
                 }
-
                 fclose($file);
             };
-
             return response()->stream($callback, 200, $headers);
         }
-
-        return back()->with('error', 'Only CSV format is supported for this report.');
+        return back()->with('error', 'Only CSV format is supported.');
     }
 
-    /**
-     * Export Academic Health Report with filters
-     */
     private function exportAcademicHealth($format, $request)
     {
-        $query = User::where('role_id', 3)
-            ->with(['department', 'enrollments']);
-
-        // Apply filters
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
-        }
-
-        if ($request->filled('year')) {
-            $query->where('current_year', $request->year);
-        }
-
+        $query = User::where('role_id', 3)->with(['department', 'enrollments']);
+        if ($request->filled('department_id')) $query->where('department_id', $request->department_id);
+        if ($request->filled('year')) $query->where('current_year', $request->year);
         $students = $query->get();
-
         $filename = 'academic_health_report_' . Carbon::now()->format('Y-m-d') . '.csv';
-
         if ($format === 'csv') {
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
-            ];
-
+            $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"$filename\""];
             $callback = function() use ($students, $request) {
                 $file = fopen('php://output', 'w');
-
-                fputcsv($file, [
-                    'Student Name',
-                    'Student ID',
-                    'Department',
-                    'Year',
-                    'Total Enrollments',
-                    'Approved Enrollments',
-                    'Attendance %',
-                    'Roll Call Mark',
-                    'Eligibility',
-                    'Health Score',
-                ]);
-
+                fputcsv($file, ['Student Name','Student ID','Department','Year','Total Enrollments','Approved Enrollments','Attendance %','Roll Call Mark','Eligibility','Health Score']);
                 foreach ($students as $student) {
                     $enrollments = $student->enrollments;
                     $totalEnrollments = $enrollments->count();
@@ -1086,15 +899,8 @@ class AdminController extends Controller
                     $avgAttendance = $enrollments->avg('attendance_percentage') ?? 0;
                     $avgRollCall = $enrollments->avg('roll_call_mark') ?? 0;
                     $eligibility = $enrollments->first()->eligibility_status ?? 'N/A';
-
-                    // Calculate health score
                     $healthScore = ($avgAttendance * 0.5) + ($avgRollCall * 0.3) + (($approvedEnrollments / max($totalEnrollments, 1)) * 20);
-
-                    // Apply health score filter
-                    if ($request->filled('score_below') && $healthScore >= $request->score_below) {
-                        continue;
-                    }
-
+                    if ($request->filled('score_below') && $healthScore >= $request->score_below) continue;
                     fputcsv($file, [
                         $student->name,
                         $student->student_id ?? 'N/A',
@@ -1108,46 +914,25 @@ class AdminController extends Controller
                         round($healthScore, 2),
                     ]);
                 }
-
                 fclose($file);
             };
-
             return response()->stream($callback, 200, $headers);
         }
-
-        return back()->with('error', 'Only CSV format is supported for this report.');
+        return back()->with('error', 'Only CSV format is supported.');
     }
 
-    /**
-     * Export Semester Summary with filters
-     */
     private function exportSemesterSummary($format, $request)
     {
         $filename = 'semester_summary_' . Carbon::now()->format('Y-m-d') . '.csv';
-
         if ($format === 'csv') {
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => "attachment; filename=\"$filename\"",
-            ];
-
+            $headers = ['Content-Type' => 'text/csv', 'Content-Disposition' => "attachment; filename=\"$filename\""];
             $callback = function() use ($request) {
                 $file = fopen('php://output', 'w');
-
-                // Header
                 fputcsv($file, ['Semester Summary Report']);
                 fputcsv($file, ['Generated on:', Carbon::now()->format('Y-m-d H:i:s')]);
-
-                // Filter info
-                if ($request->filled('academic_year')) {
-                    fputcsv($file, ['Academic Year:', $request->academic_year]);
-                }
-                if ($request->filled('semester')) {
-                    fputcsv($file, ['Semester:', $request->semester]);
-                }
+                if ($request->filled('academic_year')) fputcsv($file, ['Academic Year:', $request->academic_year]);
+                if ($request->filled('semester')) fputcsv($file, ['Semester:', $request->semester]);
                 fputcsv($file, []);
-
-                // Statistics
                 $query = Enrollment::query();
                 if ($request->filled('academic_year')) {
                     $query->whereHas('course', function($q) use ($request) {
@@ -1159,7 +944,6 @@ class AdminController extends Controller
                         $q->where('semester', $request->semester);
                     });
                 }
-
                 fputcsv($file, ['Summary Statistics']);
                 fputcsv($file, ['Total Students:', User::where('role_id', 3)->count()]);
                 fputcsv($file, ['Total Lecturers:', User::where('role_id', 2)->count()]);
@@ -1170,11 +954,8 @@ class AdminController extends Controller
                 fputcsv($file, ['Rejected Enrollments:', (clone $query)->where('status', 'rejected')->count()]);
                 fputcsv($file, ['Dropped Enrollments:', (clone $query)->where('status', 'dropped')->count()]);
                 fputcsv($file, []);
-
-                // Department breakdown
                 fputcsv($file, ['Department Breakdown']);
                 fputcsv($file, ['Department', 'Students', 'Lecturers', 'Courses', 'Enrollments']);
-
                 $departments = Department::withCount(['students', 'lecturers', 'courses', 'enrollments'])->get();
                 foreach ($departments as $dept) {
                     fputcsv($file, [
@@ -1185,59 +966,42 @@ class AdminController extends Controller
                         $dept->enrollments_count ?? 0,
                     ]);
                 }
-
                 fclose($file);
             };
-
             return response()->stream($callback, 200, $headers);
         }
-
-        return back()->with('error', 'Only CSV format is supported for this report.');
+        return back()->with('error', 'Only CSV format is supported.');
     }
 
-    /**
-     * Display user management (alias for users)
-     */
+    // ============================================================
+    // ALIAS METHODS (for backward compatibility)
+    // ============================================================
+
     public function index()
     {
         return $this->users();
     }
 
-    /**
-     * Show create user form (alias for createUser)
-     */
     public function create()
     {
         return $this->createUser();
     }
 
-    /**
-     * Store user (alias for storeUser)
-     */
     public function store(Request $request)
     {
         return $this->storeUser($request);
     }
 
-    /**
-     * Show edit user form (alias for editUser)
-     */
     public function edit($id)
     {
         return $this->editUser($id);
     }
 
-    /**
-     * Update user (alias for updateUser)
-     */
     public function update(Request $request, $id)
     {
         return $this->updateUser($request, $id);
     }
 
-    /**
-     * Delete user (alias for destroyUser)
-     */
     public function destroy($id)
     {
         return $this->destroyUser($id);

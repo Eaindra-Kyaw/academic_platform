@@ -9,22 +9,20 @@ use Carbon\Carbon;
 class AttendanceHelper
 {
     // ============================================================
-    // ATTENDANCE PERCENTAGE – SESSION-BASED
+    // ATTENDANCE PERCENTAGE – PERIOD‑BASED
     // ============================================================
 
     /**
-     * Calculate attendance percentage from attended and total sessions.
-     * Each class period = 1 session.
+     * Calculate attendance percentage using periods (sum of conducted_periods).
      */
-    public static function calculateAttendance($attendedSessions, $totalSessions)
+    public static function calculateAttendance($attendedPeriods, $totalPeriods)
     {
-        if ($totalSessions == 0) return 0;
-        return round(($attendedSessions / $totalSessions) * 100, 1);
+        if ($totalPeriods == 0) return 0;
+        return round(($attendedPeriods / $totalPeriods) * 100, 1);
     }
 
     /**
-     * Calculate session-based attendance for a student over a date range.
-     * Each class period = 1 session.
+     * Calculate period-based attendance for a student in a course over a date range.
      */
     public static function calculateAttendanceForPeriod($studentId, $courseId, $startDate, $endDate)
     {
@@ -34,28 +32,27 @@ class AttendanceHelper
             ->whereBetween('session_date', [$startDate, $endDate])
             ->get();
 
-        // Count SESSIONS (each class period = 1 session)
-        $totalSessions = $sessions->count();
-        if ($totalSessions == 0) {
+        $totalPeriods = $sessions->sum('conducted_periods') ?: 0;
+        if ($totalPeriods == 0) {
             return ['percentage' => 0, 'attended' => 0, 'total' => 0];
         }
 
-        $attendedSessions = 0;
+        $attendedPeriods = 0;
         foreach ($sessions as $session) {
             $record = AttendanceRecord::where('student_id', $studentId)
                 ->where('attendance_session_id', $session->id)
                 ->whereIn('status', ['present', 'late'])
                 ->first();
             if ($record) {
-                $attendedSessions++;
+                $attendedPeriods += $session->conducted_periods;
             }
         }
 
-        $percentage = round(($attendedSessions / $totalSessions) * 100, 1);
+        $percentage = round(($attendedPeriods / $totalPeriods) * 100, 1);
         return [
             'percentage' => $percentage,
-            'attended'   => $attendedSessions,
-            'total'      => $totalSessions,
+            'attended'   => $attendedPeriods,
+            'total'      => $totalPeriods,
         ];
     }
 
@@ -86,7 +83,6 @@ class AttendanceHelper
 
     public static function calculateRollCallMark($attendancePercentage, $lateCount = 0, $participationMark = 1.5)
     {
-        // Consistency (max 6)
         $consistency = 0.5;
         if ($attendancePercentage >= 95) $consistency = 6.0;
         elseif ($attendancePercentage >= 90) $consistency = 5.0;
@@ -96,14 +92,12 @@ class AttendanceHelper
         elseif ($attendancePercentage >= 70) $consistency = 1.5;
         elseif ($attendancePercentage >= 60) $consistency = 1.0;
 
-        // Punctuality (max 2)
         $punctuality = 0.5;
         if ($lateCount == 0) $punctuality = 2.0;
         elseif ($lateCount <= 2) $punctuality = 1.5;
         elseif ($lateCount <= 5) $punctuality = 1.0;
 
         $participation = min(max($participationMark, 0.5), 2.0);
-
         $total = round($consistency + $punctuality + $participation, 1);
 
         return [
@@ -115,47 +109,25 @@ class AttendanceHelper
     }
 
     // ============================================================
-    // RISK SCORE – IMPROVED MULTI-FACTOR VERSION
+    // RISK SCORE
     // ============================================================
 
-    /**
-     * Calculate a comprehensive risk score using multiple factors:
-     * - Attendance percentage (40% weight)
-     * - Roll call total (25% weight)
-     * - Consecutive absences (20% weight)
-     * - Attendance trend (15% weight)
-     */
     public static function calculateRiskScore($attendancePercentage, $rollCallTotal = null, $consecutiveAbsences = null, $trend = null)
     {
-        // Attendance risk (0–100)
-        if ($attendancePercentage >= 75) {
-            $attRisk = 20;
-        } elseif ($attendancePercentage >= 60) {
-            $attRisk = 50;
-        } elseif ($attendancePercentage >= 40) {
-            $attRisk = 75;
-        } else {
-            $attRisk = 90;
-        }
-
-        // Roll call risk (0–100)
-        $rollRisk = 50; // default if null
+        $attRisk = $attendancePercentage >= 75 ? 20 : ($attendancePercentage >= 60 ? 50 : ($attendancePercentage >= 40 ? 75 : 90));
+        $rollRisk = 50;
         if ($rollCallTotal !== null) {
             if ($rollCallTotal >= 8) $rollRisk = 20;
             elseif ($rollCallTotal >= 6) $rollRisk = 40;
             elseif ($rollCallTotal >= 4) $rollRisk = 60;
             else $rollRisk = 80;
         }
-
-        // Consecutive absences risk (0–100)
         $absRisk = 0;
         if ($consecutiveAbsences !== null) {
             if ($consecutiveAbsences >= 4) $absRisk = 90;
             elseif ($consecutiveAbsences >= 2) $absRisk = 60;
             elseif ($consecutiveAbsences >= 1) $absRisk = 30;
         }
-
-        // Trend risk (0–100)
         $trendRisk = 50;
         if ($trend !== null) {
             if ($trend == 'improving') $trendRisk = 20;
@@ -163,24 +135,15 @@ class AttendanceHelper
             elseif ($trend == 'declining') $trendRisk = 75;
             elseif ($trend == 'critical') $trendRisk = 90;
         }
-
-        // Weighted average
         $riskScore = ($attRisk * 0.40) + ($rollRisk * 0.25) + ($absRisk * 0.20) + ($trendRisk * 0.15);
         return round($riskScore);
     }
 
-    /**
-     * Get risk level from attendance only (legacy – kept for backward compatibility)
-     */
     public static function getRiskLevelFromAttendance($attendancePercentage)
     {
-        if ($attendancePercentage >= 75) {
-            return 'Low';
-        } elseif ($attendancePercentage >= 60) {
-            return 'Medium';
-        } else {
-            return 'High';
-        }
+        if ($attendancePercentage >= 75) return 'Low';
+        if ($attendancePercentage >= 60) return 'Medium';
+        return 'High';
     }
 
     public static function getRiskLevel($riskScore)
@@ -213,7 +176,6 @@ class AttendanceHelper
     public static function getRiskExplanation($attendancePercentage, $rollCallTotal, $consecutiveAbsences, $trend, $riskLevel)
     {
         $explanations = [];
-
         if ($attendancePercentage >= 75) {
             $explanations[] = '✅ Attendance above 75% threshold';
         } elseif ($attendancePercentage >= 60) {
@@ -221,7 +183,6 @@ class AttendanceHelper
         } else {
             $explanations[] = '❌ Attendance critically low (' . $attendancePercentage . '%)';
         }
-
         if ($rollCallTotal >= 7) {
             $explanations[] = "✅ Roll call score {$rollCallTotal}/10 (good)";
         } elseif ($rollCallTotal >= 5) {
@@ -229,7 +190,6 @@ class AttendanceHelper
         } else {
             $explanations[] = "❌ Roll call score {$rollCallTotal}/10 (poor)";
         }
-
         if ($consecutiveAbsences == 0) {
             $explanations[] = '✅ No consecutive absences';
         } elseif ($consecutiveAbsences <= 2) {
@@ -237,7 +197,6 @@ class AttendanceHelper
         } else {
             $explanations[] = "❌ {$consecutiveAbsences} consecutive absences – urgent";
         }
-
         if ($trend == 'improving') {
             $explanations[] = '📈 Attendance trend improving';
         } elseif ($trend == 'stable') {
@@ -247,7 +206,6 @@ class AttendanceHelper
         } else {
             $explanations[] = '🚨 Critical decline trend';
         }
-
         if ($riskLevel == 'Low') {
             $explanations[] = '🟢 Low risk – student on track';
         } elseif ($riskLevel == 'Medium') {
@@ -255,7 +213,6 @@ class AttendanceHelper
         } else {
             $explanations[] = '🔴 High risk – immediate intervention required';
         }
-
         return $explanations;
     }
 
@@ -282,7 +239,6 @@ class AttendanceHelper
                 break;
             }
         }
-
         return $consecutive;
     }
 
@@ -294,28 +250,22 @@ class AttendanceHelper
             ->take(5)
             ->get();
 
-        if ($sessions->count() < 3) {
-            return 'stable';
-        }
+        if ($sessions->count() < 3) return 'stable';
 
         $statuses = [];
         foreach ($sessions as $session) {
             $record = AttendanceRecord::where('student_id', $studentId)
                 ->where('attendance_session_id', $session->id)
                 ->first();
-
             $statuses[] = ($record && $record->status !== 'absent') ? 1 : 0;
         }
 
         $len = count($statuses);
         if ($len < 4) return 'stable';
-
         $earlier = array_slice($statuses, 0, 2);
         $recent = array_slice($statuses, -2);
-
         $earlierAvg = array_sum($earlier) / count($earlier);
         $recentAvg = array_sum($recent) / count($recent);
-
         $diff = $recentAvg - $earlierAvg;
 
         if ($diff > 0.2) return 'improving';

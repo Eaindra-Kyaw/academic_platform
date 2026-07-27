@@ -261,6 +261,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         // ✅ ADDED: missing route for student attendance data
         Route::get('/student-data/{student}', [AttendanceAnalyticsController::class, 'studentAttendanceData'])
             ->name('attendance.student-data');
+            Route::get('/course-students/{courseId}', [AttendanceAnalyticsController::class, 'courseStudents'])
+    ->name('attendance.course-students');
     });
 
     // ============================================================

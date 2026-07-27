@@ -3,7 +3,7 @@
 @section('title', 'Attendance Analytics')
 @section('role', 'Admin')
 @section('page-title', 'Attendance Analytics')
-@section('welcome-text', 'Monitor university-wide attendance performance')
+@section('welcome-text', 'Monitor course attendance and student performance')
 
 @section('sidebar')
     @include('layouts.partials.admin-sidebar')
@@ -163,81 +163,67 @@
             background: #e5e7eb;
         }
 
-        .btn-reset-student {
-            background: #f3f4f6;
-            color: var(--text-dark);
-            border: 1px solid rgba(10, 36, 99, 0.1);
-            padding: 0.3rem 1rem;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
-            white-space: nowrap;
+        .filter-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 1.5rem;
+            padding: 0.25rem 0;
+        }
+
+        .filter-badge {
             display: inline-flex;
             align-items: center;
             gap: 0.3rem;
+            background: #f1f5f9;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.7rem;
+            color: var(--text-dark);
+            border: 1px solid rgba(10, 36, 99, 0.08);
         }
 
-        .btn-reset-student:hover {
-            background: #e5e7eb;
+        .filter-badge .badge-label {
+            font-weight: 600;
         }
 
-        .chart-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
+        .filter-badge .badge-value {
+            font-weight: 400;
         }
 
-        .chart-card {
-            background: var(--white);
-            border-radius: var(--radius);
-            border: 1px solid rgba(10, 36, 99, 0.06);
-            overflow: visible !important;
-            box-shadow: var(--shadow);
+        .filter-badge .badge-remove {
+            cursor: pointer;
+            color: var(--text-gray);
+            font-size: 0.6rem;
+            margin-left: 0.1rem;
             transition: var(--transition);
         }
 
-        .chart-card:hover {
-            box-shadow: var(--shadow-hover);
+        .filter-badge .badge-remove:hover {
+            color: var(--danger);
         }
 
-        .chart-card .card-header {
-            padding: 0.75rem 1rem;
-            background: #fafbfc;
-            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--text-dark);
+        .dept-card-wrapper {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chart-card .card-body {
-            padding: 1rem;
-            overflow: visible !important;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 250px;
-        }
-
-        .dept-card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 0.5rem;
-            margin-top: 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            padding: 0.25rem 0;
         }
 
         .dept-card {
             background: #fafbfc;
             border-radius: 8px;
-            padding: 0.6rem 0.8rem;
+            padding: 0.5rem 0.75rem;
             border: 1px solid rgba(10, 36, 99, 0.06);
             text-align: center;
+            min-width: 100px;
+            flex: 0 1 auto;
+            transition: var(--transition);
+        }
+
+        .dept-card:hover {
+            border-color: var(--primary);
+            background: #f1f5f9;
         }
 
         .dept-card .dept-code {
@@ -252,7 +238,100 @@
             margin: 0.1rem 0;
         }
 
-        /* ===== SEARCHABLE DROPDOWN ===== */
+        .dept-card .dept-students {
+            font-size: 0.55rem;
+            color: var(--text-gray);
+        }
+
+        .ranking-table {
+            width: 100%;
+            font-size: 0.8rem;
+            border-collapse: collapse;
+        }
+
+        .ranking-table th {
+            text-align: left;
+            padding: 0.4rem 0.5rem;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: var(--text-gray);
+            font-weight: 600;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
+        }
+
+        .ranking-table td {
+            padding: 0.3rem 0.5rem;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
+            vertical-align: middle;
+        }
+
+        .ranking-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .ranking-table .rank-num {
+            font-weight: 700;
+            color: var(--text-gray);
+            font-size: 0.7rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .ranking-table .rank-1 {
+            color: var(--accent);
+        }
+
+        .ranking-table .rank-2 {
+            color: #9ca3af;
+        }
+
+        .ranking-table .rank-3 {
+            color: #d97706;
+        }
+
+        .attendance-bar {
+            height: 6px;
+            background: #f3f4f6;
+            border-radius: 3px;
+            overflow: hidden;
+            width: 80px;
+            display: inline-block;
+        }
+
+        .attendance-bar .fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .attendance-bar .fill.high {
+            background: var(--success);
+        }
+
+        .attendance-bar .fill.medium {
+            background: var(--warning);
+        }
+
+        .attendance-bar .fill.low {
+            background: var(--danger);
+        }
+
+        .btn-view-students {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: none;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-view-students:hover {
+            background: #bae6fd;
+        }
+
         .searchable-dropdown {
             position: relative;
             flex: 2;
@@ -342,7 +421,27 @@
             background: #bfdbfe;
         }
 
-        /* ===== MODAL STYLES ===== */
+        .btn-reset-student {
+            background: #f3f4f6;
+            color: var(--text-dark);
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            padding: 0.3rem 1rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-reset-student:hover {
+            background: #e5e7eb;
+        }
+
+        /* MODALS */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -542,6 +641,27 @@
             }
         }
 
+        .student-list-table {
+            width: 100%;
+            font-size: 0.85rem;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+
+        .student-list-table th {
+            text-align: left;
+            padding: 0.4rem 0.5rem;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: var(--text-gray);
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
+        }
+
+        .student-list-table td {
+            padding: 0.3rem 0.5rem;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
+        }
+
         @media (max-width: 1024px) {
             .chart-grid {
                 grid-template-columns: 1fr;
@@ -568,21 +688,12 @@
                 width: 100%;
             }
 
-            .dept-card-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
             .modal-stats-grid {
                 grid-template-columns: 1fr 1fr;
             }
 
             .modal-monthly-stats {
                 grid-template-columns: 1fr 1fr;
-            }
-
-            .modal-content {
-                margin: 10px;
-                max-height: 95vh;
             }
 
             .quick-action-wrapper .searchable-dropdown {
@@ -592,7 +703,6 @@
 
         @media (max-width: 480px) {
             .stats-grid {
-                grid-template-columns: 1fr 1fr;
                 gap: 0.5rem;
             }
 
@@ -602,14 +712,6 @@
 
             .stat-number {
                 font-size: 1.2rem;
-            }
-
-            .dept-card-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .modal-stats-grid {
-                grid-template-columns: 1fr 1fr;
             }
         }
     </style>
@@ -635,10 +737,10 @@
     </div>
 
     {{-- Filter Bar --}}
-    <form class="filter-bar" method="GET" action="{{ route('admin.attendance.analytics') }}">
+    <form class="filter-bar" method="GET" action="{{ route('admin.attendance.analytics') }}" id="filterForm">
         <div class="filter-group">
             <label><i class="bi bi-building"></i> Department</label>
-            <select name="department_id">
+            <select name="department_id" id="deptFilter">
                 <option value="">All</option>
                 @foreach ($departments as $dept)
                     <option value="{{ $dept->id }}" {{ $departmentId == $dept->id ? 'selected' : '' }}>
@@ -650,11 +752,11 @@
 
         <div class="filter-group">
             <label><i class="bi bi-book"></i> Course</label>
-            <select name="course_id">
+            <select name="course_id" id="courseFilter">
                 <option value="">All</option>
                 @foreach ($courses as $course)
                     <option value="{{ $course->id }}" {{ $courseId == $course->id ? 'selected' : '' }}>
-                        {{ $course->course_code }}
+                        {{ $course->course_code }} - {{ $course->course_name }}
                     </option>
                 @endforeach
             </select>
@@ -662,7 +764,7 @@
 
         <div class="filter-group">
             <label><i class="bi bi-calendar3"></i> Year</label>
-            <select name="year">
+            <select name="year" id="yearFilter">
                 <option value="">All</option>
                 @for ($i = 1; $i <= 6; $i++)
                     <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>
@@ -674,7 +776,7 @@
 
         <div class="filter-group">
             <label><i class="bi bi-calendar-range"></i> Date</label>
-            <select name="date_range">
+            <select name="date_range" id="dateRangeFilter">
                 <option value="today" {{ $dateRange == 'today' ? 'selected' : '' }}>Today</option>
                 <option value="this_week" {{ $dateRange == 'this_week' ? 'selected' : '' }}>This Week</option>
                 <option value="this_month" {{ $dateRange == 'this_month' ? 'selected' : '' }}>This Month</option>
@@ -683,19 +785,21 @@
             </select>
         </div>
 
-        <div style="display:flex; gap:0.5rem;">
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
             <button type="submit" class="btn-filter"><i class="bi bi-funnel"></i> Apply</button>
             <a href="{{ route('admin.attendance.analytics') }}" class="btn-reset"><i
                     class="bi bi-arrow-counterclockwise"></i> Reset</a>
         </div>
     </form>
 
-    {{-- Student Quick Actions with Reset Button --}}
-    <div class="chart-card" style="margin-bottom:1.5rem;">
-        <div class="card-header">
+    {{-- Student Quick Actions --}}
+    <div class="chart-card"
+        style="margin-bottom:1.5rem; background:var(--white); border-radius:var(--radius); border:1px solid rgba(10,36,99,0.06); box-shadow:var(--shadow);">
+        <div class="card-header"
+            style="padding:0.75rem 1rem; background:#fafbfc; border-bottom:1px solid rgba(10,36,99,0.06); font-weight:600; font-size:0.85rem; color:var(--text-dark); display:flex; justify-content:space-between; align-items:center;">
             <span><i class="bi bi-person"></i> View each student's attendance</span>
         </div>
-        <div class="card-body">
+        <div class="card-body" style="padding:1rem;">
             <div class="quick-action-wrapper">
                 <div class="searchable-dropdown" id="attendanceStudentDropdown">
                     <input type="text" id="attendanceSearchInput" placeholder="Search by name or ID..."
@@ -713,7 +817,6 @@
                 <button class="btn-view-attendance" onclick="viewQuickAttendance()">
                     <i class="bi bi-calendar-check"></i> View Attendance
                 </button>
-                {{-- Reset Button --}}
                 <button class="btn-reset-student" onclick="resetStudentSelection()">
                     <i class="bi bi-arrow-counterclockwise"></i> Reset
                 </button>
@@ -721,62 +824,126 @@
         </div>
     </div>
 
-    {{-- Charts --}}
-    <div class="chart-grid">
-        <div class="chart-card">
-            <div class="card-header">
-                <span><i class="bi bi-graph-up"></i> Weekly Attendance Trend</span>
-                <span style="font-size:0.65rem; color:var(--text-gray);">Last 12 weeks</span>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="weeklyChart"></canvas>
-                </div>
-            </div>
+    {{-- Department Attendance Cards --}}
+    <div class="chart-card"
+        style="margin-bottom:1.5rem; background:var(--white); border-radius:var(--radius); border:1px solid rgba(10,36,99,0.06); box-shadow:var(--shadow);">
+        <div class="card-header"
+            style="padding:0.75rem 1rem; background:#fafbfc; border-bottom:1px solid rgba(10,36,99,0.06); font-weight:600; font-size:0.85rem; color:var(--text-dark); display:flex; justify-content:space-between; align-items:center;">
+            <span><i class="bi bi-building"></i> Department Attendance</span>
+            <span style="font-size:0.65rem; color:var(--text-gray);">Ranking</span>
         </div>
-
-        <div class="chart-card">
-            <div class="card-header">
-                <span><i class="bi bi-building"></i> Department Attendance</span>
-                <span style="font-size:0.65rem; color:var(--text-gray);">Ranking</span>
-            </div>
-            <div class="card-body" style="max-height: 300px; overflow-y: auto;">
-                @if (count($departmentAttendance) > 0)
-                    <div class="dept-card-grid">
-                        @foreach ($departmentAttendance as $dept)
-                            @php
-                                $color =
-                                    $dept['attendance'] >= 75
-                                        ? '#10b981'
-                                        : ($dept['attendance'] >= 60
-                                            ? '#f59e0b'
-                                            : '#ef4444');
-                            @endphp
-                            <div class="dept-card">
-                                <div class="dept-code">{{ $dept['name'] }}</div>
-                                <div class="dept-attendance" style="color:{{ $color }};">
-                                    {{ $dept['attendance'] }}%
-                                </div>
-                                <div style="font-size:0.55rem; color:var(--text-gray);">
-                                    {{ $dept['total_students'] }} students
-                                </div>
+        <div class="card-body" style="padding:1rem;">
+            @if (count($departmentAttendance) > 0)
+                <div class="dept-card-wrapper">
+                    @foreach ($departmentAttendance as $dept)
+                        @php
+                            $color =
+                                $dept['attendance'] >= 75
+                                    ? '#10b981'
+                                    : ($dept['attendance'] >= 60
+                                        ? '#f59e0b'
+                                        : '#ef4444');
+                        @endphp
+                        <div class="dept-card">
+                            <div class="dept-code">{{ $dept['name'] }}</div>
+                            <div class="dept-attendance" style="color:{{ $color }};">{{ $dept['attendance'] }}%
                             </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div style="text-align:center; padding:1rem; color:var(--text-gray);">
-                        No department data available
-                    </div>
-                @endif
-            </div>
+                            <div class="dept-students">{{ $dept['total_students'] }} students</div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div style="text-align:center; padding:1rem; color:var(--text-gray);">No department data available</div>
+            @endif
         </div>
     </div>
 
-    {{-- ===== Course Attendance Ranking REMOVED ===== --}}
+    {{-- Course Ranking Table with drill-down --}}
+    <div class="chart-card"
+        style="margin-bottom:1.5rem; background:var(--white); border-radius:var(--radius); border:1px solid rgba(10,36,99,0.06); box-shadow:var(--shadow);">
+        <div class="card-header"
+            style="padding:0.75rem 1rem; background:#fafbfc; border-bottom:1px solid rgba(10,36,99,0.06); font-weight:600; font-size:0.85rem; color:var(--text-dark); display:flex; justify-content:space-between; align-items:center;">
+            <span><i class="bi bi-trophy"></i> Course Attendance Ranking</span>
+            <span style="font-size:0.65rem; color:var(--text-gray);">
+                Top 20 courses
+                @if ($dateRange == 'this_week')
+                    (This Week)
+                @elseif($dateRange == 'this_month')
+                    (This Month)
+                @elseif($dateRange == 'this_semester')
+                    (This Semester)
+                @elseif($dateRange == 'today')
+                    (Today)
+                @else
+                    (Overall)
+                @endif
+            </span>
+        </div>
+        <div class="card-body" style="padding:0;">
+            @if (count($courseRanking) > 0)
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th style="width:30px;">#</th>
+                            <th>Course</th>
+                            <th>Dept</th>
+                            <th style="text-align:center;">Students</th>
+                            <th style="text-align:center;">Periods</th> {{-- CHANGED from Sessions --}}
+                            <th style="text-align:center;">Attendance</th>
+                            <th style="text-align:center;">Progress</th>
+                            <th style="text-align:center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($courseRanking as $index => $course)
+                            @php
+                                $rankClass =
+                                    $index == 0 ? 'rank-1' : ($index == 1 ? 'rank-2' : ($index == 2 ? 'rank-3' : ''));
+                                $barClass =
+                                    $course['attendance'] >= 75
+                                        ? 'high'
+                                        : ($course['attendance'] >= 60
+                                            ? 'medium'
+                                            : 'low');
+                            @endphp
+                            <tr>
+                                <td class="rank-num {{ $rankClass }}">{{ $index + 1 }}</td>
+                                <td>
+                                    <div style="font-weight:600; font-size:0.8rem; color:var(--text-dark);">
+                                        {{ $course['course_code'] }}</div>
+                                    <div style="font-size:0.7rem; color:var(--text-gray); line-height:1.3;">
+                                        {{ $course['course_name'] }}</div>
+                                </td>
+                                <td style="font-size:0.7rem; color:var(--text-gray);">{{ $course['department'] }}</td>
+                                <td style="text-align:center; font-size:0.75rem;">{{ $course['students'] }}</td>
+                                <td style="text-align:center; font-size:0.75rem;">{{ $course['periods'] }}</td>
+                                {{-- PERIODS --}}
+                                <td style="text-align:center; font-weight:600; font-size:0.85rem;">
+                                    {{ $course['attendance'] }}%</td>
+                                <td>
+                                    <div class="attendance-bar">
+                                        <div class="fill {{ $barClass }}"
+                                            style="width: {{ $course['attendance'] }}%;"></div>
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <button class="btn-view-students"
+                                        onclick="viewCourseStudents({{ $course['course_id'] }}, '{{ addslashes($course['course_code']) }}')">
+                                        <i class="bi bi-people"></i> Students
+                                    </button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <div style="text-align:center; padding:2rem; color:var(--text-gray);">No course data available for the
+                    selected filters.</div>
+            @endif
+        </div>
+    </div>
 
-    <!-- ============================================================ -->
-    <!-- ATTENDANCE MODAL (Updated: 3 cards, no Status, text label below chart) -->
-    <!-- ============================================================ -->
+    {{-- MODAL: Student Attendance (existing) --}}
     <div class="modal-overlay" id="attendanceModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -796,6 +963,28 @@
             </div>
             <div class="modal-footer">
                 <button class="btn-close-modal" onclick="closeModal('attendanceModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    {{-- MODAL: Course Students --}}
+    <div class="modal-overlay" id="courseStudentsModal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h4>
+                    <i class="bi bi-people" style="color:var(--info);"></i>
+                    Students in <span id="courseStudentsTitle">Course</span>
+                </h4>
+                <button class="modal-close" onclick="closeModal('courseStudentsModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="courseStudentsModalBody">
+                <div class="text-center" style="padding:2rem;">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top:0.5rem; color:var(--text-gray);">Loading student list...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-close-modal" onclick="closeModal('courseStudentsModal')">Close</button>
             </div>
         </div>
     </div>
@@ -856,7 +1045,6 @@
                     if (this.value.length > 0) filterItems(this.value);
                 });
 
-                // Reset student selection
                 window.resetStudentSelection = function() {
                     input.value = '';
                     selectedId = null;
@@ -875,7 +1063,6 @@
                     return null;
                 };
 
-                // ====== Quick Action ======
                 window.viewQuickAttendance = function() {
                     const id = window.getSelectedStudentId();
                     if (!id) {
@@ -910,6 +1097,15 @@
 
                 let attendanceChart = null;
 
+                // Helper to get current date filters from the page
+                function getDateFilters() {
+                    const params = new URLSearchParams(window.location.search);
+                    return {
+                        date_from: params.get('date_from') || '',
+                        date_to: params.get('date_to') || ''
+                    };
+                }
+
                 function openAttendanceModal(studentId, studentName, studentIdNumber) {
                     const modal = document.getElementById('attendanceModal');
                     const body = document.getElementById('attendanceModalBody');
@@ -926,7 +1122,14 @@
                         </div>
                     `;
 
-                    fetch(`/admin/attendance/student-data/${studentId}`)
+                    const filters = getDateFilters();
+                    let url = `/admin/attendance/student-data/${studentId}`;
+                    const params = new URLSearchParams();
+                    if (filters.date_from) params.append('date_from', filters.date_from);
+                    if (filters.date_to) params.append('date_to', filters.date_to);
+                    if (params.toString()) url += '?' + params.toString();
+
+                    fetch(url)
                         .then(response => {
                             if (!response.ok) throw new Error('Network error');
                             return response.json();
@@ -940,9 +1143,8 @@
                             const attClass = avgAttendance >= 75 ? 'low' : (avgAttendance >= 60 ? 'medium' :
                                 'high');
 
-                            // Determine status text
-                            let statusText = '';
-                            let statusIcon = '';
+                            let statusText = '',
+                                statusIcon = '';
                             if (avgAttendance >= 75) {
                                 statusText = 'Good attendance';
                                 statusIcon = '✅';
@@ -969,11 +1171,7 @@
                                     <div class="label"><i class="bi bi-calendar-month"></i> Months Tracked</div>
                                 </div>
                             </div>
-                            <div style="margin-bottom:0.5rem;">
-                                <strong style="font-size:0.8rem; color:var(--text-dark);">
-                                    <i class="bi bi-calendar-month"></i> Monthly Summary
-                                </strong>
-                            </div>
+                            <div style="margin-bottom:0.5rem;"><strong style="font-size:0.8rem; color:var(--text-dark);"><i class="bi bi-calendar-month"></i> Monthly Summary</strong></div>
                             <div class="modal-monthly-stats">`;
                             if (data.monthly && data.monthly.length > 0) {
                                 data.monthly.forEach(m => {
@@ -991,8 +1189,7 @@
                             html += `</div>
                             <div class="modal-chart-container"><canvas id="attendanceModalChart"></canvas></div>
                             <div style="text-align:center; font-size:0.6rem; color:var(--text-gray); margin-top:0.25rem;">
-                                <i class="bi bi-info-circle"></i>
-                                ${statusIcon} ${statusText}
+                                <i class="bi bi-info-circle"></i> ${statusIcon} ${statusText}
                             </div>`;
 
                             body.innerHTML = html;
@@ -1034,9 +1231,7 @@
                                                 beginAtZero: true,
                                                 max: 100,
                                                 ticks: {
-                                                    callback: function(value) {
-                                                        return value + '%';
-                                                    },
+                                                    callback: v => v + '%',
                                                     font: {
                                                         size: 9
                                                     }
@@ -1071,73 +1266,101 @@
                         });
                 }
 
-                // ====== Weekly Chart ======
-                const weeklyData = @json($weeklyTrend);
-                const ctx = document.getElementById('weeklyChart');
-                if (ctx && weeklyData && weeklyData.length > 0) {
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: weeklyData.map(item => item.label),
-                            datasets: [{
-                                label: 'Attendance %',
-                                data: weeklyData.map(item => item.attendance),
-                                borderColor: '#0A2463',
-                                backgroundColor: 'rgba(10,36,99,0.08)',
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: '#0A2463',
-                                pointBorderColor: 'white',
-                                pointBorderWidth: 2,
-                                pointRadius: 4,
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    ticks: {
-                                        callback: function(value) {
-                                            return value + '%';
-                                        },
-                                        font: {
-                                            size: 10
-                                        }
-                                    },
-                                    grid: {
-                                        color: 'rgba(0,0,0,0.05)'
-                                    }
-                                },
-                                x: {
-                                    grid: {
-                                        display: false
-                                    },
-                                    ticks: {
-                                        font: {
-                                            size: 10
-                                        }
-                                    }
-                                }
-                            },
-                            interaction: {
-                                intersect: false,
-                                mode: 'index'
+                // ====== Course Students Modal ======
+                window.viewCourseStudents = function(courseId, courseCode) {
+                    const modal = document.getElementById('courseStudentsModal');
+                    const body = document.getElementById('courseStudentsModalBody');
+                    document.getElementById('courseStudentsTitle').textContent = courseCode;
+
+                    modal.classList.add('show');
+                    body.innerHTML = `
+                        <div class="text-center" style="padding:2rem;">
+                            <div class="loading-spinner"></div>
+                            <p style="margin-top:0.5rem; color:var(--text-gray);">Loading students...</p>
+                        </div>
+                    `;
+
+                    const filters = getDateFilters();
+                    let url = `/admin/attendance/course-students/${courseId}`;
+                    const params = new URLSearchParams();
+                    if (filters.date_from) params.append('date_from', filters.date_from);
+                    if (filters.date_to) params.append('date_to', filters.date_to);
+                    if (params.toString()) url += '?' + params.toString();
+
+                    fetch(url)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network error');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (!data.success) throw new Error(data.message || 'Failed to load');
+
+                            let html = `
+                                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-gray);">
+                                    <span><strong>Total Students:</strong> ${data.total_students}</span>
+                                    <span><strong>Sessions:</strong> ${data.total_sessions}</span>
+                                    <span><strong>Total Periods:</strong> ${data.total_periods}</span>
+                                </div>
+                                <table class="student-list-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Name</th>
+                                            <th>ID</th>
+                                            <th style="text-align:center;">Attendance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                            `;
+                            if (data.students && data.students.length > 0) {
+                                data.students.forEach((student, idx) => {
+                                    const color = student.attendance >= 75 ? 'var(--success)' : (student
+                                        .attendance >= 60 ? 'var(--warning)' : 'var(--danger)');
+                                    html += `
+                                        <tr>
+                                            <td>${idx+1}</td>
+                                            <td>${student.name}</td>
+                                            <td>${student.student_id}</td>
+                                            <td style="text-align:center; font-weight:600; color:${color};">${student.attendance}%</td>
+                                        </tr>
+                                    `;
+                                });
+                            } else {
+                                html +=
+                                    `<tr><td colspan="4" style="text-align:center; color:var(--text-gray);">No students found.</td></tr>`;
                             }
+                            html += `</tbody></table>`;
+                            body.innerHTML = html;
+                        })
+                        .catch(error => {
+                            body.innerHTML = `
+                            <div style="text-align:center; padding:2rem; color:var(--danger);">
+                                <i class="bi bi-exclamation-triangle" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
+                                <p>${error.message || 'Failed to load student list'}</p>
+                                <button class="btn-close-modal" onclick="closeModal('courseStudentsModal')">Close</button>
+                            </div>
+                        `;
+                        });
+                };
+
+                // ====== Remove filter via badge click ======
+                window.removeFilter = function(filter) {
+                    const form = document.getElementById('filterForm');
+                    const map = {
+                        'department': 'department_id',
+                        'course': 'course_id',
+                        'year': 'year',
+                        'date': 'date_range'
+                    };
+                    const fieldName = map[filter];
+                    if (fieldName) {
+                        const select = form.querySelector(`[name="${fieldName}"]`);
+                        if (select) {
+                            select.value = '';
                         }
-                    });
-                } else if (ctx) {
-                    ctx.parentElement.innerHTML =
-                        '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-gray);font-size:0.9rem;">No attendance data available</div>';
-                }
+                    }
+                    form.submit();
+                };
             });
         </script>
     @endpush
