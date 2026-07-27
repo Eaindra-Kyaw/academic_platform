@@ -207,12 +207,12 @@
             <span class="arrow">Click to generate →</span>
         </a>
 
-        <a href="{{ route('admin.reports.detail', ['type' => 'health']) }}" class="report-card">
+        {{-- <a href="{{ route('admin.reports.detail', ['type' => 'health']) }}" class="report-card">
             <span class="icon">💚</span>
             <h5>Academic Health Report</h5>
             <p>Export Academic Health Scores and trends</p>
             <span class="arrow">Click to generate →</span>
-        </a>
+        </a> --}}
 
         <a href="{{ route('admin.reports.detail', ['type' => 'semester']) }}" class="report-card">
             <span class="icon">📅</span>
