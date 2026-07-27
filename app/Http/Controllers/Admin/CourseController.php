@@ -35,35 +35,66 @@ class CourseController extends Controller
         return view('admin.courses.index', compact('department', 'courses', 'semesters', 'lecturers'));
     }
 
-    /**
-     * Show the form for creating a new course.
-     */
-    public function create(Department $department)
-    {
-        $lecturers = User::where('role_id', 2)
-            ->where(function($query) use ($department) {
-                $query->where('department_id', $department->id)
-                      ->orWhereNull('department_id');
-            })
-            ->orderBy('name')
-            ->get();
+public function create($departmentId)
+{
+    $department = Department::findOrFail($departmentId);
 
-        // ✅ FIXED: use academic_year and semester_number
-        $semesters = Semester::orderBy('academic_year', 'desc')
-            ->orderBy('semester_number', 'asc')
-            ->get();
+    $deptLecturers = User::where('role_id', 2)
+        ->where('department_id', $department->id)
+        ->orderBy('name')
+        ->get();
 
-        $years = [
-            'First Year',
-            'Second Year',
-            'Third Year',
-            'Fourth Year',
-            'Fifth Year',
-            'Sixth Year',
-        ];
+    $lecturers = User::where('role_id', 2)
+        ->orderBy('name')
+        ->get();
 
-        return view('admin.courses.create', compact('department', 'lecturers', 'semesters', 'years'));
-    }
+    // Fetch all semesters ordered by year and semester number
+    $semesters = Semester::orderBy('year_name')
+        ->orderBy('semester_number', 'asc')
+        ->get();
+
+    // Year options
+    $years = [
+        'First Year' => 'First Year',
+        'Second Year' => 'Second Year',
+        'Third Year' => 'Third Year',
+        'Fourth Year' => 'Fourth Year',
+        'Fifth Year' => 'Fifth Year',
+        'Sixth Year' => 'Sixth Year',
+    ];
+
+    return view('admin.courses.create', compact('department', 'deptLecturers', 'lecturers', 'semesters', 'years'));
+}
+
+public function edit($departmentId, $courseId)
+{
+    $department = Department::findOrFail($departmentId);
+    $course = Course::with('lecturer')->findOrFail($courseId);
+
+    $deptLecturers = User::where('role_id', 2)
+        ->where('department_id', $department->id)
+        ->orderBy('name')
+        ->get();
+
+    $lecturers = User::where('role_id', 2)
+        ->orderBy('name')
+        ->get();
+
+    $semesters = Semester::orderBy('year_name')
+        ->orderBy('semester_number', 'asc')
+        ->get();
+
+    $years = [
+        'First Year' => 'First Year',
+        'Second Year' => 'Second Year',
+        'Third Year' => 'Third Year',
+        'Fourth Year' => 'Fourth Year',
+        'Fifth Year' => 'Fifth Year',
+        'Sixth Year' => 'Sixth Year',
+    ];
+
+    return view('admin.courses.edit', compact('department', 'course', 'deptLecturers', 'lecturers', 'semesters', 'years'));
+}
 
     /**
      * Store a newly created course.
@@ -114,36 +145,6 @@ class CourseController extends Controller
     {
         $course->load(['lecturer', 'enrollments.student', 'attendanceSessions']);
         return view('admin.courses.show', compact('department', 'course'));
-    }
-
-    /**
-     * Show the form for editing the specified course.
-     */
-    public function edit(Department $department, Course $course)
-    {
-        $lecturers = User::where('role_id', 2)
-            ->where(function($query) use ($department) {
-                $query->where('department_id', $department->id)
-                      ->orWhereNull('department_id');
-            })
-            ->orderBy('name')
-            ->get();
-
-        // ✅ FIXED: use academic_year and semester_number
-        $semesters = Semester::orderBy('academic_year', 'desc')
-            ->orderBy('semester_number', 'asc')
-            ->get();
-
-        $years = [
-            'First Year',
-            'Second Year',
-            'Third Year',
-            'Fourth Year',
-            'Fifth Year',
-            'Sixth Year',
-        ];
-
-        return view('admin.courses.edit', compact('department', 'course', 'lecturers', 'semesters', 'years'));
     }
 
     /**

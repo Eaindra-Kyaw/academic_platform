@@ -593,7 +593,7 @@
                     {{ $weekStart->format('M d') }} – {{ $weekEnd->format('M d, Y') }}
                 </span>
             </div>
-            <button class="btn-today" onclick="goToday()">📅 Today</button>
+            <button class="btn-today" onclick="goToday()"> Today</button>
         </div>
 
         <div class="timetable-grid">

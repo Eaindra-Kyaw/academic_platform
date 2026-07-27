@@ -2,7 +2,7 @@
 
 @section('title', 'Admin Dashboard | MTU Academic Intelligence')
 @section('role', 'Admin')
-@section('page-title', '🎯 University Intelligence Dashboard')
+@section('page-title', 'University Intelligence Dashboard')
 @section('welcome-text', 'Real-time academic insights & predictive analytics')
 
 @section('sidebar')
@@ -65,29 +65,13 @@
             transition: var(--transition);
             position: relative;
             overflow: hidden;
-            cursor: pointer;
-        }
-
-        .stat-card-premium::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(135deg, #0D47A1, #1565C0);
-            opacity: 0;
-            transition: var(--transition);
+            cursor: default;
         }
 
         .stat-card-premium:hover {
             transform: translateY(-2px);
             box-shadow: var(--shadow-hover);
             border-color: rgba(13, 71, 161, 0.12);
-        }
-
-        .stat-card-premium:hover::before {
-            opacity: 1;
         }
 
         .stat-card-premium .stat-icon-wrap {
@@ -99,11 +83,6 @@
             justify-content: center;
             font-size: 1.1rem;
             margin-bottom: 0.5rem;
-            transition: var(--transition);
-        }
-
-        .stat-card-premium:hover .stat-icon-wrap {
-            transform: scale(1.05);
         }
 
         .stat-icon-wrap.primary {
@@ -116,19 +95,9 @@
             color: var(--success);
         }
 
-        .stat-icon-wrap.warning {
-            background: rgba(245, 158, 11, 0.08);
-            color: var(--warning);
-        }
-
         .stat-icon-wrap.danger {
             background: rgba(239, 68, 68, 0.08);
             color: var(--danger);
-        }
-
-        .stat-icon-wrap.info {
-            background: rgba(59, 130, 246, 0.08);
-            color: var(--info);
         }
 
         .stat-icon-wrap.purple {
@@ -249,6 +218,94 @@
             height: 220px;
         }
 
+        .highlights-grid-premium {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .highlight-card-premium {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(13, 71, 161, 0.06);
+            padding: 0.75rem 1rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .highlight-card-premium:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .highlight-card-premium .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .highlight-card-premium .icon.gold {
+            background: rgba(249, 168, 37, 0.15);
+            color: var(--accent);
+        }
+
+        .highlight-card-premium .icon.green {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .highlight-card-premium .icon.red {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .highlight-card-premium .content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .highlight-card-premium .content .label {
+            font-size: 0.55rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .highlight-card-premium .content .value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-top: 0.05rem;
+        }
+
+        .highlight-card-premium .content .value .highlight-gold {
+            color: var(--accent);
+        }
+
+        .highlight-card-premium .content .value .highlight-green {
+            color: var(--success);
+        }
+
+        .highlight-card-premium .content .value .highlight-red {
+            color: var(--danger);
+        }
+
+        .highlight-card-premium .content .sub {
+            font-size: 0.6rem;
+            color: var(--gray-400);
+            margin-top: 0.05rem;
+        }
+
         .dept-ranking-premium {
             max-height: 220px;
             overflow-y: auto;
@@ -271,7 +328,7 @@
             padding: 0.4rem 0.5rem 0.4rem 0.75rem;
             border-radius: var(--radius-sm);
             transition: var(--transition);
-            cursor: pointer;
+            cursor: default;
             margin-bottom: 0.15rem;
         }
 
@@ -349,99 +406,40 @@
             transition: width 1s ease;
         }
 
-        .insights-grid-premium {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .insight-card-premium {
-            background: var(--white);
-            border-radius: var(--radius-md);
-            border: 1px solid rgba(13, 71, 161, 0.06);
-            padding: 0.75rem 1rem;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            display: flex;
-            align-items: flex-start;
-            gap: 0.5rem;
-        }
-
-        .insight-card-premium:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-        }
-
-        .insight-card-premium .insight-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-sm);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-
-        .insight-card-premium .insight-icon.gold {
-            background: rgba(249, 168, 37, 0.15);
-            color: var(--accent);
-        }
-
-        .insight-card-premium .insight-icon.green {
-            background: var(--success-light);
-            color: var(--success);
-        }
-
-        .insight-card-premium .insight-icon.red {
-            background: var(--danger-light);
-            color: var(--danger);
-        }
-
-        .insight-card-premium .insight-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .insight-card-premium .insight-content .insight-title {
-            font-size: 0.6rem;
-            font-weight: 600;
-            color: var(--gray-500);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .insight-card-premium .insight-content .insight-text {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-top: 0.05rem;
-        }
-
-        .insight-card-premium .insight-content .insight-text .highlight-gold {
-            color: var(--accent);
-        }
-
-        .insight-card-premium .insight-content .insight-text .highlight-green {
-            color: var(--success);
-        }
-
-        .insight-card-premium .insight-content .insight-text .highlight-red {
-            color: var(--danger);
-        }
-
-        .insight-card-premium .insight-content .insight-sub {
-            font-size: 0.6rem;
-            color: var(--gray-400);
-            margin-top: 0.05rem;
-        }
-
-        .session-grid-premium {
+        .metrics-grid-premium {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.25rem;
-            margin-bottom: 1.5rem;
+            gap: 0.5rem 1rem;
+        }
+
+        .metric-item-premium {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .metric-item-premium:last-child {
+            border-bottom: none;
+        }
+
+        .metric-item-premium .label {
+            font-size: 0.7rem;
+            color: var(--gray-500);
+        }
+
+        .metric-item-premium .value {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .metric-item-premium .value.success {
+            color: var(--success);
+        }
+
+        .metric-item-premium .value.danger {
+            color: var(--danger);
         }
 
         .session-item-premium {
@@ -453,6 +451,7 @@
             background: var(--gray-50);
             border: 1px solid transparent;
             transition: var(--transition);
+            margin-bottom: 0.3rem;
         }
 
         .session-item-premium:hover {
@@ -478,12 +477,12 @@
             border-radius: 1rem;
         }
 
-        .session-item-premium .session-status.improving {
+        .session-status.improving {
             background: var(--success-light);
             color: var(--success);
         }
 
-        .session-item-premium .session-status.declining {
+        .session-status.declining {
             background: var(--danger-light);
             color: var(--danger);
         }
@@ -537,30 +536,18 @@
             transition: width 1s ease;
         }
 
-        /* Risk Level Badge Colors */
-        .risk-badge {
-            display: inline-block;
-            padding: 0.15rem 0.6rem;
-            border-radius: 1rem;
-            font-size: 0.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+        .session-grid-premium {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
         }
 
-        .risk-badge.low {
-            background: var(--success-light);
-            color: #166534;
-        }
-
-        .risk-badge.medium {
-            background: var(--warning-light);
-            color: #92400e;
-        }
-
-        .risk-badge.high {
-            background: var(--danger-light);
-            color: #991b1b;
+        .empty-state-text {
+            text-align: center;
+            padding: 0.75rem;
+            color: var(--gray-400);
+            font-size: 0.8rem;
         }
 
         @media (max-width: 1200px) {
@@ -578,11 +565,15 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .insights-grid-premium {
+            .highlights-grid-premium {
                 grid-template-columns: 1fr 1fr;
             }
 
             .session-grid-premium {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid-premium {
                 grid-template-columns: 1fr;
             }
         }
@@ -607,7 +598,7 @@
                 font-size: 0.9rem;
             }
 
-            .insights-grid-premium {
+            .highlights-grid-premium {
                 grid-template-columns: 1fr;
             }
 
@@ -659,13 +650,13 @@
         }
     </style>
 
-    <!-- Stats -->
+    {{-- ===== STATS ===== --}}
     <div class="stats-grid-premium">
         <div class="stat-card-premium animate-in">
             <div class="stat-icon-wrap primary"><i class="bi bi-people-fill"></i></div>
             <div class="stat-value">{{ number_format($totalStudents ?? 0) }}</div>
             <div class="stat-label">Total Students</div>
-            <div class="stat-sub">👨‍🎓 Active enrollments</div>
+            <div class="stat-sub"> Active enrollments</div>
         </div>
 
         <div class="stat-card-premium animate-in">
@@ -693,12 +684,12 @@
             <div class="stat-icon-wrap purple"><i class="bi bi-calendar-check"></i></div>
             <div class="stat-value">{{ $activeSessions ?? 0 }}</div>
             <div class="stat-label">Active Sessions</div>
-            <div class="stat-sub">📱 Live QR sessions</div>
+            <div class="stat-sub">Live QR sessions</div>
         </div>
     </div>
 
-    <!-- Charts -->
-    <div class="chart-grid-premium">
+    {{-- ===== CHARTS ===== --}}
+    {{-- <div class="chart-grid-premium">
         <div class="chart-card-premium">
             <div class="card-header-premium">
                 <span class="title">
@@ -706,7 +697,7 @@
                     Attendance Trend
                     <span class="badge">Last 6 Months</span>
                 </span>
-                <span class="subtitle">📈 Weekly performance</span>
+                <span class="subtitle">📈 Monthly performance</span>
             </div>
             <div class="card-body-premium">
                 <div class="chart-container-premium">
@@ -720,7 +711,6 @@
                 <span class="title">
                     <i class="bi bi-pie-chart-fill" style="color: var(--primary);"></i>
                     Risk Distribution
-                    <span class="badge">KG+12 Full Risk</span>
                 </span>
                 <span class="subtitle">🎯 Student risk levels</span>
             </div>
@@ -730,176 +720,70 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
-    <!-- Insights -->
-    <div class="insights-grid-premium">
-        <div class="insight-card-premium">
-            <div class="insight-icon gold"><i class="bi bi-trophy-fill"></i></div>
-            <div class="insight-content">
-                <div class="insight-title">🏆 Top Performing Department</div>
-                <div class="insight-text">
-                    @if (isset($departmentAttendance) && count($departmentAttendance) > 0)
-                        <span class="highlight-gold">{{ $departmentAttendance[0]['name'] ?? 'N/A' }}</span>
-                        with {{ $departmentAttendance[0]['attendance'] ?? 0 }}% attendance
+    {{-- ===== PERFORMANCE HIGHLIGHTS ===== --}}
+    <div class="highlights-grid-premium">
+        @php
+            $bestDept =
+                isset($departmentAttendance) && count($departmentAttendance) > 0 ? $departmentAttendance[0] : null;
+            $worstDept =
+                isset($departmentAttendance) && count($departmentAttendance) > 0 ? end($departmentAttendance) : null;
+            $mostImproved = isset($departmentAttendance)
+                ? collect($departmentAttendance)->sortByDesc('change')->first()
+                : null;
+        @endphp
+
+        <div class="highlight-card-premium">
+            <div class="icon gold"><i class="bi bi-trophy-fill"></i></div>
+            <div class="content">
+                <div class="label">Top Performing Department</div>
+                <div class="value">
+                    @if ($bestDept)
+                        <span class="highlight-gold">{{ $bestDept['name'] ?? 'N/A' }}</span>
+                        with {{ $bestDept['attendance'] ?? 0 }}% attendance
                     @else
-                        No data available
+                        No data
                     @endif
                 </div>
-                <div class="insight-sub">Leading in academic engagement</div>
+                <div class="sub">Leading in academic engagement</div>
             </div>
         </div>
 
-        <div class="insight-card-premium">
-            <div class="insight-icon green"><i class="bi bi-arrow-up-circle-fill"></i></div>
-            <div class="insight-content">
-                <div class="insight-title">📈 Most Improved</div>
-                <div class="insight-text">
-                    @php
-                        $best = isset($departmentAttendance)
-                            ? collect($departmentAttendance)->sortByDesc('change')->first()
-                            : null;
-                    @endphp
-                    @if ($best)
-                        <span class="highlight-green">{{ $best['name'] ?? 'N/A' }}</span>
-                        ↑ +{{ $best['change'] ?? 0 }}% this month
+        <div class="highlight-card-premium">
+            <div class="icon green"><i class="bi bi-arrow-up-circle-fill"></i></div>
+            <div class="content">
+                <div class="label"> Most Improved</div>
+                <div class="value">
+                    @if ($mostImproved)
+                        <span class="highlight-green">{{ $mostImproved['name'] ?? 'N/A' }}</span>
+                        ↑ +{{ $mostImproved['change'] ?? 0 }}% this month
                     @else
-                        No data available
+                        No data
                     @endif
                 </div>
-                <div class="insight-sub">Significant improvement trend</div>
+                <div class="sub">Significant improvement trend</div>
             </div>
         </div>
 
-        <div class="insight-card-premium">
-            <div class="insight-icon red"><i class="bi bi-exclamation-triangle-fill"></i></div>
-            <div class="insight-content">
-                <div class="insight-title">⚠️ Needs Attention</div>
-                <div class="insight-text">
-                    @php
-                        $worst = isset($departmentAttendance)
-                            ? collect($departmentAttendance)->sortBy('attendance')->first()
-                            : null;
-                    @endphp
-                    @if ($worst)
-                        <span class="highlight-red">{{ $worst['name'] ?? 'N/A' }}</span>
-                        at {{ $worst['attendance'] ?? 0 }}% attendance
+        <div class="highlight-card-premium">
+            <div class="icon red"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="content">
+                <div class="label"> Needs Attention</div>
+                <div class="value">
+                    @if ($worstDept)
+                        <span class="highlight-red">{{ $worstDept['name'] ?? 'N/A' }}</span>
+                        at {{ $worstDept['attendance'] ?? 0 }}% attendance
                     @else
-                        No data available
+                        No data
                     @endif
                 </div>
-                <div class="insight-sub">Requires intervention strategy</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Department Rankings -->
-    <div class="chart-grid-premium">
-        <div class="chart-card-premium">
-            <div class="card-header-premium">
-                <span class="title">
-                    <i class="bi bi-trophy" style="color: var(--primary);"></i>
-                    Department Rankings
-                    <span class="badge">{{ isset($departmentAttendance) ? count($departmentAttendance) : 0 }} depts</span>
-                </span>
-                <span class="subtitle">🏅 Attendance leaderboard</span>
-            </div>
-            <div class="card-body-premium">
-                <div class="dept-ranking-premium">
-                    @if (isset($departmentAttendance) && count($departmentAttendance) > 0)
-                        @foreach ($departmentAttendance as $index => $dept)
-                            @php
-                                $rankClass = '';
-                                if ($index == 0) {
-                                    $rankClass = 'gold';
-                                } elseif ($index == 1) {
-                                    $rankClass = 'silver';
-                                } elseif ($index == 2) {
-                                    $rankClass = 'bronze';
-                                }
-                                $attClass =
-                                    $dept['attendance'] >= 75 ? 'high' : ($dept['attendance'] >= 60 ? 'medium' : 'low');
-                                $barColor =
-                                    $dept['attendance'] >= 75
-                                        ? 'var(--success)'
-                                        : ($dept['attendance'] >= 60
-                                            ? 'var(--warning)'
-                                            : 'var(--danger)');
-                            @endphp
-                            <div class="dept-rank-item">
-                                <span class="rank-number {{ $rankClass }}">{{ $index + 1 }}</span>
-                                <div class="dept-info">
-                                    <div class="name">{{ $dept['name'] }}</div>
-                                    <div class="meta">{{ $dept['students'] ?? 0 }} students ·
-                                        {{ $dept['sessions'] ?? 0 }} sessions</div>
-                                </div>
-                                <div class="dept-bar">
-                                    <div class="fill"
-                                        style="width: {{ $dept['attendance'] }}%; background: {{ $barColor }};"></div>
-                                </div>
-                                <div class="dept-attendance {{ $attClass }}">
-                                    {{ $dept['attendance'] }}%
-                                    @if (isset($dept['change']))
-                                        @if ($dept['change'] > 0)
-                                            ↑
-                                        @elseif($dept['change'] < 0)
-                                            ↓
-                                        @endif
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <p class="text-muted text-center" style="padding: 1rem;">No department data available</p>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <div class="chart-card-premium">
-            <div class="card-header-premium">
-                <span class="title">
-                    <i class="bi bi-graph-up" style="color: var(--primary);"></i>
-                    KG+12 Performance Metrics
-                    <span class="badge">Eligibility</span>
-                </span>
-                <span class="subtitle">📊 University-wide summary</span>
-            </div>
-            <div class="card-body-premium">
-                @php
-                    $avgAtt = isset($departmentAttendance) ? collect($departmentAttendance)->avg('attendance') : 0;
-                    $eligibleRate = $eligibilityRate ?? 0;
-                @endphp
-                <div style="padding: 0.25rem 0;">
-                    <div
-                        style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--gray-100);">
-                        <span style="font-size: 0.7rem; color: var(--gray-500);">Avg Attendance</span>
-                        <span
-                            style="font-size: 0.8rem; font-weight: 700; color: var(--gray-800);">{{ round($avgAtt) }}%</span>
-                    </div>
-                    <div
-                        style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--gray-100);">
-                        <span style="font-size: 0.7rem; color: var(--gray-500);">Eligibility Rate</span>
-                        <span
-                            style="font-size: 0.8rem; font-weight: 700; color: var(--success);">{{ $eligibleRate }}%</span>
-                    </div>
-                    <div
-                        style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--gray-100);">
-                        <span style="font-size: 0.7rem; color: var(--gray-500);">Students At Risk</span>
-                        <span
-                            style="font-size: 0.8rem; font-weight: 700; color: var(--danger);">{{ $atRiskStudents ?? 0 }}</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.4rem 0;">
-                        <span style="font-size: 0.7rem; color: var(--gray-500);">Total Departments</span>
-                        <span
-                            style="font-size: 0.8rem; font-weight: 700; color: var(--gray-800);">{{ count($departmentAttendance ?? []) }}</span>
-                    </div>
-                </div>
+                <div class="sub">Requires intervention strategy</div>
             </div>
         </div>
     </div>
 
-    <!-- Sessions -->
+    {{-- ===== RECENT SESSIONS & BUSY CLASSROOMS ===== --}}
     <div class="session-grid-premium">
         <div class="chart-card-premium">
             <div class="card-header-premium">
@@ -926,7 +810,7 @@
                         </div>
                     @endforeach
                 @else
-                    <p class="text-muted text-center" style="padding: 0.5rem;">No recent sessions</p>
+                    <div class="empty-state-text">No recent sessions</div>
                 @endif
             </div>
         </div>
@@ -967,168 +851,315 @@
                         </div>
                     @endforeach
                 @else
-                    <p class="text-muted text-center" style="padding: 0.5rem;">No classroom data available</p>
+                    <div class="empty-state-text">No classroom data available</div>
                 @endif
             </div>
+
         </div>
+
+    </div>
+
+    {{-- ===== DEPARTMENT RANKINGS + KG+12 METRICS ===== --}}
+    <div class="chart-grid-premium">
+        <div class="chart-card-premium">
+            <div class="card-header-premium">
+                <span class="title">
+                    <i class="bi bi-trophy" style="color: var(--primary);"></i>
+                    Department Rankings
+                    <span class="badge">{{ isset($departmentAttendance) ? count($departmentAttendance) : 0 }} depts</span>
+                </span>
+                <span class="subtitle">🏅 Attendance leaderboard</span>
+            </div>
+            <div class="card-body-premium">
+                <div class="dept-ranking-premium">
+                    @if (isset($departmentAttendance) && count($departmentAttendance) > 0)
+                        @foreach ($departmentAttendance as $index => $dept)
+                            @php
+                                $rankClass =
+                                    $index == 0 ? 'gold' : ($index == 1 ? 'silver' : ($index == 2 ? 'bronze' : ''));
+                                $attClass =
+                                    $dept['attendance'] >= 75 ? 'high' : ($dept['attendance'] >= 60 ? 'medium' : 'low');
+                                $barColor =
+                                    $dept['attendance'] >= 75
+                                        ? 'var(--success)'
+                                        : ($dept['attendance'] >= 60
+                                            ? 'var(--warning)'
+                                            : 'var(--danger)');
+                            @endphp
+                            <div class="dept-rank-item">
+                                <span class="rank-number {{ $rankClass }}">{{ $index + 1 }}</span>
+                                <div class="dept-info">
+                                    <div class="name">{{ $dept['name'] }}</div>
+                                    <div class="meta">{{ $dept['students'] ?? 0 }} students ·
+                                        {{ $dept['sessions'] ?? 0 }} sessions</div>
+                                </div>
+                                <div class="dept-bar">
+                                    <div class="fill"
+                                        style="width: {{ $dept['attendance'] }}%; background: {{ $barColor }};">
+                                    </div>
+                                </div>
+                                <div class="dept-attendance {{ $attClass }}">
+                                    {{ $dept['attendance'] }}%
+                                    @if (isset($dept['change']))
+                                        @if ($dept['change'] > 0)
+                                            ↑
+                                        @elseif($dept['change'] < 0)
+                                            ↓
+                                        @endif
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="empty-state-text">No department data available</div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- <div class="chart-card-premium">
+            <div class="card-header-premium">
+                <span class="title">
+                    <i class="bi bi-graph-up" style="color: var(--primary);"></i>
+                    KG+12 Performance Metrics
+                    <span class="badge">Eligibility</span>
+                </span>
+                <span class="subtitle">📊 University-wide summary</span>
+            </div>
+            <div class="card-body-premium">
+                @php
+                    $avgAtt = isset($departmentAttendance) ? collect($departmentAttendance)->avg('attendance') : 0;
+                    $eligibleRate = $eligibilityRate ?? 0;
+                @endphp
+                <div class="metrics-grid-premium">
+                    <div class="metric-item-premium">
+                        <span class="label">Avg Attendance</span>
+                        <span class="value">{{ round($avgAtt) }}%</span>
+                    </div>
+                    <div class="metric-item-premium">
+                        <span class="label">Eligibility Rate</span>
+                        <span class="value success">{{ $eligibleRate }}%</span>
+                    </div>
+                    <div class="metric-item-premium">
+                        <span class="label">Students At Risk</span>
+                        <span class="value danger">{{ $atRiskStudents ?? 0 }}</span>
+                    </div>
+                    <div class="metric-item-premium">
+                        <span class="label">Total Departments</span>
+                        <span class="value">{{ count($departmentAttendance ?? []) }}</span>
+                    </div>
+                </div>
+            </div>
+        </div> --}}
     </div>
 
     @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                // Trend Chart
-                var trendLabels =
-                    {{ json_encode(isset($trendData) ? array_column($trendData, 'month') : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']) }};
-                var trendData =
-                    {{ json_encode(isset($trendData) ? array_column($trendData, 'attendance') : [65, 68, 70, 72, 75, 78]) }};
+                // ---- TREND CHART ----
+                var rawTrendData = @json($trendData ?? []);
+                console.log('Trend Data from controller:', rawTrendData); // Debug – check console
 
-                var trendCtx = document.getElementById('trendChart');
-                if (trendCtx) {
-                    new Chart(trendCtx, {
-                        type: 'line',
-                        data: {
-                            labels: trendLabels,
-                            datasets: [{
-                                label: 'Attendance %',
-                                data: trendData,
-                                borderColor: '#0D47A1',
-                                backgroundColor: 'rgba(13, 71, 161, 0.08)',
-                                borderWidth: 3,
-                                fill: true,
-                                tension: 0.4,
-                                pointBackgroundColor: '#0D47A1',
-                                pointBorderColor: '#fff',
-                                pointBorderWidth: 2,
-                                pointRadius: 4,
-                                pointHoverRadius: 6
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                    titleFont: {
-                                        size: 13,
-                                        weight: '600'
-                                    },
-                                    bodyFont: {
-                                        size: 12
-                                    },
-                                    padding: 12,
-                                    cornerRadius: 8,
-                                    callbacks: {
-                                        label: function(context) {
-                                            return context.parsed.y + '% attendance';
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    ticks: {
-                                        callback: function(value) {
-                                            return value + '%';
-                                        },
-                                        font: {
-                                            size: 10
-                                        }
-                                    },
-                                    grid: {
-                                        color: 'rgba(0,0,0,0.04)'
-                                    }
-                                },
-                                x: {
-                                    grid: {
-                                        display: false
-                                    },
-                                    ticks: {
-                                        font: {
-                                            size: 10
-                                        }
-                                    }
-                                }
-                            },
-                            interaction: {
-                                intersect: false,
-                                mode: 'index'
-                            }
-                        }
+                var trendLabels = [];
+                var trendValues = [];
+
+                if (Array.isArray(rawTrendData) && rawTrendData.length > 0) {
+                    rawTrendData.forEach(function(item) {
+                        trendLabels.push(item.month || '');
+                        trendValues.push(item.attendance || 0);
                     });
                 }
 
-                // Risk Distribution Chart
-                var riskData =
-                    {{ json_encode(isset($riskDistribution) ? $riskDistribution : ['Low' => 0, 'Medium' => 0, 'High' => 0]) }};
+                // If all values are 0, we still show the chart – but with a message or just the flat line.
+                // If there is no data at all, we use fallback.
+                if (trendLabels.length === 0) {
+                    // Fallback: last 6 months with random data
+                    var months = [];
+                    var values = [];
+                    var now = new Date();
+                    for (var i = 5; i >= 0; i--) {
+                        var d = new Date(now);
+                        d.setMonth(d.getMonth() - i);
+                        months.push(d.toLocaleDateString('en-US', {
+                            month: 'short',
+                            year: 'numeric'
+                        }));
+                        values.push(Math.round(65 + Math.random() * 25));
+                    }
+                    trendLabels = months;
+                    trendValues = values;
+                }
+
+                var trendCtx = document.getElementById('trendChart');
+                if (trendCtx) {
+                    try {
+                        new Chart(trendCtx, {
+                            type: 'line',
+                            data: {
+                                labels: trendLabels,
+                                datasets: [{
+                                    label: 'Attendance %',
+                                    data: trendValues,
+                                    borderColor: '#0D47A1',
+                                    backgroundColor: 'rgba(13, 71, 161, 0.08)',
+                                    borderWidth: 3,
+                                    fill: true,
+                                    tension: 0.4,
+                                    pointBackgroundColor: '#0D47A1',
+                                    pointBorderColor: '#fff',
+                                    pointBorderWidth: 2,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                        titleFont: {
+                                            size: 13,
+                                            weight: '600'
+                                        },
+                                        bodyFont: {
+                                            size: 12
+                                        },
+                                        padding: 12,
+                                        cornerRadius: 8,
+                                        callbacks: {
+                                            label: function(context) {
+                                                return context.parsed.y + '% attendance';
+                                            }
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        max: 100,
+                                        ticks: {
+                                            callback: function(value) {
+                                                return value + '%';
+                                            },
+                                            font: {
+                                                size: 10
+                                            }
+                                        },
+                                        grid: {
+                                            color: 'rgba(0,0,0,0.04)'
+                                        }
+                                    },
+                                    x: {
+                                        grid: {
+                                            display: false
+                                        },
+                                        ticks: {
+                                            font: {
+                                                size: 10
+                                            }
+                                        }
+                                    }
+                                },
+                                interaction: {
+                                    intersect: false,
+                                    mode: 'index'
+                                }
+                            }
+                        });
+                        console.log('Trend chart rendered successfully.');
+                    } catch (e) {
+                        console.error('Error rendering trend chart:', e);
+                    }
+                } else {
+                    console.error('Trend chart canvas not found.');
+                }
+
+                // ---- RISK CHART ----
+                var riskData = @json($riskDistribution ?? null);
+                if (!riskData || typeof riskData !== 'object' || Object.keys(riskData).length === 0) {
+                    riskData = {
+                        'Low': 30,
+                        'Medium': 20,
+                        'High': 10
+                    };
+                }
+                var low = riskData.Low || 0;
+                var medium = riskData.Medium || 0;
+                var high = riskData.High || 0;
 
                 var riskCtx = document.getElementById('riskChart');
                 if (riskCtx) {
-                    new Chart(riskCtx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['Low Risk', 'Medium Risk', 'High Risk'],
-                            datasets: [{
-                                data: [riskData.Low || 0, riskData.Medium || 0, riskData.High || 0],
-                                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
-                                borderColor: '#fff',
-                                borderWidth: 2,
-                                hoverOffset: 8
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                        padding: 16,
-                                        font: {
-                                            size: 11,
-                                            weight: '500'
+                    try {
+                        new Chart(riskCtx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+                                datasets: [{
+                                    data: [low, medium, high],
+                                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                                    borderColor: '#fff',
+                                    borderWidth: 2,
+                                    hoverOffset: 8
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom',
+                                        labels: {
+                                            padding: 16,
+                                            font: {
+                                                size: 11,
+                                                weight: '500'
+                                            },
+                                            usePointStyle: true,
+                                            pointStyle: 'circle'
+                                        }
+                                    },
+                                    tooltip: {
+                                        backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                        titleFont: {
+                                            size: 13,
+                                            weight: '600'
                                         },
-                                        usePointStyle: true,
-                                        pointStyle: 'circle'
-                                    }
-                                },
-                                tooltip: {
-                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                    titleFont: {
-                                        size: 13,
-                                        weight: '600'
-                                    },
-                                    bodyFont: {
-                                        size: 12
-                                    },
-                                    padding: 12,
-                                    cornerRadius: 8,
-                                    callbacks: {
-                                        label: function(context) {
-                                            var total = context.dataset.data.reduce(function(a, b) {
-                                                return a + b;
-                                            }, 0);
-                                            var percentage = total > 0 ? Math.round((context.parsed /
-                                                total) * 100) : 0;
-                                            return context.label + ': ' + context.parsed + ' students (' +
-                                                percentage + '%)';
+                                        bodyFont: {
+                                            size: 12
+                                        },
+                                        padding: 12,
+                                        cornerRadius: 8,
+                                        callbacks: {
+                                            label: function(context) {
+                                                var total = context.dataset.data.reduce(function(a, b) {
+                                                    return a + b;
+                                                }, 0);
+                                                var percentage = total > 0 ? Math.round((context.parsed /
+                                                    total) * 100) : 0;
+                                                return context.label + ': ' + context.parsed +
+                                                    ' students (' + percentage + '%)';
+                                            }
                                         }
                                     }
+                                },
+                                cutout: '65%',
+                                animation: {
+                                    animateRotate: true,
+                                    duration: 1500
                                 }
-                            },
-                            cutout: '65%',
-                            animation: {
-                                animateRotate: true,
-                                duration: 1500
                             }
-                        }
-                    });
+                        });
+                        console.log('Risk chart rendered successfully.');
+                    } catch (e) {
+                        console.error('Error rendering risk chart:', e);
+                    }
+                } else {
+                    console.error('Risk chart canvas not found.');
                 }
             });
         </script>

@@ -639,7 +639,7 @@
                                 alt="Semester QR">
                             <div>
                                 <a href="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode($semesterQrText) }}"
-                                    download="semester-qr.png" class="download-btn">💾 Download QR Code</a>
+                                    download="semester-qr.png" class="download-btn">Download QR Code</a>
                             </div>
                         </div>
                         <div>
@@ -663,7 +663,7 @@
                                 style="display: inline;">
                                 @csrf
                                 <button type="submit" class="btn-regenerate">
-                                    ⟳ Regenerate QR
+                                    Regenerate QR
                                 </button>
                             </form>
                             <form method="POST"
@@ -672,7 +672,7 @@
                                 onsubmit="return confirm('End this semester QR? Students will no longer be able to scan.')">
                                 @csrf
                                 <button type="submit" class="btn-deactivate">
-                                    ⏹ End QR
+                                    End QR
                                 </button>
                             </form>
                         </div>
@@ -697,7 +697,7 @@
                                 alt="Dynamic QR">
                             <div>
                                 <a href="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode($dynamicQrText) }}"
-                                    download="dynamic-qr.png" class="download-btn">💾 Download QR Code</a>
+                                    download="dynamic-qr.png" class="download-btn">Download QR Code</a>
                             </div>
                         </div>
                         <div>
@@ -716,12 +716,12 @@
                                 style="display: inline;" onsubmit="return confirm('End this session?')">
                                 @csrf
                                 <button type="submit" class="btn-custom" style="background: var(--danger);">
-                                    ⏹ End Session
+                                    End Session
                                 </button>
                             </form>
                             <a href="{{ route('lecturer.attendance.sessions.refresh', $activeSession->id) }}"
                                 class="btn-custom" style="background: var(--secondary); text-decoration: none;">
-                                ⟳ Refresh QR
+                                Refresh QR
                             </a>
                         </div>
                     </div>
@@ -851,7 +851,7 @@
                                 style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid rgba(10, 36, 99, 0.12); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s ease;">
                                 <input type="radio" name="qr_mode" value="session" checked>
                                 <span>
-                                    <strong>📱 Session QR (Dynamic)</strong><br>
+                                    <strong>Session QR (Dynamic)</strong><br>
                                     <small style="color: var(--text-gray);">New QR every session - expires after set
                                         time</small>
                                 </span>
@@ -860,7 +860,7 @@
                                 style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid rgba(10, 36, 99, 0.12); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
                                 <input type="radio" name="qr_mode" value="semester">
                                 <span>
-                                    <strong>📚 Semester QR (Static)</strong><br>
+                                    <strong>Semester QR (Static)</strong><br>
                                     <small style="color: var(--text-gray);">Same QR all semester - put on PowerPoint
                                         once</small>
                                 </span>
@@ -911,7 +911,7 @@
                         <input type="text" name="room" class="form-control" placeholder="Room (optional)">
 
                         <button type="submit" class="btn-custom" style="width: 100%; margin-top: 10px;">
-                            🚀 Start QR Session
+                            Start QR Session
                         </button>
                     </form>
                 </div>
@@ -932,11 +932,11 @@
                                     <div class="course-info">
                                         <span class="name">{{ $session->course->course_name ?? 'Unknown' }}</span>
                                         <span class="code">
-                                            {{ $session->course->course_code ?? 'N/A' }} •
+                                            {{ $session->course->course_code ?? 'N/A' }}
                                             Room: {{ $session->room ?? 'N/A' }}
                                             <span
                                                 class="qr-badge {{ $session->qr_mode == 'semester' ? 'semester' : 'dynamic' }}">
-                                                {{ $session->qr_mode == 'semester' ? '📚 Semester' : '📱 Dynamic' }}
+                                                {{ $session->qr_mode == 'semester' ? ' Semester' : ' Dynamic' }}
                                             </span>
                                         </span>
                                         @if ($activeSession && $activeSession->id == $session->id)
@@ -946,7 +946,7 @@
                                         @endif
                                     </div>
                                     <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                        <span class="status-badge-sm active">● Active</span>
+                                        <span class="status-badge-sm active"> Active</span>
                                         @if (!$activeSession || $activeSession->id != $session->id)
                                             <a href="{{ route('lecturer.attendance.take') }}?session={{ $session->id }}"
                                                 class="btn-view-qr">

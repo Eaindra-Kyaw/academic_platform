@@ -421,27 +421,42 @@
         </div>
     </div>
 
+    @php
+        // If $students is not defined, set an empty paginator to avoid errors
+        if (!isset($students)) {
+            $students = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15);
+        }
+        // Pre-calculate statistics on the collection of items (current page)
+        $studentCollection = $students->getCollection();
+        $totalStudents = $students->total();
+        $eligibleCount = $studentCollection
+            ->filter(function ($enrollment) {
+                return ($enrollment->attendance_percentage ?? 0) >= 75;
+            })
+            ->count();
+        $atRiskCount = $studentCollection
+            ->filter(function ($enrollment) {
+                return ($enrollment->attendance_percentage ?? 0) < 60;
+            })
+            ->count();
+        $avgAttendance = $studentCollection->avg('attendance_percentage') ?? 0;
+    @endphp
+
     <div class="stats-grid-course">
         <div class="stat-course">
-            <div class="number">{{ $students->total() }}</div>
+            <div class="number">{{ $totalStudents }}</div>
             <div class="label">Total Students</div>
         </div>
         <div class="stat-course">
-            <div class="number success">
-                {{ $students->filter(function ($s) {return ($s->pivot->attendance_percentage ?? 0) >= 75;})->count() }}
-            </div>
+            <div class="number success">{{ $eligibleCount }}</div>
             <div class="label">Eligible</div>
         </div>
         <div class="stat-course">
-            <div class="number danger">
-                {{ $students->filter(function ($s) {return ($s->pivot->attendance_percentage ?? 0) < 60;})->count() }}
-            </div>
+            <div class="number danger">{{ $atRiskCount }}</div>
             <div class="label">At Risk</div>
         </div>
         <div class="stat-course">
-            <div class="number">
-                {{ number_format($students->avg('pivot.attendance_percentage') ?? 0, 1) }}%
-            </div>
+            <div class="number">{{ number_format($avgAttendance, 1) }}%</div>
             <div class="label">Avg Attendance</div>
         </div>
     </div>
@@ -450,7 +465,7 @@
         <div class="header">
             <span><i class="bi bi-people"></i> Enrolled Students</span>
             <span style="font-size:0.7rem; color:var(--text-gray); font-weight:400;">
-                {{ $students->total() }} students enrolled
+                {{ $totalStudents }} students enrolled
             </span>
         </div>
         <div style="overflow-x:auto;">
@@ -466,13 +481,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($students as $student)
+                    @forelse($students as $enrollment)
                         @php
-                            $attendance = $student->pivot->attendance_percentage ?? 0;
+                            $student = $enrollment->student;
+                            $attendance = $enrollment->attendance_percentage ?? 0;
                             $risk = $attendance >= 75 ? 'Low' : ($attendance >= 60 ? 'Medium' : 'High');
                             $riskClass = strtolower($risk);
                             $attendanceClass = $attendance >= 75 ? 'high' : ($attendance >= 60 ? 'medium' : 'low');
-                            $eligibility = $student->pivot->eligibility_status ?? 'unknown';
+                            $eligibility = $enrollment->eligibility_status ?? 'unknown';
                             $statusColors = [
                                 'eligible' => ['bg' => 'var(--success-light)', 'color' => '#166534'],
                                 'warning' => ['bg' => 'var(--warning-light)', 'color' => '#92400e'],
@@ -490,8 +506,8 @@
                                     {{ $student->student_id ?? 'N/A' }}
                                 </span>
                             </td>
-                            <td style="font-weight:500; color:var(--text-dark);">{{ $student->name }}</td>
-                            <td style="color:var(--text-gray); font-size:0.75rem;">{{ $student->email }}</td>
+                            <td style="font-weight:500; color:var(--text-dark);">{{ $student->name ?? 'Unknown' }}</td>
+                            <td style="color:var(--text-gray); font-size:0.75rem;">{{ $student->email ?? 'N/A' }}</td>
                             <td style="text-align:center;">
                                 <span class="attendance-pill {{ $attendanceClass }}">
                                     {{ number_format($attendance, 1) }}%

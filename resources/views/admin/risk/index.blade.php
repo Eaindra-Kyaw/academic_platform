@@ -1,10 +1,8 @@
-{{-- resources/views/admin/risk/index.blade.php --}}
 @extends('layouts.app')
 
-@section('title', 'Student Risk Analytics Dashboard')
-@section('role', 'Admin')
-@section('page-title', '🎯 Predictive Risk Analytics')
-@section('welcome-text', 'AI-powered student success prediction & intervention system')
+@section('title', 'Predictive Risk Analytics')
+@section('page-title', 'Predictive Risk Analytics')
+@section('welcome-text', 'Student success prediction & intervention system')
 
 @section('sidebar')
     @include('layouts.partials.admin-sidebar')
@@ -33,7 +31,6 @@
             --info: #3b82f6;
             --info-light: #dbeafe;
             --purple: #8b5cf6;
-            --purple-light: #ede9fe;
             --radius: 12px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -113,13 +110,6 @@
             letter-spacing: -0.02em;
         }
 
-        .stat-card-compact .stat-number .suffix {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text-gray);
-            margin-left: 0.15rem;
-        }
-
         .stat-card-compact .stat-label {
             font-size: 0.6rem;
             color: var(--text-gray);
@@ -176,39 +166,6 @@
             background: var(--white);
         }
 
-        .filter-bar-premium .search-group {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            flex: 1;
-            min-width: 150px;
-        }
-
-        .filter-bar-premium .search-group input {
-            padding: 0.35rem 0.6rem;
-            border: 1px solid rgba(10, 36, 99, 0.12);
-            border-radius: 8px;
-            font-size: 0.8rem;
-            background: #f8fafc;
-            transition: var(--transition);
-            color: var(--text-dark);
-            width: 100%;
-            min-width: 120px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .filter-bar-premium .search-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
-            background: var(--white);
-        }
-
-        .filter-bar-premium .search-group input::placeholder {
-            color: #94a3b8;
-            font-size: 0.75rem;
-        }
-
         .btn-premium {
             padding: 0.35rem 1rem;
             border-radius: 8px;
@@ -248,17 +205,6 @@
             background: rgba(10, 36, 99, 0.04);
         }
 
-        .btn-premium-success {
-            background: linear-gradient(135deg, #059669, var(--success));
-            color: var(--white);
-        }
-
-        .btn-premium-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
-            color: var(--white);
-        }
-
         .chart-grid-premium {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -271,7 +217,7 @@
             border-radius: var(--radius);
             border: 1px solid rgba(10, 36, 99, 0.06);
             box-shadow: var(--shadow);
-            overflow: hidden;
+            overflow: visible !important;
             transition: var(--transition);
         }
 
@@ -317,6 +263,7 @@
 
         .chart-card-premium .card-body {
             padding: 1.25rem;
+            overflow: visible !important;
         }
 
         .chart-container-premium {
@@ -324,131 +271,239 @@
             height: 280px;
         }
 
-        .factors-grid-premium {
+        .risk-summary-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 0.6rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
         }
 
-        .factor-item-premium {
-            background: #fafbfc;
+        .risk-summary-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.25rem;
             border: 1px solid rgba(10, 36, 99, 0.06);
-            border-radius: 8px;
-            padding: 0.4rem 0.6rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            box-shadow: var(--shadow);
             transition: var(--transition);
-            font-size: 0.75rem;
-        }
-
-        .factor-item-premium:hover {
-            border-color: var(--primary);
-            background: rgba(10, 36, 99, 0.02);
-            transform: translateX(4px);
-        }
-
-        .factor-item-premium .factor-name {
-            color: var(--text-dark);
-            font-weight: 500;
-            font-size: 0.75rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 150px;
-        }
-
-        .factor-item-premium .factor-count {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: var(--white);
-            font-size: 0.6rem;
-            font-weight: 700;
-            padding: 0.05rem 0.5rem;
-            border-radius: 1rem;
-            min-width: 20px;
             text-align: center;
-            flex-shrink: 0;
         }
 
-        .dept-bars-premium {
-            max-height: 260px;
-            overflow-y: auto;
-            padding: 0.25rem;
+        .risk-summary-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
         }
 
-        .dept-bars-premium::-webkit-scrollbar {
-            width: 3px;
+        .risk-summary-card .risk-icon {
+            font-size: 2rem;
+            margin-bottom: 0.25rem;
         }
 
-        .dept-bars-premium::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 10px;
+        .risk-summary-card .risk-count {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.2;
         }
 
-        .dept-bar-item {
-            margin-bottom: 0.6rem;
+        .risk-summary-card .risk-count.low {
+            color: var(--success);
         }
 
-        .dept-bar-item .dept-header {
+        .risk-summary-card .risk-count.medium {
+            color: var(--warning);
+        }
+
+        .risk-summary-card .risk-count.high {
+            color: var(--danger);
+        }
+
+        .risk-summary-card .risk-label {
+            font-size: 0.7rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .risk-summary-card .risk-percentage {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        .risk-summary-card .risk-status {
+            display: inline-block;
+            padding: 0.1rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.6rem;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        .risk-summary-card .risk-status.low {
+            background: var(--success-light);
+            color: #166534;
+        }
+
+        .risk-summary-card .risk-status.medium {
+            background: var(--warning-light);
+            color: #92400e;
+        }
+
+        .risk-summary-card .risk-status.high {
+            background: var(--danger-light);
+            color: #991b1b;
+        }
+
+        .risk-alerts-section {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .risk-alerts-section .alerts-header {
+            padding: 0.75rem 1.25rem;
+            background: #fafbfc;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.15rem;
+        }
+
+        .risk-alerts-section .alerts-header .title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
             gap: 0.5rem;
         }
 
-        .dept-bar-item .dept-header .dept-name {
-            font-weight: 600;
-            font-size: 0.75rem;
-            color: var(--text-dark);
+        .risk-alerts-section .alerts-header .badge-count {
+            background: var(--danger);
+            color: white;
+            padding: 0.1rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.65rem;
+            font-weight: 700;
         }
 
-        .dept-bar-item .dept-header .dept-counts {
-            font-size: 0.65rem;
-            color: var(--text-gray);
-            white-space: nowrap;
+        .risk-alerts-section .alerts-header .badge-count.success {
+            background: var(--success);
+        }
+
+        .risk-alerts-section .alerts-body {
+            padding: 0.5rem;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
+            transition: var(--transition);
+        }
+
+        .alert-item:hover {
+            background: #fafbfc;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-item .alert-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: white;
             flex-shrink: 0;
         }
 
-        .dept-bar-item .dept-header .dept-counts .high {
-            color: var(--danger);
-            font-weight: 600;
+        .alert-item .alert-avatar.low {
+            background: var(--success);
         }
 
-        .dept-bar-item .dept-header .dept-counts .medium {
-            color: var(--warning);
-            font-weight: 600;
-        }
-
-        .dept-bar-item .dept-header .dept-counts .low {
-            color: var(--success);
-            font-weight: 600;
-        }
-
-        .dept-bar-track {
-            display: flex;
-            gap: 2px;
-            height: 6px;
-            border-radius: 3px;
-            overflow: hidden;
-            background: #f1f5f9;
-        }
-
-        .dept-bar-track .segment {
-            height: 100%;
-            transition: width 0.8s ease;
-        }
-
-        .dept-bar-track .segment.high {
-            background: var(--danger);
-        }
-
-        .dept-bar-track .segment.medium {
+        .alert-item .alert-avatar.medium {
             background: var(--warning);
         }
 
-        .dept-bar-track .segment.low {
-            background: var(--success);
+        .alert-item .alert-avatar.high {
+            background: var(--danger);
+        }
+
+        .alert-item .alert-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .alert-item .alert-info .student-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        .alert-item .alert-info .student-detail {
+            font-size: 0.7rem;
+            color: var(--text-gray);
+        }
+
+        .alert-item .alert-info .alert-recommendation {
+            font-size: 0.6rem;
+            color: var(--text-gray);
+            margin-top: 0.1rem;
+        }
+
+        .alert-item .alert-badge {
+            padding: 0.1rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .alert-item .alert-badge.high {
+            background: var(--danger-light);
+            color: #991b1b;
+        }
+
+        .alert-item .alert-badge.medium {
+            background: var(--warning-light);
+            color: #92400e;
+        }
+
+        .alert-item .alert-badge.low {
+            background: var(--success-light);
+            color: #166534;
+        }
+
+        .alert-item .alert-action {
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            font-weight: 500;
+            background: rgba(10, 36, 99, 0.08);
+            color: var(--primary);
+            white-space: nowrap;
+        }
+
+        .alert-item .alert-action:hover {
+            background: var(--primary);
+            color: white;
         }
 
         .table-wrapper-premium {
@@ -521,121 +576,6 @@
             color: #166534;
         }
 
-        .attendance-cell .attendance-value {
-            font-weight: 700;
-            font-size: 0.8rem;
-        }
-
-        .attendance-cell .attendance-value.high {
-            color: var(--success);
-        }
-
-        .attendance-cell .attendance-value.medium {
-            color: var(--warning);
-        }
-
-        .attendance-cell .attendance-value.low {
-            color: var(--danger);
-        }
-
-        .roll-call-cell {
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
-
-        .roll-call-cell .roll-value {
-            display: inline-block;
-            padding: 0.1rem 0.5rem;
-            border-radius: 1rem;
-            background: rgba(10, 36, 99, 0.06);
-        }
-
-        .roll-call-breakdown {
-            font-size: 0.6rem;
-            color: var(--text-gray);
-            display: flex;
-            gap: 0.3rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .roll-call-breakdown span {
-            display: inline-block;
-            padding: 0.05rem 0.3rem;
-            border-radius: 0.5rem;
-            background: #f1f5f9;
-        }
-
-        .risk-score-cell .score-value {
-            font-weight: 800;
-            font-size: 0.85rem;
-            color: var(--primary);
-        }
-
-        .risk-score-bar {
-            width: 100%;
-            height: 3px;
-            border-radius: 2px;
-            background: #e2e8f0;
-            overflow: hidden;
-            margin-top: 0.1rem;
-        }
-
-        .risk-score-bar .fill {
-            height: 100%;
-            border-radius: 2px;
-            transition: width 1s ease;
-        }
-
-        .risk-score-bar .fill.high {
-            background: linear-gradient(135deg, var(--danger), #f87171);
-        }
-
-        .risk-score-bar .fill.medium {
-            background: linear-gradient(135deg, var(--warning), #fbbf24);
-        }
-
-        .risk-score-bar .fill.low {
-            background: linear-gradient(135deg, #059669, var(--success));
-        }
-
-        .factors-cell {
-            display: flex;
-            gap: 0.2rem;
-            flex-wrap: wrap;
-        }
-
-        .risk-factor-pill {
-            display: inline-block;
-            padding: 0.05rem 0.4rem;
-            border-radius: 1rem;
-            font-size: 0.55rem;
-            font-weight: 500;
-            background: #f1f5f9;
-            color: var(--text-gray);
-            border: 1px solid transparent;
-            transition: var(--transition);
-            white-space: nowrap;
-        }
-
-        .risk-factor-pill:hover {
-            border-color: var(--primary);
-            background: rgba(10, 36, 99, 0.04);
-        }
-
-        .risk-factor-pill.critical {
-            background: var(--danger-light);
-            color: #991b1b;
-            border-color: #fecaca;
-        }
-
-        .risk-factor-pill.warning {
-            background: var(--warning-light);
-            color: #92400e;
-            border-color: #fde68a;
-        }
-
         .btn-action {
             padding: 0.2rem 0.5rem;
             border-radius: 8px;
@@ -671,59 +611,359 @@
             transform: translateY(-1px);
         }
 
-        .btn-action .btn-icon {
-            font-size: 0.7rem;
-        }
-
-        .btn-action .btn-text {
-            font-size: 0.6rem;
-        }
-
-        .btn-template {
-            padding: 0.2rem 0.6rem;
+        .risk-factor-pill {
+            display: inline-block;
+            padding: 0.05rem 0.4rem;
             border-radius: 1rem;
+            font-size: 0.55rem;
+            font-weight: 500;
+            background: #f1f5f9;
+            color: var(--text-gray);
+            border: 1px solid transparent;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .risk-factor-pill:hover {
+            border-color: var(--primary);
+            background: rgba(10, 36, 99, 0.04);
+        }
+
+        .risk-factor-pill.critical {
+            background: var(--danger-light);
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+
+        .risk-factor-pill.warning {
+            background: var(--warning-light);
+            color: #92400e;
+            border-color: #fde68a;
+        }
+
+        .searchable-dropdown {
+            position: relative;
+            flex: 2;
+            min-width: 200px;
+            z-index: 9999;
+        }
+
+        .searchable-dropdown input {
+            width: 100%;
+            padding: 0.5rem;
+            border-radius: 8px;
             border: 1px solid rgba(10, 36, 99, 0.12);
+            background: #fff;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+
+        .searchable-dropdown .dropdown-list {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid rgba(10, 36, 99, 0.15);
+            border-radius: 8px;
+            max-height: 240px;
+            overflow-y: auto;
+            z-index: 10000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            display: none;
+        }
+
+        .searchable-dropdown .dropdown-list.show {
+            display: block;
+        }
+
+        .searchable-dropdown .dropdown-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
+        }
+
+        .searchable-dropdown .dropdown-item:hover {
+            background: #f1f5f9;
+        }
+
+        .searchable-dropdown .dropdown-item.selected {
+            background: #e2e8f0;
+        }
+
+        .searchable-dropdown .no-results {
+            padding: 0.5rem 1rem;
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .quick-action-wrapper {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .quick-action-wrapper .searchable-dropdown {
+            flex: 2;
+            min-width: 220px;
+        }
+
+        .btn-view-risk {
+            background: #fef3c7;
+            color: #92400e;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            white-space: nowrap;
+        }
+
+        .btn-view-risk:hover {
+            background: #fde68a;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
             background: var(--white);
-            font-size: 0.65rem;
+            border-radius: var(--radius);
+            max-width: 750px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafbfc;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .modal-header h4 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-header h4 .student-name {
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-gray);
             cursor: pointer;
             transition: var(--transition);
+            padding: 0 4px;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
             color: var(--text-dark);
-            font-family: 'Inter', sans-serif;
+            transform: rotate(90deg);
         }
 
-        .btn-template:hover {
-            background: var(--primary);
-            color: var(--white);
-            border-color: var(--primary);
-            transform: translateY(-1px);
+        .modal-body {
+            padding: 1.5rem;
         }
 
-        .btn-template.active {
-            background: var(--primary);
-            color: var(--white);
-            border-color: var(--primary);
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            background: #fafbfc;
+            border-radius: 0 0 var(--radius) var(--radius);
         }
 
-        #qmSendBtn {
-            background: var(--primary);
-            color: var(--white);
-            border-radius: 8px;
-            padding: 0.5rem 1.5rem;
-            transition: var(--transition);
+        .btn-close-modal {
+            background: #f3f4f6;
+            color: var(--text-dark);
             border: none;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
+            padding: 0.4rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
         }
 
-        #qmSendBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(10, 36, 99, 0.25);
+        .btn-close-modal:hover {
+            background: #e5e7eb;
         }
 
-        #qmSendBtn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none !important;
+        .risk-modal-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .risk-modal-stat {
+            background: #fafbfc;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+        }
+
+        .risk-modal-stat .number {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .risk-modal-stat .number.high {
+            color: var(--danger);
+        }
+
+        .risk-modal-stat .number.medium {
+            color: var(--warning);
+        }
+
+        .risk-modal-stat .number.low {
+            color: var(--success);
+        }
+
+        .risk-modal-stat .label {
+            font-size: 0.6rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .risk-modal-stat .status-badge {
+            display: inline-block;
+            padding: 0.15rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-modal-stat .status-badge.high {
+            background: var(--danger-light);
+            color: #991b1b;
+        }
+
+        .risk-modal-stat .status-badge.medium {
+            background: var(--warning-light);
+            color: #92400e;
+        }
+
+        .risk-modal-stat .status-badge.low {
+            background: var(--success-light);
+            color: #166534;
+        }
+
+        .modal-chart-container {
+            position: relative;
+            height: 200px;
+            margin: 0.5rem 0 1rem 0;
+        }
+
+        .modal-monthly-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .modal-monthly-stat {
+            background: #fafbfc;
+            border-radius: 6px;
+            padding: 0.4rem 0.5rem;
+            text-align: center;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+        }
+
+        .modal-monthly-stat .m-label {
+            font-size: 0.55rem;
+            color: var(--text-gray);
+        }
+
+        .modal-monthly-stat .m-status {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .modal-monthly-stat .m-status.high {
+            color: var(--danger);
+        }
+
+        .modal-monthly-stat .m-status.medium {
+            color: var(--warning);
+        }
+
+        .modal-monthly-stat .m-status.low {
+            color: var(--success);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 1.5rem;
+            height: 1.5rem;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spinner 0.8s linear infinite;
+        }
+
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         #toast-container {
@@ -804,20 +1044,56 @@
             }
         }
 
+        .btn-template {
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            background: var(--white);
+            font-size: 0.65rem;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-dark);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-template:hover {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .btn-template.active {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        #qmSendBtn {
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            transition: var(--transition);
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+        }
+
+        #qmSendBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(10, 36, 99, 0.25);
+        }
+
+        #qmSendBtn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
         @media (max-width: 1200px) {
             .chart-grid-premium {
                 grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .stats-grid-compact {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .table-premium {
-                font-size: 0.7rem;
-                min-width: 900px;
             }
         }
 
@@ -834,16 +1110,6 @@
             }
 
             .filter-bar-premium .filter-group select {
-                width: 100%;
-                min-width: unset;
-            }
-
-            .filter-bar-premium .search-group {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .filter-bar-premium .search-group input {
                 width: 100%;
                 min-width: unset;
             }
@@ -867,18 +1133,17 @@
                 font-size: 1rem;
             }
 
-            .chart-container-premium {
-                height: 200px;
+            .risk-summary-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .chart-grid-premium {
+                grid-template-columns: 1fr;
             }
 
             .table-premium {
                 font-size: 0.65rem;
                 min-width: 800px;
-            }
-
-            .table-premium th,
-            .table-premium td {
-                padding: 0.3rem 0.4rem;
             }
 
             .btn-action .btn-text {
@@ -894,14 +1159,21 @@
                 font-size: 0.65rem;
             }
 
-            .factors-grid-premium {
+            .modal-monthly-stats {
                 grid-template-columns: 1fr 1fr;
             }
-        }
 
-        @media (max-width: 600px) {
-            .table-premium {
-                min-width: 700px;
+            .risk-modal-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .modal-content {
+                margin: 10px;
+                max-height: 95vh;
+            }
+
+            .quick-action-wrapper .searchable-dropdown {
+                flex: 1 1 100%;
             }
         }
 
@@ -931,8 +1203,16 @@
                 border-radius: 8px;
             }
 
-            .factors-grid-premium {
+            .risk-summary-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .modal-monthly-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .risk-modal-stats {
+                grid-template-columns: 1fr 1fr;
             }
         }
 
@@ -952,70 +1232,61 @@
             animation: fadeInUp 0.6s ease forwards;
         }
 
+        .animate-in:nth-child(1) {
+            animation-delay: 0.03s;
+        }
+
         .animate-in:nth-child(2) {
-            animation-delay: 0.1s;
+            animation-delay: 0.06s;
         }
 
         .animate-in:nth-child(3) {
-            animation-delay: 0.2s;
+            animation-delay: 0.09s;
         }
 
         .animate-in:nth-child(4) {
-            animation-delay: 0.3s;
+            animation-delay: 0.12s;
         }
     </style>
 
-    {{-- Stats --}}
+    {{-- Stats Cards --}}
     <div class="stats-grid-compact">
         <div class="stat-card-compact animate-in">
-            <div class="stat-icon primary">
-                <i class="bi bi-people-fill"></i>
-            </div>
+            <div class="stat-icon primary"><i class="bi bi-people-fill"></i></div>
             <div class="stat-info">
                 <div class="stat-number">{{ number_format($stats['total_students'] ?? 0) }}</div>
-                <div class="stat-label">👨‍🎓 Total Students</div>
+                <div class="stat-label">Total Students</div>
             </div>
         </div>
-
         <div class="stat-card-compact animate-in">
-            <div class="stat-icon success">
-                <i class="bi bi-shield-check"></i>
-            </div>
+            <div class="stat-icon success"><i class="bi bi-shield-check"></i></div>
             <div class="stat-info">
-                <div class="stat-number">
-                    {{ number_format(($stats['total_students'] ?? 0) - ($stats['high_risk'] ?? 0) - ($stats['medium_risk'] ?? 0)) }}
-                </div>
-                <div class="stat-label">🟢 Low Risk</div>
+                <div class="stat-number">{{ number_format($stats['low_risk'] ?? 0) }}</div>
+                <div class="stat-label">Low Risk</div>
             </div>
         </div>
-
         <div class="stat-card-compact animate-in">
-            <div class="stat-icon warning">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-            </div>
+            <div class="stat-icon warning"><i class="bi bi-exclamation-triangle-fill"></i></div>
             <div class="stat-info">
                 <div class="stat-number">{{ number_format($stats['medium_risk'] ?? 0) }}</div>
-                <div class="stat-label">🟡 Medium Risk</div>
+                <div class="stat-label">Medium Risk</div>
             </div>
         </div>
-
         <div class="stat-card-compact animate-in">
-            <div class="stat-icon danger">
-                <i class="bi bi-exclamation-octagon-fill"></i>
-            </div>
+            <div class="stat-icon danger"><i class="bi bi-exclamation-octagon-fill"></i></div>
             <div class="stat-info">
                 <div class="stat-number">{{ number_format($stats['high_risk'] ?? 0) }}</div>
-                <div class="stat-label">🔴 High Risk</div>
+                <div class="stat-label">High Risk</div>
             </div>
         </div>
     </div>
 
     {{-- Filter Bar --}}
-    <form class="filter-bar-premium" method="GET" action="{{ route('admin.risk.index') }}" id="filterForm">
+    <form class="filter-bar-premium" method="GET" action="{{ route('admin.risk.index') }}">
         <div class="filter-group">
-            <label><i class="bi bi-building"></i> Dept</label>
-            <select name="department_id" id="departmentFilter">
-                <option value="">All Departments</option>
+            <label><i class="bi bi-building"></i> Department</label>
+            <select name="department">
+                <option value="">All</option>
                 @foreach ($departments as $dept)
                     <option value="{{ $dept->id }}" {{ $departmentId == $dept->id ? 'selected' : '' }}>
                         {{ $dept->name }}
@@ -1026,8 +1297,8 @@
 
         <div class="filter-group">
             <label><i class="bi bi-calendar3"></i> Year</label>
-            <select name="year" id="yearFilter">
-                <option value="">All Years</option>
+            <select name="year">
+                <option value="">All</option>
                 @for ($i = 1; $i <= 6; $i++)
                     <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>
                         {{ $yearLabels[$i] ?? $i . 'th' }}
@@ -1038,39 +1309,92 @@
 
         <div class="filter-group">
             <label><i class="bi bi-shield-exclamation"></i> Risk</label>
-            <select name="risk_level" id="riskLevelFilter">
-                <option value="">All Levels</option>
-                <option value="Low" {{ $riskLevel == 'Low' ? 'selected' : '' }}>🟢 Low</option>
-                <option value="Medium" {{ $riskLevel == 'Medium' ? 'selected' : '' }}>🟡 Medium</option>
-                <option value="High" {{ $riskLevel == 'High' ? 'selected' : '' }}>🔴 High</option>
+            <select name="risk_level">
+                <option value="">All</option>
+                <option value="Low" {{ $riskLevel == 'Low' ? 'selected' : '' }}>Low</option>
+                <option value="Medium" {{ $riskLevel == 'Medium' ? 'selected' : '' }}>Medium</option>
+                <option value="High" {{ $riskLevel == 'High' ? 'selected' : '' }}>High</option>
             </select>
         </div>
 
-        <div class="search-group">
-            <input type="text" id="searchInput" placeholder="🔍 Search students..." autocomplete="off">
-        </div>
-
-        <div class="btn-group" style="display:flex; gap:0.4rem; flex-wrap:wrap;">
-            <button type="submit" class="btn-premium btn-premium-primary">
-                <i class="bi bi-funnel"></i> Apply
-            </button>
-            <a href="{{ route('admin.risk.index') }}" class="btn-premium btn-premium-outline">
-                <i class="bi bi-arrow-counterclockwise"></i> Reset
-            </a>
-            <a href="{{ route('admin.risk.export') }}" class="btn-premium btn-premium-success">
-                <i class="bi bi-download"></i> Export
-            </a>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+            <button type="submit" class="btn-premium btn-premium-primary"><i class="bi bi-funnel"></i> Apply</button>
+            <a href="{{ route('admin.risk.index') }}" class="btn-premium btn-premium-outline"><i
+                    class="bi bi-arrow-counterclockwise"></i> Reset</a>
         </div>
     </form>
 
-    {{-- Charts --}}
+    {{-- Student Quick Actions --}}
+    <div class="chart-card-premium" style="margin-bottom:1.5rem;">
+        <div class="card-header">
+            <span class="title">
+                <i class="bi bi-person" style="color:var(--primary);"></i>
+                View each student's risk level
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="quick-action-wrapper">
+                <div class="searchable-dropdown" id="riskStudentDropdown">
+                    <input type="text" id="riskSearchInput" placeholder="Search by name or ID..." autocomplete="off">
+                    <div class="dropdown-list" id="riskDropdownList">
+                        @foreach ($students as $s)
+                            <div class="dropdown-item" data-id="{{ $s->id }}"
+                                data-label="{{ $s->name }} ({{ $s->student_id ?? 'N/A' }})">
+                                {{ $s->name }} ({{ $s->student_id ?? 'N/A' }})
+                            </div>
+                        @endforeach
+                        <div class="no-results" style="display:none;">No students found</div>
+                    </div>
+                </div>
+                <button class="btn-view-risk" onclick="viewQuickRisk()">
+                    <i class="bi bi-shield-exclamation"></i> View Risk
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- Risk Summary Cards --}}
+    <div class="risk-summary-grid">
+        @php
+            $total = $stats['total_students'] ?? 1;
+            $lowPct = $total > 0 ? round(($stats['low_risk'] / $total) * 100) : 0;
+            $mediumPct = $total > 0 ? round(($stats['medium_risk'] / $total) * 100) : 0;
+            $highPct = $total > 0 ? round(($stats['high_risk'] / $total) * 100) : 0;
+        @endphp
+
+        <div class="risk-summary-card">
+            <div class="risk-icon">🟢</div>
+            <div class="risk-count low">{{ number_format($stats['low_risk'] ?? 0) }}</div>
+            <div class="risk-label">Low Risk Students</div>
+            <div class="risk-percentage" style="color:var(--success);">{{ $lowPct }}% of total</div>
+            <div class="risk-status low">On Track</div>
+        </div>
+
+        <div class="risk-summary-card">
+            <div class="risk-icon">🟡</div>
+            <div class="risk-count medium">{{ number_format($stats['medium_risk'] ?? 0) }}</div>
+            <div class="risk-label">Medium Risk Students</div>
+            <div class="risk-percentage" style="color:var(--warning);">{{ $mediumPct }}% of total</div>
+            <div class="risk-status medium">Needs Attention</div>
+        </div>
+
+        <div class="risk-summary-card">
+            <div class="risk-icon">🔴</div>
+            <div class="risk-count high">{{ number_format($stats['high_risk'] ?? 0) }}</div>
+            <div class="risk-label">High Risk Students</div>
+            <div class="risk-percentage" style="color:var(--danger);">{{ $highPct }}% of total</div>
+            <div class="risk-status high">Urgent</div>
+        </div>
+    </div>
+
+    {{-- Charts (Restored) --}}
     <div class="chart-grid-premium">
         <div class="chart-card-premium">
             <div class="card-header">
                 <span class="title">
                     <i class="bi bi-pie-chart-fill" style="color:var(--primary);"></i>
                     Risk Distribution
-                    <span class="badge">KG+12 Full Risk</span>
+                    <span class="badge">Current snapshot</span>
                 </span>
                 <span class="subtitle">Student risk level breakdown</span>
             </div>
@@ -1098,108 +1422,124 @@
         </div>
     </div>
 
-    {{-- Risk Factors & Department Breakdown --}}
-    <div class="chart-grid-premium">
-        <div class="chart-card-premium">
-            <div class="card-header">
-                <span class="title">
-                    <i class="bi bi-list-check" style="color:var(--primary);"></i>
-                    Risk Indicators
-                    <span class="badge">{{ count(array_filter($riskFactors)) }} active</span>
+    {{-- Risk Alerts --}}
+    <div class="risk-alerts-section">
+        <div class="alerts-header">
+            <span class="title">
+                <i class="bi bi-bell-fill" style="color:var(--warning);"></i>
+                Risk Alerts
+                <span
+                    class="badge-count {{ ($stats['medium_risk'] ?? 0) + ($stats['high_risk'] ?? 0) > 0 ? '' : 'success' }}">
+                    {{ ($stats['medium_risk'] ?? 0) + ($stats['high_risk'] ?? 0) }}
                 </span>
-                <span class="subtitle">Most common risk drivers</span>
-            </div>
-            <div class="card-body">
-                @if (count(array_filter($riskFactors)) > 0)
-                    <div class="factors-grid-premium">
-                        @foreach ($riskFactors as $factor => $count)
-                            @if ($count > 0)
-                                <div class="factor-item-premium">
-                                    <span class="factor-name" title="{{ $factor }}">
-                                        @if (str_contains($factor, 'Attendance'))
-                                            📉
-                                        @elseif(str_contains($factor, 'Roll'))
-                                            📝
-                                        @elseif(str_contains($factor, 'consecutive'))
-                                            🔄
-                                        @elseif(str_contains($factor, 'Declining'))
-                                            📊
-                                        @else
-                                            ⚠️
-                                        @endif
-                                        {{ $factor }}
-                                    </span>
-                                    <span class="factor-count">{{ $count }}</span>
-                                </div>
-                            @endif
-                        @endforeach
-                    </div>
+            </span>
+            <span style="font-size:0.65rem; color:var(--text-gray);">
+                @if (($stats['medium_risk'] ?? 0) + ($stats['high_risk'] ?? 0) > 0)
+                    <i class="bi bi-exclamation-triangle"></i> Action needed
                 @else
-                    <div style="text-align:center; padding:1.5rem; color:#94a3b8;">
-                        <div style="font-size:2.5rem; margin-bottom:0.5rem;">✅</div>
-                        <div style="font-weight:500; font-size:1rem;">No significant risk factors identified</div>
-                        <div style="font-size:0.85rem;">All metrics are within acceptable ranges</div>
+                    <i class="bi bi-check-circle" style="color:var(--success);"></i> No alerts
+                @endif
+            </span>
+        </div>
+        <div class="alerts-body">
+            @php
+                $hasAlerts = false;
+            @endphp
+
+            @foreach ($riskData as $data)
+                @if ($data['level'] == 'Medium' || $data['level'] == 'High')
+                    @php
+                        $hasAlerts = true;
+                        $initial = strtoupper(substr($data['student']->name ?? 'U', 0, 1));
+                        $riskClass = strtolower($data['level']);
+                        $attendance = $data['attendance'] ?? 0;
+                        $recommendation =
+                            $data['level'] == 'High'
+                                ? '🚨 Immediate meeting required. Contact student urgently.'
+                                : '📋 Schedule a meeting to discuss attendance improvement.';
+                    @endphp
+                    <div class="alert-item">
+                        <div class="alert-avatar {{ $riskClass }}">{{ $initial }}</div>
+                        <div class="alert-info">
+                            <div class="student-name">{{ $data['student']->name ?? 'Unknown' }}</div>
+                            <div class="student-detail">
+                                {{ $data['student']->student_id ?? 'N/A' }} •
+                                {{ $data['student']->department->name ?? 'N/A' }} •
+                                Attendance: <strong>{{ $attendance }}%</strong>
+                            </div>
+                            <div class="alert-recommendation">
+                                💡 {{ $recommendation }}
+                            </div>
+                        </div>
+                        <span class="alert-badge {{ $riskClass }}">{{ $data['level'] }}</span>
+                        <a href="{{ route('admin.students.show', $data['student']->id) }}" class="alert-action"
+                            title="View Profile">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                        <button class="alert-action"
+                            onclick="openQuickMessage('{{ $data['student']->id }}', '{{ addslashes($data['student']->name) }}', '{{ addslashes($data['student']->email) }}', '{{ $data['level'] }}', '{{ $data['score'] }}')"
+                            title="Send Message">
+                            <i class="bi bi-envelope"></i> Message
+                        </button>
                     </div>
                 @endif
-            </div>
-        </div>
+            @endforeach
 
-        <div class="chart-card-premium">
-            <div class="card-header">
-                <span class="title">
-                    <i class="bi bi-building" style="color:var(--primary);"></i>
-                    Department Risk Analysis
-                    <span class="badge">{{ count($riskByDepartment) }} departments</span>
+            @if (!$hasAlerts)
+                <div style="text-align:center; padding:2rem; color:var(--text-gray);">
+                    <div style="font-size:2.5rem; margin-bottom:0.5rem;">🎉</div>
+                    <div style="font-weight:600; color:var(--success);">No Risk Alerts</div>
+                    <div style="font-size:0.85rem;">All students are on track. Keep up the good work!</div>
+                    <div style="margin-top:0.5rem; font-size:0.7rem; color:var(--text-gray);">
+                        <i class="bi bi-check-circle" style="color:var(--success);"></i>
+                        {{ number_format($stats['low_risk'] ?? 0) }} students are performing well
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Student Risk Trend Chart --}}
+    <div class="chart-card-premium" id="studentRiskChartSection" style="{{ $studentId ? '' : 'display:none;' }}">
+        <div class="card-header">
+            <span class="title">
+                <i class="bi bi-person-lines-fill" style="color:var(--primary);"></i>
+                Student Risk Trend
+                <span class="badge" id="studentRiskName">
+                    @if ($studentId && isset($students))
+                        @php $selectedStudent = $students->firstWhere('id', $studentId); @endphp
+                        {{ $selectedStudent ? $selectedStudent->name . ' (' . ($selectedStudent->student_id ?? 'N/A') . ')' : '—' }}
+                    @else
+                        —
+                    @endif
                 </span>
-                <span class="subtitle">Risk distribution by department</span>
+            </span>
+            <span class="subtitle">
+                <i class="bi bi-clock"></i> Weekly risk level
+                <span id="studentRiskLoading" style="display:none; margin-left:8px;">
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                </span>
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="chart-container-premium" style="height:220px;">
+                <canvas id="studentRiskChart"></canvas>
             </div>
-            <div class="card-body">
-                @if (count($riskByDepartment) > 0)
-                    <div class="dept-bars-premium">
-                        {{-- FIXED: use $deptData instead of $deptName => $counts --}}
-                        @foreach ($riskByDepartment as $deptData)
-                            @php
-                                $total = $deptData['total']; // pre-computed total
-                                $highPct = $total > 0 ? round(($deptData['High'] / $total) * 100) : 0;
-                                $medPct = $total > 0 ? round(($deptData['Medium'] / $total) * 100) : 0;
-                                $lowPct = $total > 0 ? round(($deptData['Low'] / $total) * 100) : 0;
-                            @endphp
-                            <div class="dept-bar-item">
-                                <div class="dept-header">
-                                    <span class="dept-name"
-                                        title="{{ $deptData['name'] }}">{{ $deptData['name'] }}</span>
-                                    <span class="dept-counts">
-                                        <span class="high">{{ $deptData['High'] }}H</span>
-                                        <span class="medium">{{ $deptData['Medium'] }}M</span>
-                                        <span class="low">{{ $deptData['Low'] }}L</span>
-                                        <span
-                                            style="font-weight:600; color:var(--text-dark);">({{ $total }})</span>
-                                    </span>
-                                </div>
-                                <div class="dept-bar-track">
-                                    @if ($highPct > 0)
-                                        <div class="segment high" style="width:{{ $highPct }}%;"></div>
-                                    @endif
-                                    @if ($medPct > 0)
-                                        <div class="segment medium" style="width:{{ $medPct }}%;"></div>
-                                    @endif
-                                    @if ($lowPct > 0)
-                                        <div class="segment low" style="width:{{ $lowPct }}%;"></div>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
+            <div class="monthly-risk-stats" id="studentRiskMonthlyStats">
+                @if ($studentId)
+                    <div class="monthly-risk-stat" style="grid-column:1/-1; text-align:center; color:var(--text-gray);">
+                        <i class="bi bi-hourglass"></i> Loading data...
                     </div>
                 @else
-                    <div style="text-align:center; padding:1.5rem; color:#94a3b8;">
-                        No department data available
+                    <div class="monthly-risk-stat" style="grid-column:1/-1; text-align:center; color:var(--text-gray);">
+                        <i class="bi bi-info-circle"></i> Select a student above
                     </div>
                 @endif
             </div>
         </div>
     </div>
 
-    {{-- At-Risk Students Table with KG+12 Roll Call --}}
+    {{-- At-Risk Students Table --}}
     <div class="chart-card-premium" style="margin-bottom:2rem;">
         <div class="card-header">
             <span class="title">
@@ -1207,7 +1547,6 @@
                 At-Risk Student Registry
                 <span class="badge" id="rowCount">{{ count($riskData) }} identified</span>
             </span>
-            <span class="subtitle">KG+12 Roll Call & Full Risk Score | Immediate intervention recommended</span>
         </div>
         <div class="card-body" style="padding:0;">
             @if (count($riskData) > 0)
@@ -1300,11 +1639,11 @@
                                     <td style="text-align:center;">
                                         <div style="display:flex; gap:0.3rem; justify-content:center;">
                                             <a href="{{ route('admin.students.show', $data['student']->id) }}"
-                                                class="btn-action view" title="View Student Profile">
+                                                class="btn-action view" title="View Profile">
                                                 <span class="btn-icon">👤</span>
                                                 <span class="btn-text">Profile</span>
                                             </a>
-                                            <button class="btn-action intervene" title="Send Intervention Message"
+                                            <button class="btn-action intervene" title="Send Message"
                                                 onclick="openQuickMessage('{{ $data['student']->id }}', '{{ addslashes($data['student']->name) }}', '{{ addslashes($data['student']->email) }}', '{{ $data['level'] }}', '{{ $data['score'] }}')">
                                                 <span class="btn-icon">✉️</span>
                                                 <span class="btn-text">Message</span>
@@ -1321,9 +1660,8 @@
                     <div style="font-size:3.5rem; margin-bottom:1rem;">🎉</div>
                     <div style="color:var(--text-dark); font-weight:700; font-size:1.25rem;">No Students Currently At Risk
                     </div>
-                    <div style="color:var(--text-gray); font-size:0.9rem; margin-top:0.25rem;">
-                        All students have good attendance records and are performing well
-                    </div>
+                    <div style="color:var(--text-gray); font-size:0.9rem; margin-top:0.25rem;">All students have good
+                        attendance records</div>
                     <div
                         style="margin-top:1rem; padding:0.5rem 1.5rem; background:var(--success-light); border-radius:8px; display:inline-block; border:1px solid #a7f3d0;">
                         <span style="color:#166534; font-weight:500;">✅ Risk Rate: 0% — Excellent</span>
@@ -1333,7 +1671,34 @@
         </div>
     </div>
 
-    {{-- Quick Message Modal --}}
+    <!-- ============================================================ -->
+    <!-- RISK MODAL -->
+    <!-- ============================================================ -->
+    <div class="modal-overlay" id="riskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>
+                    <i class="bi bi-shield-exclamation" style="color:var(--warning);"></i>
+                    Risk Analysis: <span class="student-name" id="riskStudentName">Student</span>
+                    <span style="font-size:0.7rem; font-weight:400; color:var(--text-gray);" id="riskStudentId"></span>
+                </h4>
+                <button class="modal-close" onclick="closeModal('riskModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="riskModalBody">
+                <div class="text-center" style="padding:2rem;">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top:0.5rem; color:var(--text-gray);">Loading risk data...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-close-modal" onclick="closeModal('riskModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- QUICK MESSAGE MODAL -->
+    <!-- ============================================================ -->
     <div class="modal fade" id="quickMessageModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius:16px; border:none; box-shadow:0 20px 60px rgba(0,0,0,0.15);">
@@ -1368,7 +1733,7 @@
                             style="font-weight:600; font-size:0.85rem; color:var(--text-dark);">Message</label>
                         <textarea id="qmBody" class="form-control" rows="4"
                             style="border-radius:8px; border:1px solid rgba(10,36,99,0.12); padding:0.6rem; resize:vertical;"
-                            placeholder="Type your message here..."></textarea>
+                            placeholder="Type your message here..." required></textarea>
                     </div>
 
                     <div class="mb-2">
@@ -1385,12 +1750,8 @@
                 </div>
                 <div class="modal-footer" style="border-top:1px solid #f1f5f9; padding:1rem 1.5rem; gap:0.5rem;">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                        style="border-radius:8px; padding:0.5rem 1.5rem; border:1px solid rgba(10,36,99,0.12); background:var(--white); color:var(--text-gray);">
-                        Cancel
-                    </button>
-                    <button type="button" class="btn" id="qmSendBtn">
-                        📤 Send Message
-                    </button>
+                        style="border-radius:8px; padding:0.5rem 1.5rem; border:1px solid rgba(10,36,99,0.12); background:var(--white); color:var(--text-gray);">Cancel</button>
+                    <button type="button" class="btn" id="qmSendBtn">📤 Send Message</button>
                 </div>
             </div>
         </div>
@@ -1399,453 +1760,749 @@
     {{-- Toast Container --}}
     <div id="toast-container"></div>
 
-    {{-- JavaScript --}}
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Risk Distribution Chart
-            const riskCounts = @json($riskCounts);
-            const ctx1 = document.getElementById('riskDistributionChart').getContext('2d');
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // ====== SEARCHABLE DROPDOWN ======
+                const input = document.getElementById('riskSearchInput');
+                const list = document.getElementById('riskDropdownList');
+                const items = list.querySelectorAll('.dropdown-item');
+                const noResults = list.querySelector('.no-results');
+                let selectedId = null;
 
-            new Chart(ctx1, {
-                type: 'doughnut',
-                data: {
-                    labels: ['🟢 Low Risk', '🟡 Medium Risk', '🔴 High Risk'],
-                    datasets: [{
-                        data: [riskCounts.Low, riskCounts.Medium, riskCounts.High],
-                        backgroundColor: ['rgba(16,185,129,0.85)', 'rgba(245,158,11,0.85)',
-                            'rgba(239,68,68,0.85)'
-                        ],
-                        borderColor: 'white',
-                        borderWidth: 3,
-                        hoverOffset: 12,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                font: {
-                                    size: 12,
-                                    weight: '600'
-                                },
-                                usePointStyle: true,
-                                pointStyle: 'circle'
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(15,23,42,0.9)',
-                            titleFont: {
-                                size: 13,
-                                weight: '600'
-                            },
-                            bodyFont: {
-                                size: 12
-                            },
-                            padding: 12,
-                            cornerRadius: 8,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    let value = context.parsed || 0;
-                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    let percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                    return label.replace(/[🟢🟡🔴]\s*/, '') + ': ' + value +
-                                        ' students (' + percentage + '%)';
-                                }
-                            }
-                        }
-                    },
-                    cutout: '65%',
-                    animation: {
-                        animateRotate: true,
-                        duration: 1500
-                    }
+                function filterItems(query) {
+                    const q = query.toLowerCase().trim();
+                    let visible = 0;
+                    items.forEach(item => {
+                        const label = item.dataset.label.toLowerCase();
+                        const match = label.indexOf(q) > -1;
+                        item.style.display = match ? '' : 'none';
+                        if (match) visible++;
+                    });
+                    noResults.style.display = visible === 0 ? '' : 'none';
+                    list.classList.add('show');
                 }
-            });
 
-            // Risk Trend Chart
-            const riskTrend = @json($riskTrend);
-            const ctx2 = document.getElementById('riskTrendChart').getContext('2d');
+                input.addEventListener('input', function() {
+                    const val = this.value;
+                    if (val.length === 0) {
+                        items.forEach(item => item.style.display = '');
+                        noResults.style.display = 'none';
+                        list.classList.remove('show');
+                        selectedId = null;
+                        return;
+                    }
+                    filterItems(val);
+                });
 
-            if (riskTrend && riskTrend.length > 0) {
-                const labels = riskTrend.map(item => item.month);
-                const highRisk = riskTrend.map(item => item.high_risk);
-                const mediumRisk = riskTrend.map(item => item.medium_risk);
+                items.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        const label = this.dataset.label;
+                        input.value = label;
+                        selectedId = id;
+                        list.classList.remove('show');
+                        items.forEach(i => i.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+                });
 
-                new Chart(ctx2, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                                label: '🔴 High Risk',
-                                data: highRisk,
-                                borderColor: '#ef4444',
-                                backgroundColor: 'rgba(239,68,68,0.08)',
-                                fill: true,
-                                tension: 0.4,
-                                pointRadius: 4,
-                                pointBackgroundColor: '#ef4444',
-                                borderWidth: 3,
-                            },
-                            {
-                                label: '🟡 Medium Risk',
-                                data: mediumRisk,
-                                borderColor: '#f59e0b',
-                                backgroundColor: 'rgba(245,158,11,0.08)',
-                                fill: true,
-                                tension: 0.4,
-                                pointRadius: 4,
-                                pointBackgroundColor: '#f59e0b',
-                                borderWidth: 3,
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: {
-                                    padding: 15,
-                                    font: {
-                                        size: 11,
-                                        weight: '500'
-                                    },
-                                    usePointStyle: true,
-                                    pointStyle: 'line'
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(15,23,42,0.9)',
-                                titleFont: {
-                                    size: 13,
-                                    weight: '600'
-                                },
-                                bodyFont: {
-                                    size: 12
-                                },
-                                padding: 12,
-                                cornerRadius: 8,
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0,0,0,0.04)'
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 10
-                                    },
-                                    stepSize: 1
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 10
-                                    }
-                                }
-                            }
-                        },
-                        animation: {
-                            duration: 1500
+                input.addEventListener('blur', function() {
+                    setTimeout(() => list.classList.remove('show'), 200);
+                });
+
+                input.addEventListener('focus', function() {
+                    if (this.value.length > 0) filterItems(this.value);
+                });
+
+                window.getRiskSelectedStudentId = function() {
+                    if (selectedId) return selectedId;
+                    const val = input.value.trim();
+                    if (val) {
+                        for (let item of items) {
+                            if (item.dataset.label === val) return item.dataset.id;
                         }
+                    }
+                    return null;
+                };
+
+                // ====== Quick Risk Action ======
+                window.viewQuickRisk = function() {
+                    const id = window.getRiskSelectedStudentId();
+                    if (!id) {
+                        alert('Please select a student first.');
+                        return;
+                    }
+                    const label = input.value.trim();
+                    const match = label.match(/\(([^)]+)\)/);
+                    const studentIdNumber = match ? match[1] : 'N/A';
+                    const studentName = label.replace(/\([^)]*\)/, '').trim() || 'Student';
+                    openRiskModal(id, studentName, studentIdNumber);
+                };
+
+                // ====== Modal functions ======
+                function closeModal(id) {
+                    document.getElementById(id).classList.remove('show');
+                }
+                window.closeModal = closeModal;
+
+                document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                    overlay.addEventListener('click', function(e) {
+                        if (e.target === this) this.classList.remove('show');
+                    });
+                });
+
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove(
+                            'show'));
                     }
                 });
-            }
 
-            // Client-side filtering (updated for 11 columns)
-            const departmentFilter = document.getElementById('departmentFilter');
-            const yearFilter = document.getElementById('yearFilter');
-            const riskLevelFilter = document.getElementById('riskLevelFilter');
-            const searchInput = document.getElementById('searchInput');
-            const tableBody = document.getElementById('riskTableBody');
-            const rowCountBadge = document.getElementById('rowCount');
+                let riskModalChart = null;
 
-            if (tableBody) {
-                const rows = tableBody.querySelectorAll('tr');
-                const originalRows = Array.from(rows);
+                function openRiskModal(studentId, studentName, studentIdNumber) {
+                    const modal = document.getElementById('riskModal');
+                    const body = document.getElementById('riskModalBody');
 
-                function filterTable() {
-                    const deptValue = departmentFilter ? departmentFilter.value : '';
-                    const yearValue = yearFilter ? yearFilter.value : '';
-                    const riskValue = riskLevelFilter ? riskLevelFilter.value : '';
-                    const searchValue = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                    document.getElementById('riskStudentName').textContent = studentName;
+                    document.getElementById('riskStudentId').textContent = '(' + studentIdNumber + ')';
 
-                    let visibleCount = 0;
+                    modal.classList.add('show');
 
-                    originalRows.forEach(row => {
-                        let show = true;
-                        const cells = row.querySelectorAll('td');
+                    body.innerHTML = `
+                        <div class="text-center" style="padding:2rem;">
+                            <div class="loading-spinner"></div>
+                            <p style="margin-top:0.5rem; color:var(--text-gray);">Loading risk data...</p>
+                        </div>
+                    `;
 
-                        // Expecting 11 columns (index 0..10)
-                        if (cells.length >= 11) {
-                            // Department: index 1
-                            if (deptValue && deptValue !== '' && show) {
-                                const deptText = cells[1] ? cells[1].textContent.trim().toLowerCase() : '';
-                                const deptOption = departmentFilter.querySelector(
-                                    `option[value="${deptValue}"]`);
-                                const deptName = deptOption ? deptOption.textContent.trim().toLowerCase() :
-                                    '';
-                                if (!deptText.includes(deptName) && !deptName.includes(deptText)) {
-                                    show = false;
-                                }
+                    fetch(`/admin/risk/student-risk/${studentId}`)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network error');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (!data.success) throw new Error(data.message || 'Failed to load');
+
+                            let html = '';
+
+                            const avgRisk = data.weekly.reduce((sum, w) => sum + w.risk_score, 0) / (data.weekly
+                                .length || 1);
+                            const riskLevel = avgRisk >= 70 ? 'High' : (avgRisk >= 40 ? 'Medium' : 'Low');
+                            const riskClass = riskLevel.toLowerCase();
+
+                            html += `
+                            <div class="risk-modal-stats">
+                                <div class="risk-modal-stat">
+                                    <div class="number">${data.weekly.length}</div>
+                                    <div class="label">Weeks Tracked</div>
+                                </div>
+                                <div class="risk-modal-stat">
+                                    <div class="number">${data.monthly ? data.monthly.length : 0}</div>
+                                    <div class="label">Months Tracked</div>
+                                </div>
+                                <div class="risk-modal-stat">
+                                    <div>
+                                        <span class="status-badge ${riskClass}">${riskLevel}</span>
+                                    </div>
+                                    <div class="label">Overall Risk Level</div>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom:0.5rem;">
+                                <strong style="font-size:0.8rem; color:var(--text-dark);">Monthly Risk Summary</strong>
+                            </div>
+                            <div class="modal-monthly-stats">`;
+
+                            if (data.monthly && data.monthly.length > 0) {
+                                data.monthly.forEach(m => {
+                                    const mClass = m.risk_score >= 70 ? 'high' : (m.risk_score >= 40 ?
+                                        'medium' : 'low');
+                                    const mStatus = m.risk_score >= 70 ? 'High' : (m.risk_score >= 40 ?
+                                        'Medium' : 'Low');
+                                    html += `
+                                    <div class="modal-monthly-stat">
+                                        <div class="m-label">${m.label}</div>
+                                        <div class="m-status ${mClass}">${mStatus}</div>
+                                    </div>
+                                `;
+                                });
+                            } else {
+                                html +=
+                                    `<div class="modal-monthly-stat" style="grid-column:1/-1; text-align:center; color:var(--text-gray);">No monthly data</div>`;
                             }
 
-                            // Year: index 2
-                            if (yearValue && yearValue !== '' && show) {
-                                const yearText = cells[2] ? cells[2].textContent.trim() : '';
-                                if (yearText !== yearValue && !yearText.includes('All')) {
-                                    show = false;
-                                }
-                            }
+                            html += `
+                            </div>
+                            <div class="modal-chart-container">
+                                <canvas id="riskModalChart"></canvas>
+                            </div>`;
 
-                            // Risk Level: index 8
-                            if (riskValue && riskValue !== '' && show) {
-                                const riskText = cells[8] ? cells[8].textContent.trim().toLowerCase() : '';
-                                if (!riskText.includes(riskValue.toLowerCase())) {
-                                    show = false;
-                                }
-                            }
+                            body.innerHTML = html;
 
-                            // Search: all cells
-                            if (searchValue && searchValue !== '' && show) {
-                                let found = false;
-                                cells.forEach(cell => {
-                                    if (cell.textContent.toLowerCase().includes(searchValue)) {
-                                        found = true;
+                            if (riskModalChart) {
+                                riskModalChart.destroy();
+                                riskModalChart = null;
+                            }
+                            const ctx = document.getElementById('riskModalChart');
+                            if (ctx && data.weekly && data.weekly.length > 0) {
+                                const colors = data.weekly.map(w => w.risk_score >= 70 ? '#ef4444' : (w
+                                    .risk_score >= 40 ? '#f59e0b' : '#10b981'));
+                                riskModalChart = new Chart(ctx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: data.weekly.map(w => w.label),
+                                        datasets: [{
+                                            label: 'Risk Level',
+                                            data: data.weekly.map(w => w.risk_score),
+                                            borderColor: '#0A2463',
+                                            backgroundColor: 'rgba(10,36,99,0.08)',
+                                            borderWidth: 2.5,
+                                            fill: true,
+                                            tension: 0.3,
+                                            pointBackgroundColor: colors,
+                                            pointBorderColor: 'white',
+                                            pointBorderWidth: 2,
+                                            pointRadius: 5,
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: false
+                                            },
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(context) {
+                                                        const value = context.parsed.y;
+                                                        const level = value >= 70 ? 'High' :
+                                                            (value >= 40 ? 'Medium' :
+                                                                'Low');
+                                                        return 'Risk Level: ' + level;
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true,
+                                                max: 100,
+                                                ticks: {
+                                                    font: {
+                                                        size: 9
+                                                    },
+                                                    stepSize: 20
+                                                },
+                                                grid: {
+                                                    color: 'rgba(0,0,0,0.05)'
+                                                }
+                                            },
+                                            x: {
+                                                grid: {
+                                                    display: false
+                                                },
+                                                ticks: {
+                                                    font: {
+                                                        size: 9
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 });
-                                if (!found) {
-                                    show = false;
-                                }
                             }
-                        } else {
-                            // Fallback: if column count mismatch, show all
-                            show = true;
-                        }
+                        })
+                        .catch(error => {
+                            body.innerHTML = `
+                            <div style="text-align:center; padding:2rem; color:var(--danger);">
+                                <i class="bi bi-exclamation-triangle" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
+                                <p>${error.message || 'Failed to load risk data'}</p>
+                                <button class="btn-close-modal" onclick="closeModal('riskModal')">Close</button>
+                            </div>
+                        `;
+                        });
+                }
 
-                        row.style.display = show ? '' : 'none';
-                        if (show) visibleCount++;
-                    });
+                // ====== Student Risk Chart ======
+                const studentRiskCtx = document.getElementById('studentRiskChart');
+                let studentRiskChart = null;
+                const riskLoadingIndicator = document.getElementById('studentRiskLoading');
 
-                    if (rowCountBadge) {
-                        rowCountBadge.textContent = visibleCount + ' identified';
+                function loadStudentRiskData(studentId) {
+                    if (!studentId) {
+                        document.getElementById('studentRiskChartSection').style.display = 'none';
+                        return;
                     }
+                    const section = document.getElementById('studentRiskChartSection');
+                    section.style.display = 'block';
+                    document.getElementById('studentRiskName').textContent = 'Loading...';
+                    if (riskLoadingIndicator) riskLoadingIndicator.style.display = 'inline-block';
+
+                    const monthlyContainer = document.getElementById('studentRiskMonthlyStats');
+                    monthlyContainer.innerHTML = `
+                        <div class="monthly-risk-stat" style="grid-column:1/-1; text-align:center; color:var(--text-gray);">
+                            <i class="bi bi-hourglass"></i> Loading monthly data...
+                        </div>
+                    `;
+
+                    fetch(`/admin/risk/student-risk/${studentId}`)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network error');
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (riskLoadingIndicator) riskLoadingIndicator.style.display = 'none';
+                            if (!data.success) throw new Error(data.message || 'Failed to load');
+
+                            document.getElementById('studentRiskName').textContent = data.student.name + ' (' + data
+                                .student.student_id + ')';
+
+                            monthlyContainer.innerHTML = '';
+                            if (data.monthly && data.monthly.length > 0) {
+                                data.monthly.forEach(m => {
+                                    const div = document.createElement('div');
+                                    div.className = 'monthly-risk-stat';
+                                    const riskColor = m.risk_score >= 70 ? 'high' : (m.risk_score >= 40 ?
+                                        'medium' : 'low');
+                                    const status = m.risk_score >= 70 ? 'High' : (m.risk_score >= 40 ?
+                                        'Medium' : 'Low');
+                                    div.innerHTML = `
+                                        <div class="m-label">${m.label}</div>
+                                        <div class="m-status ${riskColor}">${status}</div>
+                                    `;
+                                    monthlyContainer.appendChild(div);
+                                });
+                            } else {
+                                monthlyContainer.innerHTML = `
+                                    <div class="monthly-risk-stat" style="grid-column:1/-1; text-align:center; color:var(--text-gray);">
+                                        <i class="bi bi-info-circle"></i> No monthly data
+                                    </div>
+                                `;
+                            }
+
+                            if (studentRiskChart) {
+                                studentRiskChart.destroy();
+                                studentRiskChart = null;
+                            }
+                            if (!studentRiskCtx) return;
+
+                            if (data.weekly && data.weekly.length > 0) {
+                                const colors = data.weekly.map(w => w.risk_score >= 70 ? '#ef4444' : (w
+                                    .risk_score >= 40 ? '#f59e0b' : '#10b981'));
+                                studentRiskChart = new Chart(studentRiskCtx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: data.weekly.map(w => w.label),
+                                        datasets: [{
+                                            label: 'Risk Level',
+                                            data: data.weekly.map(w => w.risk_score),
+                                            borderColor: '#0A2463',
+                                            backgroundColor: 'rgba(10,36,99,0.08)',
+                                            borderWidth: 2.5,
+                                            fill: true,
+                                            tension: 0.3,
+                                            pointBackgroundColor: colors,
+                                            pointBorderColor: 'white',
+                                            pointBorderWidth: 2,
+                                            pointRadius: 4,
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: false
+                                            },
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(context) {
+                                                        const value = context.parsed.y;
+                                                        const level = value >= 70 ?
+                                                            'High' : (value >= 40 ?
+                                                                'Medium' :
+                                                                'Low');
+                                                        return 'Risk Level: ' + level;
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true,
+                                                max: 100,
+                                                ticks: {
+                                                    font: {
+                                                        size: 9
+                                                    },
+                                                    stepSize: 20
+                                                },
+                                                grid: {
+                                                    color: 'rgba(0,0,0,0.05)'
+                                                }
+                                            },
+                                            x: {
+                                                grid: {
+                                                    display: false
+                                                },
+                                                ticks: {
+                                                    font: {
+                                                        size: 9
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            if (riskLoadingIndicator) riskLoadingIndicator.style.display = 'none';
+                            console.error('Error:', error);
+                            document.getElementById('studentRiskName').textContent = 'Error loading data';
+                            monthlyContainer.innerHTML = `
+                                <div class="monthly-risk-stat" style="grid-column:1/-1; text-align:center; color:var(--danger);">
+                                    <i class="bi bi-exclamation-triangle"></i> ${error.message || 'Failed to load'}
+                                </div>
+                            `;
+                        });
                 }
 
-                if (departmentFilter) departmentFilter.addEventListener('change', filterTable);
-                if (yearFilter) yearFilter.addEventListener('change', filterTable);
-                if (riskLevelFilter) riskLevelFilter.addEventListener('change', filterTable);
-                if (searchInput) {
-                    searchInput.addEventListener('input', filterTable);
-                    searchInput.addEventListener('search', filterTable);
+                const initialStudentId = {{ $studentId ?? 'null' }};
+                if (initialStudentId) {
+                    loadStudentRiskData(initialStudentId);
                 }
 
-                // Initial filter
-                filterTable();
-            }
-        });
+                items.forEach(item => {
+                    item.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        if (id) loadStudentRiskData(id);
+                    });
+                });
 
-        // Quick Message Functions (unchanged)
-        function openQuickMessage(studentId, studentName, studentEmail, riskLevel, riskScore) {
-            document.getElementById('qmStudentName').textContent = studentName;
-            document.getElementById('qmStudentEmail').textContent = studentEmail;
+                // ====== Quick Message Functions ======
+                function openQuickMessage(studentId, studentName, studentEmail, riskLevel, riskScore) {
+                    document.getElementById('qmStudentName').textContent = studentName;
+                    document.getElementById('qmStudentEmail').textContent = studentEmail;
 
-            const riskSpan = document.getElementById('qmRiskLevel');
-            const colors = {
-                'High': '#ef4444',
-                'Medium': '#f59e0b',
-                'Low': '#10b981'
-            };
-            riskSpan.textContent = riskLevel;
-            riskSpan.style.color = colors[riskLevel] || '#64748b';
+                    const riskSpan = document.getElementById('qmRiskLevel');
+                    const colors = {
+                        'High': '#ef4444',
+                        'Medium': '#f59e0b',
+                        'Low': '#10b981'
+                    };
+                    riskSpan.textContent = riskLevel;
+                    riskSpan.style.color = colors[riskLevel] || '#64748b';
 
-            const subjects = {
-                'High': '🚨 URGENT: Academic Intervention Required',
-                'Medium': '⚠️ Academic Support Needed',
-                'Low': '📋 Academic Check-in'
-            };
-            document.getElementById('qmSubject').value = subjects[riskLevel] || 'Academic Support';
-
-            const templates = {
-                'High': `Dear ${studentName},\n\nThis is an urgent message regarding your academic progress. I need to meet with you as soon as possible to discuss your current situation and create a support plan.\n\nYour current risk score is ${riskScore} which requires immediate attention.\n\nPlease contact me immediately to schedule a meeting.\n\nBest regards,\nAcademic Support Team`,
-
-                'Medium': `Dear ${studentName},\n\nI'm reaching out because our system has identified that you may need some additional academic support. Your current risk score is ${riskScore}.\n\nI'd like to schedule a meeting to discuss your progress and how we can help you succeed. Please let me know a convenient time to meet.\n\nBest regards,\nAcademic Support Team`,
-
-                'Low': `Dear ${studentName},\n\nI hope you're doing well. I noticed you might benefit from some academic support. Your current risk score is ${riskScore}.\n\nPlease feel free to reach out if you need any assistance with your studies or if you'd like to schedule a meeting.\n\nBest regards,\nAcademic Support Team`
-            };
-            document.getElementById('qmBody').value = templates[riskLevel] || templates['Low'];
-
-            document.getElementById('qmSendBtn').dataset.studentId = studentId;
-
-            const sendBtn = document.getElementById('qmSendBtn');
-            sendBtn.textContent = '📤 Send Message';
-            sendBtn.style.background = '#0A2463';
-            sendBtn.disabled = false;
-
-            document.querySelectorAll('.btn-template').forEach(b => b.classList.remove('active'));
-
-            const modal = new bootstrap.Modal(document.getElementById('quickMessageModal'));
-            modal.show();
-        }
-
-        // Template buttons
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.btn-template').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const type = this.dataset.template;
-                    const studentName = document.getElementById('qmStudentName').textContent;
+                    const subjects = {
+                        'High': 'URGENT: Academic Intervention Required',
+                        'Medium': 'Academic Support Needed',
+                        'Low': 'Academic Check-in'
+                    };
+                    document.getElementById('qmSubject').value = subjects[riskLevel] || 'Academic Support';
 
                     const templates = {
-                        intervention: `Dear ${studentName},\n\nI'm writing to offer academic support and intervention. I've noticed some areas where we can work together to improve your academic standing.\n\nPlease schedule a meeting with me at your earliest convenience so we can develop a plan together.\n\nBest regards,\nAcademic Support Team`,
-
-                        checkin: `Dear ${studentName},\n\nJust checking in to see how things are going with your studies. I hope everything is going well. If you need any support or have questions, please don't hesitate to reach out.\n\nBest regards,\nAcademic Support Team`,
-
-                        warning: `Dear ${studentName},\n\nThis is an important message regarding your academic progress. Your attendance and/or performance needs immediate attention.\n\nPlease meet with me as soon as possible to discuss this matter.\n\nBest regards,\nAcademic Support Team`,
-
-                        meeting: `Dear ${studentName},\n\nI'd like to schedule a meeting to discuss your academic progress and performance.\n\nPlease suggest some times that work for you, and I'll confirm availability.\n\nBest regards,\nAcademic Support Team`,
-
-                        custom: `Dear ${studentName},\n\n`
+                        'High': `Dear ${studentName},\n\nThis is an urgent message regarding your academic progress. I need to meet with you as soon as possible to discuss your current situation and create a support plan.\n\nYour current risk level is ${riskLevel} which requires immediate attention.\n\nPlease contact me immediately to schedule a meeting.\n\nBest regards,\nAcademic Support Team`,
+                        'Medium': `Dear ${studentName},\n\nI'm reaching out because our system has identified that you may need some additional academic support. Your current risk level is ${riskLevel}.\n\nI'd like to schedule a meeting to discuss your progress and how we can help you succeed. Please let me know a convenient time to meet.\n\nBest regards,\nAcademic Support Team`,
+                        'Low': `Dear ${studentName},\n\nI hope you're doing well. I noticed you might benefit from some academic support. Your current risk level is ${riskLevel}.\n\nPlease feel free to reach out if you need any assistance with your studies or if you'd like to schedule a meeting.\n\nBest regards,\nAcademic Support Team`
                     };
+                    document.getElementById('qmBody').value = templates[riskLevel] || templates['Low'];
 
-                    document.getElementById('qmBody').value = templates[type] || '';
-
-                    document.querySelectorAll('.btn-template').forEach(b => b.classList.remove(
-                        'active'));
-                    this.classList.add('active');
-                });
-            });
-        });
-
-        // Send message
-        document.addEventListener('DOMContentLoaded', function() {
-            const sendBtn = document.getElementById('qmSendBtn');
-
-            sendBtn.addEventListener('click', function() {
-                const studentId = this.dataset.studentId;
-                const subject = document.getElementById('qmSubject').value.trim();
-                const body = document.getElementById('qmBody').value.trim();
-
-                if (!body) {
-                    showToast('⚠️ Please enter a message.', 'warning');
-                    return;
-                }
-
-                this.textContent = '⏳ Sending...';
-                this.disabled = true;
-                this.style.background = '#6b7a8f';
-
-                fetch('{{ route('admin.messages.send') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        },
-                        body: JSON.stringify({
-                            recipient_id: studentId,
-                            subject: subject || 'Academic Support',
-                            message: body
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            this.textContent = '✅ Sent!';
-                            this.style.background = '#10b981';
-
-                            showToast('✅ Message sent successfully to ' + document.getElementById(
-                                'qmStudentName').textContent, 'success');
-
-                            setTimeout(() => {
-                                const modal = bootstrap.Modal.getInstance(document
-                                    .getElementById('quickMessageModal'));
-                                modal.hide();
-                                this.textContent = '📤 Send Message';
-                                this.style.background = '#0A2463';
-                                this.disabled = false;
-                            }, 1500);
-                        } else {
-                            this.textContent = '❌ Failed';
-                            this.style.background = '#ef4444';
-                            showToast('❌ Failed to send message: ' + (data.message || 'Unknown error'),
-                                'error');
-                            setTimeout(() => {
-                                this.textContent = '📤 Send Message';
-                                this.style.background = '#0A2463';
-                                this.disabled = false;
-                            }, 2000);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        this.textContent = '❌ Error';
-                        this.style.background = '#ef4444';
-                        showToast('❌ Error sending message. Please try again.', 'error');
-                        setTimeout(() => {
-                            this.textContent = '📤 Send Message';
-                            this.style.background = '#0A2463';
-                            this.disabled = false;
-                        }, 2000);
-                    });
-            });
-        });
-
-        // Toast Notification System
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const icons = {
-                success: '✅',
-                error: '❌',
-                warning: '⚠️',
-                info: 'ℹ️'
-            };
-
-            const toast = document.createElement('div');
-            toast.className = `toast-notification ${type}`;
-            toast.innerHTML = `
-                <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
-                <span>${message}</span>
-                <span class="toast-close" onclick="this.parentElement.remove()">✕</span>
-            `;
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                if (toast.parentElement) {
-                    toast.style.animation = 'slideOut 0.3s ease forwards';
-                    setTimeout(() => toast.remove(), 300);
-                }
-            }, 5000);
-        }
-
-        // Reset modal on close
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('quickMessageModal');
-            if (modal) {
-                modal.addEventListener('hidden.bs.modal', function() {
-                    document.querySelectorAll('.btn-template').forEach(b => b.classList.remove('active'));
+                    document.getElementById('qmSendBtn').dataset.studentId = studentId;
                     const sendBtn = document.getElementById('qmSendBtn');
-                    sendBtn.textContent = '📤 Send Message';
+                    sendBtn.textContent = 'Send Message';
                     sendBtn.style.background = '#0A2463';
                     sendBtn.disabled = false;
+
+                    document.querySelectorAll('.btn-template').forEach(b => b.classList.remove('active'));
+
+                    const modal = new bootstrap.Modal(document.getElementById('quickMessageModal'));
+                    modal.show();
+                }
+                window.openQuickMessage = openQuickMessage;
+
+                document.querySelectorAll('.btn-template').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const type = this.dataset.template;
+                        const studentName = document.getElementById('qmStudentName').textContent;
+
+                        const templates = {
+                            intervention: `Dear ${studentName},\n\nI'm writing to offer academic support and intervention. I've noticed some areas where we can work together to improve your academic standing.\n\nPlease schedule a meeting with me at your earliest convenience so we can develop a plan together.\n\nBest regards,\nAcademic Support Team`,
+                            checkin: `Dear ${studentName},\n\nJust checking in to see how things are going with your studies. I hope everything is going well. If you need any support or have questions, please don't hesitate to reach out.\n\nBest regards,\nAcademic Support Team`,
+                            warning: `Dear ${studentName},\n\nThis is an important message regarding your academic progress. Your attendance and/or performance needs immediate attention.\n\nPlease meet with me as soon as possible to discuss this matter.\n\nBest regards,\nAcademic Support Team`,
+                            meeting: `Dear ${studentName},\n\nI'd like to schedule a meeting to discuss your academic progress and performance.\n\nPlease suggest some times that work for you, and I'll confirm availability.\n\nBest regards,\nAcademic Support Team`,
+                            custom: `Dear ${studentName},\n\n`
+                        };
+
+                        document.getElementById('qmBody').value = templates[type] || '';
+                        document.querySelectorAll('.btn-template').forEach(b => b.classList.remove(
+                            'active'));
+                        this.classList.add('active');
+                    });
                 });
-            }
-        });
-    </script>
+
+                const sendBtn = document.getElementById('qmSendBtn');
+                if (sendBtn) {
+                    sendBtn.addEventListener('click', function() {
+                        const studentId = this.dataset.studentId;
+                        const subject = document.getElementById('qmSubject').value.trim();
+                        const body = document.getElementById('qmBody').value.trim();
+
+                        if (!body) {
+                            showToast('Please enter a message.', 'warning');
+                            return;
+                        }
+
+                        this.textContent = 'Sending...';
+                        this.disabled = true;
+                        this.style.background = '#6b7a8f';
+
+                        fetch('{{ route('admin.messages.send') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                        .content
+                                },
+                                body: JSON.stringify({
+                                    recipient_id: studentId,
+                                    subject: subject || 'Academic Support',
+                                    message: body
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    this.textContent = 'Sent!';
+                                    this.style.background = '#10b981';
+                                    showToast('Message sent to ' + document.getElementById(
+                                        'qmStudentName').textContent, 'success');
+                                    setTimeout(() => {
+                                        const modal = bootstrap.Modal.getInstance(document
+                                            .getElementById('quickMessageModal'));
+                                        modal.hide();
+                                        this.textContent = 'Send Message';
+                                        this.style.background = '#0A2463';
+                                        this.disabled = false;
+                                    }, 1500);
+                                } else {
+                                    this.textContent = 'Failed';
+                                    this.style.background = '#ef4444';
+                                    showToast('Failed: ' + (data.message || 'Unknown error'), 'error');
+                                    setTimeout(() => {
+                                        this.textContent = 'Send Message';
+                                        this.style.background = '#0A2463';
+                                        this.disabled = false;
+                                    }, 2000);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                this.textContent = 'Error';
+                                this.style.background = '#ef4444';
+                                showToast('Network error. Please try again.', 'error');
+                                setTimeout(() => {
+                                    this.textContent = 'Send Message';
+                                    this.style.background = '#0A2463';
+                                    this.disabled = false;
+                                }, 2000);
+                            });
+                    });
+                }
+
+                function showToast(message, type = 'success') {
+                    const container = document.getElementById('toast-container');
+                    const icons = {
+                        success: '✅',
+                        error: '❌',
+                        warning: '⚠️',
+                        info: 'ℹ️'
+                    };
+
+                    const toast = document.createElement('div');
+                    toast.className = `toast-notification ${type}`;
+                    toast.innerHTML = `
+                        <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+                        <span>${message}</span>
+                        <span class="toast-close" onclick="this.parentElement.remove()">✕</span>
+                    `;
+
+                    container.appendChild(toast);
+
+                    setTimeout(() => {
+                        if (toast.parentElement) {
+                            toast.style.animation = 'slideOut 0.3s ease forwards';
+                            setTimeout(() => toast.remove(), 300);
+                        }
+                    }, 5000);
+                }
+
+                // ====== Charts: Risk Distribution ======
+                const riskCounts = @json($riskCounts);
+                const ctx1 = document.getElementById('riskDistributionChart');
+                if (ctx1) {
+                    new Chart(ctx1, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+                            datasets: [{
+                                data: [riskCounts.Low, riskCounts.Medium, riskCounts.High],
+                                backgroundColor: ['rgba(16,185,129,0.85)', 'rgba(245,158,11,0.85)',
+                                    'rgba(239,68,68,0.85)'
+                                ],
+                                borderColor: 'white',
+                                borderWidth: 3,
+                                hoverOffset: 12,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        padding: 20,
+                                        font: {
+                                            size: 12,
+                                            weight: '600'
+                                        },
+                                        usePointStyle: true,
+                                        pointStyle: 'circle'
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(15,23,42,0.9)',
+                                    titleFont: {
+                                        size: 13,
+                                        weight: '600'
+                                    },
+                                    bodyFont: {
+                                        size: 12
+                                    },
+                                    padding: 12,
+                                    cornerRadius: 8,
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.label || '';
+                                            let value = context.parsed || 0;
+                                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            let percentage = total > 0 ? Math.round((value / total) * 100) :
+                                                0;
+                                            return label + ': ' + value + ' (' + percentage + '%)';
+                                        }
+                                    }
+                                }
+                            },
+                            cutout: '65%',
+                            animation: {
+                                animateRotate: true,
+                                duration: 1500
+                            }
+                        }
+                    });
+                }
+
+                // ====== Risk Trend Chart ======
+                const riskTrend = @json($riskTrend);
+                const ctx2 = document.getElementById('riskTrendChart');
+                if (ctx2 && riskTrend && riskTrend.length > 0) {
+                    new Chart(ctx2, {
+                        type: 'line',
+                        data: {
+                            labels: riskTrend.map(item => item.month),
+                            datasets: [{
+                                    label: 'High Risk',
+                                    data: riskTrend.map(item => item.high_risk),
+                                    borderColor: '#ef4444',
+                                    backgroundColor: 'rgba(239,68,68,0.08)',
+                                    fill: true,
+                                    tension: 0.4,
+                                    pointRadius: 4,
+                                    pointBackgroundColor: '#ef4444',
+                                    borderWidth: 3,
+                                },
+                                {
+                                    label: 'Medium Risk',
+                                    data: riskTrend.map(item => item.medium_risk),
+                                    borderColor: '#f59e0b',
+                                    backgroundColor: 'rgba(245,158,11,0.08)',
+                                    fill: true,
+                                    tension: 0.4,
+                                    pointRadius: 4,
+                                    pointBackgroundColor: '#f59e0b',
+                                    borderWidth: 3,
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'top',
+                                    labels: {
+                                        padding: 15,
+                                        font: {
+                                            size: 11,
+                                            weight: '500'
+                                        },
+                                        usePointStyle: true,
+                                        pointStyle: 'line'
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(15,23,42,0.9)',
+                                    titleFont: {
+                                        size: 13,
+                                        weight: '600'
+                                    },
+                                    bodyFont: {
+                                        size: 12
+                                    },
+                                    padding: 12,
+                                    cornerRadius: 8,
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: 'rgba(0,0,0,0.04)'
+                                    },
+                                    ticks: {
+                                        font: {
+                                            size: 10
+                                        },
+                                        stepSize: 1
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    },
+                                    ticks: {
+                                        font: {
+                                            size: 10
+                                        }
+                                    }
+                                }
+                            },
+                            animation: {
+                                duration: 1500
+                            }
+                        }
+                    });
+                }
+            });
+        </script>
+    @endpush
 @endsection

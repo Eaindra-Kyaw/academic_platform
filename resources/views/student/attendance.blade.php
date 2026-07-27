@@ -109,19 +109,14 @@
         }
 
         .course-table th:first-child {
-            width: 32%;
+            width: 38%;
         }
 
         .course-table th:nth-child(2) {
-            width: 30%;
+            width: 38%;
         }
 
         .course-table th:nth-child(3) {
-            width: 14%;
-            text-align: center;
-        }
-
-        .course-table th:nth-child(4) {
             width: 12%;
             text-align: center;
         }
@@ -191,19 +186,6 @@
             height: 100%;
             border-radius: 6px;
             transition: width 0.6s;
-        }
-
-        /* Roll Call column */
-        .course-table .rollcall {
-            text-align: center;
-            font-weight: 700;
-            font-size: 0.95rem;
-        }
-
-        .course-table .rollcall span {
-            font-weight: 400;
-            color: var(--text-muted);
-            font-size: 0.75rem;
         }
 
         /* Eligibility & Risk columns */
@@ -282,7 +264,7 @@
             }
 
             .course-table {
-                min-width: 600px;
+                min-width: 500px;
             }
 
             .course-table th,
@@ -345,7 +327,6 @@
                 <tr>
                     <th>Course</th>
                     <th>Attendance</th>
-                    <th style="text-align:center;">Roll Call</th>
                     <th style="text-align:center;">Eligibility</th>
                     <th style="text-align:center;">Risk</th>
                 </tr>
@@ -359,7 +340,6 @@
                             $elig = $data['eligibility'] ?? 'not_eligible';
                             $risk = $data['risk_level'] ?? 'Low';
                             $course = $data['course'] ?? null;
-                            $rollcall = $data['roll_call_total'] ?? 0;
                         @endphp
                         <tr>
                             <td>
@@ -375,7 +355,6 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="rollcall">{{ $rollcall }} <span>/ 10</span></td>
                             <td>
                                 <span class="badge badge-{{ $elig }}">
                                     {{ strtoupper(str_replace('_', ' ', $elig)) }}
@@ -390,7 +369,7 @@
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="5">
+                        <td colspan="4">
                             <div class="empty-state">
                                 <i class="bi bi-book"></i>
                                 <p>You are not enrolled in any courses yet.</p>

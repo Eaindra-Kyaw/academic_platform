@@ -2,7 +2,7 @@
 
 @section('title', 'Attendance History')
 @section('role', 'Student')
-@section('page-title', '📋 Attendance History')
+@section('page-title', 'Attendance History')
 @section('welcome-text', 'View your past attendance records')
 
 @section('sidebar')
@@ -139,17 +139,87 @@
             color: #4b5563;
         }
 
+        /* ── Pagination wrap ── */
         .pagination-wrap {
             padding: 0.8rem 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 1rem;
             background: var(--white);
             border-radius: 0 0 var(--radius) var(--radius);
             border: 1px solid #e5e7eb;
             border-top: none;
+        }
+
+        .pagination-wrap .info-text {
+            color: var(--text-gray);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .pagination-wrap .info-text strong {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        /* ── Pagination links (overriding Bootstrap/Tailwind) ── */
+        .pagination-wrap nav {
+            display: flex;
+        }
+
+        .pagination-wrap ul.pagination {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .pagination-wrap ul.pagination li {
+            display: inline-block;
+        }
+
+        .pagination-wrap ul.pagination li a,
+        .pagination-wrap ul.pagination li span {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            min-width: 34px;
+            text-align: center;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: all 0.15s ease;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        .pagination-wrap ul.pagination li a:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(10, 36, 99, 0.2);
+        }
+
+        .pagination-wrap ul.pagination li.active span {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(10, 36, 99, 0.2);
+        }
+
+        .pagination-wrap ul.pagination li.disabled span {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #f9fafb;
+            border-color: #e5e7eb;
         }
 
         .empty-state {
@@ -171,6 +241,24 @@
             .records-table th,
             .records-table td {
                 padding: 0.4rem 0.6rem;
+            }
+
+            .pagination-wrap {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 0.8rem;
+            }
+
+            .pagination-wrap ul.pagination {
+                justify-content: center;
+            }
+
+            .pagination-wrap ul.pagination li a,
+            .pagination-wrap ul.pagination li span {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.75rem;
+                min-width: 30px;
             }
         }
     </style>
@@ -234,7 +322,7 @@
                             </td>
                             <td>
                                 <span class="method-badge method-{{ $record->is_manual ? 'manual' : 'qr' }}">
-                                    {{ $record->is_manual ? '✏️ Manual' : '📱 QR' }}
+                                    {{ $record->is_manual ? 'Manual code' : ' QR code' }}
                                 </span>
                             </td>
                         </tr>
@@ -242,11 +330,17 @@
                 </tbody>
             </table>
         </div>
-        <div class="pagination-wrap">
-            <span>Showing {{ $records->firstItem() ?? 0 }}–{{ $records->lastItem() ?? 0 }} of
-                {{ $records->total() }}</span>
-            {{ $records->links() }}
-        </div>
+
+        @if ($records->hasPages() || $records->total() > $records->perPage())
+            <div class="pagination-wrap">
+                <span class="info-text">
+                    Showing <strong>{{ $records->firstItem() ?? 0 }}</strong> to
+                    <strong>{{ $records->lastItem() ?? 0 }}</strong> of
+                    <strong>{{ number_format($records->total()) }}</strong> entries
+                </span>
+                {{ $records->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
     @else
         <div class="empty-state">
             <i class="bi bi-inbox" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;"></i>

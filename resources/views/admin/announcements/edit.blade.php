@@ -1,9 +1,8 @@
-{{-- resources/views/admin/announcements/edit.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Edit Announcement')
 @section('role', 'Admin')
-@section('page-title', '📢 Edit Announcement')
+@section('page-title', 'Edit Announcement')
 @section('welcome-text', 'Update announcement details')
 
 @section('sidebar')

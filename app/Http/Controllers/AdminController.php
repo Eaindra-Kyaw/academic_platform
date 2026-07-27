@@ -58,7 +58,6 @@ class AdminController extends Controller
         // AT-RISK STUDENTS (from evaluations – full risk)
         // ============================================
 
-        // Get latest evaluation date for each student
         $latestEval = AttendanceEvaluation::select('student_id', DB::raw('MAX(evaluation_date) as latest_date'))
             ->groupBy('student_id')
             ->pluck('latest_date', 'student_id');
@@ -211,7 +210,7 @@ class AdminController extends Controller
         $pendingEnrollments = Enrollment::where('status', 'pending')->count();
 
         // ============================================
-        // ATTENDANCE TREND DATA (LAST 6 MONTHS)
+        // ATTENDANCE TREND DATA (LAST 6 MONTHS) - CORRECTED
         // ============================================
 
         $trendData = [];
@@ -220,16 +219,34 @@ class AdminController extends Controller
             $monthStart = $month->copy()->startOfMonth();
             $monthEnd = $month->copy()->endOfMonth();
 
-            $monthRecords = AttendanceRecord::whereBetween('created_at', [$monthStart, $monthEnd])->count();
-            $monthSessions = AttendanceSession::whereBetween('created_at', [$monthStart, $monthEnd])->count();
-            $monthStudents = User::where('role_id', 3)->count();
+            // Get all sessions that occurred in this month
+            $sessionsInMonth = AttendanceSession::whereBetween('created_at', [$monthStart, $monthEnd])
+                ->where('status', 'ended')
+                ->get();
 
-            $monthExpected = $monthSessions * $monthStudents;
-            $monthAttendance = $monthExpected > 0 ? round(($monthRecords / $monthExpected) * 100) : 0;
+            $totalExpected = 0;
+            $totalAttended = 0;
+
+            foreach ($sessionsInMonth as $session) {
+                // Count approved enrollments for this course (students who should attend)
+                $enrolledCount = Enrollment::where('course_id', $session->course_id)
+                    ->where('status', 'approved')
+                    ->count();
+
+                // Count attendance records for this session (present + late)
+                $attendedCount = AttendanceRecord::where('attendance_session_id', $session->id)
+                    ->whereIn('status', ['present', 'late'])
+                    ->count();
+
+                $totalExpected += $enrolledCount;
+                $totalAttended += $attendedCount;
+            }
+
+            $attendancePercentage = $totalExpected > 0 ? round(($totalAttended / $totalExpected) * 100) : 0;
 
             $trendData[] = [
                 'month' => $month->format('M'),
-                'attendance' => $monthAttendance,
+                'attendance' => $attendancePercentage,
             ];
         }
 

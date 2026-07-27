@@ -364,6 +364,7 @@
             background: #b91c1c;
         }
 
+        /* ── PAGINATION ── */
         .pagination-wrapper {
             padding: 0.75rem 1.25rem;
             border-top: 1px solid rgba(10, 36, 99, 0.06);
@@ -371,12 +372,66 @@
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            background: #fafbfc;
+            border-radius: 0 0 var(--radius) var(--radius);
         }
 
         .pagination-wrapper .info {
             font-size: 0.75rem;
             color: var(--text-gray);
+        }
+
+        .pagination-wrapper .pagination {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.2rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .pagination-wrapper .pagination li {
+            display: inline-block;
+        }
+
+        .pagination-wrapper .pagination li a,
+        .pagination-wrapper .pagination li span {
+            display: inline-block;
+            padding: 0.25rem 0.6rem;
+            min-width: 30px;
+            text-align: center;
+            font-size: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid rgba(10, 36, 99, 0.1);
+            background: var(--white);
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: all 0.15s ease;
+            line-height: 1.4;
+            font-weight: 500;
+        }
+
+        .pagination-wrapper .pagination li a:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(10, 36, 99, 0.15);
+        }
+
+        .pagination-wrapper .pagination li.active span {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(10, 36, 99, 0.15);
+        }
+
+        .pagination-wrapper .pagination li.disabled span {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #f9fafb;
+            border-color: #e5e7eb;
         }
 
         @media (max-width: 768px) {
@@ -402,6 +457,33 @@
 
             .action-cell {
                 gap: 0.15rem;
+            }
+
+            .pagination-wrapper {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .pagination-wrapper .pagination {
+                justify-content: center;
+            }
+
+            .pagination-wrapper .pagination li a,
+            .pagination-wrapper .pagination li span {
+                padding: 0.2rem 0.5rem;
+                font-size: 0.7rem;
+                min-width: 28px;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .pagination-wrapper .pagination li a,
+            .pagination-wrapper .pagination li span {
+                padding: 0.15rem 0.4rem;
+                font-size: 0.65rem;
+                min-width: 24px;
             }
         }
     </style>
@@ -456,7 +538,6 @@
                     <tbody>
                         @foreach ($courses as $course)
                             @php
-                                // Ensure we have a valid course object
                                 if (!is_object($course)) {
                                     continue;
                                 }
@@ -487,16 +568,16 @@
                                 </td>
                                 <td>
                                     <div class="action-cell">
-                                        <a href="{{ route('admin.departments.courses.show', [$department, $course]) }}"
+                                        <a href="{{ route('admin.departments.courses.show', ['department' => $department->id, 'course' => $course->id]) }}"
                                             class="btn-sm btn-view" title="View Course">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="{{ route('admin.departments.courses.edit', [$department, $course]) }}"
+                                        <a href="{{ route('admin.departments.courses.edit', ['department' => $department->id, 'course' => $course->id]) }}"
                                             class="btn-sm btn-edit" title="Edit Course">
                                             <i class="bi bi-pencil"></i>
                                         </a>
                                         <button type="button" class="btn-sm btn-delete" title="Delete Course"
-                                            onclick="showDeleteConfirm('{{ addslashes($course->course_name) }}', '{{ route('admin.departments.courses.destroy', [$department, $course]) }}')">
+                                            onclick="showDeleteConfirm('{{ addslashes($course->course_name) }}', '{{ route('admin.departments.courses.destroy', ['department' => $department->id, 'course' => $course->id]) }}')">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -526,7 +607,7 @@
                     of {{ $courses->total() }} courses
                 </div>
                 <div>
-                    {{ $courses->links() }}
+                    {{ $courses->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         @endif

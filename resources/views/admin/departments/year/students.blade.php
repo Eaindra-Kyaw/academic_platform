@@ -26,7 +26,6 @@
             --success: #10b981;
             --warning: #f59e0b;
             --info: #3b82f6;
-            --purple: #8b5cf6;
             --radius: 12px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -362,52 +361,6 @@
             font-size: 0.65rem;
             font-weight: 600;
             font-family: monospace;
-        }
-
-        .badge-risk-premium {
-            padding: 0.1rem 0.7rem;
-            border-radius: 1rem;
-            font-size: 0.6rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .badge-risk-premium.low {
-            background: var(--success-light);
-            color: #166534;
-        }
-
-        .badge-risk-premium.medium {
-            background: var(--warning-light);
-            color: #92400e;
-        }
-
-        .badge-risk-premium.high {
-            background: var(--danger-light);
-            color: #991b1b;
-        }
-
-        .attendance-pill-premium {
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 0.1rem 0.7rem;
-            border-radius: 1rem;
-            display: inline-block;
-        }
-
-        .attendance-pill-premium.high {
-            background: var(--success-light);
-            color: #166534;
-        }
-
-        .attendance-pill-premium.medium {
-            background: var(--warning-light);
-            color: #92400e;
-        }
-
-        .attendance-pill-premium.low {
-            background: var(--danger-light);
-            color: #991b1b;
         }
 
         .btn-action-premium {
@@ -840,7 +793,7 @@
         </div>
     </div>
 
-    <div class="stats-premium-grid">
+    {{-- <div class="stats-premium-grid">
         <div class="stat-premium-card blue">
             <div class="icon blue"><i class="bi bi-people"></i></div>
             <div class="info">
@@ -854,26 +807,9 @@
                 <div class="number">{{ $students->first()->enrollments->where('status', 'approved')->count() ?? 0 }}</div>
                 <div class="label">Total Courses</div>
             </div>
-        </div>
-        <div class="stat-premium-card yellow">
-            <div class="icon yellow"><i class="bi bi-graph-up"></i></div>
-            <div class="info">
-                <div class="number" style="color:var(--warning);">
-                    {{ number_format($students->avg('attendance_percentage') ?? 0, 1) }}%
-                </div>
-                <div class="label">Avg Attendance</div>
-            </div>
-        </div>
-        <div class="stat-premium-card red">
-            <div class="icon red"><i class="bi bi-exclamation-triangle"></i></div>
-            <div class="info">
-                <div class="number red">
-                    {{ $students->filter(function ($s) {return ($s->attendance_percentage ?? 0) < 75;})->count() }}
-                </div>
-                <div class="label">At Risk</div>
-            </div>
-        </div>
-    </div>
+        </div> --}}
+    <!-- REMOVED: Attendance and At Risk stats -->
+    {{-- </div> --}}
 
     <div class="table-premium-wrapper">
         <div class="table-premium-header">
@@ -897,18 +833,13 @@
                         <th style="min-width:140px;">Name</th>
                         <th style="min-width:170px;">Email</th>
                         <th style="text-align:center; min-width:60px;">Courses</th>
-                        <th style="text-align:center; min-width:90px;">Attendance</th>
-                        <th style="text-align:center; min-width:75px;">Risk</th>
+                        <!-- REMOVED: Attendance and Risk columns -->
                         <th style="text-align:center; min-width:110px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($students as $student)
                         @php
-                            $attendance = $student->attendance_percentage ?? 0;
-                            $risk = $attendance >= 75 ? 'Low' : ($attendance >= 60 ? 'Medium' : 'High');
-                            $riskClass = strtolower($risk);
-                            $attendanceClass = $attendance >= 75 ? 'high' : ($attendance >= 60 ? 'medium' : 'low');
                             $coursesCount = $student->enrollments->where('status', 'approved')->count();
                             $nameParts = explode(' ', $student->name);
                             $initials = '';
@@ -937,14 +868,6 @@
                                 {{ $coursesCount }}
                             </td>
                             <td style="text-align:center;">
-                                <span class="attendance-pill-premium {{ $attendanceClass }}">
-                                    {{ number_format($attendance, 1) }}%
-                                </span>
-                            </td>
-                            <td style="text-align:center;">
-                                <span class="badge-risk-premium {{ $riskClass }}">{{ $risk }}</span>
-                            </td>
-                            <td style="text-align:center;">
                                 <div style="display:flex; gap:0.3rem; justify-content:center;">
                                     <a href="{{ route('admin.students.show', $student) }}"
                                         class="btn-action-premium btn-view-premium" title="View Profile">
@@ -960,7 +883,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="text-align:center; padding:2.5rem; color:var(--text-gray);">
+                            <td colspan="5" style="text-align:center; padding:2.5rem; color:var(--text-gray);">
                                 <div style="font-size:2rem; margin-bottom:0.5rem;">📚</div>
                                 <p style="font-size:0.9rem; margin:0;">No students found in {{ $yearLabel }}</p>
                                 <p style="font-size:0.75rem; margin:0.2rem 0 0;">Students will appear here once enrolled</p>

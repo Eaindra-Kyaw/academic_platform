@@ -53,7 +53,6 @@ Route::get('/student/login', function () {
     return view('auth.student-login');
 })->name('student.login');
 
-// Registration Route - Keep this if you want public registration
 Route::get('/register', function () {
     if (auth()->check()) {
         return redirect('/dashboard');
@@ -259,6 +258,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/chart-data', [AttendanceAnalyticsController::class, 'chartData'])->name('chart-data');
         Route::post('/evaluate/date-range', [AttendanceEvaluationController::class, 'evaluateByDateRange'])
             ->name('attendance.evaluate.date-range');
+        // ✅ ADDED: missing route for student attendance data
+        Route::get('/student-data/{student}', [AttendanceAnalyticsController::class, 'studentAttendanceData'])
+            ->name('attendance.student-data');
     });
 
     // ============================================================
@@ -267,6 +269,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('risk')->name('risk.')->group(function () {
         Route::get('/', [RiskAnalysisController::class, 'index'])->name('index');
         Route::get('/export', [RiskAnalysisController::class, 'export'])->name('export');
+        // ✅ ADDED: missing route for student risk history
+        Route::get('/student-risk/{student}', [RiskAnalysisController::class, 'studentRiskHistory'])
+            ->name('risk.student-risk');
     });
 
     // ============================================================
@@ -339,7 +344,6 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     // ============================================================
     // STUDENT MANAGEMENT
     // ============================================================
-    // ⭐ RENAMED: students → monitoring (but keeping route name for compatibility)
     Route::get('/students', [LecturerController::class, 'monitoring'])->name('students');
     Route::get('/schedule', [LecturerController::class, 'schedule'])->name('schedule');
     Route::get('/reports', [LecturerController::class, 'reports'])->name('reports');

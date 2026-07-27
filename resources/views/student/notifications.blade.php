@@ -1,9 +1,8 @@
-{{-- resources/views/student/notifications.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Notifications')
 @section('role', 'Student')
-@section('page-title', '🔔 Notifications')
+@section('page-title', ' Notifications')
 @section('welcome-text', 'Your system notifications')
 
 @section('sidebar')

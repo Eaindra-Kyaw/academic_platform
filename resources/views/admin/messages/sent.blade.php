@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Sent Messages')
-@section('page-title', '📤 Sent Messages')
+@section('page-title', 'Sent Messages')
 @section('welcome-text', 'Messages you have sent')
 
 @section('sidebar')

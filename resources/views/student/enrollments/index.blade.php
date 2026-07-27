@@ -30,6 +30,97 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* ── Stats Row ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1rem 1.2rem;
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .stat-card .label {
+            font-size: 0.7rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-weight: 600;
+        }
+
+        /* ── Table ── */
+        .table-wrap {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .enrollments-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .enrollments-table thead {
+            background: var(--bg-main);
+        }
+
+        .enrollments-table th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-gray);
+            border-bottom: 2px solid rgba(10, 36, 99, 0.06);
+        }
+
+        .enrollments-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
+            vertical-align: middle;
+        }
+
+        .enrollments-table tbody tr {
+            transition: background 0.15s;
+        }
+
+        .enrollments-table tbody tr:hover {
+            background: #f8f9fc;
+        }
+
+        .enrollments-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .enrollments-table .course-code {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -38,6 +129,7 @@
             border-radius: 20px;
             font-size: 0.7rem;
             font-weight: 600;
+            white-space: nowrap;
         }
 
         .status-pending {
@@ -55,98 +147,94 @@
             color: #991b1b;
         }
 
-        .enrollments-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: var(--white);
-            border-radius: 1rem;
-            overflow: hidden;
-        }
-
-        .enrollments-table th {
-            background: var(--bg-main);
-            padding: 1rem;
-            text-align: left;
-            font-size: 0.7rem;
-            font-weight: 700;
+        .date-info {
+            font-size: 0.75rem;
             color: var(--text-gray);
-            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
         }
 
-        .enrollments-table td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(10, 36, 99, 0.04);
-        }
-
-        .enrollments-table tr:hover td {
-            background: #f8f9fc;
-        }
-
-        .rejection-reason {
-            font-size: 0.7rem;
-            color: var(--danger);
-            margin-top: 0.25rem;
-        }
-
-        .approval-date {
-            font-size: 0.7rem;
+        .date-info.approved {
             color: var(--success);
-            margin-top: 0.25rem;
         }
 
+        .date-info.rejected {
+            color: var(--danger);
+        }
+
+        .details-text {
+            font-size: 0.75rem;
+            color: var(--text-gray);
+        }
+
+        .details-text .reason {
+            color: var(--danger);
+        }
+
+        /* ── Empty State ── */
         .empty-state {
             text-align: center;
-            padding: 3rem;
+            padding: 3rem 1.5rem;
             background: var(--white);
-            border-radius: 1rem;
+            border-radius: var(--radius);
             border: 1px solid rgba(10, 36, 99, 0.06);
         }
 
         .empty-state i {
             font-size: 3rem;
             color: #d1d5db;
+            display: block;
+            margin-bottom: 0.5rem;
         }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+        .empty-state p {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
         }
 
-        .stat-card {
-            background: var(--white);
-            border-radius: 1rem;
-            padding: 1rem;
-            border: 1px solid rgba(10, 36, 99, 0.06);
-            text-align: center;
-            box-shadow: var(--shadow);
+        .empty-state .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            display: inline-block;
             transition: var(--transition);
+            font-weight: 500;
         }
 
-        .stat-card:hover {
-            box-shadow: var(--shadow-hover);
+        .empty-state .btn-primary:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
         }
 
-        .stat-number {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        .stat-label {
-            font-size: 0.7rem;
-            color: var(--text-gray);
+        /* ── Responsive ── */
+        @media (max-width: 992px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
 
         @media (max-width: 768px) {
-            .enrollments-table {
-                min-width: 600px;
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
             }
 
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .table-wrap {
+                overflow-x: auto;
+            }
+
+            .enrollments-table {
+                min-width: 700px;
+                font-size: 0.8rem;
+            }
+
+            .enrollments-table th,
+            .enrollments-table td {
+                padding: 0.5rem 0.8rem;
             }
         }
 
@@ -157,118 +245,115 @@
         }
     </style>
 
-    <div>
-        <h3 style="color: var(--primary); margin-bottom: 1rem;">📋 My Enrollment History</h3>
-
-        @if (session('success'))
-            <div
-                style="background: #d1fae5; color: #166534; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-                <i class="bi bi-check-circle"></i> {{ session('success') }}
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div
-                style="background: #fee2e2; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">
-                <i class="bi bi-exclamation-triangle"></i> {{ session('error') }}
-            </div>
-        @endif
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number">{{ isset($enrollments) ? $enrollments->where('status', 'pending')->count() : 0 }}
-                </div>
-                <div class="stat-label">Pending</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ isset($enrollments) ? $enrollments->where('status', 'approved')->count() : 0 }}
-                </div>
-                <div class="stat-label">Approved</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ isset($enrollments) ? $enrollments->where('status', 'rejected')->count() : 0 }}
-                </div>
-                <div class="stat-label">Rejected</div>
-            </div>
+    {{-- Alerts --}}
+    @if (session('success'))
+        <div
+            style="background: #d1fae5; color: #166534; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
         </div>
+    @endif
 
-        @if (isset($enrollments) && $enrollments->count() > 0)
-            <div style="overflow-x: auto;">
-                <table class="enrollments-table">
-                    <thead>
-                        <tr>
-                            <th>Course Code</th>
-                            <th>Course Name</th>
-                            <th>Request Date</th>
-                            <th>Status</th>
-                            <th>Approved/Rejected Date</th>
-                            <th>Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($enrollments as $enrollment)
-                            <tr>
-                                <td><strong style="color: var(--primary);">{{ $enrollment->course->course_code }}</strong>
-                                </td>
-                                <td>{{ $enrollment->course->course_name }}</td>
-                                <td>{{ $enrollment->created_at->format('d M Y') }}</td>
-                                <td>
-                                    @if ($enrollment->status == 'pending')
-                                        <span class="status-badge status-pending">
-                                            <i class="bi bi-clock-history"></i> Pending
-                                        </span>
-                                    @elseif($enrollment->status == 'approved')
-                                        <span class="status-badge status-approved">
-                                            <i class="bi bi-check-circle"></i> Approved
-                                        </span>
-                                    @else
-                                        <span class="status-badge status-rejected">
-                                            <i class="bi bi-x-circle"></i> Rejected
-                                        </span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($enrollment->status == 'approved' && $enrollment->approved_at)
-                                        <span class="approval-date">
-                                            <i class="bi bi-calendar-check"></i>
-                                            {{ \Carbon\Carbon::parse($enrollment->approved_at)->format('d M Y') }}
-                                        </span>
-                                    @elseif($enrollment->status == 'rejected' && $enrollment->rejected_at)
-                                        <span class="rejection-reason" style="color: var(--danger);">
-                                            <i class="bi bi-calendar-x"></i>
-                                            {{ \Carbon\Carbon::parse($enrollment->rejected_at)->format('d M Y') }}
-                                        </span>
-                                    @else
-                                        <span style="font-size: 0.7rem; color: var(--text-gray);">—</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($enrollment->status == 'rejected' && $enrollment->rejection_reason)
-                                        <div class="rejection-reason">
-                                            <strong>Reason:</strong> {{ $enrollment->rejection_reason }}
-                                        </div>
-                                    @elseif($enrollment->status == 'approved' && $enrollment->approved_at)
-                                        <div class="approval-date">
-                                            <i class="bi bi-check-circle"></i> Enrollment confirmed
-                                        </div>
-                                    @else
-                                        <span style="font-size: 0.7rem; color: var(--text-gray);">Waiting for review</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        @else
-            <div class="empty-state">
-                <i class="bi bi-inbox"></i>
-                <p>You haven't requested any enrollments yet.</p>
-                <a href="{{ route('student.courses.available') }}"
-                    style="background: var(--primary); color: var(--white); border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; text-decoration: none; display: inline-block; margin-top: 1rem; transition: var(--transition);">
-                    <i class="bi bi-book"></i> Browse Available Courses
-                </a>
-            </div>
-        @endif
+    @if (session('error'))
+        <div
+            style="background: #fee2e2; color: #991b1b; padding: 0.75rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="bi bi-exclamation-triangle-fill"></i> {{ session('error') }}
+        </div>
+    @endif
+
+    {{-- Stats --}}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="number">{{ isset($enrollments) ? $enrollments->where('status', 'pending')->count() : 0 }}</div>
+            <div class="label">⏳ Pending</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ isset($enrollments) ? $enrollments->where('status', 'approved')->count() : 0 }}</div>
+            <div class="label">✅ Approved</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">{{ isset($enrollments) ? $enrollments->where('status', 'rejected')->count() : 0 }}</div>
+            <div class="label">❌ Rejected</div>
+        </div>
     </div>
+
+    {{-- Table --}}
+    @if (isset($enrollments) && $enrollments->count() > 0)
+        <div class="table-wrap">
+            <table class="enrollments-table">
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Request Date</th>
+                        <th>Status</th>
+                        <th>Approved/Rejected Date</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($enrollments as $enrollment)
+                        @php
+                            $status = $enrollment->status;
+                            $statusClass = $status;
+                            $icon =
+                                $status == 'pending'
+                                    ? 'bi-clock-history'
+                                    : ($status == 'approved'
+                                        ? 'bi-check-circle'
+                                        : 'bi-x-circle');
+                            $date =
+                                $status == 'approved' && $enrollment->approved_at
+                                    ? \Carbon\Carbon::parse($enrollment->approved_at)->format('d M Y')
+                                    : ($status == 'rejected' && $enrollment->rejected_at
+                                        ? \Carbon\Carbon::parse($enrollment->rejected_at)->format('d M Y')
+                                        : null);
+                        @endphp
+                        <tr>
+                            <td><span class="course-code">{{ $enrollment->course->course_code }}</span></td>
+                            <td>{{ $enrollment->course->course_name }}</td>
+                            <td>{{ $enrollment->created_at->format('d M Y') }}</td>
+                            <td>
+                                <span class="status-badge status-{{ $statusClass }}">
+                                    <i class="bi {{ $icon }}"></i> {{ ucfirst($status) }}
+                                </span>
+                            </td>
+                            <td>
+                                @if ($date)
+                                    <span
+                                        class="date-info {{ $status == 'approved' ? 'approved' : ($status == 'rejected' ? 'rejected' : '') }}">
+                                        <i
+                                            class="bi {{ $status == 'approved' ? 'bi-calendar-check' : ($status == 'rejected' ? 'bi-calendar-x' : 'bi-calendar3') }}"></i>
+                                        {{ $date }}
+                                    </span>
+                                @else
+                                    <span style="font-size:0.75rem;color:var(--text-gray);">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($status == 'rejected' && $enrollment->rejection_reason)
+                                    <span class="details-text reason">
+                                        <i class="bi bi-info-circle"></i> {{ $enrollment->rejection_reason }}
+                                    </span>
+                                @elseif($status == 'approved')
+                                    <span class="details-text" style="color:var(--success);">
+                                        <i class="bi bi-check-circle"></i> Enrollment confirmed
+                                    </span>
+                                @else
+                                    <span class="details-text">Waiting for review</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @else
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>You haven't requested any enrollments yet.</p>
+            <a href="{{ route('student.courses.available') }}" class="btn-primary">
+                <i class="bi bi-book"></i> Browse Available Courses
+            </a>
+        </div>
+    @endif
 @endsection

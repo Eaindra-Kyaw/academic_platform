@@ -25,7 +25,10 @@ class AttendanceEvaluation extends Model
     'risk_score',
     'risk_level',
     'risk_factors',
-    'evaluated_at',
+    'academic_health_score',
+    'recovery_status',
+    'evaluation_notes',
+    'evaluation_date',
 ];
 
 protected $casts = [

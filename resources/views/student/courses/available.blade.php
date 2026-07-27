@@ -430,7 +430,7 @@
             @endif
         </div>
 
-        <h3 style="color: var(--primary); margin-bottom: 1rem;">📚 Available Courses</h3>
+        <h3 style="color: var(--primary); margin-bottom: 1rem;"> Available Courses</h3>
 
         @if ($availableCourses->count() > 0)
             <div class="courses-grid">
@@ -475,11 +475,11 @@
                         <div style="padding: 0 1rem 1rem 1rem;">
                             @if ($enrollmentStatus == 'approved')
                                 <div class="btn-enrolled">
-                                    <i class="bi bi-check-circle-fill"></i> ✅ Already Enrolled
+                                    <i class="bi bi-check-circle-fill"></i> Already Enrolled
                                 </div>
                             @elseif($enrollmentStatus == 'pending')
                                 <div class="btn-pending">
-                                    <i class="bi bi-clock-history"></i> ⏳ Pending Approval
+                                    <i class="bi bi-clock-history"></i> Pending Approval
                                 </div>
                             @else
                                 <form method="POST" action="{{ route('student.courses.enroll', $course->id) }}">

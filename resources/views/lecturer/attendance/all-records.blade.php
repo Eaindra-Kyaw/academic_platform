@@ -2,7 +2,7 @@
 
 @section('title', 'All Attendance Records')
 @section('role', 'Lecturer')
-@section('page-title', '📋 All Attendance Records')
+@section('page-title', 'All Attendance Records')
 @section('welcome-text', 'View all attendance records across your courses')
 
 @section('sidebar')
@@ -97,11 +97,80 @@
             color: var(--text-gray);
         }
 
+        /* ============================================================
+               PAGINATION – FIXED & RESPONSIVE
+               ============================================================ */
         .pagination-wrap {
             padding: 1rem;
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
             align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem 1rem;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
+            background: #fafafa;
+            border-radius: 0 0 0.75rem 0.75rem;
+        }
+
+        .pagination-wrap .info {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            white-space: nowrap;
+        }
+
+        /* Force the pagination to be flexible */
+        .pagination-wrap nav {
+            display: flex;
+            flex: 1 1 auto;
+            justify-content: flex-end;
+        }
+
+        .pagination-wrap .pagination {
+            display: flex;
+            flex-wrap: wrap !important;
+            gap: 0.25rem;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .pagination-wrap .pagination .page-item {
+            display: inline-flex;
+            margin: 0;
+        }
+
+        .pagination-wrap .pagination .page-link {
+            padding: 0.3rem 0.7rem;
+            border-radius: 0.3rem;
+            border: 1px solid rgba(10, 36, 99, 0.12);
+            color: var(--text-gray);
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            background: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2rem;
+            min-height: 2rem;
+        }
+
+        .pagination-wrap .pagination .page-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f3f4f6;
+        }
+
+        .pagination-wrap .pagination .active .page-link {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            pointer-events: none;
+        }
+
+        .pagination-wrap .pagination .disabled .page-link {
+            opacity: 0.4;
+            pointer-events: none;
         }
 
         .student-link {
@@ -112,6 +181,73 @@
 
         .student-link:hover {
             text-decoration: underline;
+        }
+
+        /* ============================================================
+               RESPONSIVE
+               ============================================================ */
+        @media (max-width: 768px) {
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-bar select,
+            .filter-bar input,
+            .filter-bar .btn-filter {
+                width: 100%;
+            }
+
+            .pagination-wrap {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 0.75rem;
+            }
+
+            .pagination-wrap .info {
+                white-space: normal;
+            }
+
+            .pagination-wrap nav {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .pagination-wrap .pagination {
+                justify-content: center;
+            }
+
+            .pagination-wrap .pagination .page-link {
+                min-width: 2.2rem;
+                min-height: 2.2rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .records-table th,
+            .records-table td {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            .records-table {
+                font-size: 0.75rem;
+            }
+
+            .status-badge {
+                font-size: 0.6rem;
+                padding: 0.1rem 0.4rem;
+            }
+
+            .pagination-wrap .pagination .page-link {
+                min-width: 1.8rem;
+                min-height: 1.8rem;
+                font-size: 0.75rem;
+                padding: 0.2rem 0.4rem;
+            }
         }
     </style>
 
@@ -198,10 +334,16 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- ============================================================
+        PAGINATION – Uses custom Bootstrap 5 view
+        ============================================================ --}}
         <div class="pagination-wrap">
-            <span>Showing {{ $records->firstItem() ?? 0 }}–{{ $records->lastItem() ?? 0 }} of
-                {{ $records->total() }}</span>
-            {{ $records->links() }}
+            <span class="info">
+                Showing {{ $records->firstItem() ?? 0 }}–{{ $records->lastItem() ?? 0 }} of
+                {{ $records->total() }}
+            </span>
+            {{ $records->links('pagination::bootstrap-5') }}
         </div>
     @else
         <div class="empty-state">

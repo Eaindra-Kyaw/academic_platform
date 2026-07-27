@@ -2,7 +2,7 @@
 
 @section('title', 'Lecturer Dashboard')
 @section('role', 'Lecturer')
-@section('page-title', '📚 Lecturer Dashboard')
+@section('page-title', 'Teacher Dashboard')
 @section('welcome-text')
     <i class="bi bi-hand-wave" style="font-size: 1.2rem; color: var(--most-gold);"></i> Welcome Back,
     {{ Auth::user()->name }} !
@@ -748,21 +748,21 @@
     <!-- Statistics -->
     <div class="ld-stats">
         <div class="ld-stat-card">
-            <span class="stat-icon">👨‍🎓</span>
+            <span class="stat-icon"></span>
             <div class="ld-stat-number">{{ $totalStudents ?? 0 }}</div>
             <div class="ld-stat-label">Total Students</div>
         </div>
         <div class="ld-stat-card">
-            <span class="stat-icon">⚠️</span>
+            <span class="stat-icon"></span>
             <div class="ld-stat-number danger">{{ $atRiskStudents ?? 0 }}</div>
             <div class="ld-stat-label">At Risk Students</div>
         </div>
         <div class="ld-stat-card">
-            <span class="stat-icon">📊</span>
+            <span class="stat-icon"></span>
             <div class="ld-stat-number">{{ $avgAttendance ?? 0 }}%</div>
             <div class="ld-stat-label">Avg Attendance</div>
         </div>
-        <div class="ld-stat-card">
+        {{-- <div class="ld-stat-card">
             <span class="stat-icon">📈</span>
             <div class="ld-stat-number">{{ $courseEngagement ?? 0 }}</div>
             <div class="ld-stat-label">Course Engagement</div>
@@ -771,9 +771,9 @@
             <span class="stat-icon">🔔</span>
             <div class="ld-stat-number warning">{{ $lowAlerts ?? 0 }}</div>
             <div class="ld-stat-label">Low Alerts</div>
-        </div>
+        </div> --}}
         <div class="ld-stat-card">
-            <span class="stat-icon">📱</span>
+            <span class="stat-icon"></span>
             <div class="ld-stat-number">{{ $activeSessions ?? 0 }}</div>
             <div class="ld-stat-label">Active Sessions</div>
             <a href="{{ route('lecturer.attendance.take') }}" class="btn-primary-sm"
@@ -782,7 +782,7 @@
     </div>
 
     <!-- Insights -->
-    <div class="ld-card">
+    {{-- <div class="ld-card">
         <div class="ld-card-header">
             <i class="bi bi-lightbulb"></i> Smart Lecturer Insights
             <span style="font-size:11px; font-weight:400; color:var(--text-gray); margin-left:10px;">
@@ -820,7 +820,7 @@
                 @endforeach
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Live Attendance -->
     <div class="ld-card">

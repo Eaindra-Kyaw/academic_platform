@@ -1,9 +1,8 @@
-{{-- resources/views/admin/announcements/index.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Announcements')
 @section('role', 'Admin')
-@section('page-title', '📢 Announcements')
+@section('page-title', 'Announcements')
 @section('welcome-text', 'Manage system announcements')
 
 @section('sidebar')

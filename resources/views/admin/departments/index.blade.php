@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Departments')
-@section('page-title', '🏛️ Departments')
+@section('page-title', ' Departments')
 @section('welcome-text', 'Manage university departments and their academic programs')
 
 @section('sidebar')

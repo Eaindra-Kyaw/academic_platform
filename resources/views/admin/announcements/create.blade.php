@@ -1,9 +1,8 @@
-{{-- resources/views/admin/announcements/create.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Create Announcement')
 @section('role', 'Admin')
-@section('page-title', '📢 Create Announcement')
+@section('page-title', 'Create Announcement')
 @section('welcome-text', 'Create a new announcement')
 
 @section('sidebar')
@@ -363,28 +362,28 @@
                                 {{ in_array('all', old('target_roles', [])) ? 'checked' : '' }}
                                 onclick="toggleAllRoles(this)">
                             <label for="role_all">
-                                <span class="role-icon">👥</span> All Users
+                                <span class="role-icon"></span> All Users
                             </label>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" name="target_roles[]" id="role_admin" value="admin"
                                 class="role-checkbox" {{ in_array('admin', old('target_roles', [])) ? 'checked' : '' }}>
                             <label for="role_admin">
-                                <span class="role-icon">👤</span> Admins
+                                <span class="role-icon"></span> Admins
                             </label>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" name="target_roles[]" id="role_lecturer" value="lecturer"
                                 class="role-checkbox" {{ in_array('lecturer', old('target_roles', [])) ? 'checked' : '' }}>
                             <label for="role_lecturer">
-                                <span class="role-icon">👨‍🏫</span> Lecturers
+                                <span class="role-icon"></span> Lecturers
                             </label>
                         </div>
                         <div class="checkbox-item">
                             <input type="checkbox" name="target_roles[]" id="role_student" value="student"
                                 class="role-checkbox" {{ in_array('student', old('target_roles', [])) ? 'checked' : '' }}>
                             <label for="role_student">
-                                <span class="role-icon">👨‍🎓</span> Students
+                                <span class="role-icon"></span> Students
                             </label>
                         </div>
                     </div>

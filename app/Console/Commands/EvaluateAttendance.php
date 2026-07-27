@@ -92,7 +92,7 @@ class EvaluateAttendance extends Command
             return;
         }
 
-        // ✅ PERIOD-BASED CALCULATION
+        // PERIOD-BASED CALCULATION
         $totalPeriods = $sessions->sum('conducted_periods');
         if ($totalPeriods == 0) {
             return;
@@ -107,7 +107,6 @@ class EvaluateAttendance extends Command
                 ->first();
 
             if ($record && in_array($record->status, ['present', 'late'])) {
-                // ✅ Add the session's conducted periods
                 $attendedPeriods += $session->conducted_periods;
                 if ($record->status === 'late') {
                     $lateCount++;
@@ -115,10 +114,9 @@ class EvaluateAttendance extends Command
             }
         }
 
-        // ✅ Attendance % = (attendedPeriods / totalPeriods) * 100
         $attendancePercentage = round(($attendedPeriods / max($totalPeriods, 1)) * 100, 1);
 
-        // === KG+12 ROLL CALL (uses period percentage for consistency) ===
+        // KG+12 ROLL CALL
         $rollCall = AttendanceHelper::calculateRollCallMark($attendancePercentage, $lateCount, 1.5);
 
         $eligibilityStatus = AttendanceHelper::getEligibilityStatus($attendancePercentage);
@@ -162,13 +160,14 @@ class EvaluateAttendance extends Command
             $trend
         );
 
+        // ✅ FIX: Add evaluation_date to the data array
         AttendanceEvaluation::updateOrCreate(
             [
                 'student_id' => $student->id,
                 'course_id' => $course->id,
             ],
             [
-                'evaluation_date' => Carbon::today()->toDateString(),
+                'evaluation_date' => Carbon::today()->toDateString(), // ✅ ADDED
                 'attendance_percentage' => $attendancePercentage,
                 'consistency_marks' => $rollCall['consistency'],
                 'punctuality_marks' => $rollCall['punctuality'],

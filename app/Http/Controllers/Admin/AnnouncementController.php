@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Admin/AnnouncementController.php
 
 namespace App\Http\Controllers\Admin;
 

@@ -2,7 +2,7 @@
 
 @section('title', 'Export Reports')
 @section('role', 'Lecturer')
-@section('page-title', '📊 Reports')
+@section('page-title', ' Reports')
 @section('welcome-text', 'Generate and export attendance reports with roll call data')
 
 @section('sidebar')
@@ -192,8 +192,8 @@
         }
 
         /* ============================================================
-               CONFIRMATION MODAL STYLES
-               ============================================================ */
+                       CONFIRMATION MODAL STYLES
+                       ============================================================ */
         .confirmation-modal-overlay {
             display: none;
             position: fixed;
@@ -532,8 +532,8 @@
     </div>
 
     <!-- ============================================================
-             CONFIRMATION MODAL
-             ============================================================ -->
+                     CONFIRMATION MODAL
+                     ============================================================ -->
     <div class="confirmation-modal-overlay" id="confirmationModal">
         <div class="confirmation-modal">
             <div class="confirmation-modal-header">

@@ -14,9 +14,9 @@
 <a href="{{ route('admin.enrollments.index') }}" class="nav-item @if (request()->routeIs('admin.enrollments*')) active @endif">
     <i class="bi bi-list-check"></i><span>Enrollments</span>
 </a>
-<a href="{{ route('admin.semesters.index') }}" class="nav-item @if (request()->routeIs('admin.semesters*')) active @endif">
+{{-- <a href="{{ route('admin.semesters.index') }}" class="nav-item @if (request()->routeIs('admin.semesters*')) active @endif">
     <i class="bi bi-calendar"></i><span>Semesters</span>
-</a>
+</a> --}}
 
 <div class="nav-label">Analytics</div>
 {{-- Attendance link - active ONLY on the analytics page (not sub-pages) --}}

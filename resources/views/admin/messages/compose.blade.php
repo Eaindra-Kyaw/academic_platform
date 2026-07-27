@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Compose Message')
-@section('page-title', '✉️ Compose Message')
+@section('page-title', ' Compose Message')
 @section('welcome-text', 'Send a message to a student or lecturer')
 
 @section('sidebar')

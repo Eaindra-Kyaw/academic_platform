@@ -1,5 +1,3 @@
-{{-- resources/views/layouts/partials/student-sidebar.blade.php --}}
-
 <div class="nav-label">Main</div>
 <a href="{{ route('student.dashboard') }}" class="nav-item @if (request()->routeIs('student.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
@@ -13,32 +11,31 @@
     <i class="bi bi-list-check"></i><span>My Enrollments</span>
 </a>
 
-<div class="nav-label">Attendance</div>
+<div class="nav-label">Academic</div>
 <a href="{{ route('student.scan') }}" class="nav-item @if (request()->routeIs('student.scan')) active @endif">
     <i class="bi bi-qr-code"></i><span>QR Attendance</span>
 </a>
-<a href="{{ route('student.attendance') }}" class="nav-item @if (request()->routeIs('student.attendance')) active @endif">
+{{-- <a href="{{ route('student.attendance') }}" class="nav-item @if (request()->routeIs('student.attendance')) active @endif">
     <i class="bi bi-calendar-check"></i><span>My Attendance</span>
+</a> --}}
+
+<a href="{{ route('student.attendance.period') }}" class="nav-item @if (request()->routeIs('student.attendance.period')) active @endif">
+    <i class="bi bi-calendar-week"></i><span>My Attendance </span>
 </a>
 
 <a href="{{ route('student.attendance.history') }}" class="nav-item @if (request()->routeIs('student.attendance.history')) active @endif">
-    <i class="bi bi-clock-history"></i> Attendance History
+    <i class="bi bi-clock-history"></i><span>Attendance History</span>
 </a>
 
-<a href="{{ route('student.attendance.period') }}" class="btn btn-sm btn-outline-primary">
-    <i class="bi bi-calendar-week"></i> Weekly/Monthly View
+<a href="{{ route('student.progress') }}" class="nav-item @if (request()->routeIs('student.progress')) active @endif">
+    <i class="bi bi-graph-up"></i><span> Academic Progress</span>
 </a>
 
-<div class="nav-label">Academic</div>
 <a href="{{ route('student.timetable') }}" class="nav-item @if (request()->routeIs('student.timetable')) active @endif">
     <i class="bi bi-clock"></i><span>Timetable</span>
 </a>
-<a href="{{ route('student.progress') }}" class="nav-item @if (request()->routeIs('student.progress')) active @endif">
-    <i class="bi bi-graph-up"></i><span>My Progress</span>
-</a>
 
 <div class="nav-label">Communication</div>
-{{-- FIXED: Changed from student.announcements to student.announcements.index --}}
 <a href="{{ route('student.announcements.index') }}" class="nav-item @if (request()->routeIs('student.announcements*')) active @endif">
     <i class="bi bi-megaphone"></i>
     <span>Announcements</span>

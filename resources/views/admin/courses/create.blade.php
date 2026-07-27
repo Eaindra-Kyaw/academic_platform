@@ -151,7 +151,6 @@
             margin-top: 1.5rem;
         }
 
-        /* ✅ FIXED: Checkbox styling */
         .checkbox-group {
             display: flex;
             align-items: center;
@@ -174,6 +173,12 @@
             font-size: 0.9rem;
             cursor: pointer;
             color: var(--text-dark);
+        }
+
+        .help-text {
+            color: var(--text-gray);
+            font-size: 0.7rem;
+            margin-top: 0.2rem;
         }
 
         @media (max-width: 768px) {
@@ -243,34 +248,21 @@
                     <label>Semester <span class="required">*</span></label>
                     <select name="semester" required>
                         <option value="">Select Semester</option>
-                        <option value="First Semester" {{ old('semester') == 'First Semester' ? 'selected' : '' }}>First
-                            Semester</option>
-                        <option value="Second Semester" {{ old('semester') == 'Second Semester' ? 'selected' : '' }}>Second
-                            Semester</option>
+                        @foreach ($semesters as $sem)
+                            <option value="{{ $sem->semester_name }}"
+                                {{ old('semester') == $sem->semester_name ? 'selected' : '' }}>
+                                {{ $sem->year_name }} - {{ $sem->semester_name }}
+                            </option>
+                        @endforeach
                     </select>
                     @error('semester')
                         <div class="error">{{ $message }}</div>
                     @enderror
+                    <div class="help-text">Choose the year and semester combination</div>
                 </div>
             </div>
 
             <div class="form-row">
-                <div class="form-group">
-                    <label>Semester (Database Reference)</label>
-                    <select name="semester_id">
-                        <option value="">-- Optional --</option>
-                        @foreach ($semesters as $semester)
-                            <option value="{{ $semester->id }}"
-                                {{ old('semester_id') == $semester->id ? 'selected' : '' }}>
-                                {{ $semester->academic_year }} - {{ $semester->semester_name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('semester_id')
-                        <div class="error">{{ $message }}</div>
-                    @enderror
-                </div>
-
                 <div class="form-group">
                     <label>Academic Year</label>
                     <input type="text" name="academic_year" value="{{ old('academic_year', '2025-2026') }}"
@@ -279,9 +271,7 @@
                         <div class="error">{{ $message }}</div>
                     @enderror
                 </div>
-            </div>
 
-            <div class="form-row">
                 <div class="form-group">
                     <label>Credits <span class="required">*</span></label>
                     <input type="number" name="credits" value="{{ old('credits', 3) }}" min="1" max="6"
@@ -290,10 +280,12 @@
                         <div class="error">{{ $message }}</div>
                     @enderror
                 </div>
+            </div>
 
+            <div class="form-row">
                 <div class="form-group">
                     <label>Room</label>
-                    <input type="text" name="room" value="{{ old('room') }}" placeholder="e.g., Room 101">
+                    <input type="text" name="room" value="{{ old('room') }}" placeholder="e.g., Room 8-6">
                     @error('room')
                         <div class="error">{{ $message }}</div>
                     @enderror
@@ -316,9 +308,19 @@
                 @error('lecturer_id')
                     <div class="error">{{ $message }}</div>
                 @enderror
+                <div class="help-text">Leave blank to manually enter the lecturer's name below</div>
             </div>
 
-            <!-- ✅ FIXED: Checkbox group with proper styling -->
+            <div class="form-group">
+                <label>Lecturer Name (Manual Entry)</label>
+                <input type="text" name="lecturer_name" value="{{ old('lecturer_name') }}"
+                    placeholder="e.g., Dr. John Doe">
+                <div class="help-text">Used if the lecturer is not in the dropdown list above</div>
+                @error('lecturer_name')
+                    <div class="error">{{ $message }}</div>
+                @enderror
+            </div>
+
             <div class="checkbox-group">
                 <input type="checkbox" name="is_active" id="is_active" value="1"
                     {{ old('is_active', true) ? 'checked' : '' }}>

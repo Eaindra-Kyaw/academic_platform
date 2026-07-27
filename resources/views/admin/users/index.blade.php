@@ -2,7 +2,7 @@
 
 @section('title', 'User Management')
 @section('role', 'Admin')
-@section('page-title', '👥 User Management')
+@section('page-title', ' User Management')
 @section('welcome-text', 'Manage user accounts by role')
 
 @section('sidebar')

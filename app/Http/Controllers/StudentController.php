@@ -356,64 +356,157 @@ class StudentController extends Controller
     // ============================================================
     // PERIOD-BASED ATTENDANCE (Weekly/Monthly with navigation)
     // ============================================================
+    /**
+     * Attendance Period – with navigation (weekly/monthly/overall/custom)
+     * FIXED: passes $allCourses and all required variables to the view.
+     */
     public function attendancePeriod(Request $request)
     {
-        $student = Auth::user();
-        $period = $request->input('period', 'weekly');
-        $offset = (int) $request->input('offset', 0);
+        $student = auth()->user();
+        $period = $request->get('period', 'weekly');
+        $offset = (int) $request->get('offset', 0);
+        $courseId = $request->get('course_id');
 
-        if ($period === 'weekly') {
-            $start = Carbon::now()->startOfWeek()->addWeeks($offset);
-            $end = Carbon::now()->endOfWeek()->addWeeks($offset);
-        } elseif ($period === 'monthly') {
-            $start = Carbon::now()->startOfMonth()->addMonths($offset);
-            $end = Carbon::now()->endOfMonth()->addMonths($offset);
+        // ---- 1. Determine date range ----
+        if ($period === 'custom' && $request->filled('start_date') && $request->filled('end_date')) {
+            $startDate = Carbon::parse($request->start_date)->startOfDay();
+            $endDate   = Carbon::parse($request->end_date)->endOfDay();
+            $periodLabel = $startDate->format('M d, Y') . ' – ' . $endDate->format('M d, Y');
+        } elseif ($period === 'overall') {
+            $startDate = Carbon::create(2000, 1, 1);
+            $endDate   = Carbon::now()->addYear();
+            $periodLabel = '📊 Semester';
         } else {
-            // Custom
-            $start = $request->input('start_date') ? Carbon::parse($request->input('start_date')) : Carbon::now()->subDays(7);
-            $end = $request->input('end_date') ? Carbon::parse($request->input('end_date')) : Carbon::now();
+            $now = now();
+            if ($period === 'weekly') {
+                $now->addWeeks($offset);
+                $startDate = $now->copy()->startOfWeek();
+                $endDate   = $now->copy()->endOfWeek();
+            } else { // monthly
+                $now->addMonths($offset);
+                $startDate = $now->copy()->startOfMonth();
+                $endDate   = $now->copy()->endOfMonth();
+            }
+            $periodLabel = $startDate->format('M d, Y') . ' – ' . $endDate->format('M d, Y');
         }
 
-        $enrollments = Enrollment::where('student_id', $student->id)
+        // Enforce a reasonable max range (365 days)
+        if ($startDate->diffInDays($endDate) > 365) {
+            $endDate = $startDate->copy()->addDays(365);
+        }
+
+        // ---- 2. Get all enrolled courses (unfiltered) ----
+        $courseIds = Enrollment::where('student_id', $student->id)
             ->where('status', 'approved')
-            ->with('course')
+            ->pluck('course_id');
+
+        $allCourses = Course::whereIn('id', $courseIds)
+            ->where('is_active', true)
             ->get();
 
-        $courseData = [];
-        $totalAttended = 0;
-        $totalPeriods = 0;
-
-        foreach ($enrollments as $enrollment) {
-            $data = AttendanceHelper::calculateAttendanceForPeriod(
-                $student->id,
-                $enrollment->course_id,
-                $start,
-                $end
-            );
-
-            $courseData[] = [
-                'course' => $enrollment->course,
-                'attendance' => $data['percentage'],
-                'attended' => $data['attended'],
-                'total' => $data['total'],
-                'eligibility' => AttendanceHelper::getEligibilityStatus($data['percentage']),
-            ];
-
-            $totalAttended += $data['attended'];
-            $totalPeriods += $data['total'];
+        // ---- 3. Apply course filter (if any) ----
+        $filteredCourses = $allCourses;
+        if ($courseId) {
+            $filteredCourses = $allCourses->filter(fn($c) => $c->id == $courseId);
         }
 
-        $overall = $totalPeriods > 0 ? round(($totalAttended / $totalPeriods) * 100, 1) : 0;
-        $periodLabel = $start->format('M d, Y') . ' – ' . $end->format('M d, Y');
+        // ---- 4. Build course data with attendance ----
+        $courses = collect();
+        $totalStudents = 0;
+        $eligibleCount = 0;
+        $warningCount = 0;
+        $atRiskCount = 0;
+        $totalAttendanceSum = 0;
+        $totalCoursesWithData = 0;
 
+        foreach ($filteredCourses as $course) {
+            // Get all ended sessions for this course within the date range
+            $sessions = AttendanceSession::where('course_id', $course->id)
+                ->where('status', 'ended')
+                ->whereBetween('session_date', [$startDate->toDateString(), $endDate->toDateString()])
+                ->get();
+
+            $sessionIds = $sessions->pluck('id')->toArray();
+
+            // Student's records for these sessions
+            $records = AttendanceRecord::where('student_id', $student->id)
+                ->whereIn('attendance_session_id', $sessionIds)
+                ->get()
+                ->keyBy('attendance_session_id');
+
+            $attendedPeriods = 0;
+            $totalPeriods = 0;
+
+            foreach ($sessions as $session) {
+                $periods = $session->conducted_periods ?? 1;
+                $totalPeriods += $periods;
+                $record = $records->get($session->id);
+                if ($record && in_array($record->status, ['present', 'late'])) {
+                    $attendedPeriods += $periods;
+                }
+            }
+
+            $attendancePercentage = $totalPeriods > 0
+                ? round(($attendedPeriods / $totalPeriods) * 100, 1)
+                : 0;
+
+            $eligibility = $attendancePercentage >= 75 ? 'Eligible'
+                : ($attendancePercentage >= 60 ? 'Warning' : 'Not Eligible');
+            $riskLevel = $attendancePercentage >= 75 ? 'Low'
+                : ($attendancePercentage >= 60 ? 'Medium' : 'High');
+
+            $hasData = $totalPeriods > 0;
+
+            // Build a student object (this is you) for this course
+            $studentData = (object) [
+                'id' => $student->id,
+                'name' => $student->name,
+                'email' => $student->email,
+                'student_id' => $student->student_id,
+                'attendance_percentage' => $attendancePercentage,
+                'status' => $eligibility,
+                'risk_level' => $riskLevel,
+                'total_courses' => 1,
+            ];
+
+            $students = collect([$studentData]);
+
+            $courses->push((object) [
+                'id' => $course->id,
+                'course_code' => $course->course_code,
+                'course_name' => $course->course_name,
+                'students' => $students,
+            ]);
+
+            if ($hasData) {
+                $totalStudents++;
+                $totalAttendanceSum += $attendancePercentage;
+                $totalCoursesWithData++;
+                if ($eligibility === 'Eligible') $eligibleCount++;
+                elseif ($eligibility === 'Warning') $warningCount++;
+                else $atRiskCount++;
+            }
+        }
+
+        $avgAttendance = $totalCoursesWithData > 0
+            ? round($totalAttendanceSum / $totalCoursesWithData, 1)
+            : 0;
+
+        // ---- 5. Pass everything to the view ----
         return view('student.attendance-period', compact(
-            'courseData',
-            'overall',
             'period',
             'offset',
-            'start',
-            'end',
-            'periodLabel'
+            'startDate',
+            'endDate',
+            'periodLabel',
+            'courses',
+            'allCourses',        // ✅ Now passed
+            'courseId',
+            'totalStudents',
+            'eligibleCount',
+            'warningCount',
+            'atRiskCount',
+            'avgAttendance'
         ));
     }
 

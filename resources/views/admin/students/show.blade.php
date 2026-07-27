@@ -2,7 +2,6 @@
 
 @section('title', $student->name)
 @section('page-title', 'Student Profile')
-@section('welcome-text', $student->student_id ?? 'No ID')
 
 @section('sidebar')
     @include('layouts.partials.admin-sidebar')
@@ -105,6 +104,73 @@
             letter-spacing: 0.3px;
         }
 
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem 1.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .info-grid .info-item {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+        }
+
+        .info-grid .info-item strong {
+            color: var(--text-dark);
+            font-weight: 600;
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 0.1rem;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .quick-actions .btn {
+            padding: 0.3rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: var(--bg-main);
+            color: var(--text-dark);
+            border: 1px solid transparent;
+        }
+
+        .quick-actions .btn:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .quick-actions .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .quick-actions .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .quick-actions .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .quick-actions .btn-danger:hover {
+            background: #dc2626;
+        }
+
         .courses-table-wrap {
             background: var(--white);
             border-radius: var(--radius);
@@ -170,17 +236,17 @@
         }
 
         .attendance-pill.high {
-            background: var(--success-light);
+            background: #d1fae5;
             color: #166534;
         }
 
         .attendance-pill.medium {
-            background: var(--warning-light);
+            background: #fef3c7;
             color: #92400e;
         }
 
         .attendance-pill.low {
-            background: var(--danger-light);
+            background: #fee2e2;
             color: #991b1b;
         }
 
@@ -192,27 +258,18 @@
         }
 
         .status-badge.eligible {
-            background: var(--success-light);
+            background: #d1fae5;
             color: #166534;
         }
 
         .status-badge.warning {
-            background: var(--warning-light);
+            background: #fef3c7;
             color: #92400e;
         }
 
         .status-badge.not_eligible {
-            background: var(--danger-light);
+            background: #fee2e2;
             color: #991b1b;
-        }
-
-        .roll-call-pill {
-            font-weight: 700;
-            padding: 0.1rem 0.5rem;
-            border-radius: 1rem;
-            background: rgba(10, 36, 99, 0.06);
-            display: inline-block;
-            font-size: 0.8rem;
         }
 
         .risk-badge {
@@ -223,17 +280,17 @@
         }
 
         .risk-badge.low {
-            background: var(--success-light);
+            background: #d1fae5;
             color: #166534;
         }
 
         .risk-badge.medium {
-            background: var(--warning-light);
+            background: #fef3c7;
             color: #92400e;
         }
 
         .risk-badge.high {
-            background: var(--danger-light);
+            background: #fee2e2;
             color: #991b1b;
         }
 
@@ -244,6 +301,10 @@
 
             .profile-card {
                 padding: 1.25rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr 1fr;
             }
         }
 
@@ -257,6 +318,10 @@
                 height: 60px;
                 font-size: 1.5rem;
             }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 
@@ -265,12 +330,19 @@
             <i class="bi bi-arrow-left"></i> Back
         </a>
 
+        {{-- Profile Card with Roll Number --}}
         <div class="profile-card">
             <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
                 <div class="profile-avatar">{{ substr($student->name, 0, 2) }}</div>
-                <div>
-                    <h2 style="font-size:1.3rem; font-weight:700; color:var(--text-dark); margin:0;">{{ $student->name }}
-                    </h2>
+                <div style="flex:1;">
+                    <div style="display:flex; flex-wrap:wrap; align-items:baseline; gap:0.5rem 1rem;">
+                        <h2 style="font-size:1.3rem; font-weight:700; color:var(--text-dark); margin:0;">{{ $student->name }}
+                        </h2>
+                        <span
+                            style="background:var(--primary); color:white; padding:0.1rem 0.7rem; border-radius:1rem; font-size:0.7rem; font-weight:600;">
+                            {{ $student->student_id ?? 'No ID' }}
+                        </span>
+                    </div>
                     <p style="color:var(--text-gray); font-size:0.85rem; margin:0.2rem 0;">
                         <i class="bi bi-envelope"></i> {{ $student->email }}
                     </p>
@@ -283,62 +355,24 @@
             </div>
         </div>
 
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-box">
-                <div class="number">{{ $student->enrollments->where('status', 'approved')->count() }}</div>
-                <div class="label">Enrolled Courses</div>
-            </div>
-            <div class="stat-box">
-                <div class="number green">
-                    {{ number_format($student->enrollments->avg('attendance_percentage') ?? 0, 1) }}%
-                </div>
-                <div class="label">Avg Attendance</div>
-            </div>
-            <div class="stat-box">
-                <div class="number yellow">
-                    {{ number_format($student->enrollments->avg('roll_call_total') ?? 0, 1) }}
-                </div>
-                <div class="label">Avg Roll Call (/10)</div>
-            </div>
-            <div class="stat-box">
-                <div class="number yellow">{{ $student->student_id ?? 'N/A' }}</div>
-                <div class="label">Student ID</div>
-            </div>
-        </div>
-
-        <!-- Enrolled Courses with KG+12 Roll Call -->
+        {{-- Enrolled Courses Table --}}
         <div class="courses-table-wrap">
             <div class="table-header">
                 <i class="bi bi-book"></i> Enrolled Courses
             </div>
             <div style="overflow-x:auto;">
                 <table class="courses-table">
-                    <thead>
-                        <tr>
-                            <th>Course</th>
-                            <th>Department</th>
-                            <th style="text-align:center;">Attendance</th>
-                            <th style="text-align:center;">Roll Call<br><small>/10</small></th>
-                            <th style="text-align:center;">Eligibility</th>
-                            <th style="text-align:center;">Risk</th>
-                        </tr>
-                    </thead>
                     <tbody>
                         @forelse($student->enrollments->where('status', 'approved') as $enrollment)
-                            @php
+                            {{-- @php
                                 $eval = $enrollment->evaluation ?? null;
                                 $attendance = $eval ? $eval->attendance_percentage : 0;
-                                $rollCall = $eval ? $eval->roll_call_total : 0;
-                                $consistency = $eval ? $eval->consistency_marks : 0;
-                                $punctuality = $eval ? $eval->punctuality_marks : 0;
-                                $participation = $eval ? $eval->participation_marks : 0;
                                 $eligibility = $eval ? $eval->eligibility_status : 'not_eligible';
                                 $riskLevel = $eval ? $eval->risk_level : 'Low';
                                 $attClass = $attendance >= 75 ? 'high' : ($attendance >= 60 ? 'medium' : 'low');
                                 $eligClass = $eligibility;
                                 $riskClass = strtolower($riskLevel);
-                            @endphp
+                            @endphp --}}
                             <tr>
                                 <td>
                                     <div style="font-weight:600; color:var(--text-dark);">
@@ -348,17 +382,13 @@
                                         {{ $enrollment->course->course_name }}
                                     </div>
                                 </td>
-                                <td style="color:var(--text-gray);">
+                                {{-- <td style="color:var(--text-gray);">
                                     {{ $enrollment->course->department->code ?? 'N/A' }}
-                                </td>
-                                <td style="text-align:center;">
+                                </td> --}}
+                                {{-- <td style="text-align:center;">
                                     <span class="attendance-pill {{ $attClass }}">
                                         {{ number_format($attendance, 1) }}%
                                     </span>
-                                </td>
-
-                                <td style="text-align:center;">
-                                    <span class="roll-call-pill">{{ $rollCall }}</span>
                                 </td>
                                 <td style="text-align:center;">
                                     <span class="status-badge {{ $eligClass }}">
@@ -369,11 +399,11 @@
                                     <span class="risk-badge {{ $riskClass }}">
                                         {{ $riskLevel }}
                                     </span>
-                                </td>
+                                </td> --}}
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" style="padding:2rem; text-align:center; color:var(--text-gray);">
+                                <td colspan="5" style="padding:2rem; text-align:center; color:var(--text-gray);">
                                     No courses enrolled
                                 </td>
                             </tr>

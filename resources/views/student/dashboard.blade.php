@@ -2,7 +2,7 @@
 
 @section('title', 'Student Dashboard')
 @section('role', 'Student')
-@section('page-title', '📊 Student Dashboard')
+@section('page-title', 'Student Dashboard')
 @section('welcome-text')
     <i class="bi bi-hand-wave" style="font-size: 1.2rem; color: var(--secondary);"></i> Welcome Back,
     {{ Auth::user()->name }} !
@@ -478,11 +478,11 @@
             <div class="stat-card">
                 <div class="stat-number">
                     @if ($eligibleCount == $totalCourses && $totalCourses > 0)
-                        ✅ Eligible
+                        Eligible
                     @elseif($eligibleCount > 0)
-                        ⚠️ Partial
+                        Partial
                     @elseif($totalCourses > 0)
-                        ❌ Not Eligible
+                        Not Eligible
                     @else
                         N/A
                     @endif
@@ -599,23 +599,23 @@
                         @endphp
                         <div class="progress-fill {{ $riskBarColor }}" style="width:{{ $riskScoreValue }}%"></div>
                     </div>
-                    <div class="mt-2" style="font-size: 0.8rem;">Risk Score: {{ $riskScoreValue }}/100</div>
+                    {{-- <div class="mt-2" style="font-size: 0.8rem;">Risk Score: {{ $riskScoreValue }}/100</div>
                     <hr style="margin: 0.5rem 0;">
                     <div style="font-size: 0.8rem;">
                         @php
                             $recoveryStatus = $avgAttendance > 70 ? 'Recovering' : 'Stable';
                         @endphp
                         Recovery Status: <span class="badge-recovering">{{ $recoveryStatus }}</span>
-                    </div>
-                    <div style="font-size: 0.8rem;">
+                    </div> --}}
+                    {{-- <div style="font-size: 0.8rem;">
                         Streak: <strong>{{ $consecutiveStreak ?? 0 }}</strong> consecutive sessions
                         @if (($consecutiveStreak ?? 0) >= 10)
                             🔥
                         @elseif(($consecutiveStreak ?? 0) >= 5)
                             📈
                         @endif
-                    </div>
-                    @if (!empty($riskFactors))
+                    </div> --}}
+                    {{-- @if (!empty($riskFactors))
                         <hr style="margin: 0.5rem 0;">
                         <div style="font-size: 0.75rem; color: var(--text-gray);">
                             <strong>Factors:</strong>
@@ -624,7 +624,7 @@
                                     style="display: inline-block; background: var(--gray-100); padding: 0.1rem 0.5rem; border-radius: 10px; margin: 0.1rem;">{{ $factor }}</span>
                             @endforeach
                         </div>
-                    @endif
+                    @endif --}}
                 </div>
             </div>
         </div>
@@ -638,12 +638,12 @@
             <div
                 style="padding: 0 1rem 0.75rem 1rem; display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-gray);">
                 <span>📈 Your attendance: {{ $avgAttendance ?? 0 }}%</span>
-                <span>🎯 Target: 75%</span>
+                <span>Target: 75%</span>
             </div>
         </div>
 
         <!-- Peer Benchmarking -->
-        <div class="course-list" style="margin-bottom: 1rem;">
+        {{-- <div class="course-list" style="margin-bottom: 1rem;">
             <div class="header"><i class="bi bi-trophy"></i> Peer Benchmarking</div>
             <div class="benchmark-grid">
                 <div class="benchmark-item">
@@ -684,15 +684,15 @@
                     <div class="value">
                         #{{ $totalCourses > 0 ? rand(1, $totalCourses + 5) : 'N/A' }}
                         @if ($totalCourses > 0)
-                            <span style="font-size: 0.6rem; color: var(--warning);">🏅 Top {{ rand(10, 30) }}%</span>
+                            <span style="font-size: 0.6rem; color: var(--warning);"> Top {{ rand(10, 30) }}%</span>
                         @endif
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Attendance Forecast -->
-        @php
+        {{-- @php
             $projected = $avgAttendance ?? 0;
             $projected = min(100, $projected + rand(2, 8));
             $forecastStatus =
@@ -725,10 +725,10 @@
                         style="width:{{ $projected }}%"></div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <!-- Recent Attendance -->
-        <div class="course-list" style="margin-bottom: 1rem;">
+        {{-- <div class="course-list" style="margin-bottom: 1rem;">
             <div class="header"><i class="bi bi-clock-history"></i> Recent Attendance</div>
             <div style="padding: 0.5rem 0;">
                 @if (isset($attendanceRecords) && $attendanceRecords->count() > 0)
@@ -760,7 +760,7 @@
                     </div>
                 @endif
             </div>
-        </div>
+        </div> --}}
 
         <!-- UNI BOT -->
         <div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">

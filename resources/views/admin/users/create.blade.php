@@ -2,7 +2,7 @@
 
 @section('title', 'Create User')
 @section('role', 'Admin')
-@section('page-title', '👤 Create New User')
+@section('page-title', ' Create New User')
 @section('welcome-text', 'Add a new user to the system')
 
 @section('sidebar')

@@ -546,7 +546,6 @@
                             <th>Periods</th>
                             <th>Status</th>
                             <th>Attendance</th>
-                            <th>Roll Call</th>
                             <th style="text-align: center;">Action</th>
                         </tr>
                     </thead>
@@ -557,7 +556,7 @@
                                 $late = $session->records->where('status', 'late')->count();
                                 $absent = $session->records->where('status', 'absent')->count();
 
-                                // ✅ FIX: Get total enrolled students from database if $total_students is empty
+                                // Get total enrolled students
                                 $totalEnrolled = $session->total_students ?? 0;
                                 if ($totalEnrolled == 0) {
                                     $totalEnrolled = \App\Models\Enrollment::where('course_id', $session->course_id)
@@ -569,28 +568,6 @@
                                 $attendedPeriods = ($present + $late) * $periods;
                                 $totalPeriods = $totalEnrolled * $periods;
                                 $percentage = $totalPeriods > 0 ? round(($attendedPeriods / $totalPeriods) * 100) : 0;
-
-                                // Roll call based on percentage (KG+12 consistency)
-                                $rollCall =
-                                    $percentage >= 95
-                                        ? 10
-                                        : ($percentage >= 90
-                                            ? 9
-                                            : ($percentage >= 85
-                                                ? 8
-                                                : ($percentage >= 80
-                                                    ? 7
-                                                    : ($percentage >= 75
-                                                        ? 6
-                                                        : ($percentage >= 70
-                                                            ? 5
-                                                            : ($percentage >= 65
-                                                                ? 4
-                                                                : ($percentage >= 60
-                                                                    ? 3
-                                                                    : ($percentage >= 55
-                                                                        ? 2
-                                                                        : 1))))))));
 
                                 $barColor = $percentage >= 75 ? '#10b981' : ($percentage >= 50 ? '#f59e0b' : '#ef4444');
                             @endphp
@@ -640,9 +617,6 @@
                                         <span class="l">L: {{ $late }}</span>
                                         <span class="a">A: {{ $absent }}</span>
                                     </div>
-                                </td>
-                                <td data-label="Roll Call" style="text-align:center; font-weight:700;">
-                                    {{ $rollCall }}/10
                                 </td>
                                 <td data-label="Action" style="text-align: center;">
                                     @if ($session->status == 'active')

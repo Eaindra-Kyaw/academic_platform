@@ -10,6 +10,7 @@ use App\Models\Department;
 use App\Models\Course;
 use App\Models\User;
 use App\Models\Semester;
+use App\Helpers\AttendanceHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -29,6 +30,7 @@ class AttendanceAnalyticsController extends Controller
         $departmentId = $request->input('department_id');
         $courseId = $request->input('course_id');
         $year = $request->input('year');
+        $studentId = $request->input('student_id');
         $dateRange = $request->input('date_range', 'this_month');
 
         // Build date range
@@ -74,8 +76,8 @@ class AttendanceAnalyticsController extends Controller
         // Get department attendance
         $departmentAttendance = $this->getDepartmentAttendance($departmentId, $dateFrom, $dateTo);
 
-        // Weekly trend
-        $weeklyTrend = $this->getWeeklyTrend($departmentId, $courseId, $year, $dateFrom, $dateTo);
+        // Weekly trend – if a student is selected, get that student's weekly attendance
+        $weeklyTrend = $this->getWeeklyTrend($departmentId, $courseId, $year, $dateFrom, $dateTo, $studentId);
 
         // Course ranking
         $courseRanking = $this->getCourseRanking($departmentId, $dateFrom, $dateTo);
@@ -110,7 +112,10 @@ class AttendanceAnalyticsController extends Controller
         $departments = Department::orderBy('name')->get();
         $courses = Course::where('is_active', true)->orderBy('course_code')->get();
 
-        // ✅ FIXED: Use correct column names for semesters
+        // Students for dropdown
+        $students = User::where('role_id', 3)->orderBy('name')->get(['id', 'name', 'student_id']);
+
+        // Semesters
         $semesters = Semester::orderBy('academic_year', 'desc')
             ->orderBy('semester_number', 'asc')
             ->get();
@@ -129,6 +134,8 @@ class AttendanceAnalyticsController extends Controller
             'departmentId',
             'courseId',
             'year',
+            'studentId',
+            'students',
             'dateRange',
             'dateFrom',
             'dateTo',
@@ -248,15 +255,56 @@ class AttendanceAnalyticsController extends Controller
     }
 
     /**
-     * Get weekly attendance trend
+     * Get weekly attendance trend – supports student_id filter
      */
-    private function getWeeklyTrend($departmentId = null, $courseId = null, $year = null, $dateFrom = null, $dateTo = null)
+    private function getWeeklyTrend($departmentId = null, $courseId = null, $year = null, $dateFrom = null, $dateTo = null, $studentId = null)
     {
         $weeks = 12;
         $trend = [];
+
+        // If a student is selected, compute trend from attendance records
+        if ($studentId) {
+            $startDate = $dateFrom ? Carbon::parse($dateFrom)->subWeeks($weeks) : Carbon::now()->subWeeks($weeks);
+
+            // Get all session IDs that the student has records for
+            $sessionIds = AttendanceRecord::where('student_id', $studentId)
+                ->pluck('attendance_session_id')
+                ->unique()
+                ->toArray();
+
+            $sessions = AttendanceSession::whereIn('id', $sessionIds)
+                ->where('created_at', '>=', $startDate)
+                ->orderBy('session_date', 'asc')
+                ->get();
+
+            for ($i = $weeks; $i >= 0; $i--) {
+                $weekStart = Carbon::now()->subWeeks($i)->startOfWeek();
+                $weekEnd = Carbon::now()->subWeeks($i)->endOfWeek();
+                $label = $weekStart->format('d M');
+
+                $weekSessions = $sessions->filter(function($s) use ($weekStart, $weekEnd) {
+                    return Carbon::parse($s->session_date)->between($weekStart, $weekEnd);
+                });
+
+                $weekRecords = AttendanceRecord::where('student_id', $studentId)
+                    ->whereIn('attendance_session_id', $weekSessions->pluck('id')->toArray())
+                    ->whereIn('status', ['present', 'late'])
+                    ->count();
+
+                $totalPossible = $weekSessions->count();
+                $attendance = $totalPossible > 0 ? round(($weekRecords / $totalPossible) * 100, 1) : 0;
+
+                $trend[] = [
+                    'label' => $label,
+                    'attendance' => $attendance,
+                ];
+            }
+            return $trend;
+        }
+
+        // Otherwise, university-wide trend
         $startDate = $dateFrom ? Carbon::parse($dateFrom)->subWeeks($weeks) : Carbon::now()->subWeeks($weeks);
 
-        // Get total students
         $totalStudents = User::where('role_id', 3)->count();
         if ($departmentId) {
             $totalStudents = User::where('role_id', 3)
@@ -264,7 +312,6 @@ class AttendanceAnalyticsController extends Controller
                 ->count();
         }
 
-        // Get all session IDs for the period
         $sessionQuery = AttendanceSession::where('created_at', '>=', $startDate);
         if ($dateTo) {
             $sessionQuery->whereDate('created_at', '<=', $dateTo);
@@ -323,6 +370,227 @@ class AttendanceAnalyticsController extends Controller
         }
 
         return $trend;
+    }
+
+    /**
+     * Get student attendance data for charts (AJAX)
+     * ✅ FIXED: Period-based calculation per student
+     */
+    public function studentAttendanceData($studentId)
+    {
+        try {
+            $student = User::with('department')->findOrFail($studentId);
+
+            // ============================================================
+            // 1. Get ALL courses the student is enrolled in (approved)
+            // ============================================================
+            $courseIds = Enrollment::where('student_id', $studentId)
+                ->where('status', 'approved')
+                ->pluck('course_id')
+                ->toArray();
+
+            if (empty($courseIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Student is not enrolled in any courses.',
+                    'weekly' => [],
+                    'monthly' => [],
+                    'summary' => [
+                        'average_attendance' => 0,
+                        'average_roll_call' => 0,
+                        'overall_risk_score' => 0,
+                        'risk_level' => 'Low',
+                        'eligibility_status' => 'not_eligible',
+                        'risk_factors' => ['No courses enrolled'],
+                    ],
+                    'courses' => [],
+                ]);
+            }
+
+            // ============================================================
+            // 2. Get all ENDED sessions for those courses (last 12 weeks)
+            // ============================================================
+            $weeks = 12;
+            $startDate = Carbon::now()->subWeeks($weeks)->startOfWeek();
+
+            $allSessions = AttendanceSession::whereIn('course_id', $courseIds)
+                ->where('status', 'ended')
+                ->where('is_cancelled', false)
+                ->where('session_date', '>=', $startDate)
+                ->orderBy('session_date', 'asc')
+                ->get();
+
+            if ($allSessions->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No attendance sessions found for this student.',
+                    'weekly' => [],
+                    'monthly' => [],
+                    'summary' => [
+                        'average_attendance' => 0,
+                        'average_roll_call' => 0,
+                        'overall_risk_score' => 0,
+                        'risk_level' => 'Low',
+                        'eligibility_status' => 'not_eligible',
+                        'risk_factors' => ['No attendance sessions'],
+                    ],
+                    'courses' => [],
+                ]);
+            }
+
+            // ============================================================
+            // 3. Get the student's attendance records for these sessions
+            // ============================================================
+            $sessionIds = $allSessions->pluck('id')->toArray();
+            $records = AttendanceRecord::where('student_id', $studentId)
+                ->whereIn('attendance_session_id', $sessionIds)
+                ->get()
+                ->keyBy('attendance_session_id');
+
+            // ============================================================
+            // 4. Build weekly trend (period-based)
+            // ============================================================
+            $trend = [];
+            $monthlyGroup = [];
+
+            for ($i = $weeks; $i >= 0; $i--) {
+                $weekStart = Carbon::now()->subWeeks($i)->startOfWeek();
+                $weekEnd = Carbon::now()->subWeeks($i)->endOfWeek();
+                $label = $weekStart->format('d M');
+
+                // Sessions in this week for the student's courses
+                $weekSessions = $allSessions->filter(function($s) use ($weekStart, $weekEnd) {
+                    $sessionDate = Carbon::parse($s->session_date);
+                    return $sessionDate->between($weekStart, $weekEnd);
+                });
+
+                if ($weekSessions->isEmpty()) {
+                    $trend[] = ['label' => $label, 'attendance' => 0];
+                    continue;
+                }
+
+                // Count total periods and attended periods
+                $totalPeriods = 0;
+                $attendedPeriods = 0;
+
+                foreach ($weekSessions as $session) {
+                    $periods = $session->conducted_periods ?? 1;
+                    $totalPeriods += $periods;
+
+                    $record = $records->get($session->id);
+                    if ($record && in_array($record->status, ['present', 'late'])) {
+                        $attendedPeriods += $periods;
+                    }
+                }
+
+                $attendance = $totalPeriods > 0 ? round(($attendedPeriods / $totalPeriods) * 100, 1) : 0;
+                $trend[] = ['label' => $label, 'attendance' => $attendance];
+
+                // Group by month for monthly summary
+                $monthKey = $weekStart->format('Y-m');
+                if (!isset($monthlyGroup[$monthKey])) {
+                    $monthlyGroup[$monthKey] = [
+                        'month' => $weekStart->format('M Y'),
+                        'sum' => 0,
+                        'count' => 0,
+                    ];
+                }
+                $monthlyGroup[$monthKey]['sum'] += $attendance;
+                $monthlyGroup[$monthKey]['count']++;
+            }
+
+            // Build monthly summary
+            $monthly = [];
+            foreach ($monthlyGroup as $key => $data) {
+                $monthly[] = [
+                    'month' => $data['month'],
+                    'avg_attendance' => $data['count'] > 0 ? round($data['sum'] / $data['count'], 1) : 0,
+                ];
+            }
+
+            // ============================================================
+            // 5. Calculate overall stats from evaluations
+            // ============================================================
+            $evaluations = DB::table('attendance_evaluations')
+                ->where('student_id', $studentId)
+                ->get();
+
+            if ($evaluations->isNotEmpty()) {
+                $avgAttendance = $evaluations->avg('attendance_percentage') ?? 0;
+                $avgRollCall = $evaluations->avg('roll_call_total') ?? 0;
+                $overallRisk = $evaluations->avg('risk_score') ?? 0;
+                $riskLevel = AttendanceHelper::getRiskLevel($overallRisk);
+                $eligibility = AttendanceHelper::getEligibilityStatus($avgAttendance);
+
+                // Collect risk factors
+                $allFactors = [];
+                foreach ($evaluations as $eval) {
+                    $factors = json_decode($eval->risk_factors ?? '[]', true);
+                    if (is_array($factors)) {
+                        $allFactors = array_merge($allFactors, $factors);
+                    }
+                }
+                $uniqueFactors = array_values(array_unique($allFactors));
+
+                $summary = [
+                    'average_attendance' => round($avgAttendance, 1),
+                    'average_roll_call' => round($avgRollCall, 1),
+                    'overall_risk_score' => round($overallRisk, 1),
+                    'risk_level' => $riskLevel,
+                    'eligibility_status' => $eligibility,
+                    'risk_factors' => $uniqueFactors,
+                ];
+
+                // Per-course breakdown
+                $courses = [];
+                foreach ($evaluations as $eval) {
+                    $course = Course::find($eval->course_id);
+                    if ($course) {
+                        $courses[] = [
+                            'course_code' => $course->course_code,
+                            'course_name' => $course->course_name,
+                            'attendance' => round($eval->attendance_percentage, 1),
+                            'eligibility' => $eval->eligibility_status,
+                            'risk_level' => $eval->risk_level,
+                            'roll_call' => round($eval->roll_call_total, 1),
+                        ];
+                    }
+                }
+            } else {
+                // No evaluations – use trend data
+                $avgAttendance = collect($trend)->avg('attendance') ?? 0;
+                $summary = [
+                    'average_attendance' => round($avgAttendance, 1),
+                    'average_roll_call' => 0,
+                    'overall_risk_score' => 0,
+                    'risk_level' => 'Low',
+                    'eligibility_status' => AttendanceHelper::getEligibilityStatus($avgAttendance),
+                    'risk_factors' => ['No evaluations yet. Run attendance:evaluate.'],
+                ];
+                $courses = [];
+            }
+
+            // ============================================================
+            // 6. Return JSON
+            // ============================================================
+            return response()->json([
+                'success' => true,
+                'student' => [
+                    'id' => $student->id,
+                    'name' => $student->name,
+                    'student_id' => $student->student_id ?? 'N/A',
+                ],
+                'weekly' => $trend,
+                'monthly' => $monthly,
+                'summary' => $summary,
+                'courses' => $courses,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

@@ -2,7 +2,7 @@
 
 @section('title', 'Attendance Monitoring')
 @section('role', 'Lecturer')
-@section('page-title', '📊 Attendance Monitoring')
+@section('page-title', 'Attendance Monitoring')
 @section('welcome-text', 'Track student attendance across your courses')
 
 @section('sidebar')
@@ -12,8 +12,8 @@
 @section('content')
     <style>
         /* ============================================================
-                   DESIGN SYSTEM
-                   ============================================================ */
+                               DESIGN SYSTEM
+                               ============================================================ */
         :root {
             --primary: #0A2463;
             --primary-light: #1E3A8A;
@@ -44,8 +44,8 @@
         }
 
         /* ============================================================
-                   PERIOD CONTROLS
-                   ============================================================ */
+                               PERIOD CONTROLS
+                               ============================================================ */
         .period-controls {
             background: white;
             border-radius: var(--radius);
@@ -241,8 +241,8 @@
         }
 
         /* ============================================================
-                   STATS ROW
-                   ============================================================ */
+                               STATS ROW
+                               ============================================================ */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -303,8 +303,8 @@
         }
 
         /* ============================================================
-                   COURSE CARDS
-                   ============================================================ */
+                               COURSE CARDS
+                               ============================================================ */
         .course-card {
             background: white;
             border-radius: var(--radius);
@@ -412,8 +412,8 @@
         }
 
         /* ============================================================
-                   STUDENT TABLE - FULLY RESPONSIVE
-                   ============================================================ */
+                               STUDENT TABLE - FULLY RESPONSIVE
+                               ============================================================ */
         .table-wrap {
             overflow-x: auto;
             padding: 0;
@@ -428,13 +428,13 @@
             min-width: 0;
         }
 
-        /* Column widths – fluid */
+        /* Column widths – fluid (roll call column removed) */
         .students-table .col-index {
             width: 4%;
         }
 
         .students-table .col-student {
-            width: 20%;
+            width: 22%;
         }
 
         .students-table .col-id {
@@ -442,20 +442,15 @@
         }
 
         .students-table .col-attendance {
-            width: 22%;
-        }
-
-        .students-table .col-rollcall {
-            width: 10%;
-            text-align: center;
+            width: 30%;
         }
 
         .students-table .col-eligibility {
-            width: 12%;
+            width: 16%;
         }
 
         .students-table .col-risk {
-            width: 10%;
+            width: 14%;
         }
 
         .students-table thead {
@@ -541,8 +536,8 @@
         }
 
         /* ============================================================
-                   ATTENDANCE CELL
-                   ============================================================ */
+                               ATTENDANCE CELL
+                               ============================================================ */
         .attendance-cell {
             display: flex;
             align-items: center;
@@ -594,19 +589,6 @@
 
         .progress-track .fill.low {
             background: var(--danger);
-        }
-
-        .rollcall-value {
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--gray-700);
-            text-align: center;
-        }
-
-        .rollcall-value .out-of {
-            font-weight: 400;
-            font-size: 11px;
-            color: var(--gray-400);
         }
 
         .elig-badge {
@@ -663,8 +645,8 @@
         }
 
         /* ============================================================
-                   EMPTY STATE
-                   ============================================================ */
+                               EMPTY STATE
+                               ============================================================ */
         .empty-state {
             text-align: center;
             padding: 32px 20px;
@@ -684,15 +666,15 @@
         }
 
         /* ============================================================
-                   RESPONSIVE
-                   ============================================================ */
+                               RESPONSIVE
+                               ============================================================ */
         @media (max-width: 1200px) {
             .students-table .col-student {
-                width: 18%;
+                width: 20%;
             }
 
             .students-table .col-attendance {
-                width: 20%;
+                width: 28%;
             }
         }
 
@@ -716,7 +698,7 @@
             }
 
             .students-table .col-student {
-                width: 16%;
+                width: 18%;
             }
 
             .students-table .col-id {
@@ -724,7 +706,7 @@
             }
 
             .students-table .col-attendance {
-                width: 18%;
+                width: 26%;
             }
         }
 
@@ -758,11 +740,11 @@
             }
 
             .students-table .col-student {
-                width: 18%;
+                width: 20%;
             }
 
             .students-table .col-attendance {
-                width: 20%;
+                width: 28%;
             }
 
             .progress-track {
@@ -826,7 +808,7 @@
             }
 
             .students-table .col-student {
-                width: 20%;
+                width: 22%;
             }
 
             .students-table .col-id {
@@ -834,19 +816,15 @@
             }
 
             .students-table .col-attendance {
-                width: 18%;
-            }
-
-            .students-table .col-rollcall {
-                width: 8%;
+                width: 26%;
             }
 
             .students-table .col-eligibility {
-                width: 10%;
+                width: 12%;
             }
 
             .students-table .col-risk {
-                width: 8%;
+                width: 10%;
             }
         }
 
@@ -864,14 +842,6 @@
             .attendance-cell .value {
                 font-size: 11px;
                 min-width: 32px;
-            }
-
-            .rollcall-value {
-                font-size: 12px;
-            }
-
-            .rollcall-value .out-of {
-                font-size: 9px;
             }
 
             .elig-badge,
@@ -967,7 +937,7 @@
                 <input type="hidden" name="period" value="{{ $period }}">
                 <input type="hidden" name="offset" value="{{ $offset }}">
                 <select name="course_id" onchange="this.form.submit()">
-                    <option value="">📚 All Courses</option>
+                    <option value=""> All Courses</option>
                     @foreach ($allCourses as $course)
                         <option value="{{ $course->id }}" {{ ($courseId ?? '') == $course->id ? 'selected' : '' }}>
                             {{ $course->course_code }}
@@ -1003,28 +973,28 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="number primary">{{ $totalStudents }}</div>
-            <div class="label">👨‍🎓 Total Students</div>
+            <div class="label">Total Students</div>
         </div>
         <div class="stat-card">
             <div class="number green">{{ $eligibleCount }}</div>
-            <div class="label">✅ Eligible</div>
+            <div class="label">Eligible</div>
             <div class="sub">{{ $totalStudents > 0 ? round(($eligibleCount / $totalStudents) * 100) : 0 }}% of total
             </div>
         </div>
         <div class="stat-card">
             <div class="number yellow">{{ $warningCount }}</div>
-            <div class="label">⚠️ Warning</div>
+            <div class="label"> Warning</div>
             <div class="sub">{{ $totalStudents > 0 ? round(($warningCount / $totalStudents) * 100) : 0 }}% of total
             </div>
         </div>
         <div class="stat-card">
             <div class="number red">{{ $atRiskCount }}</div>
-            <div class="label">🚨 At Risk</div>
+            <div class="label"> At Risk</div>
             <div class="sub">{{ $totalStudents > 0 ? round(($atRiskCount / $totalStudents) * 100) : 0 }}% of total</div>
         </div>
         <div class="stat-card">
             <div class="number primary">{{ $avgAttendance }}%</div>
-            <div class="label">📈 Avg Attendance</div>
+            <div class="label">Avg Attendance</div>
             <div class="sub">{{ $avgAttendance >= 75 ? '✅ Good' : ($avgAttendance >= 60 ? '⚠️ Moderate' : '🚨 Low') }}
             </div>
         </div>
@@ -1076,7 +1046,7 @@
                                 <th class="col-student sortable" data-sort="string">Student</th>
                                 <th class="col-id sortable" data-sort="string">ID</th>
                                 <th class="col-attendance sortable" data-sort="number">Attendance</th>
-                                <th class="col-rollcall sortable" data-sort="number">Roll Call</th>
+                                {{-- Roll Call column removed --}}
                                 <th class="col-eligibility sortable" data-sort="string">Eligibility</th>
                                 <th class="col-risk sortable" data-sort="string">Risk</th>
                             </tr>
@@ -1085,7 +1055,6 @@
                             @foreach ($courseStudents as $index => $student)
                                 @php
                                     $att = $student->attendance_percentage ?? 0;
-                                    $roll = $student->roll_call_total ?? 0;
                                     $status = $student->status ?? 'Not Evaluated';
                                     $risk = $student->risk_level ?? 'Low';
                                     $hasEval = ($student->total_courses ?? 0) > 0;
@@ -1125,12 +1094,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="col-rollcall">
-                                        <div class="rollcall-value">
-                                            {{ number_format($roll, 1) }}
-                                            <span class="out-of">/10</span>
-                                        </div>
-                                    </td>
+                                    {{-- Roll Call data cell removed --}}
                                     <td class="col-eligibility">
                                         @if ($hasEval)
                                             <span class="elig-badge elig-{{ $eligClass }}">

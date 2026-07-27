@@ -1,9 +1,8 @@
-{{-- resources/views/admin/reports/index.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Reports')
 @section('role', 'Admin')
-@section('page-title', '📊 Reports')
+@section('page-title', 'Reports')
 @section('welcome-text', 'Select a report type to generate')
 
 @section('sidebar')

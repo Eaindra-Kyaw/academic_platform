@@ -3,7 +3,7 @@
 
 @section('title', $announcement->title)
 @section('role', 'Lecturer')
-@section('page-title', '📢 ' . $announcement->title)
+@section('page-title', ' ' . $announcement->title)
 @section('welcome-text', 'Announcement details')
 
 @section('sidebar')

@@ -7,6 +7,8 @@ use App\Models\Department;
 use App\Models\User;
 use App\Models\Course;
 use App\Models\Semester;
+use App\Models\AttendanceEvaluation;
+use App\Helpers\AttendanceHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -146,16 +148,106 @@ class DepartmentController extends Controller
     }
 
     /**
-     * Show students by year within department
+     * Show students by year within department - FIXED with attendance & risk
      */
     public function studentsByYear(Department $department, $year)
     {
+        // Get students with enrollments
         $students = $department->students()
             ->where('current_year', $year)
             ->with(['enrollments' => function($query) {
                 $query->where('status', 'approved')->with('course');
             }])
             ->paginate(20);
+
+        // ============================================================
+        // FIX: Calculate attendance and risk from evaluations
+        // ============================================================
+        foreach ($students as $student) {
+            $totalAttendance = 0;
+            $totalCourses = 0;
+            $highestRisk = 'Low';
+            $highestRiskScore = 0;
+            $totalRollCall = 0;
+            $totalConsistency = 0;
+            $totalPunctuality = 0;
+            $totalParticipation = 0;
+
+            foreach ($student->enrollments as $enrollment) {
+                // Get latest evaluation for this student-course
+                $eval = AttendanceEvaluation::where('student_id', $student->id)
+                    ->where('course_id', $enrollment->course_id)
+                    ->orderBy('evaluation_date', 'desc')
+                    ->first();
+
+                if ($eval) {
+                    $attendance = $eval->attendance_percentage;
+                    $riskLevel = $eval->risk_level;
+                    $riskScore = $eval->risk_score;
+                    $rollCall = $eval->roll_call_total;
+                    $consistency = $eval->consistency_marks;
+                    $punctuality = $eval->punctuality_marks;
+                    $participation = $eval->participation_marks;
+
+                    $totalAttendance += $attendance;
+                    $totalCourses++;
+                    $totalRollCall += $rollCall ?? 0;
+                    $totalConsistency += $consistency ?? 0;
+                    $totalPunctuality += $punctuality ?? 0;
+                    $totalParticipation += $participation ?? 0;
+
+                    if ($riskLevel === 'High') $highestRisk = 'High';
+                    elseif ($riskLevel === 'Medium' && $highestRisk !== 'High') $highestRisk = 'Medium';
+
+                    if ($riskScore > $highestRiskScore) $highestRiskScore = $riskScore;
+
+                    // Store per-course data on the enrollment
+                    $enrollment->attendance_percentage = $attendance;
+                    $enrollment->roll_call_total = $rollCall;
+                    $enrollment->consistency_marks = $consistency;
+                    $enrollment->punctuality_marks = $punctuality;
+                    $enrollment->participation_marks = $participation;
+                    $enrollment->eligibility_status = $eval->eligibility_status;
+                    $enrollment->risk_level = $riskLevel;
+                    $enrollment->risk_score = $riskScore;
+                } else {
+                    // No evaluation - default values
+                    $enrollment->attendance_percentage = 0;
+                    $enrollment->roll_call_total = 0;
+                    $enrollment->consistency_marks = 0;
+                    $enrollment->punctuality_marks = 0;
+                    $enrollment->participation_marks = 0;
+                    $enrollment->eligibility_status = 'not_eligible';
+                    $enrollment->risk_level = 'Low';
+                    $enrollment->risk_score = 0;
+                }
+            }
+
+            // Overall stats per student
+            if ($totalCourses > 0) {
+                $student->attendance_percentage = round($totalAttendance / $totalCourses, 1);
+                $student->roll_call_total = round($totalRollCall / $totalCourses, 1);
+                $student->consistency_marks = round($totalConsistency / $totalCourses, 1);
+                $student->punctuality_marks = round($totalPunctuality / $totalCourses, 1);
+                $student->participation_marks = round($totalParticipation / $totalCourses, 1);
+                $student->risk_level = $highestRisk;
+                $student->risk_score = $highestRiskScore;
+                $student->eligibility_status = $student->attendance_percentage >= 75 ? 'eligible' :
+                                             ($student->attendance_percentage >= 60 ? 'warning' : 'not_eligible');
+            } else {
+                $student->attendance_percentage = 0;
+                $student->roll_call_total = 0;
+                $student->consistency_marks = 0;
+                $student->punctuality_marks = 0;
+                $student->participation_marks = 0;
+                $student->risk_level = 'Low';
+                $student->risk_score = 0;
+                $student->eligibility_status = 'not_eligible';
+            }
+
+            // Store total courses count
+            $student->total_courses = $totalCourses;
+        }
 
         $yearLabel = $this->getYearLabel($year);
 
@@ -200,7 +292,7 @@ class DepartmentController extends Controller
         $semester = Semester::findOrFail($semesterId);
 
         $courses = Course::where('department_id', $department->id)
-            ->where('semester_id', $semester->id)  // Use semester_id instead of name matching
+            ->where('semester_id', $semester->id)
             ->with(['lecturer', 'students'])
             ->get()
             ->map(function($course) {
@@ -213,7 +305,7 @@ class DepartmentController extends Controller
     }
 
     /**
-     * Export students by year to CSV
+     * Export students by year to CSV - FIXED with attendance & risk
      */
     public function exportStudents(Department $department, $year)
     {
@@ -223,6 +315,36 @@ class DepartmentController extends Controller
                 $query->where('status', 'approved')->with('course');
             }])
             ->get();
+
+        // Calculate attendance and risk for each student
+        foreach ($students as $student) {
+            $totalAttendance = 0;
+            $totalCourses = 0;
+            $highestRisk = 'Low';
+
+            foreach ($student->enrollments as $enrollment) {
+                $eval = AttendanceEvaluation::where('student_id', $student->id)
+                    ->where('course_id', $enrollment->course_id)
+                    ->orderBy('evaluation_date', 'desc')
+                    ->first();
+
+                if ($eval) {
+                    $attendance = $eval->attendance_percentage;
+                    $totalAttendance += $attendance;
+                    $totalCourses++;
+                    if ($eval->risk_level === 'High') $highestRisk = 'High';
+                    elseif ($eval->risk_level === 'Medium' && $highestRisk !== 'High') $highestRisk = 'Medium';
+                }
+            }
+
+            if ($totalCourses > 0) {
+                $student->attendance_percentage = round($totalAttendance / $totalCourses, 1);
+                $student->risk_level = $highestRisk;
+            } else {
+                $student->attendance_percentage = 0;
+                $student->risk_level = 'Low';
+            }
+        }
 
         // Prepare CSV data
         $headers = [
@@ -236,7 +358,7 @@ class DepartmentController extends Controller
             // Add UTF-8 BOM for Excel compatibility
             fwrite($handle, "\xEF\xBB\xBF");
 
-            // Add headers
+            // Add headers with more columns
             fputcsv($handle, ['Student ID', 'Name', 'Email', 'Courses', 'Attendance %', 'Risk Level']);
 
             // Add data

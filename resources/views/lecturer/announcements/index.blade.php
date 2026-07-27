@@ -3,7 +3,7 @@
 
 @section('title', 'Announcements')
 @section('role', 'Lecturer')
-@section('page-title', '📢 Announcements')
+@section('page-title', 'Announcements')
 @section('welcome-text', 'View system announcements')
 
 @section('sidebar')

@@ -2,7 +2,7 @@
 
 @section('title', 'My Progress')
 @section('role', 'Student')
-@section('page-title', '📈 Academic Progress')
+@section('page-title', 'Academic Progress')
 @section('welcome-text', 'Track your academic performance with roll call breakdown')
 
 @section('sidebar')
@@ -376,10 +376,10 @@
                 $rate = $total > 0 ? round(($attended / $total) * 100) : 0;
             @endphp
             <div class="value green">{{ $rate }}%</div>
-            <div class="sub">{{ $rate >= 75 ? '✅ Good standing' : '⚠️ Needs improvement' }}</div>
+            <div class="sub">{{ $rate >= 75 ? ' Good standing' : ' Needs improvement' }}</div>
         </div>
 
-        <div class="stat-card">
+        {{-- <div class="stat-card">
             <span class="icon"><i class="bi bi-star" style="color:var(--warning);"></i></span>
             <div class="label">Avg Roll Call</div>
             @php
@@ -395,7 +395,7 @@
             @endphp
             <div class="value orange">{{ $avgRollCall }}/10</div>
             <div class="sub">Academic performance</div>
-        </div>
+        </div> --}}
 
         <div class="stat-card">
             <span class="icon"><i class="bi bi-people" style="color:var(--primary);"></i></span>
@@ -423,10 +423,10 @@
                 @php
                     $course = $progress['course'] ?? null;
                     $attendance = $progress['attendance'] ?? 0;
-                    $rollCall = $progress['roll_call_total'] ?? 0;
-                    $consistency = $progress['consistency'] ?? 0;
-                    $punctuality = $progress['punctuality'] ?? 0;
-                    $participation = $progress['participation'] ?? 0;
+                    // $rollCall = $progress['roll_call_total'] ?? 0;
+                    // $consistency = $progress['consistency'] ?? 0;
+                    // $punctuality = $progress['punctuality'] ?? 0;
+                    // $participation = $progress['participation'] ?? 0;
                     $status = $progress['eligibility_status'] ?? 'pending';
                     $riskLevel = $progress['risk_level'] ?? 'Low';
                     $riskScore = $progress['risk_score'] ?? 0;
@@ -457,12 +457,12 @@
                             </div>
                         </div>
 
-                        <div class="rollcall-progress">
+                        {{-- <div class="rollcall-progress">
                             <span>Consistency: {{ $consistency }}/6</span>
                             <span>Punctuality: {{ $punctuality }}/2</span>
                             <span>Participation: {{ $participation }}/2</span>
                             <span class="total">Total: {{ $rollCall }}/10</span>
-                        </div>
+                        </div> --}}
 
                         <div class="course-stats">
                             <div class="stat-item">

@@ -173,7 +173,9 @@
         }
     </style>
 
-    <a href="{{ route('admin.departments.courses.show', [$department, $course]) }}" class="back-link">
+    {{-- FIXED: Explicit route parameters --}}
+    <a href="{{ route('admin.departments.courses.show', ['department' => $department->id, 'course' => $course->id]) }}"
+        class="back-link">
         <i class="bi bi-arrow-left"></i> Back to Course Details
     </a>
 
@@ -236,15 +238,16 @@
                     <select name="semester" required>
                         <option value="">Select Semester</option>
                         @foreach ($semesters as $sem)
-                            <option value="{{ $sem }}"
-                                {{ old('semester', $course->semester) == $sem ? 'selected' : '' }}>
-                                {{ $sem }}
+                            <option value="{{ $sem->semester_name }}"
+                                {{ old('semester', $course->semester) == $sem->semester_name ? 'selected' : '' }}>
+                                {{ $sem->year_name }} - {{ $sem->semester_name }}
                             </option>
                         @endforeach
                     </select>
                     @error('semester')
                         <div class="error">{{ $message }}</div>
                     @enderror
+                    <div class="help-text">Choose the year and semester combination</div>
                 </div>
             </div>
 
@@ -257,51 +260,48 @@
                         <div class="error">{{ $message }}</div>
                     @enderror
                 </div>
-
-                <div class="form-group">
-                    <label>Room</label>
-                    <input type="text" name="room" value="{{ old('room', $course->room) }}"
-                        placeholder="e.g., Room 8-6">
-                    @error('room')
-                        <div class="error">{{ $message }}</div>
-                    @enderror
-                </div>
             </div>
 
+            {{-- Lecturer Dropdown --}}
             <div class="form-group">
                 <label>Lecturer</label>
                 <select name="lecturer_id">
                     <option value="">Select Lecturer</option>
-                    <optgroup label="Department Lecturers">
-                        @foreach ($deptLecturers as $lecturer)
-                            <option value="{{ $lecturer->id }}"
-                                {{ old('lecturer_id', $course->lecturer_id) == $lecturer->id ? 'selected' : '' }}>
-                                {{ $lecturer->name }}
-                            </option>
-                        @endforeach
-                    </optgroup>
-                    <optgroup label="All Lecturers">
-                        @foreach ($lecturers as $lecturer)
-                            @if ($lecturer->department_id != $department->id)
+                    @if (isset($deptLecturers) && $deptLecturers->count() > 0)
+                        <optgroup label="Department Lecturers">
+                            @foreach ($deptLecturers as $lecturer)
                                 <option value="{{ $lecturer->id }}"
                                     {{ old('lecturer_id', $course->lecturer_id) == $lecturer->id ? 'selected' : '' }}>
                                     {{ $lecturer->name }}
-                                    {{ $lecturer->department_id ? '(' . $lecturer->department->code . ')' : '' }}
                                 </option>
-                            @endif
-                        @endforeach
-                    </optgroup>
+                            @endforeach
+                        </optgroup>
+                    @endif
+                    @if (isset($lecturers) && $lecturers->count() > 0)
+                        <optgroup label="All Lecturers">
+                            @foreach ($lecturers as $lecturer)
+                                @if (!isset($deptLecturers) || !$deptLecturers->contains('id', $lecturer->id))
+                                    <option value="{{ $lecturer->id }}"
+                                        {{ old('lecturer_id', $course->lecturer_id) == $lecturer->id ? 'selected' : '' }}>
+                                        {{ $lecturer->name }}
+                                        {{ $lecturer->department_id ? '(' . ($lecturer->department->code ?? '') . ')' : '' }}
+                                    </option>
+                                @endif
+                            @endforeach
+                        </optgroup>
+                    @endif
                 </select>
                 @error('lecturer_id')
                     <div class="error">{{ $message }}</div>
                 @enderror
+                <div class="help-text">Leave blank to manually enter the lecturer's name below</div>
             </div>
 
             <div class="form-group">
                 <label>Lecturer Name (Manual Entry)</label>
                 <input type="text" name="lecturer_name" value="{{ old('lecturer_name', $course->lecturer_name) }}"
                     placeholder="e.g., Dr. John Doe">
-                <div class="help-text">Used if lecturer is not in the dropdown list above</div>
+                <div class="help-text">Used if the lecturer is not in the dropdown list above</div>
                 @error('lecturer_name')
                     <div class="error">{{ $message }}</div>
                 @enderror
@@ -350,6 +350,7 @@
                     <label>Room</label>
                     <input type="text" name="room" value="{{ old('room', $course->room) }}"
                         placeholder="e.g., 1-3-7">
+                    <div class="help-text">Room number or building</div>
                     @error('room')
                         <div class="error">{{ $message }}</div>
                     @enderror

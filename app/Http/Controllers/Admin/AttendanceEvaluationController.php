@@ -349,4 +349,108 @@ class AttendanceEvaluationController extends Controller
             'message' => 'Evaluation completed for date range.'
         ]);
     }
+
+    /**
+ * Get attendance data for a specific student (weekly trend + risk summary)
+ */
+public function studentAttendanceData($studentId)
+{
+    $student = User::with('department')->findOrFail($studentId);
+
+    // Get all evaluations for this student
+    $evaluations = DB::table('attendance_evaluations')
+        ->where('student_id', $studentId)
+        ->get();
+
+    // --- Weekly attendance trend (last 12 weeks) ---
+    $weeks = 12;
+    $trend = [];
+    $startDate = Carbon::now()->subWeeks($weeks);
+
+    // Get all attendance sessions that the student has records for (across all courses)
+    $sessionIds = AttendanceRecord::where('student_id', $studentId)
+        ->pluck('attendance_session_id')
+        ->unique()
+        ->toArray();
+
+    $sessions = AttendanceSession::whereIn('id', $sessionIds)
+        ->where('created_at', '>=', $startDate)
+        ->orderBy('session_date', 'asc')
+        ->get();
+
+    for ($i = $weeks; $i >= 0; $i--) {
+        $weekStart = Carbon::now()->subWeeks($i)->startOfWeek();
+        $weekEnd = Carbon::now()->subWeeks($i)->endOfWeek();
+        $label = $weekStart->format('d M');
+
+        $weekSessions = $sessions->filter(function($s) use ($weekStart, $weekEnd) {
+            return Carbon::parse($s->session_date)->between($weekStart, $weekEnd);
+        });
+
+        $weekRecords = AttendanceRecord::where('student_id', $studentId)
+            ->whereIn('attendance_session_id', $weekSessions->pluck('id')->toArray())
+            ->whereIn('status', ['present', 'late'])
+            ->count();
+
+        $totalPossible = $weekSessions->count();
+        $attendance = $totalPossible > 0 ? round(($weekRecords / $totalPossible) * 100, 1) : 0;
+
+        $trend[] = [
+            'label' => $label,
+            'attendance' => $attendance,
+        ];
+    }
+
+    // --- Overall risk summary ---
+    $avgAttendance = $evaluations->avg('attendance_percentage') ?? 0;
+    $avgRollCall = $evaluations->avg('roll_call_total') ?? 0;
+    $overallRisk = $evaluations->avg('risk_score') ?? 0;
+    $riskLevel = \App\Helpers\AttendanceHelper::getRiskLevel($overallRisk);
+    $eligibility = \App\Helpers\AttendanceHelper::getEligibilityStatus($avgAttendance);
+
+    // Collect risk factors from all evaluations (unique)
+    $allFactors = [];
+    foreach ($evaluations as $eval) {
+        $factors = json_decode($eval->risk_factors ?? '[]', true);
+        if (is_array($factors)) {
+            $allFactors = array_merge($allFactors, $factors);
+        }
+    }
+    $uniqueFactors = array_values(array_unique($allFactors));
+
+    // Per-course breakdown
+    $courses = [];
+    foreach ($evaluations as $eval) {
+        $course = Course::find($eval->course_id);
+        if ($course) {
+            $courses[] = [
+                'course_code' => $course->course_code,
+                'course_name' => $course->course_name,
+                'attendance' => round($eval->attendance_percentage, 1),
+                'eligibility' => $eval->eligibility_status,
+                'risk_level' => $eval->risk_level,
+                'roll_call' => round($eval->roll_call_total, 1),
+            ];
+        }
+    }
+
+    return response()->json([
+        'success' => true,
+        'student' => [
+            'id' => $student->id,
+            'name' => $student->name,
+            'student_id' => $student->student_id,
+        ],
+        'trend' => $trend,
+        'summary' => [
+            'average_attendance' => round($avgAttendance, 1),
+            'average_roll_call' => round($avgRollCall, 1),
+            'overall_risk_score' => round($overallRisk, 1),
+            'risk_level' => $riskLevel,
+            'eligibility_status' => $eligibility,
+            'risk_factors' => $uniqueFactors,
+        ],
+        'courses' => $courses,
+    ]);
+}
 }

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Messages')
-@section('page-title', '📨 Messages')
+@section('page-title', 'Messages')
 @section('welcome-text', 'View and manage your messages')
 
 @section('sidebar')

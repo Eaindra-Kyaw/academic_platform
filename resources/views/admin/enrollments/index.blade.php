@@ -1,4 +1,3 @@
-{{-- resources/views/admin/enrollments/index.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Enrollment Management')
@@ -286,8 +285,8 @@
                 <div class="dept-name">{{ $dept->name }}</div>
                 <div class="dept-code">{{ $dept->code }}</div>
                 <div class="dept-stats">
-                    <span>📚 <span class="num">{{ $dept->enrollments_count ?? 0 }}</span> enrollments</span>
-                    <span>⏳ <span class="num pending">{{ $dept->pending_count ?? 0 }}</span> pending</span>
+                    <span> <span class="num">{{ $dept->enrollments_count ?? 0 }}</span> enrollments</span>
+                    <span> <span class="num pending">{{ $dept->pending_count ?? 0 }}</span> pending</span>
                 </div>
             </a>
         @endforeach

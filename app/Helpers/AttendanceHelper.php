@@ -115,22 +115,63 @@ class AttendanceHelper
     }
 
     // ============================================================
-    // RISK SCORE
+    // RISK SCORE – IMPROVED MULTI-FACTOR VERSION
     // ============================================================
 
+    /**
+     * Calculate a comprehensive risk score using multiple factors:
+     * - Attendance percentage (40% weight)
+     * - Roll call total (25% weight)
+     * - Consecutive absences (20% weight)
+     * - Attendance trend (15% weight)
+     */
     public static function calculateRiskScore($attendancePercentage, $rollCallTotal = null, $consecutiveAbsences = null, $trend = null)
     {
+        // Attendance risk (0–100)
         if ($attendancePercentage >= 75) {
-            return 20;  // Low Risk
+            $attRisk = 20;
         } elseif ($attendancePercentage >= 60) {
-            return 50;  // Medium Risk
+            $attRisk = 50;
         } elseif ($attendancePercentage >= 40) {
-            return 75;  // High Risk
+            $attRisk = 75;
         } else {
-            return 90;  // Very High Risk
+            $attRisk = 90;
         }
+
+        // Roll call risk (0–100)
+        $rollRisk = 50; // default if null
+        if ($rollCallTotal !== null) {
+            if ($rollCallTotal >= 8) $rollRisk = 20;
+            elseif ($rollCallTotal >= 6) $rollRisk = 40;
+            elseif ($rollCallTotal >= 4) $rollRisk = 60;
+            else $rollRisk = 80;
+        }
+
+        // Consecutive absences risk (0–100)
+        $absRisk = 0;
+        if ($consecutiveAbsences !== null) {
+            if ($consecutiveAbsences >= 4) $absRisk = 90;
+            elseif ($consecutiveAbsences >= 2) $absRisk = 60;
+            elseif ($consecutiveAbsences >= 1) $absRisk = 30;
+        }
+
+        // Trend risk (0–100)
+        $trendRisk = 50;
+        if ($trend !== null) {
+            if ($trend == 'improving') $trendRisk = 20;
+            elseif ($trend == 'stable') $trendRisk = 50;
+            elseif ($trend == 'declining') $trendRisk = 75;
+            elseif ($trend == 'critical') $trendRisk = 90;
+        }
+
+        // Weighted average
+        $riskScore = ($attRisk * 0.40) + ($rollRisk * 0.25) + ($absRisk * 0.20) + ($trendRisk * 0.15);
+        return round($riskScore);
     }
 
+    /**
+     * Get risk level from attendance only (legacy – kept for backward compatibility)
+     */
     public static function getRiskLevelFromAttendance($attendancePercentage)
     {
         if ($attendancePercentage >= 75) {

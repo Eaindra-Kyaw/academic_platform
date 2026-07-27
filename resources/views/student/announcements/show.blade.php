@@ -1,9 +1,8 @@
-{{-- resources/views/student/announcements/show.blade.php --}}
 @extends('layouts.app')
 
 @section('title', $announcement->title)
 @section('role', 'Student')
-@section('page-title', '📢 ' . $announcement->title)
+@section('page-title', ' ' . $announcement->title)
 @section('welcome-text', 'Announcement details')
 
 @section('sidebar')

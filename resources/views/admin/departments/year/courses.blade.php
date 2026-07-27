@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', $yearLabel . ' Courses - ' . $department->name)
-@section('page-title', '📚 ' . $yearLabel . ' Courses')
+@section('page-title', ' ' . $yearLabel . ' Courses')
 @section('welcome-text', $department->name . ' • ' . $department->code)
 
 @section('sidebar')
