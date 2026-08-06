@@ -1,4 +1,5 @@
 {{-- resources/views/layouts/partials/admin-sidebar.blade.php --}}
+
 <div class="nav-label">Main</div>
 <a href="{{ route('admin.dashboard') }}" class="nav-item @if (request()->routeIs('admin.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
@@ -14,34 +15,40 @@
 <a href="{{ route('admin.enrollments.index') }}" class="nav-item @if (request()->routeIs('admin.enrollments*')) active @endif">
     <i class="bi bi-list-check"></i><span>Enrollments</span>
 </a>
-{{-- <a href="{{ route('admin.semesters.index') }}" class="nav-item @if (request()->routeIs('admin.semesters*')) active @endif">
-    <i class="bi bi-calendar"></i><span>Semesters</span>
-</a> --}}
 
 <div class="nav-label">Analytics</div>
-{{-- Attendance link - active ONLY on the analytics page (not sub-pages) --}}
 <a href="{{ route('admin.attendance.analytics') }}" class="nav-item @if (request()->routeIs('admin.attendance.analytics')) active @endif">
     <i class="bi bi-calendar-check"></i><span>Attendance</span>
 </a>
 
-@if (Route::has('admin.risk.index'))
-    <a href="{{ route('admin.risk.index') }}" class="nav-item @if (request()->routeIs('admin.risk*')) active @endif">
-        <i class="bi bi-exclamation-triangle"></i><span>Risk Analysis</span>
-    </a>
-@else
-    <a href="#" class="nav-item" onclick="event.preventDefault(); alert('Risk Analysis feature coming soon!');">
-        <i class="bi bi-exclamation-triangle"></i><span>Risk Analysis (Coming Soon)</span>
-    </a>
-@endif
+<a href="{{ route('admin.risk.index') }}" class="nav-item @if (request()->routeIs('admin.risk*')) active @endif">
+    <i class="bi bi-exclamation-triangle"></i><span>Risk Analysis</span>
+</a>
 
 <a href="{{ route('admin.reports') }}" class="nav-item @if (request()->routeIs('admin.reports')) active @endif">
     <i class="bi bi-file-earmark-text"></i><span>Reports</span>
 </a>
 
-{{-- All Records - active ONLY on the records page --}}
-{{-- <a href="{{ route('admin.attendance.records') }}" class="nav-item @if (request()->routeIs('admin.attendance.records')) active @endif">
-    <i class="bi bi-clock-history"></i><span>All Records</span>
-</a> --}}
+{{-- ✅ EVALUATION SECTION --}}
+<div class="nav-label">Evaluation</div>
+
+{{-- 1. Course Assessment --}}
+<a href="{{ route('admin.assessments.dashboard') }}" class="nav-item @if (request()->routeIs('admin.assessments*')) active @endif">
+    <i class="bi bi-clipboard-check"></i>
+    <span>Course Assessments</span>
+    {{-- @php
+        $pending = 0;
+        try {
+            $pending = \App\Models\CourseAssessment::active()->count();
+        } catch (\Exception $e) {
+            // Table doesn't exist yet – ignore
+        }
+    @endphp --}}
+    {{-- @if ($pending > 0)
+        <span
+            style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto;">{{ $pending }}</span>
+    @endif --}}
+</a>
 
 <div class="nav-label">Communication</div>
 <a href="{{ route('admin.messages.inbox') }}" class="nav-item @if (request()->routeIs('admin.messages*')) active @endif">

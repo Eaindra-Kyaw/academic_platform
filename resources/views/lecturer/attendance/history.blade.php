@@ -335,6 +335,9 @@
             border-color: var(--danger);
         }
 
+        /* ========================================================= */
+        /* FIXED PAGINATION - ALIGNS EXACTLY LIKE YOUR SCREENSHOT    */
+        /* ========================================================= */
         .pagination-wrap {
             padding: 12px 18px;
             border-top: 1px solid rgba(10, 36, 99, 0.06);
@@ -353,8 +356,9 @@
 
         .pagination-wrap .pagination {
             display: flex;
-            gap: 3px;
+            gap: 4px;
             margin: 0;
+            padding: 0;
         }
 
         .pagination-wrap .pagination .page-link {
@@ -373,11 +377,22 @@
             color: var(--primary);
         }
 
-        .pagination-wrap .pagination .page-link.active {
+        /* Correct Bootstrap 5 Active & Disabled Targeting */
+        .pagination-wrap .pagination .page-item.active .page-link {
             background: var(--primary);
             border-color: var(--primary);
             color: var(--white);
+            z-index: 3;
         }
+
+        .pagination-wrap .pagination .page-item.disabled .page-link {
+            color: #d1d5db;
+            background: transparent;
+            border-color: rgba(10, 36, 99, 0.06);
+            cursor: not-allowed;
+        }
+
+        /* ========================================================= */
 
         .empty-state {
             text-align: center;
@@ -506,19 +521,6 @@
             <span class="trend up">● Live</span>
         </div>
 
-        <div class="stat-box">
-            <div class="label">Avg. Attendance</div>
-            <div class="value">{{ $averageAttendance ?? 0 }}%</div>
-            <span class="trend {{ ($averageAttendance ?? 0) >= 75 ? 'up' : 'down' }}">
-                {{ ($averageAttendance ?? 0) >= 75 ? 'Good' : 'Needs Work' }}
-            </span>
-        </div>
-
-        <div class="stat-box">
-            <div class="label">Total Students</div>
-            <div class="value">{{ $totalStudents ?? 0 }}</div>
-            <span class="trend stable">Enrolled</span>
-        </div>
     </div>
 
     <div class="session-table-wrap">
@@ -570,6 +572,10 @@
                                 $percentage = $totalPeriods > 0 ? round(($attendedPeriods / $totalPeriods) * 100) : 0;
 
                                 $barColor = $percentage >= 75 ? '#10b981' : ($percentage >= 50 ? '#f59e0b' : '#ef4444');
+
+                                // ✅ FIX: Properly handle NULL dates and zero durations
+                                $dateDisplay = $session->started_at ?? $session->created_at;
+                                $durationDisplay = $session->duration > 0 ? $session->duration : 30;
                             @endphp
                             <tr data-status="{{ $session->status }}"
                                 data-course="{{ strtolower($session->course->course_name ?? '') }}">
@@ -583,14 +589,16 @@
                                     <span class="code-badge">{{ $session->manual_code ?? 'N/A' }}</span>
                                 </td>
                                 <td data-label="Room">{{ $session->room ?? '—' }}</td>
+
+                                <!-- ✅ FIX: No more 'N/A' or '0m' display -->
                                 <td data-label="Date & Time">
-                                    {{ $session->started_at ? \Carbon\Carbon::parse($session->started_at)->format('M d, Y') : 'N/A' }}
+                                    {{ $dateDisplay->format('M d, Y') }}
                                     <br>
                                     <small style="color: var(--text-gray); font-size: 11px;">
-                                        {{ $session->started_at ? \Carbon\Carbon::parse($session->started_at)->format('h:i A') : '' }}
-                                        · {{ $session->duration }}m
+                                        {{ $dateDisplay->format('h:i A') }} · {{ $durationDisplay }}m
                                     </small>
                                 </td>
+
                                 <td data-label="Periods" style="text-align:center;">
                                     {{ $periods }}
                                     <br>
@@ -639,11 +647,14 @@
                 </table>
             </div>
 
+            <!-- ✅ FIXED PAGINATION WRAPPER -->
             <div class="pagination-wrap">
                 <span class="info">
-                    {{ $sessions->firstItem() ?? 0 }}–{{ $sessions->lastItem() ?? 0 }} of {{ $sessions->total() }}
+                    Showing {{ $sessions->firstItem() }} to {{ $sessions->lastItem() }} of {{ $sessions->total() }}
+                    results
                 </span>
-                {{ $sessions->links() }}
+                <!-- Use appends() to keep your search and filter working across pages -->
+                {{ $sessions->appends(request()->query())->links('pagination::bootstrap-5') }}
             </div>
         @else
             <div class="empty-state">

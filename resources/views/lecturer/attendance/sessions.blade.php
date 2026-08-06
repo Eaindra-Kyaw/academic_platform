@@ -250,17 +250,17 @@
                     <label style="font-weight: 600; font-size: 0.8rem; color: var(--text-dark);">Number of Class
                         Periods</label>
                     <select name="period_count" class="filter-select">
-                        <option value="1">1 period (50 min)</option>
-                        <option value="2">2 periods (1h 40m)</option>
-                        <option value="3">3 periods (2h 30m)</option>
-                        <option value="4" selected>4 periods (3h 20m)</option>
-                        <option value="5">5 periods (4h 10m)</option>
-                        <option value="6">6 periods (5h)</option>
-                        <option value="7">7 periods (5h 50m)</option>
-                        <option value="8">8 periods (6h 40m)</option>
+                        <option value="1">1 session (50 min)</option>
+                        <option value="2">2 sessions (1h 40m)</option>
+                        <option value="3">3 sessions (2h 30m)</option>
+                        <option value="4" selected>4 sessions (3h 20m)</option>
+                        <option value="5">5 sessions (4h 10m)</option>
+                        <option value="6">6 sessions (5h)</option>
+                        <option value="7">7 sessions (5h 50m)</option>
+                        <option value="8">8 sessions (6h 40m)</option>
                     </select>
                     <small style="color: var(--text-gray); font-size: 10px;">
-                        How many 50-minute class periods does this session cover?
+                        How many 50-minute class sessions does this session cover?
                     </small>
                 </div>
                 <button type="submit" class="btn-filter" style="margin-top: 1rem; width: 100%;">

@@ -1,3 +1,5 @@
+{{-- resources/views/layouts/partials/student-sidebar.blade.php --}}
+
 <div class="nav-label">Main</div>
 <a href="{{ route('student.dashboard') }}" class="nav-item @if (request()->routeIs('student.dashboard')) active @endif">
     <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
@@ -15,12 +17,9 @@
 <a href="{{ route('student.scan') }}" class="nav-item @if (request()->routeIs('student.scan')) active @endif">
     <i class="bi bi-qr-code"></i><span>QR Attendance</span>
 </a>
-{{-- <a href="{{ route('student.attendance') }}" class="nav-item @if (request()->routeIs('student.attendance')) active @endif">
-    <i class="bi bi-calendar-check"></i><span>My Attendance</span>
-</a> --}}
 
 <a href="{{ route('student.attendance.period') }}" class="nav-item @if (request()->routeIs('student.attendance.period')) active @endif">
-    <i class="bi bi-calendar-week"></i><span>My Attendance </span>
+    <i class="bi bi-calendar-week"></i><span>My Attendance</span>
 </a>
 
 <a href="{{ route('student.attendance.history') }}" class="nav-item @if (request()->routeIs('student.attendance.history')) active @endif">
@@ -28,7 +27,7 @@
 </a>
 
 <a href="{{ route('student.progress') }}" class="nav-item @if (request()->routeIs('student.progress')) active @endif">
-    <i class="bi bi-graph-up"></i><span> Academic Progress</span>
+    <i class="bi bi-graph-up"></i><span>Academic Progress</span>
 </a>
 
 <a href="{{ route('student.timetable') }}" class="nav-item @if (request()->routeIs('student.timetable')) active @endif">
@@ -48,11 +47,32 @@
     <span id="unreadBadge"
         style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto; display:none;">0</span>
 </a>
-<a href="{{ route('student.notifications') }}" class="nav-item @if (request()->routeIs('student.notifications')) active @endif">
-    <i class="bi bi-bell"></i>
-    <span>Notifications</span>
-    <span id="notificationBadge"
-        style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto; display:none;">0</span>
+
+<a href="{{ route('student.assessments.index') }}" class="nav-item @if (request()->routeIs('student.assessments*')) active @endif">
+    <i class="bi bi-clipboard-check"></i>
+    <span>Course Assessments</span>
+    {{-- @php
+        $pending = 0;
+        try {
+            $studentId = Auth::id();
+            $enrolledCourseIds = \App\Models\Enrollment::where('student_id', $studentId)
+                ->where('status', 'approved')
+                ->pluck('course_id')
+                ->toArray();
+
+            $submittedIds = \App\Models\AssessmentSubmission::where('student_id', $studentId)
+                ->pluck('assessment_id')
+                ->toArray();
+
+            $pending = \App\Models\CourseAssessment::active()->whereNotIn('id', $submittedIds)->count();
+        } catch (\Exception $e) {
+            $pending = 0;
+        }
+    @endphp
+    @if ($pending > 0)
+        <span
+            style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto;">{{ $pending }}</span>
+    @endif --}}
 </a>
 
 <div class="nav-label">Support</div>

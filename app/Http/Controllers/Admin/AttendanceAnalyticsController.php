@@ -398,6 +398,7 @@ class AttendanceAnalyticsController extends Controller
 
     /**
      * Get student attendance data for charts (AJAX) – period‑based, respects date filters.
+     * MONTHLY SUMMARY: only includes months where at least one session was held.
      */
     public function studentAttendanceData($studentId, Request $request)
     {
@@ -474,11 +475,9 @@ class AttendanceAnalyticsController extends Controller
                 ->get()
                 ->keyBy('attendance_session_id');
 
-            // Build weekly trend (period‑based)
+            // --- WEEKLY TREND (12 weeks) ---
             $weeks = 12;
             $trend = [];
-            $monthlyGroup = [];
-
             $startDate = Carbon::parse($dateFrom)->startOfWeek();
             $endDate = Carbon::parse($dateTo)->endOfWeek();
             $currentWeek = $startDate->copy();
@@ -512,30 +511,42 @@ class AttendanceAnalyticsController extends Controller
                     'attendance' => $attendance,
                 ];
 
-                // Group by month for monthly summary
-                $monthKey = $weekStart->format('Y-m');
-                if (!isset($monthlyGroup[$monthKey])) {
-                    $monthlyGroup[$monthKey] = [
-                        'month' => $weekStart->format('M Y'),
-                        'sum' => 0,
-                        'count' => 0,
-                    ];
-                }
-                $monthlyGroup[$monthKey]['sum'] += $attendance;
-                $monthlyGroup[$monthKey]['count']++;
-
                 $currentWeek->addWeek();
             }
 
-            $monthly = [];
-            foreach ($monthlyGroup as $key => $data) {
-                $monthly[] = [
-                    'month' => $data['month'],
-                    'avg_attendance' => $data['count'] > 0 ? round($data['sum'] / $data['count'], 1) : 0,
-                ];
+            // --- MONTHLY SUMMARY (based directly on sessions, not weekly averages) ---
+            $monthlyData = [];
+            foreach ($allSessions as $session) {
+                $monthKey = Carbon::parse($session->session_date)->format('Y-m');
+                $monthLabel = Carbon::parse($session->session_date)->format('M Y');
+                if (!isset($monthlyData[$monthKey])) {
+                    $monthlyData[$monthKey] = [
+                        'month' => $monthLabel,
+                        'totalPeriods' => 0,
+                        'attendedPeriods' => 0,
+                    ];
+                }
+                $periods = $session->conducted_periods ?? 1;
+                $monthlyData[$monthKey]['totalPeriods'] += $periods;
+                $record = $records->get($session->id);
+                if ($record && in_array($record->status, ['present', 'late'])) {
+                    $monthlyData[$monthKey]['attendedPeriods'] += $periods;
+                }
             }
 
-            // Summary from evaluations (if any)
+            $monthly = [];
+            foreach ($monthlyData as $key => $data) {
+                // Only include months that actually had periods (i.e., sessions were held)
+                if ($data['totalPeriods'] > 0) {
+                    $avg = round(($data['attendedPeriods'] / $data['totalPeriods']) * 100, 1);
+                    $monthly[] = [
+                        'month' => $data['month'],
+                        'avg_attendance' => $avg,
+                    ];
+                }
+            }
+
+            // --- SUMMARY from evaluations (if any) ---
             $evaluations = DB::table('attendance_evaluations')
                 ->where('student_id', $studentId)
                 ->get();

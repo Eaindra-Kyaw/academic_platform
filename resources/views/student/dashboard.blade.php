@@ -441,11 +441,14 @@
 
     <div>
         <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card">
+        <!-- Stats Row - FIXED TO 2 CARDS -->
+        <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr);">
+            {{-- Card 1: Attendance --}}
+            <div class="stat-card d-flex flex-column align-items-center justify-content-center">
+                <div class="stat-icon mb-1"></div>
                 <div class="stat-number">{{ $avgAttendance ?? 0 }}%</div>
-                <div class="stat-label">Attendance Rate</div>
-                <div class="progress-bar-custom mt-1">
+                <div class="stat-label text-center">Attendance Rate</div>
+                <div class="progress-bar-custom w-100" style="max-width: 80%;">
                     @php
                         $att = $avgAttendance ?? 0;
                         $attClass = $att >= 75 ? 'success' : ($att >= 60 ? 'warning' : 'danger');
@@ -454,29 +457,10 @@
                 </div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-number">{{ $avgRollCall ?? 0 }}</div>
-                <div class="stat-label">Avg Roll Call</div>
-                <div class="stat-label">(out of 10)</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-number">{{ $healthScore ?? 0 }}</div>
-                <div class="stat-label">Academic Score</div>
-                <div class="stat-label">
-                    @php
-                        $cat = $healthCategory ?? 'Stable';
-                        $catClass = strtolower($cat);
-                        if ($catClass == 'at risk') {
-                            $catClass = 'at-risk';
-                        }
-                    @endphp
-                    <span class="badge-{{ $catClass }}">{{ $cat }}</span>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-number">
+            {{-- Card 2: Exam Status --}}
+            <div class="stat-card d-flex flex-column align-items-center justify-content-center">
+                <div class="stat-icon mb-1"></div>
+                <div class="stat-number" style="font-size: 1.4rem;">
                     @if ($eligibleCount == $totalCourses && $totalCourses > 0)
                         Eligible
                     @elseif($eligibleCount > 0)
@@ -487,69 +471,24 @@
                         N/A
                     @endif
                 </div>
-                <div class="stat-label">Exam Status</div>
-                <div class="stat-label">{{ $eligibleCount }}/{{ $totalCourses }} courses</div>
-            </div>
-        </div>
-
-        {{-- <!-- Roll Call Summary Table -->
-        @if (isset($evaluations) && count($evaluations) > 0)
-            <div class="course-list" style="margin-bottom: 1rem;">
-                <div class="header">
-                    <span><i class="bi bi-clipboard-data"></i> Roll Call Summary (per course)</span>
-                    <span style="font-size:0.7rem; color:var(--text-gray); font-weight:400;">
-                        {{ count($evaluations) }} courses
+                <div class="stat-label text-center">Exam Status</div>
+                <div class="mt-1">
+                    @php
+                        $eligDisplay =
+                            $eligibleCount == $totalCourses && $totalCourses > 0
+                                ? 'success'
+                                : ($eligibleCount > 0
+                                    ? 'warning'
+                                    : 'danger');
+                    @endphp
+                    <span class="status-pill {{ $eligDisplay }}">
+                        <i
+                            class="bi {{ $eligDisplay == 'success' ? 'bi-check-circle' : ($eligDisplay == 'warning' ? 'bi-exclamation-triangle' : 'bi-x-circle') }}"></i>
+                        {{ $eligibleCount }}/{{ $totalCourses }} courses
                     </span>
                 </div>
-                <div style="padding: 0.5rem 1rem 1rem 1rem; overflow-x: auto;">
-                    <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
-                        <thead>
-                            <tr>
-                                <th style="text-align:left; padding:0.3rem 0.5rem;">Course</th>
-                                <th style="text-align:center; padding:0.3rem 0.5rem;">Attendance</th>
-                                <th style="text-align:center; padding:0.3rem 0.5rem;">Consistency<br><small>6</small></th>
-                                <th style="text-align:center; padding:0.3rem 0.5rem;">Punctuality<br><small>2</small></th>
-                                <th style="text-align:center; padding:0.3rem 0.5rem;">Participation<br><small>2</small></th>
-                                <th style="text-align:center; padding:0.3rem 0.5rem;">Total Roll Call<br><small>/10</small>
-                                </th>
-                                <th style="text-align:center; padding:0.3rem 0.5rem;">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($evaluations as $eval)
-                                @php
-                                    $attClass =
-                                        $eval['attendance'] >= 75
-                                            ? 'success'
-                                            : ($eval['attendance'] >= 60
-                                                ? 'warning'
-                                                : 'danger');
-                                    $eligClass = $eval['eligibility'];
-                                @endphp
-                                <tr>
-                                    <td style="padding:0.3rem 0.5rem; font-weight:600;">
-                                        {{ $eval['course']->course_code ?? 'N/A' }}
-                                    </td>
-                                    <td style="text-align:center; padding:0.3rem 0.5rem;">
-                                        <span class="badge-{{ $attClass }}">{{ $eval['attendance'] }}%</span>
-                                    </td>
-                                    <td style="text-align:center; padding:0.3rem 0.5rem;">{{ $eval['consistency'] }}</td>
-                                    <td style="text-align:center; padding:0.3rem 0.5rem;">{{ $eval['punctuality'] }}</td>
-                                    <td style="text-align:center; padding:0.3rem 0.5rem;">{{ $eval['participation'] }}</td>
-                                    <td style="text-align:center; padding:0.3rem 0.5rem; font-weight:700;">
-                                        {{ $eval['roll_call_total'] }}</td>
-                                    <td style="text-align:center; padding:0.3rem 0.5rem;">
-                                        <span
-                                            class="badge-{{ $eligClass }}">{{ ucfirst(str_replace('_', ' ', $eval['eligibility'])) }}</span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
             </div>
-        @endif --}}
-
+        </div>
         <!-- Two Column: Health + Risk -->
         <div class="two-col">
             <div class="course-list">
@@ -574,13 +513,11 @@
                             <div style="font-size: 0.7rem; color: var(--text-gray);">{{ $healthCategory ?? 'N/A' }}</div>
                         </div>
                     </div>
-                    <div style="margin-top: 0.75rem; font-size: 0.65rem; color: var(--text-gray);">
-                        40% Attendance | 25% Roll Call | 20% Streak | 15% Trend
-                    </div>
+                    {{--   --}}
                 </div>
             </div>
 
-            <div class="course-list">
+            <div class="course-list"x>
                 <div class="header"><i class="bi bi-shield-exclamation"></i> Risk & Recovery</div>
                 <div style="padding: 1rem;">
                     <div>
