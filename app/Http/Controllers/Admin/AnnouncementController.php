@@ -50,6 +50,7 @@ class AnnouncementController extends Controller
             $targetRole = implode(',', $targetRoles);
         }
 
+        // ✅ REMOVED 'read_by' => null - it will be NULL by default
         $announcement = Announcement::create([
             'title' => $validated['title'],
             'content' => $validated['content'],
@@ -59,7 +60,6 @@ class AnnouncementController extends Controller
             'published_at' => $request->filled('published_at')
                 ? Carbon::parse($validated['published_at'])
                 : now(),
-            'read_by' => null,
         ]);
 
         return redirect()->route('admin.announcements.index')
@@ -109,6 +109,7 @@ class AnnouncementController extends Controller
             'published_at' => $request->filled('published_at')
                 ? Carbon::parse($validated['published_at'])
                 : $announcement->published_at,
+            // read_by is NOT updated here - it tracks who has read the announcement
         ]);
 
         return redirect()->route('admin.announcements.index')

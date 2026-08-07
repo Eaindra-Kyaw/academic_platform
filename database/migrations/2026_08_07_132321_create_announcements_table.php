@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('posted_by')->constrained('users')->onDelete('cascade');
             $table->boolean('is_active')->default(true);
             $table->timestamp('published_at')->nullable();
+            $table->text('read_by')->nullable(); // Stores comma-separated user IDs
             $table->timestamps();
         });
     }

@@ -1,5 +1,4 @@
 <?php
-// app/Models/Announcement.php
 
 namespace App\Models;
 
@@ -17,7 +16,7 @@ class Announcement extends Model
         'posted_by',
         'is_active',
         'published_at',
-        'read_by',
+        'read_by',  // ✅ Added
     ];
 
     protected $casts = [
@@ -55,7 +54,6 @@ class Announcement extends Model
      */
     public static function getUnreadCount($user)
     {
-        // Get all active announcements for the user's role
         $announcements = self::forRole($user->role->name ?? 'student')
             ->where('is_active', true)
             ->where(function($q) {
