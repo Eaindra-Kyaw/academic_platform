@@ -4,10 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - MTU Academic System</title>
+    <title>Register - MTU Academic Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
+        :root {
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-main: #EEF2F7;
+            --white: #FFFFFF;
+            --text-gray: #64748b;
+            --text-dark: #1e293b;
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --danger: #ef4444;
+            --success: #10b981;
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,7 +34,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #800000 0%, #4a0000 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -25,7 +43,7 @@
         }
 
         .card {
-            background: white;
+            background: var(--white);
             border-radius: 24px;
             padding: 40px;
             max-width: 550px;
@@ -45,7 +63,7 @@
         }
 
         .card::-webkit-scrollbar-thumb {
-            background: #800000;
+            background: var(--primary);
             border-radius: 10px;
         }
 
@@ -57,24 +75,24 @@
         .logo-icon {
             width: 60px;
             height: 60px;
-            background: #800000;
+            background: var(--primary);
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 15px;
-            color: #FFD700;
+            color: var(--accent);
             font-size: 24px;
             font-weight: bold;
         }
 
         .logo h2 {
-            color: #800000;
+            color: var(--primary);
             font-size: 20px;
         }
 
         .logo p {
-            color: #666;
+            color: var(--text-gray);
             font-size: 12px;
             margin-top: 5px;
         }
@@ -82,13 +100,13 @@
         h1 {
             font-size: 24px;
             font-weight: 700;
-            color: #800000;
+            color: var(--primary);
             text-align: center;
             margin-bottom: 5px;
         }
 
         .subtitle {
-            color: #666;
+            color: var(--text-gray);
             font-size: 14px;
             text-align: center;
             margin-bottom: 25px;
@@ -102,12 +120,12 @@
             display: block;
             margin-bottom: 6px;
             font-weight: 600;
-            color: #333;
+            color: var(--text-dark);
             font-size: 13px;
         }
 
         label .required {
-            color: #dc2626;
+            color: var(--danger);
         }
 
         input,
@@ -117,33 +135,52 @@
             border: 1px solid #ddd;
             border-radius: 10px;
             font-size: 14px;
-            transition: all 0.2s;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            background: var(--white);
         }
 
         input:focus,
         select:focus {
             outline: none;
-            border-color: #800000;
-            box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
         .btn {
             width: 100%;
             padding: 12px;
-            background: #800000;
-            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
             border: none;
             border-radius: 10px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn:hover {
-            background: #5f0000;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(128, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.3);
+        }
+
+        .error {
+            color: var(--danger);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .help-text {
+            font-size: 11px;
+            color: var(--text-gray);
+            margin-top: 4px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
 
         .login-link {
@@ -152,7 +189,7 @@
         }
 
         .login-link a {
-            color: #800000;
+            color: var(--primary);
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
@@ -162,37 +199,13 @@
             text-decoration: underline;
         }
 
-        .error {
-            color: #dc2626;
-            font-size: 12px;
-            margin-top: 4px;
-        }
-
-        .help-text {
-            font-size: 11px;
-            color: #6b7280;
-            margin-top: 4px;
-        }
-
-        .field-hint {
-            font-size: 11px;
-            color: #6b7280;
-            font-weight: 400;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
         .alert-danger {
             background: #fee2e2;
             color: #991b1b;
             padding: 12px;
             border-radius: 10px;
             margin-bottom: 20px;
-            border-left: 4px solid #dc2626;
+            border-left: 4px solid var(--danger);
         }
 
         .alert-danger p {
@@ -237,10 +250,13 @@
 <body>
     <div class="card">
         <div class="logo">
-            <div class="logo-icon">Uni</div>
-            <h2>Academic Portal</h2>
-            <p class="subtitle">Register to access your academic dashboard</p>
+            <div class="logo-icon">MTU</div>
+            <h2>Mandalay Technological University</h2>
+            <p>Create your account</p>
         </div>
+
+        <h1>Register</h1>
+        <p class="subtitle">Create your account to access the portal</p>
 
         @if ($errors->any())
             <div class="alert-danger">
@@ -266,7 +282,7 @@
                 <label>Email Address <span class="required">*</span></label>
                 <input type="email" name="email" placeholder="Enter your university email (@mtu.edu.mm)"
                     value="{{ old('email') }}" required>
-                <div class="help-text" style="color: #800000; font-weight: 500;">
+                <div class="help-text" style="color: var(--primary); font-weight: 500;">
                     <i class="bi bi-info-circle"></i> Must be @mtu.edu.mm
                 </div>
                 @error('email')
@@ -378,16 +394,14 @@
         function toggleFields() {
             const roleId = parseInt(roleSelect.value);
 
-            // Hide all first
             studentFields.style.display = 'none';
             lecturerFields.style.display = 'none';
 
-            // Show relevant fields
-            if (roleId === 3) { // Student
+            if (roleId === 3) {
                 studentFields.style.display = 'block';
                 departmentField.style.display = 'block';
                 deptRequired.textContent = '*';
-            } else if (roleId === 2) { // Lecturer
+            } else if (roleId === 2) {
                 lecturerFields.style.display = 'block';
                 departmentField.style.display = 'block';
                 deptRequired.textContent = '*';

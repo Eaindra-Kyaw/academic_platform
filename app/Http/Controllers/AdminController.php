@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/AdminController.php
 
 namespace App\Http\Controllers;
 
@@ -19,6 +20,11 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+
+// ✅ Import Mail Classes
+use App\Mail\AdminNewUserNotification;
+use App\Mail\UserApprovedMail;
+use App\Mail\UserRejectedMail;
 
 class AdminController extends Controller
 {
@@ -243,6 +249,12 @@ class AdminController extends Controller
         $pendingEnrollments = Enrollment::where('status', 'pending')->count();
 
         // ============================================
+        // PENDING USER APPROVALS
+        // ============================================
+
+        $pendingUsers = User::where('registration_status', 'pending')->count();
+
+        // ============================================
         // ATTENDANCE TREND (LAST 6 MONTHS) – PERIOD‑BASED
         // ============================================
 
@@ -298,7 +310,8 @@ class AdminController extends Controller
             'recentSessions',
             'classroomUsage',
             'pendingEnrollments',
-            'trendData'
+            'trendData',
+            'pendingUsers' // ✅ Added for dashboard badge
         ));
     }
 
@@ -321,7 +334,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Store a new user (Admin creates user)
+     * Store a new user (Admin creates user with pending status)
      */
     public function storeUser(Request $request)
     {
@@ -341,6 +354,7 @@ class AdminController extends Controller
         $mustChangePassword = ($validated['role_id'] == 1) ? false : true;
         $tempPassword = Str::random(10);
 
+        // ✅ Create user with PENDING status
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -349,11 +363,14 @@ class AdminController extends Controller
             'department_id' => $validated['department_id'],
             'student_id' => $validated['student_id'] ?? null,
             'current_year' => $validated['current_year'] ?? null,
-            'is_active' => true,
+            'is_active' => false, // ❌ NOT active until admin approves
             'must_change_password' => $mustChangePassword,
             'email_verified_at' => now(),
+            'registration_status' => 'pending',
+            'registered_at' => now(),
         ]);
 
+        // ✅ Generate token for password setup
         $token = Str::random(60);
         DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
@@ -365,76 +382,143 @@ class AdminController extends Controller
 
         $setupLink = url('/password/setup/' . $token . '?email=' . $user->email);
 
+        // ✅ Send notification to ADMIN
+        $adminEmails = User::where('role_id', 1)->pluck('email')->toArray();
+
+        try {
+            Mail::to($adminEmails)->send(new AdminNewUserNotification($user, $setupLink));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send admin notification: ' . $e->getMessage());
+        }
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "✅ User '{$user->name}' created! Admin notification sent.")
+            ->with('temp_password', $tempPassword)
+            ->with('setup_link', $setupLink);
+    }
+
+    // ============================================================
+    // ✅ PENDING USERS APPROVAL METHODS
+    // ============================================================
+
+    /**
+     * Display pending users for approval
+     */
+    public function pendingUsers()
+    {
+        $pendingUsers = User::where('registration_status', 'pending')
+            ->where('is_active', false)
+            ->orderBy('created_at', 'asc')
+            ->paginate(20);
+
+        $stats = [
+            'pending' => User::where('registration_status', 'pending')->count(),
+            'approved' => User::where('registration_status', 'active')->count(),
+            'rejected' => User::where('registration_status', 'rejected')->count(),
+            'total' => User::count(),
+        ];
+
+        return view('admin.pending-users', compact('pendingUsers', 'stats'));
+    }
+
+    /**
+     * Approve a pending user
+     */
+    public function approveUser($id)
+    {
+        $user = User::where('registration_status', 'pending')->findOrFail($id);
+
+        // Generate token for password setup
+        $token = Str::random(60);
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => $token,
+                'created_at' => now(),
+            ]
+        );
+
+        $setupLink = url('/password/setup/' . $token . '?email=' . $user->email);
+
+        $user->update([
+            'registration_status' => 'active',
+            'is_active' => true,
+            'approved_at' => now(),
+            'approved_by' => Auth::id(),
+            'must_change_password' => true,
+        ]);
+
+        // ✅ Send approval email to user
+        try {
+            Mail::to($user->email)->send(new UserApprovedMail($user, $setupLink));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send approval email: ' . $e->getMessage());
+        }
+
+        // ✅ Log audit
         \App\Models\AuditLog::log(
             Auth::id(),
-            'create_user',
+            'approve_user',
             [
                 'user_id' => $user->id,
                 'user_name' => $user->name,
                 'user_email' => $user->email,
-                'role_id' => $user->role_id,
             ],
             $user,
             'success'
         );
 
-        return redirect()->route('admin.users.index')
-            ->with('success', '
-                <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; border: 2px solid #10b981;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <span style="font-size: 24px;">✅</span>
-                        <strong style="font-size: 18px; color: #166534;">User Created Successfully!</strong>
-                    </div>
-
-                    <div style="background: #fef3c7; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #f59e0b;">
-                        <strong style="color: #92400e;">📋 User Details:</strong><br>
-                        <span style="color: #1f2937;">Name: <strong>' . $user->name . '</strong></span><br>
-                        <span style="color: #1f2937;">Email: <strong>' . $user->email . '</strong></span><br>
-                        <span style="color: #1f2937;">Role: <strong>' . ($user->role->name ?? 'N/A') . '</strong></span>
-                    </div>
-
-                    <div style="background: #ffffff; padding: 15px; border-radius: 8px; margin: 10px 0; border: 1px solid #e5e7eb;">
-                        <strong style="color: #800000;">🔗 Password Setup Link:</strong><br>
-                        <input type="text" id="setupLink" value="' . $setupLink . '"
-                               style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;
-                                      background: #f9fafb; font-size: 13px; margin: 8px 0; color: #1f2937; font-family: monospace;" readonly>
-
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
-                            <button onclick="copyLink()" style="background: #800000; color: white; border: none;
-                                    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                                📋 Copy Link
-                            </button>
-                            <button onclick="shareTelegram()" style="background: #0088cc; color: white; border: none;
-                                    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                                📱 Telegram
-                            </button>
-                            <button onclick="shareWhatsApp()" style="background: #25D366; color: white; border: none;
-                                    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                                📱 WhatsApp
-                            </button>
-                            <button onclick="printLink()" style="background: #6b7280; color: white; border: none;
-                                    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                                🖨️ Print
-                            </button>
-                        </div>
-                    </div>
-
-                    <div style="background: #eff6ff; padding: 12px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #3b82f6;">
-                        <small style="color: #1e40af; display: block;">
-                            <i class="bi bi-info-circle"></i>
-                            <strong>Share Instructions:</strong><br>
-                            1. Click "Telegram" or "WhatsApp" to send the link directly to the user<br>
-                            2. Or copy the link and share via any communication channel<br>
-                            3. User will click the link to set their own password<br>
-                            4. Link expires in 48 hours for security
-                        </small>
-                    </div>
-                </div>
-            ')
-            ->with('user_name', $user->name)
-            ->with('user_email', $user->email)
-            ->with('setup_link', $setupLink);
+        return redirect()->route('admin.pending-users')
+            ->with('success', "✅ User '{$user->name}' has been approved! They will receive an email notification.");
     }
+
+    /**
+     * Reject a pending user
+     */
+    public function rejectUser(Request $request, $id)
+    {
+        $request->validate([
+            'reason' => 'required|string|min:10',
+        ]);
+
+        $user = User::where('registration_status', 'pending')->findOrFail($id);
+
+        $user->update([
+            'registration_status' => 'rejected',
+            'is_active' => false,
+            'rejected_at' => now(),
+            'rejected_by' => Auth::id(),
+            'rejection_reason' => $request->reason,
+        ]);
+
+        // ✅ Send rejection email to user
+        try {
+            Mail::to($user->email)->send(new UserRejectedMail($user, $request->reason));
+        } catch (\Exception $e) {
+            \Log::error('Failed to send rejection email: ' . $e->getMessage());
+        }
+
+        // ✅ Log audit
+        \App\Models\AuditLog::log(
+            Auth::id(),
+            'reject_user',
+            [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'reason' => $request->reason,
+            ],
+            $user,
+            'success'
+        );
+
+        return redirect()->route('admin.pending-users')
+            ->with('success', "User '{$user->name}' has been rejected.");
+    }
+
+    // ============================================================
+    // EXISTING METHODS
+    // ============================================================
 
     /**
      * Get setup link for a user (for AJAX requests)
@@ -686,7 +770,7 @@ class AdminController extends Controller
     }
 
     // ============================================================
-    // EXPORT HELPERS (unchanged)
+    // EXPORT HELPERS
     // ============================================================
 
     private function exportStudents($format, $request)

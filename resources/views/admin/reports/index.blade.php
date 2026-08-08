@@ -171,6 +171,13 @@
         </div>
     @endif
 
+    <a href="{{ route('admin.reports.detail', ['type' => 'departments']) }}" class="report-card">
+        <span class="icon">🏛️</span>
+        <h5>Department Report</h5>
+        <p>Export department statistics and performance metrics</p>
+        <span class="arrow">Click to generate →</span>
+    </a>
+
     <div class="reports-grid">
         <a href="{{ route('admin.reports.detail', ['type' => 'students']) }}" class="report-card">
             <span class="icon">👨‍🎓</span>
@@ -186,19 +193,14 @@
             <span class="arrow">Click to generate →</span>
         </a>
 
-        <a href="{{ route('admin.reports.detail', ['type' => 'enrollments']) }}" class="report-card">
+        {{-- <a href="{{ route('admin.reports.detail', ['type' => 'enrollments']) }}" class="report-card">
             <span class="icon">📚</span>
             <h5>Enrollment Report</h5>
             <p>Export all enrollment data with student and course details</p>
             <span class="arrow">Click to generate →</span>
-        </a>
+        </a> --}}
 
-        <a href="{{ route('admin.reports.detail', ['type' => 'departments']) }}" class="report-card">
-            <span class="icon">🏛️</span>
-            <h5>Department Report</h5>
-            <p>Export department statistics and performance metrics</p>
-            <span class="arrow">Click to generate →</span>
-        </a>
+
 
         <a href="{{ route('admin.reports.detail', ['type' => 'risk']) }}" class="report-card">
             <span class="icon">⚠️</span>
@@ -214,11 +216,11 @@
             <span class="arrow">Click to generate →</span>
         </a> --}}
 
-        <a href="{{ route('admin.reports.detail', ['type' => 'semester']) }}" class="report-card">
+        {{-- <a href="{{ route('admin.reports.detail', ['type' => 'semester']) }}" class="report-card">
             <span class="icon">📅</span>
             <h5>Semester Summary</h5>
             <p>Export complete semester summary with all statistics</p>
             <span class="arrow">Click to generate →</span>
-        </a>
+        </a> --}}
     </div>
 @endsection

@@ -1,4 +1,3 @@
-{{-- resources/views/admin/reports/detail.blade.php --}}
 @extends('layouts.app')
 
 @section('title', 'Generate Report')

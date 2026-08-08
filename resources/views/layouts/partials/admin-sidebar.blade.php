@@ -9,9 +9,27 @@
 <a href="{{ route('admin.departments.index') }}" class="nav-item @if (request()->routeIs('admin.departments*')) active @endif">
     <i class="bi bi-building"></i><span>Departments</span>
 </a>
+
+{{-- User Management with Pending Badge --}}
 <a href="{{ route('admin.users.index') }}" class="nav-item @if (request()->routeIs('admin.users*')) active @endif">
-    <i class="bi bi-people"></i><span>User Management</span>
+    <i class="bi bi-people"></i>
+    <span>User Management</span>
+    @php
+        $pendingCount = \App\Models\User::where('registration_status', 'pending')->count();
+    @endphp
+
 </a>
+
+{{-- Pending Approvals Link --}}
+<a href="{{ route('admin.users.pending') }}" class="nav-item @if (request()->routeIs('admin.users.pending')) active @endif">
+    <i class="bi bi-clock-history"></i>
+    <span>Pending Approvals</span>
+    @php
+        $pendingCount = \App\Models\User::where('registration_status', 'pending')->count();
+    @endphp
+
+</a>
+
 <a href="{{ route('admin.enrollments.index') }}" class="nav-item @if (request()->routeIs('admin.enrollments*')) active @endif">
     <i class="bi bi-list-check"></i><span>Enrollments</span>
 </a>

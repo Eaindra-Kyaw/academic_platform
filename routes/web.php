@@ -147,6 +147,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users/{id}/setup-link', [AdminController::class, 'getSetupLink'])->name('users.setup-link');
 
     // ============================================================
+    // ✅ PENDING USERS APPROVAL ROUTES
+    // ============================================================
+    Route::get('/users/pending', [AdminController::class, 'pendingUsers'])->name('users.pending');
+    Route::get('/users/{id}/approve', [AdminController::class, 'approveUser'])->name('users.approve');
+    Route::get('/users/{id}/reject', [AdminController::class, 'rejectUser'])->name('users.reject');
+    Route::post('/users/{id}/reject', [AdminController::class, 'processRejectUser'])->name('users.process-reject');
+
+    // ============================================================
     // REPORTS
     // ============================================================
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports');
@@ -296,7 +304,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/lecturers/{lecturer}', [AdminLecturerController::class, 'destroy'])->name('lecturers.destroy');
 
     // ============================================================
-    // 🔥 FIXED COURSE ASSESSMENT ROUTES (Admin)
+    // COURSE ASSESSMENT ROUTES (Admin)
     // ============================================================
     Route::prefix('assessments')->name('assessments.')->group(function () {
         // Dashboard & Index
@@ -314,8 +322,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         // AJAX ROUTES
         Route::get('/courses', [CourseAssessmentController::class, 'fetchCourses'])->name('fetchCourses');
         Route::get('/lecturers', [CourseAssessmentController::class, 'fetchLecturers'])->name('fetchLecturers');
-
-        // ✅ NEW AJAX ROUTE FOR BATCH CREATION
         Route::get('/courses-by-year', [CourseAssessmentController::class, 'fetchCoursesByYearAndSemester'])->name('fetchCoursesByYear');
 
         // Actions
@@ -513,21 +519,13 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::post('/chatbot/ask', [StudentController::class, 'askChatbot'])->name('chatbot.ask');
 
     // ============================================================
-    // 🔥 FIXED STUDENT COURSE ASSESSMENT ROUTES
+    // COURSE ASSESSMENT ROUTES (Student)
     // ============================================================
     Route::prefix('assessments')->name('assessments.')->group(function () {
-        // Index - show pending assessments
         Route::get('/', [CourseAssessmentController::class, 'studentIndex'])->name('index');
-
-        // Show assessment form
         Route::get('/{id}', [CourseAssessmentController::class, 'studentShow'])->name('show');
-
-        // Submit assessment
         Route::post('/submit', [CourseAssessmentController::class, 'studentSubmit'])->name('submit');
-
-        // AJAX: Get lecturers by course (Used if you bring back dynamic dropdowns)
-        Route::get('/get-lecturers', [CourseAssessmentController::class, 'getLecturersByCourse'])
-            ->name('get-lecturers');
+        Route::get('/get-lecturers', [CourseAssessmentController::class, 'getLecturersByCourse'])->name('get-lecturers');
     });
 
     // ============================================================
