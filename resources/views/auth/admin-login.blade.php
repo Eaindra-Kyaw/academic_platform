@@ -160,6 +160,9 @@
             font-size: 14px;
             font-weight: 500;
             transition: all 0.2s;
+            display: block;
+            /* 🟢 Makes them stack nicely */
+            margin-bottom: 6px;
         }
 
         .back-link a:hover {
@@ -222,6 +225,10 @@
         </form>
 
         <div class="back-link">
+            <!-- 🟢 Added Register Link here -->
+            <a href="{{ route('register') }}">
+                <i class="bi bi-person-plus"></i> Need an account? Register
+            </a>
             <a href="{{ route('home') }}">
                 <i class="bi bi-arrow-left"></i> Back to Home
             </a>

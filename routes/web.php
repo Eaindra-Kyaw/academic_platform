@@ -1,5 +1,4 @@
 <?php
-// routes/web.php
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -29,6 +28,7 @@ use App\Http\Controllers\Student\EnrollmentController as StudentEnrollmentContro
 use App\Http\Controllers\Lecturer\AttendanceController;
 use App\Http\Controllers\Student\QRScanController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 // ============================================================
 // ✅ EVALUATION CONTROLLER (Legacy - Keep for reference)
@@ -46,6 +46,17 @@ Route::get('/', function () {
 })->name('home');
 
 // ============================================================
+// MAIN LOGIN SELECTION PAGE (The unified entry point for all users)
+// ============================================================
+Route::get('/login', function () {
+    if (auth()->check()) {
+        return redirect('/dashboard');
+    }
+    // Replace 'auth.login-selection' with your actual role-selection view if different
+    return view('auth.login');
+})->name('login');
+
+// ============================================================
 // SEPARATE LOGIN PAGES FOR EACH ROLE (GET Routes)
 // ============================================================
 Route::get('/admin/login', function () {
@@ -60,6 +71,9 @@ Route::get('/student/login', function () {
     return view('auth.student-login');
 })->name('student.login');
 
+// ============================================================
+// REGISTER ROUTE
+// ============================================================
 Route::get('/register', function () {
     if (auth()->check()) {
         return redirect('/dashboard');
@@ -537,18 +551,6 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
 
 }); // 🔴 CLOSING BRACE FOR STUDENT ROUTES
 
-
-// ============================================================
-// DEFAULT LOGIN REDIRECT
-// ============================================================
-Route::get('/login', function () {
-    if (auth()->check()) {
-        return redirect('/dashboard');
-    }
-    return redirect()->route('home');
-})->name('login');
-
-Route::post('/login', [App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'store']);
 
 // ============================================================
 // LOGOUT ROUTE

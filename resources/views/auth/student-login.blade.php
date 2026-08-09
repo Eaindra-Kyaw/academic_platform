@@ -243,6 +243,9 @@
         </form>
 
         <div class="back-link">
+            <a href="{{ route('register') }}">
+                <i class="bi bi-person-plus"></i> Need an account? Register
+            </a>
             <a href="{{ route('home') }}">
                 <i class="bi bi-arrow-left"></i> Back to Home
             </a>
