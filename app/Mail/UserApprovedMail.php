@@ -1,10 +1,18 @@
 <?php
-// app/Mail/UserApprovedMail.php
+
+namespace App\Mail;
 
 use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Content;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Queue\SerializesModels;
 
 class UserApprovedMail extends Mailable
 {
+    use Queueable, SerializesModels;
+
     public $user;
 
     public function __construct(User $user)
@@ -12,17 +20,22 @@ class UserApprovedMail extends Mailable
         $this->user = $user;
     }
 
-    public function envelope()
+    public function envelope(): Envelope
     {
         return new Envelope(
             subject: '✅ Your MTU Account Has Been Approved!',
         );
     }
 
-    public function content()
+    public function content(): Content
     {
         return new Content(
             view: 'emails.user-approved',
         );
+    }
+
+    public function attachments(): array
+    {
+        return [];
     }
 }

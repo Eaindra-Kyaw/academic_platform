@@ -13,6 +13,8 @@ use App\Models\AttendanceRecord;
 use App\Models\AttendanceEvaluation;
 use App\Models\RiskPrediction;
 use App\Models\AcademicHealthScore;
+use App\Mail\UserApprovedMail;
+use App\Mail\UserRejectedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -23,8 +25,6 @@ use Illuminate\Support\Facades\DB;
 
 // ✅ Import Mail Classes
 use App\Mail\AdminNewUserNotification;
-use App\Mail\UserApprovedMail;
-use App\Mail\UserRejectedMail;
 
 class AdminController extends Controller
 {
@@ -311,7 +311,7 @@ class AdminController extends Controller
             'classroomUsage',
             'pendingEnrollments',
             'trendData',
-            'pendingUsers' // ✅ Added for dashboard badge
+            'pendingUsers'
         ));
     }
 
@@ -360,10 +360,10 @@ class AdminController extends Controller
             'email' => $validated['email'],
             'password' => Hash::make($tempPassword),
             'role_id' => $validated['role_id'],
-            'department_id' => $validated['department_id'],
+            'department_id' => $validated['department_id'] ?? null,
             'student_id' => $validated['student_id'] ?? null,
             'current_year' => $validated['current_year'] ?? null,
-            'is_active' => false, // ❌ NOT active until admin approves
+            'is_active' => false,
             'must_change_password' => $mustChangePassword,
             'email_verified_at' => now(),
             'registration_status' => 'pending',
@@ -406,11 +406,13 @@ class AdminController extends Controller
      */
     public function pendingUsers()
     {
+        // Get pending users for the list (paginated)
         $pendingUsers = User::where('registration_status', 'pending')
             ->where('is_active', false)
             ->orderBy('created_at', 'asc')
             ->paginate(20);
 
+        // ✅ FIXED: Calculate stats from the database directly (NOT from paginated collection)
         $stats = [
             'pending' => User::where('registration_status', 'pending')->count(),
             'approved' => User::where('registration_status', 'active')->count(),
@@ -428,29 +430,18 @@ class AdminController extends Controller
     {
         $user = User::where('registration_status', 'pending')->findOrFail($id);
 
-        // Generate token for password setup
-        $token = Str::random(60);
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $user->email],
-            [
-                'token' => $token,
-                'created_at' => now(),
-            ]
-        );
-
-        $setupLink = url('/password/setup/' . $token . '?email=' . $user->email);
-
+        // ✅ User already has password from registration, no setup link needed
         $user->update([
             'registration_status' => 'active',
             'is_active' => true,
             'approved_at' => now(),
             'approved_by' => Auth::id(),
-            'must_change_password' => true,
+            'must_change_password' => false,
         ]);
 
-        // ✅ Send approval email to user
+        // ✅ Send approval email to user (with login instructions, NOT setup link)
         try {
-            Mail::to($user->email)->send(new UserApprovedMail($user, $setupLink));
+            Mail::to($user->email)->send(new UserApprovedMail($user));
         } catch (\Exception $e) {
             \Log::error('Failed to send approval email: ' . $e->getMessage());
         }
@@ -468,14 +459,23 @@ class AdminController extends Controller
             'success'
         );
 
-        return redirect()->route('admin.pending-users')
+        return redirect()->route('admin.users.pending')
             ->with('success', "✅ User '{$user->name}' has been approved! They will receive an email notification.");
     }
 
     /**
-     * Reject a pending user
+     * Show reject user form
      */
-    public function rejectUser(Request $request, $id)
+    public function rejectUser($id)
+    {
+        $user = User::where('registration_status', 'pending')->findOrFail($id);
+        return view('admin.reject-user', compact('user'));
+    }
+
+    /**
+     * Process user rejection
+     */
+    public function processRejectUser(Request $request, $id)
     {
         $request->validate([
             'reason' => 'required|string|min:10',
@@ -512,7 +512,7 @@ class AdminController extends Controller
             'success'
         );
 
-        return redirect()->route('admin.pending-users')
+        return redirect()->route('admin.users.pending')
             ->with('success', "User '{$user->name}' has been rejected.");
     }
 
@@ -521,7 +521,7 @@ class AdminController extends Controller
     // ============================================================
 
     /**
-     * Get setup link for a user (for AJAX requests)
+     * Get setup link for a user (for AJAX requests - for users who need password reset)
      */
     public function getSetupLink($id)
     {
@@ -593,7 +593,7 @@ class AdminController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'role_id' => $validated['role_id'],
-            'department_id' => $validated['department_id'],
+            'department_id' => $validated['department_id'] ?? null,
             'current_year' => $validated['current_year'] ?? null,
             'is_active' => $validated['is_active'] ?? true,
         ]);

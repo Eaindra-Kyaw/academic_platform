@@ -9,28 +9,30 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AdminNewUserNotification extends Mailable
+class UserRejectedMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $user;
+    public $reason;
 
-    public function __construct(User $user)
+    public function __construct(User $user, $reason)
     {
         $this->user = $user;
+        $this->reason = $reason;
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '🔔 New User Registration Pending Approval - MTU Academic Portal',
+            subject: '❌ Registration Update - MTU Academic Portal',
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.admin-new-user-approval',
+            view: 'emails.user-rejected',
         );
     }
 

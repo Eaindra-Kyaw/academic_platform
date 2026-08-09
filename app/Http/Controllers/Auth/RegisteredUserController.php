@@ -39,7 +39,6 @@ class RegisteredUserController extends Controller
             'password' => 'required|confirmed',
             'role_id' => 'required|exists:roles,id',
             'department_id' => 'nullable|exists:departments,id',
-            // 🟢 ADDED UNIQUE VALIDATION HERE TO PREVENT THE ERROR
             'student_id' => 'nullable|string|max:50|unique:users,student_id',
             'current_year' => 'nullable|integer|min:1|max:6',
         ]);
@@ -63,12 +62,8 @@ class RegisteredUserController extends Controller
         // ✅ Send notification to ADMIN
         $adminEmails = User::where('role_id', 1)->pluck('email')->toArray();
 
-        try {
-            Mail::to($adminEmails)->send(new AdminNewUserNotification($user));
-        } catch (\Exception $e) {
-            // Log error but continue
-            \Log::error('Failed to send admin notification: ' . $e->getMessage());
-        }
+        // ✅ Send the email using the now-existing blade file
+        Mail::to($adminEmails)->send(new AdminNewUserNotification($user));
 
         return redirect()->route('login')
             ->with('status', '✅ Registration successful! Your account is pending admin approval. You will receive an email once approved.');

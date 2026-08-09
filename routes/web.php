@@ -52,7 +52,6 @@ Route::get('/login', function () {
     if (auth()->check()) {
         return redirect('/dashboard');
     }
-    // Replace 'auth.login-selection' with your actual role-selection view if different
     return view('auth.login');
 })->name('login');
 

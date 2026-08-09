@@ -10,24 +10,26 @@
     <i class="bi bi-building"></i><span>Departments</span>
 </a>
 
-{{-- User Management with Pending Badge --}}
-<a href="{{ route('admin.users.index') }}" class="nav-item @if (request()->routeIs('admin.users*')) active @endif">
+{{-- ✅ FIXED: User Management - Only active on users.* routes, NOT on pending --}}
+<a href="{{ route('admin.users.index') }}" class="nav-item @if (request()->routeIs('admin.users.index') ||
+        request()->routeIs('admin.users.create') ||
+        request()->routeIs('admin.users.edit') ||
+        request()->routeIs('admin.users.show')) active @endif">
     <i class="bi bi-people"></i>
     <span>User Management</span>
-    @php
-        $pendingCount = \App\Models\User::where('registration_status', 'pending')->count();
-    @endphp
-
 </a>
 
-{{-- Pending Approvals Link --}}
+{{--  Pending Approvals - Only active on pending route --}}
 <a href="{{ route('admin.users.pending') }}" class="nav-item @if (request()->routeIs('admin.users.pending')) active @endif">
     <i class="bi bi-clock-history"></i>
     <span>Pending Approvals</span>
     @php
         $pendingCount = \App\Models\User::where('registration_status', 'pending')->count();
     @endphp
-
+    {{-- @if ($pendingCount > 0)
+        <span
+            style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto;">{{ $pendingCount }}</span>
+    @endif --}}
 </a>
 
 <a href="{{ route('admin.enrollments.index') }}" class="nav-item @if (request()->routeIs('admin.enrollments*')) active @endif">
@@ -54,18 +56,6 @@
 <a href="{{ route('admin.assessments.dashboard') }}" class="nav-item @if (request()->routeIs('admin.assessments*')) active @endif">
     <i class="bi bi-clipboard-check"></i>
     <span>Course Assessments</span>
-    {{-- @php
-        $pending = 0;
-        try {
-            $pending = \App\Models\CourseAssessment::active()->count();
-        } catch (\Exception $e) {
-            // Table doesn't exist yet – ignore
-        }
-    @endphp --}}
-    {{-- @if ($pending > 0)
-        <span
-            style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto;">{{ $pending }}</span>
-    @endif --}}
 </a>
 
 <div class="nav-label">Communication</div>
@@ -81,9 +71,3 @@
     <span id="adminAnnouncementBadge"
         style="background:#ef4444; color:white; font-size:0.55rem; padding:0.05rem 0.4rem; border-radius:1rem; margin-left:auto; display:none;">0</span>
 </a>
-
-<div class="sidebar-note">
-    <strong>{{ \App\Models\Department::count() }} Depts</strong>
-    <p>{{ \App\Models\User::where('role_id', 3)->count() }} Students •
-        {{ \App\Models\User::where('role_id', 2)->count() }} Lecturers</p>
-</div>
