@@ -3,7 +3,7 @@
 @section('title', 'Take Attendance')
 @section('role', 'Lecturer')
 @section('page-title', 'Take Attendance')
-@section('welcome-text', 'Welcome back, ' . Auth::user()->name)
+@section('welcome-text', 'Welcome, ' . Auth::user()->name)
 
 @section('sidebar')
     @include('layouts.partials.lecturer-sidebar')
@@ -15,198 +15,596 @@
             --primary: #0A2463;
             --primary-dark: #061840;
             --primary-light: #1E3A8A;
-            --secondary: #C5A020;
-            --accent: #D4A017;
-            --bg-main: #EEF2F7;
-            --white: #FFFFFF;
-            --text-gray: #64748b;
-            --text-dark: #1e293b;
-            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
-            --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
+            --primary-gradient: linear-gradient(135deg, #0A2463 0%, #1E3A8A 100%);
             --success: #10b981;
-            --warning: #f59e0b;
+            --success-light: #d1fae5;
             --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
             --info: #3b82f6;
+            --info-light: #dbeafe;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
+            --shadow-lg: 0 10px 40px rgba(10, 36, 99, 0.12);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* ============================================================
+                                   PROFESSIONAL NOTIFICATIONS
+                                   ============================================================ */
+        .notification-success,
+        .notification-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.25rem;
+            margin-bottom: 1.25rem;
+            border-radius: var(--radius-lg);
+            background: var(--white);
+            border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notification-success::before,
+        .notification-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .notification-success::before {
+            background: var(--success);
+        }
+
+        .notification-info::before {
+            background: var(--info);
+        }
+
+        .notification-success:hover,
+        .notification-info:hover {
+            box-shadow: var(--shadow);
+        }
+
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.1rem;
+        }
+
+        .notification-success .notification-icon {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .notification-info .notification-icon {
+            background: var(--info-light);
+            color: var(--info);
+        }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-content .notification-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-400);
+            margin-bottom: 0.05rem;
+        }
+
+        .notification-content .notification-message {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--gray-800);
+            line-height: 1.4;
+        }
+
+        .notification-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gray-400);
+            font-size: 0.9rem;
+            padding: 0.2rem;
+            transition: var(--transition);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .notification-close:hover {
+            color: var(--gray-700);
+            transform: rotate(90deg);
+        }
+
+        .notification-success,
+        .notification-info {
+            animation: slideInNotification 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                fadeOutNotification 0.5s ease 4.8s forwards;
+        }
+
+        @keyframes slideInNotification {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeOutNotification {
+            to {
+                opacity: 0;
+                transform: translateY(-15px) scale(0.96);
+            }
+        }
+
+        /* ============================================================
+                                   QR CONTAINER
+                                   ============================================================ */
         .qr-container {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: var(--primary-gradient);
             color: var(--white);
-            padding: 20px;
-            border-radius: 15px;
+            padding: 1.5rem 2rem;
+            border-radius: var(--radius-lg);
             text-align: center;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
         }
 
-        .qr-container-semester {
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
-            color: var(--white);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
+        .qr-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50%;
+        }
+
+        .qr-container .mode-badge {
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fcd34d;
+            margin-bottom: 0.75rem;
+        }
+
+        .qr-container h4 {
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .qr-container .sub-text {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
         }
 
         .qr-box {
             background: var(--white);
-            padding: 15px;
-            border-radius: 10px;
+            padding: 1rem;
+            border-radius: var(--radius);
             display: inline-block;
-            margin: 10px auto;
+            margin: 0.5rem auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
         }
 
         .qr-box img {
-            width: 220px;
-            height: 220px;
+            width: 200px;
+            height: 200px;
+            display: block;
         }
 
-        .manual-code {
-            font-size: 24px;
-            font-weight: bold;
-            letter-spacing: 5px;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 10px;
+        .qr-box .download-btn {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.3rem 1rem;
+            background: var(--success);
+            color: var(--white);
+            border-radius: 8px;
+            font-size: 0.75rem;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .qr-box .download-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .qr-details {
+            margin: 1rem 0;
+        }
+
+        .qr-details p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        .qr-details .manual-code {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.3rem 1.5rem;
             border-radius: 8px;
             display: inline-block;
             font-family: monospace;
+            margin-top: 0.3rem;
+        }
+
+        .qr-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .btn-qr {
+            padding: 0.4rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: 'Inter', sans-serif;
+            text-decoration: none;
+        }
+
+        .btn-qr:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-qr.danger {
+            background: var(--danger);
             color: var(--white);
+        }
+
+        .btn-qr.danger:hover {
+            background: #b91c1c;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-qr.warning {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .btn-qr.warning:hover {
+            background: #d97706;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-qr.info {
+            background: var(--info);
+            color: var(--white);
+        }
+
+        .btn-qr.info:hover {
+            background: #2563eb;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-qr.primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-qr.primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.3);
+        }
+
+        .btn-qr.secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn-qr.secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .countdown {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            opacity: 0.9;
         }
 
         .mode-selector {
             background: var(--white);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.25rem;
             border: 1px solid rgba(10, 36, 99, 0.06);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .mode-selector:hover {
             box-shadow: var(--shadow);
         }
 
-        .btn-custom {
-            background: var(--primary);
-            color: var(--white);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
+        .mode-selector h5 {
+            color: var(--gray-800);
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
-        .btn-custom:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
+        .mode-selector h5 i {
+            color: var(--primary);
         }
 
         .form-control {
             width: 100%;
-            padding: 8px;
-            border: 1px solid rgba(10, 36, 99, 0.12);
-            border-radius: 6px;
-            margin-bottom: 10px;
-            transition: all 0.3s ease;
+            padding: 0.6rem 0.9rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            background: var(--gray-50);
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            color: var(--gray-800);
+            margin-bottom: 0.75rem;
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(10, 36, 99, 0.06);
         }
 
-        .countdown {
-            font-size: 14px;
-            margin-top: 10px;
+        .form-label {
+            font-weight: 600;
+            font-size: 0.8rem;
+            color: var(--gray-700);
+            display: block;
+            margin-bottom: 0.2rem;
+        }
+
+        .btn-submit {
+            background: var(--primary-gradient);
+            color: var(--white);
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.2);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(10, 36, 99, 0.3);
+            color: var(--white);
+        }
+
+        .semester-link-card {
+            background: var(--gray-50);
+            border: 2px dashed var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            transition: var(--transition);
+            cursor: default;
+        }
+
+        .semester-link-card:hover {
+            background: var(--white);
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        .semester-link-card .left h5 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--gray-800);
+            font-size: 1rem;
+        }
+
+        .semester-link-card .left h5 i {
+            color: var(--primary);
+        }
+
+        .semester-link-card .left p {
+            margin: 0.2rem 0 0;
+            font-size: 0.8rem;
+            color: var(--gray-500);
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            gap: 0.75rem;
+        }
+
+        .stat-box {
             text-align: center;
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            background: var(--gray-50);
+            transition: var(--transition);
         }
 
-        .stat-number {
-            font-size: 28px;
-            font-weight: bold;
+        .stat-box:hover {
+            background: var(--gray-100);
         }
 
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-gray);
+        .stat-box .number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1.2;
         }
 
-        .download-btn {
-            display: inline-block;
-            background: var(--success);
-            color: var(--white);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            margin-top: 8px;
-            text-decoration: none;
-            transition: all 0.2s;
+        .stat-box .number.present {
+            color: var(--success);
         }
 
-        .download-btn:hover {
-            background: #059669;
-            color: var(--white);
+        .stat-box .number.late {
+            color: var(--warning);
+        }
+
+        .stat-box .number.absent {
+            color: var(--danger);
+        }
+
+        .stat-box .number.total {
+            color: var(--primary);
+        }
+
+        .stat-box .label {
+            font-size: 0.65rem;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-weight: 600;
         }
 
         .live-attendance-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 0.8rem;
         }
 
         .live-attendance-table thead {
-            background: var(--bg-main);
+            background: var(--gray-50);
         }
 
         .live-attendance-table th {
-            padding: 8px 12px;
+            padding: 0.5rem 0.75rem;
             text-align: left;
-            font-size: 11px;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            color: var(--text-gray);
-            font-weight: 600;
-            border-bottom: 2px solid rgba(10, 36, 99, 0.06);
+            color: var(--gray-500);
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            border-bottom: 2px solid var(--gray-200);
         }
 
         .live-attendance-table td {
-            padding: 8px 12px;
-            border-bottom: 1px solid #f1f5f9;
+            padding: 0.4rem 0.75rem;
+            border-bottom: 1px solid var(--gray-100);
             vertical-align: middle;
         }
 
         .live-attendance-table tbody tr {
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
         .live-attendance-table tbody tr:hover {
-            background: var(--bg-main);
+            background: var(--gray-50);
         }
 
         .live-attendance-table .status-badge {
             display: inline-block;
-            padding: 2px 10px;
+            padding: 0.1rem 0.6rem;
             border-radius: 12px;
-            font-size: 11px;
+            font-size: 0.65rem;
             font-weight: 600;
         }
 
         .status-badge.present {
-            background: #dcfce7;
+            background: var(--success-light);
             color: #166534;
         }
 
         .status-badge.late {
-            background: #fef3c7;
+            background: var(--warning-light);
             color: #92400e;
         }
 
         .status-badge.absent {
-            background: #fee2e2;
+            background: var(--danger-light);
             color: #991b1b;
+        }
+
+        .live-badge {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse-dot 1.5s infinite;
+            margin-right: 0.3rem;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .attendance-counter {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+        }
+
+        .attendance-counter strong {
+            color: var(--gray-800);
         }
 
         .live-attendance-table .new-row {
@@ -227,345 +625,377 @@
             }
         }
 
-        .live-badge {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background: var(--success);
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
-            margin-right: 6px;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            50% {
-                opacity: 0.5;
-                transform: scale(0.8);
-            }
-        }
-
-        .attendance-counter {
-            font-size: 14px;
-            color: var(--text-gray);
-        }
-
-        .attendance-counter strong {
-            color: var(--text-dark);
-        }
-
-        .btn-back-to-form {
-            background: var(--text-gray);
-            color: var(--white);
-            border: none;
-            padding: 8px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-back-to-form:hover {
-            background: #4b5563;
-            color: var(--white);
-            transform: translateY(-1px);
-        }
-
-        .btn-deactivate {
-            background: var(--danger);
-            color: var(--white);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-deactivate:hover {
-            background: #b91c1c;
-            transform: translateY(-1px);
-        }
-
-        .btn-regenerate {
-            background: var(--warning);
-            color: var(--white);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-regenerate:hover {
-            background: #d97706;
-            transform: translateY(-1px);
-        }
-
-        .top-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 15px;
-        }
-
-        .alert-info {
-            background: #eff6ff;
-            color: #1e40af;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            border-left: 4px solid var(--info);
-            font-size: 14px;
-        }
-
-        .alert-success {
-            background: #dcfce7;
-            color: #166534;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            border-left: 4px solid var(--success);
-            font-size: 14px;
-        }
-
         .qr-list {
-            margin-top: 10px;
+            margin-top: 0.5rem;
         }
 
         .qr-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 14px;
-            background: var(--bg-main);
+            padding: 0.5rem 0.75rem;
+            background: var(--white);
             border-radius: 8px;
-            border: 1px solid rgba(10, 36, 99, 0.06);
-            margin-bottom: 8px;
-            transition: all 0.2s;
+            margin-bottom: 0.3rem;
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
         }
 
         .qr-item:hover {
-            background: #e8edf5;
+            border-color: var(--primary);
         }
 
-        .qr-item .course-info .name {
+        .qr-item .qr-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .qr-item .qr-info .code {
             font-weight: 600;
-            color: var(--text-dark);
+            color: var(--gray-800);
+            font-size: 0.85rem;
         }
 
-        .qr-item .course-info .code {
-            font-size: 12px;
-            color: var(--text-gray);
+        .qr-item .qr-info .name {
+            color: var(--gray-500);
+            font-size: 0.8rem;
         }
 
-        .qr-item .status-badge-sm {
-            font-size: 11px;
-            padding: 2px 10px;
-            border-radius: 12px;
+        .qr-item .qr-info .badge-semester-sm {
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 0.05rem 0.4rem;
+            border-radius: 8px;
+            background: #dbeafe;
+            color: #1e40af;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.15rem;
+        }
+
+        .qr-item .qr-actions-sm {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .btn-sm-custom {
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.65rem;
             font-weight: 600;
-        }
-
-        .status-badge-sm.active {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .btn-view-qr {
-            background: var(--primary-light);
-            color: var(--white);
             border: none;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 11px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 0.2rem;
+            font-family: 'Inter', sans-serif;
         }
 
-        .btn-view-qr:hover {
+        .btn-sm-custom.info {
+            background: var(--info);
+            color: var(--white);
+        }
+
+        .btn-sm-custom.info:hover {
+            background: #2563eb;
+        }
+
+        .btn-sm-custom.primary {
             background: var(--primary);
             color: var(--white);
         }
 
-        .btn-end-qr {
+        .btn-sm-custom.primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-sm-custom.danger {
             background: var(--danger);
             color: var(--white);
-            border: none;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 11px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
         }
 
-        .btn-end-qr:hover {
+        .btn-sm-custom.danger:hover {
             background: #b91c1c;
-            color: var(--white);
-        }
-
-        .qr-badge {
-            font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-weight: 600;
-        }
-
-        .qr-badge.semester {
-            background: #dbeafe;
-            color: #1e40af;
         }
 
         .qr-badge.dynamic {
+            font-size: 0.55rem;
+            padding: 0.05rem 0.4rem;
+            border-radius: 8px;
             background: #fef3c7;
             color: #92400e;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 15px;
-            color: var(--text-gray);
-            font-size: 13px;
+        /* ============================================================
+                                   CUSTOM CONFIRM MODAL
+                                   ============================================================ */
+        .custom-confirm-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: overlayFadeIn 0.3s ease;
         }
 
-        .empty-state i {
-            font-size: 24px;
-            display: block;
-            margin-bottom: 8px;
-            color: #d1d5db;
+        .custom-confirm-overlay.show {
+            display: flex;
         }
 
-        .mode-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-bottom: 8px;
+        @keyframes overlayFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
-        .mode-badge.dynamic {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fcd34d;
+        .custom-confirm-box {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+            animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
         }
 
-        .mode-badge.semester {
-            background: rgba(255, 255, 255, 0.2);
-            color: #93c5fd;
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
-        .rollcall-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            margin-top: 10px;
+        .custom-confirm-header {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
+            background: var(--gray-50);
         }
 
-        .rollcall-box {
-            background: var(--bg-main);
-            border-radius: 8px;
-            padding: 8px;
-            text-align: center;
-            border: 1px solid rgba(10, 36, 99, 0.06);
-            transition: all 0.3s ease;
+        .custom-confirm-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
         }
 
-        .rollcall-box:hover {
-            border-color: var(--primary);
-        }
-
-        .rollcall-box .value {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--primary);
-        }
-
-        .rollcall-box .value.high {
-            color: var(--success);
-        }
-
-        .rollcall-box .value.medium {
+        .custom-confirm-icon.warning {
+            background: var(--warning-light);
             color: var(--warning);
         }
 
-        .rollcall-box .value.low {
+        .custom-confirm-icon.danger {
+            background: var(--danger-light);
             color: var(--danger);
         }
 
-        .rollcall-box .label {
-            font-size: 10px;
-            color: var(--text-gray);
+        .custom-confirm-icon.success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .custom-confirm-title-group {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .custom-confirm-title-group h4 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--gray-900);
+            font-size: 1.05rem;
+        }
+
+        .custom-confirm-title-group p {
+            margin: 0.15rem 0 0;
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            line-height: 1.5;
+        }
+
+        .custom-confirm-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gray-400);
+            font-size: 1.1rem;
+            padding: 0.2rem;
+            transition: var(--transition);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .custom-confirm-close:hover {
+            color: var(--gray-700);
+            transform: rotate(90deg);
+        }
+
+        .custom-confirm-body {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .custom-confirm-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .confirm-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0.75rem;
+            background: var(--gray-50);
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+
+        .confirm-detail-row .confirm-detail-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--gray-600);
             font-weight: 500;
         }
 
-        .eligibility-badge {
-            display: inline-block;
-            padding: 4px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
+        .confirm-detail-row .confirm-detail-value {
+            font-weight: 600;
+            color: var(--gray-800);
         }
 
-        .eligibility-badge.eligible {
-            background: #dcfce7;
-            color: #166534;
+        .custom-confirm-footer {
+            padding: 1rem 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
+            background: var(--gray-50);
         }
 
-        .eligibility-badge.warning {
-            background: #fef3c7;
-            color: #92400e;
+        .custom-confirm-btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: 'Inter', sans-serif;
         }
 
-        .eligibility-badge.not_eligible {
-            background: #fee2e2;
-            color: #991b1b;
+        .custom-confirm-btn.cancel {
+            background: var(--gray-100);
+            color: var(--gray-600);
         }
 
-        .risk-badge-sm {
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 700;
+        .custom-confirm-btn.cancel:hover {
+            background: var(--gray-200);
+            color: var(--gray-700);
         }
 
-        .risk-badge-sm.low {
-            background: #dcfce7;
-            color: #166534;
+        .custom-confirm-btn.primary {
+            background: var(--primary);
+            color: var(--white);
         }
 
-        .risk-badge-sm.medium {
-            background: #fef3c7;
-            color: #92400e;
+        .custom-confirm-btn.primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.3);
+            transform: translateY(-1px);
         }
 
-        .risk-badge-sm.high {
-            background: #fee2e2;
-            color: #991b1b;
+        .custom-confirm-btn.danger {
+            background: var(--danger);
+            color: var(--white);
         }
 
-        @media (max-width: 768px) {
+        .custom-confirm-btn.danger:hover {
+            background: #b91c1c;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .custom-confirm-btn.warning {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .custom-confirm-btn.warning:hover {
+            background: #d97706;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 480px) {
+            .custom-confirm-box {
+                margin: 10px;
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+
+            .custom-confirm-header {
+                flex-wrap: wrap;
+            }
+
+            .custom-confirm-title-group {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .confirm-detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.2rem;
+            }
+
+            .custom-confirm-footer {
+                flex-direction: column-reverse;
+            }
+
+            .custom-confirm-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 992px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+        }
 
-            .rollcall-grid {
-                grid-template-columns: repeat(3, 1fr);
+        @media (max-width: 768px) {
+            .qr-container {
+                padding: 1.25rem;
             }
 
             .qr-box img {
@@ -573,193 +1003,203 @@
                 height: 150px;
             }
 
-            .manual-code {
-                font-size: 18px;
+            .qr-details .manual-code {
+                font-size: 1.2rem;
+                padding: 0.2rem 1rem;
+            }
+
+            .semester-link-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
+
+            .stat-box .number {
+                font-size: 1.3rem;
             }
 
             .live-attendance-table {
-                font-size: 11px;
+                font-size: 0.7rem;
             }
 
             .live-attendance-table th,
             .live-attendance-table td {
-                padding: 4px 6px;
+                padding: 0.3rem 0.5rem;
             }
 
-            .top-actions {
+            .qr-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .qr-actions .btn-qr {
+                width: 100%;
                 justify-content: center;
             }
 
             .qr-item {
                 flex-direction: column;
-                gap: 8px;
-                text-align: center;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .qr-item .qr-actions-sm {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .stat-box {
+                padding: 0.3rem;
+            }
+
+            .stat-box .number {
+                font-size: 1.1rem;
+            }
+
+            .qr-container h4 {
+                font-size: 1.1rem;
+            }
+
+            .mode-selector {
+                padding: 1rem;
             }
         }
     </style>
 
-    @if (session('info'))
-        <div class="alert-info">
-            <i class="bi bi-info-circle"></i> {{ session('info') }}
+    <!-- ============================================================
+                            NOTIFICATIONS
+                            ============================================================ -->
+    @if (session('success'))
+        <div class="notification-success" id="notificationSuccess">
+            <div class="notification-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">Success</div>
+                <div class="notification-message">{{ session('success') }}</div>
+            </div>
+            <button class="notification-close" onclick="this.parentElement.remove()">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
     @endif
 
-    @if (session('success'))
-        <div class="alert-success">
-            <i class="bi bi-check-circle"></i> {{ session('success') }}
+    @if (session('info'))
+        <div class="notification-info" id="notificationInfo">
+            <div class="notification-icon">
+                <i class="bi bi-info-circle-fill"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">Info</div>
+                <div class="notification-message">{{ session('info') }}</div>
+            </div>
+            <button class="notification-close" onclick="this.parentElement.remove()">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
     @endif
 
     <div class="row">
         <div class="col-md-6">
-            @if ($activeSession && !$showCreateForm)
-                <!-- Active session display – unchanged -->
-                <div class="top-actions">
-                    <a href="{{ route('lecturer.attendance.take') }}?back=1" class="btn-back-to-form">
+            <!-- ============================================================
+                                    ACTIVE SESSION DISPLAY (Always shown if exists)
+                                    ============================================================ -->
+            @if ($activeSession)
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                    <a href="{{ route('lecturer.attendance.take') }}?back=1" class="btn-qr secondary">
                         <i class="bi bi-arrow-left"></i> Back to Create New QR
                     </a>
                 </div>
 
-                @if ($activeSession->qr_mode == 'semester')
-                    <!-- Semester QR display – unchanged -->
-                    <div class="qr-container-semester">
-                        <span class="mode-badge semester"><i class="bi bi-book"></i> Semester QR (Static)</span>
-                        <h4><i class="bi bi-qr-code"></i> Semester QR Code</h4>
-                        <p style="font-size: 12px;">Same QR for whole semester - put on PowerPoint once</p>
-                        <div class="qr-box">
-                            @php
-                                $semesterQrText =
-                                    route('student.scan.semester') .
-                                    '?token=' .
-                                    $activeSession->course->semester_qr_token .
-                                    '&course=' .
-                                    $activeSession->course->id;
-                            @endphp
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode($semesterQrText) }}"
-                                alt="Semester QR">
-                            <div>
-                                <a href="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode($semesterQrText) }}"
-                                    download="semester-qr.png" class="download-btn">Download QR Code</a>
-                            </div>
-                        </div>
+                <!-- Dynamic QR Display -->
+                <div class="qr-container">
+                    <span class="mode-badge"><i class="bi bi-arrow-repeat"></i> Session QR (Dynamic)</span>
+                    <h4><i class="bi bi-qr-code"></i> Dynamic QR Code</h4>
+                    <p class="sub-text">Changes every session - expires in {{ $activeSession->duration }} minutes</p>
+
+                    <div class="qr-box">
+                        @php
+                            $dynamicQrText =
+                                route('student.scan.process') .
+                                '?token=' .
+                                $activeSession->session_token .
+                                '&session=' .
+                                $activeSession->id;
+                        @endphp
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode($dynamicQrText) }}"
+                            alt="Dynamic QR">
                         <div>
-                            <p><strong>Course:</strong> {{ $activeSession->course->course_name ?? 'N/A' }}</p>
-                            <p><strong>Room:</strong> {{ $activeSession->room ?? 'Not specified' }}</p>
-                            <p style="font-size: 12px; opacity: 0.8;">
-                                <i class="bi bi-info-circle"></i>
-                                Students can scan anytime during the semester
-                            </p>
-                            <p style="margin-top: 10px;">
-                                <strong>Manual Code:</strong>
-                            </p>
-                            <div class="manual-code">{{ $activeSession->manual_code }}</div>
-                            <p style="font-size: 12px; opacity: 0.8; margin-top: 5px;">
-                                <i class="bi bi-info-circle"></i> Students can enter this code manually if they can't scan
-                            </p>
-                        </div>
-                        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                            <form method="POST"
-                                action="{{ route('lecturer.course.regenerate-semester-qr', $activeSession->course->id) }}"
-                                style="display: inline;">
-                                @csrf
-                                <button type="submit" class="btn-regenerate">
-                                    Regenerate QR
-                                </button>
-                            </form>
-                            <form method="POST"
-                                action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
-                                style="display: inline;"
-                                onsubmit="return confirm('End this semester QR? Students will no longer be able to scan.')">
-                                @csrf
-                                <button type="submit" class="btn-deactivate">
-                                    End QR
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                @else
-                    <!-- Dynamic QR display – unchanged -->
-                    <div class="qr-container">
-                        <span class="mode-badge dynamic"><i class="bi bi-arrow-repeat"></i> Session QR (Dynamic)</span>
-                        <h4><i class="bi bi-qr-code"></i> Dynamic QR Code</h4>
-                        <p style="font-size: 12px;">Changes every session - expires in {{ $activeSession->duration }}
-                            minutes</p>
-                        <div class="qr-box">
-                            @php
-                                $dynamicQrText =
-                                    route('student.scan.process') .
-                                    '?token=' .
-                                    $activeSession->session_token .
-                                    '&session=' .
-                                    $activeSession->id;
-                            @endphp
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode($dynamicQrText) }}"
-                                alt="Dynamic QR">
-                            <div>
-                                <a href="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={{ urlencode($dynamicQrText) }}"
-                                    download="dynamic-qr.png" class="download-btn">Download QR Code</a>
-                            </div>
-                        </div>
-                        <div>
-                            <p><strong>Course:</strong> {{ $activeSession->course->course_name ?? 'N/A' }}</p>
-                            <p><strong>Room:</strong> {{ $activeSession->room ?? 'Not specified' }}</p>
-                            <p><strong>Manual Code:</strong></p>
-                            <div class="manual-code">{{ $activeSession->manual_code }}</div>
-                            <p style="font-size: 12px; opacity: 0.8; margin-top: 5px;">
-                                <i class="bi bi-info-circle"></i> Students can enter this code manually if they can't scan
-                            </p>
-                            <div class="countdown"><span id="countdownTimer"></span></div>
-                        </div>
-                        <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                            <form method="POST"
-                                action="{{ route('lecturer.attendance.sessions.end', $activeSession->id) }}"
-                                style="display: inline;" onsubmit="return confirm('End this session?')">
-                                @csrf
-                                <button type="submit" class="btn-custom" style="background: var(--danger);">
-                                    End Session
-                                </button>
-                            </form>
-                            <a href="{{ route('lecturer.attendance.sessions.refresh', $activeSession->id) }}"
-                                class="btn-custom" style="background: var(--secondary); text-decoration: none;">
-                                Refresh QR
+                            <a href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ urlencode($dynamicQrText) }}"
+                                download="dynamic-qr.png" class="download-btn">
+                                <i class="bi bi-download"></i> Download QR
                             </a>
                         </div>
                     </div>
-                @endif
 
-                <!-- Live Attendance Statistics – unchanged -->
+                    <div class="qr-details">
+                        <p><i class="bi bi-book"></i> <strong>Course:</strong>
+                            {{ $activeSession->course->course_name ?? 'N/A' }}</p>
+                        <p><i class="bi bi-door-open"></i> <strong>Room:</strong>
+                            {{ $activeSession->room ?? 'Not specified' }}</p>
+                        <p><i class="bi bi-layers"></i> <strong>Periods:</strong>
+                            {{ $activeSession->conducted_periods ?? 4 }}</p>
+                        <p><strong>Manual Code:</strong></p>
+                        <div class="manual-code">{{ $activeSession->manual_code }}</div>
+                        <p style="font-size: 0.75rem; opacity: 0.7; margin-top: 0.3rem;">
+                            <i class="bi bi-info-circle"></i> Students can enter this code manually if they can't scan
+                        </p>
+                        <div class="countdown" id="countdownTimer"></div>
+                    </div>
+
+                    <div class="qr-actions">
+                        <button type="button" class="btn-qr danger" onclick="confirmEndSession({{ $activeSession->id }})">
+                            <i class="bi bi-stop-circle"></i> End Session
+                        </button>
+                        <a href="{{ route('lecturer.attendance.sessions.refresh', $activeSession->id) }}"
+                            class="btn-qr warning">
+                            <i class="bi bi-arrow-repeat"></i> Refresh QR
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Live Attendance Statistics -->
                 <div class="mode-selector">
-                    <h5 style="color: var(--primary);"><i class="bi bi-graph-up"></i> Live Attendance Statistics</h5>
+                    <h5><i class="bi bi-graph-up"></i> Live Attendance Statistics</h5>
                     <div class="stats-grid">
-                        <div>
-                            <div class="stat-number" style="color:var(--success);" id="livePresentCount">
-                                {{ $activeSession->present_count ?? 0 }}
+                        <div class="stat-box">
+                            <div class="number present" id="livePresentCount">{{ $activeSession->present_count ?? 0 }}
                             </div>
-                            <div class="stat-label">Present</div>
+                            <div class="label">Present</div>
                         </div>
-                        <div>
-                            <div class="stat-number" style="color:var(--warning);" id="liveLateCount">
-                                {{ $activeSession->late_count ?? 0 }}
-                            </div>
-                            <div class="stat-label">Late</div>
+                        <div class="stat-box">
+                            <div class="number late" id="liveLateCount">{{ $activeSession->late_count ?? 0 }}</div>
+                            <div class="label">Late</div>
                         </div>
-                        <div>
-                            <div class="stat-number" style="color:var(--danger);" id="liveAbsentCount">
+                        <div class="stat-box">
+                            <div class="number absent" id="liveAbsentCount">
                                 {{ max(0, ($activeSession->total_students ?? 0) - ($activeSession->present_count ?? 0) - ($activeSession->late_count ?? 0)) }}
                             </div>
-                            <div class="stat-label">Absent</div>
+                            <div class="label">Absent</div>
                         </div>
-                        <div>
-                            <div class="stat-number" style="color:var(--primary);" id="liveTotalCount">
-                                {{ $activeSession->total_students ?? 0 }}
-                            </div>
-                            <div class="stat-label">Total</div>
+                        <div class="stat-box">
+                            <div class="number total" id="liveTotalCount">{{ $activeSession->total_students ?? 0 }}</div>
+                            <div class="label">Total</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="mode-selector" style="margin-top: 1rem;">
-                    <h5 style="color: var(--primary);">
+                <!-- Real-Time Attendance -->
+                <div class="mode-selector">
+                    <h5>
                         <i class="bi bi-clock-history"></i> Real-Time Attendance
                         <span class="live-badge"></span>
                         <span class="attendance-counter">
@@ -794,23 +1234,21 @@
                                                 <strong>{{ $record->student->name ?? 'Unknown' }}</strong>
                                                 <br>
                                                 <small
-                                                    style="color: var(--text-gray); font-size: 10px;">{{ $record->student->email ?? 'N/A' }}</small>
+                                                    style="color: var(--gray-500); font-size: 0.6rem;">{{ $record->student->email ?? 'N/A' }}</small>
                                             </td>
-                                            <td>
-                                                <span class="status-badge {{ $statusClass }}">
-                                                    {{ ucfirst($statusClass) }}
-                                                </span>
+                                            <td><span
+                                                    class="status-badge {{ $statusClass }}">{{ ucfirst($statusClass) }}</span>
                                             </td>
-                                            <td style="font-size: 12px; color: var(--text-gray);">
+                                            <td style="font-size: 0.7rem; color: var(--gray-500);">
                                                 {{ $record->scanned_at ? \Carbon\Carbon::parse($record->scanned_at)->format('h:i:s A') : 'N/A' }}
                                             </td>
                                             <td>
                                                 @if ($record->is_manual)
                                                     <span
-                                                        style="font-size: 10px; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px;">Manual</span>
+                                                        style="font-size: 0.6rem; background: #dbeafe; color: #1e40af; padding: 0.1rem 0.4rem; border-radius: 4px;">Manual</span>
                                                 @else
                                                     <span
-                                                        style="font-size: 10px; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px;">QR
+                                                        style="font-size: 0.6rem; background: #dcfce7; color: #166534; padding: 0.1rem 0.4rem; border-radius: 4px;">QR
                                                         Scan</span>
                                                 @endif
                                             </td>
@@ -818,9 +1256,9 @@
                                     @endforeach
                                 @else
                                     <tr>
-                                        <td colspan="5" style="text-align: center; padding: 20px; color: #9ca3af;">
+                                        <td colspan="5" style="text-align: center; padding: 1.5rem; color: #9ca3af;">
                                             <i class="bi bi-inbox"
-                                                style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                                                style="font-size: 1.5rem; display: block; margin-bottom: 0.3rem;"></i>
                                             No students have scanned yet
                                         </td>
                                     </tr>
@@ -829,49 +1267,29 @@
                         </table>
                     </div>
                 </div>
-            @else
-                <!-- QR Creation Form -->
+            @endif
+
+            <!-- ============================================================
+                                    CREATE DYNAMIC QR FORM - Always visible if no active session OR if "Back" was clicked
+                                    ============================================================ -->
+            @if (!$activeSession || $showCreateForm)
                 <div class="mode-selector">
-                    <h5 style="color: var(--primary); margin-bottom: 15px;">
-                        <i class="bi bi-sliders2"></i> Select QR Mode
-                    </h5>
+                    <h5><i class="bi bi-sliders2"></i> Create Dynamic QR Session</h5>
 
                     <form method="POST" action="{{ route('lecturer.attendance.sessions.create') }}">
                         @csrf
+                        <input type="hidden" name="qr_mode" value="session">
+
                         <select name="course_id" class="form-control" required>
-                            <option value="">-- Select Course --</option>
+                            <option value="">— Select Course —</option>
                             @foreach ($courses as $course)
                                 <option value="{{ $course->id }}">{{ $course->course_code }} -
                                     {{ $course->course_name }}</option>
                             @endforeach
                         </select>
 
-                        <div style="margin: 15px 0;">
-                            <label
-                                style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid rgba(10, 36, 99, 0.12); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s ease;">
-                                <input type="radio" name="qr_mode" value="session" checked>
-                                <span>
-                                    <strong>Session QR (Dynamic)</strong><br>
-                                    <small style="color: var(--text-gray);">New QR every session - expires after set
-                                        time</small>
-                                </span>
-                            </label>
-                            <label
-                                style="display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid rgba(10, 36, 99, 0.12); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
-                                <input type="radio" name="qr_mode" value="semester">
-                                <span>
-                                    <strong>Semester QR (Static)</strong><br>
-                                    <small style="color: var(--text-gray);">Same QR all semester - put on PowerPoint
-                                        once</small>
-                                </span>
-                            </label>
-                        </div>
-
-                        {{-- ⭐ Number of Class Periods (for attendance calculation) --}}
-                        <div class="form-group" style="margin-bottom: 10px;">
-                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 4px;">
-                                Number of Class Periods
-                            </label>
+                        <div style="margin-bottom: 0.75rem;">
+                            <label class="form-label">Number of Class Periods</label>
                             <select name="period_count" class="form-control" required>
                                 <option value="1">1 period (50 min)</option>
                                 <option value="2">2 periods (1h 40m)</option>
@@ -882,18 +1300,10 @@
                                 <option value="7">7 periods (5h 50m)</option>
                                 <option value="8">8 periods (6h 40m)</option>
                             </select>
-                            {{-- <small style="color: var(--text-gray); font-size: 12px;">
-                                <i class="bi bi-info-circle"></i>
-                                How many class periods (50 min each) does this session cover?
-                                This affects attendance calculation.
-                            </small> --}}
                         </div>
 
-                        {{-- ⭐ QR Duration (how long QR is active for scanning) --}}
-                        <div id="durationField">
-                            <label style="font-weight: 600; color: var(--text-dark); display: block; margin-bottom: 4px;">
-                                QR Active Duration
-                            </label>
+                        <div style="margin-bottom: 0.75rem;">
+                            <label class="form-label">QR Active Duration</label>
                             <select name="duration" class="form-control" required>
                                 <option value="15">15 minutes</option>
                                 <option value="30" selected>30 minutes</option>
@@ -902,95 +1312,68 @@
                                 <option value="90">90 minutes</option>
                                 <option value="120">120 minutes</option>
                             </select>
-                            {{-- <small style="color: var(--text-gray); font-size: 12px;">
-                                <i class="bi bi-info-circle"></i>
-                                How long will the QR code be available for students to scan?
-                            </small> --}}
                         </div>
 
                         <input type="text" name="room" class="form-control" placeholder="Room (optional)">
 
-                        <button type="submit" class="btn-custom" style="width: 100%; margin-top: 10px;">
-                            Start QR Session
-                        </button>
+                        <button type="submit" class="btn-submit"><i class="bi bi-qr-code"></i> Start QR Session</button>
                     </form>
                 </div>
+            @endif
 
-                @if (isset($allActiveSessions) && $allActiveSessions->count() > 0)
-                    <div class="mode-selector"
-                        style="margin-top: 16px; background: var(--bg-main); border-color: var(--primary);">
-                        <h5 style="color: var(--primary);">
-                            <i class="bi bi-qr-code"></i> Your Active QR Sessions
-                        </h5>
-                        <p style="font-size: 12px; color: var(--text-gray); margin-bottom: 12px;">
-                            You have {{ $allActiveSessions->count() }} active QR session(s).
-                            Click "View" to switch between them.
-                        </p>
-                        <div class="qr-list">
-                            @foreach ($allActiveSessions as $session)
-                                <div class="qr-item">
-                                    <div class="course-info">
-                                        <span class="name">{{ $session->course->course_name ?? 'Unknown' }}</span>
-                                        <span class="code">
-                                            {{ $session->course->course_code ?? 'N/A' }}
-                                            Room: {{ $session->room ?? 'N/A' }}
-                                            <span
-                                                class="qr-badge {{ $session->qr_mode == 'semester' ? 'semester' : 'dynamic' }}">
-                                                {{ $session->qr_mode == 'semester' ? ' Semester' : ' Dynamic' }}
-                                            </span>
-                                        </span>
-                                        @if ($activeSession && $activeSession->id == $session->id)
-                                            <span style="font-size: 10px; color: var(--success); font-weight: 600;">
-                                                <i class="bi bi-check-circle"></i> Currently viewing
-                                            </span>
-                                        @endif
-                                    </div>
-                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                        <span class="status-badge-sm active"> Active</span>
-                                        @if (!$activeSession || $activeSession->id != $session->id)
-                                            <a href="{{ route('lecturer.attendance.take') }}?session={{ $session->id }}"
-                                                class="btn-view-qr">
-                                                <i class="bi bi-eye"></i> View
-                                            </a>
-                                        @else
-                                            <span style="font-size: 11px; color: var(--success); font-weight: 600;">
-                                                <i class="bi bi-check-circle"></i> Active
-                                            </span>
-                                        @endif
-                                        <form method="POST"
-                                            action="{{ route('lecturer.attendance.sessions.end', $session->id) }}"
-                                            style="display: inline;"
-                                            onsubmit="return confirm('End this QR session? Students will no longer be able to scan this QR.')">
-                                            @csrf
-                                            <button type="submit" class="btn-end-qr">
-                                                <i class="bi bi-stop-circle"></i> End
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            @endforeach
+            <!-- ============================================================
+                                    SEMESTER QR MANAGEMENT LINK - Always visible
+                                    ============================================================ -->
+            {{-- <div class="semester-link-card">
+                <div class="left">
+                    <h5><i class="bi bi-infinity"></i> Semester QR (Static)</h5>
+                    <p>Create QR codes that last for the entire semester. Students can scan anytime - no expiry.</p>
+                </div>
+                <a href="{{ route('lecturer.semester-qr.management') }}" class="btn-qr info">
+                    <i class="bi bi-gear"></i> Manage Semester QRs
+                </a>
+            </div> --}}
+
+            <!-- Active Semester QR Notice -->
+            @if (isset($existingStaticQrs) && $existingStaticQrs->count() > 0)
+                <div class="mode-selector">
+                    <h5 style="color: var(--gray-800);">
+                        <i class="bi bi-infinity" style="color: var(--primary);"></i> Active Semester QR Codes
+                        <span style="font-size: 0.75rem; font-weight: 400; color: var(--gray-500); margin-left: 0.5rem;">
+                            {{ $existingStaticQrs->count() }} active
+                        </span>
+                    </h5>
+                    @foreach ($existingStaticQrs as $session)
+                        <div class="qr-item">
+                            <div class="qr-info">
+                                <span class="code">{{ $session->course->course_code ?? 'N/A' }}</span>
+                                <span class="name">{{ $session->course->course_name ?? 'Unknown' }}</span>
+                                <span class="badge-semester-sm"><i class="bi bi-infinity"></i> Semester</span>
+                            </div>
+                            <div class="qr-actions-sm">
+                                <a href="{{ route('lecturer.semester-qr.view', $session->id) }}"
+                                    class="btn-sm-custom info">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="{{ route('lecturer.semester-qr.management') }}" class="btn-sm-custom primary">
+                                    <i class="bi bi-list"></i> Manage
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                @else
-                    <div class="mode-selector" style="margin-top: 16px; background: var(--bg-main);">
-                        <h5 style="color: var(--primary);">
-                            <i class="bi bi-qr-code"></i> Your Active QR Sessions
-                        </h5>
-                        <div class="empty-state">
-                            <i class="bi bi-inbox"></i>
-                            <p>No active QR sessions found.</p>
-                            <p style="font-size: 11px;">Create one using the form above.</p>
-                        </div>
-                    </div>
-                @endif
+                    @endforeach
+                </div>
             @endif
         </div>
 
+        <!-- ============================================================
+                                RIGHT COLUMN - MANUAL ATTENDANCE
+                                ============================================================ -->
         <div class="col-md-6">
             <div class="mode-selector">
-                <h5 style="color: var(--primary);"><i class="bi bi-pencil-square"></i> Manual Attendance Entry</h5>
+                <h5><i class="bi bi-pencil-square"></i> Manual Attendance Entry</h5>
                 <form method="POST" action="{{ route('lecturer.attendance.manual') }}">
                     @csrf
+
                     <select name="course_id" class="form-control" required>
                         <option value="">Select Course</option>
                         @foreach ($courses as $course)
@@ -1012,76 +1395,54 @@
                         <option value="absent">Absent</option>
                     </select>
 
-                    <div style="margin-top: 10px;">
-                        <label style="font-size: 12px; color: var(--text-gray);">Notes (Optional)</label>
-                        <textarea name="notes" class="form-control" rows="2"
-                            placeholder="e.g., Student arrived 15 minutes late due to traffic" style="resize: vertical;"></textarea>
+                    <div style="margin-top: 0.5rem;">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="e.g., Student arrived 15 minutes late"
+                            style="resize: vertical;"></textarea>
                     </div>
 
-                    <button type="submit" class="btn-custom" style="width: 100%; margin-top: 10px;">
-                        Save Manual Attendance
-                    </button>
+                    <button type="submit" class="btn-submit"><i class="bi bi-save"></i> Save Manual Attendance</button>
                 </form>
             </div>
 
-            <div class="mode-selector" style="text-align: center; background: var(--bg-main);">
-                <a href="{{ route('lecturer.attendance.sessions') }}" class="btn-custom"
-                    style="width: 100%; display: inline-block; padding: 8px; background: transparent; color: var(--primary); border: 1px solid var(--primary); border-radius: 6px; text-decoration: none; transition: all 0.3s ease; text-align: center;"
-                    onmouseover="this.style.background='var(--primary)'; this.style.color='white';"
-                    onmouseout="this.style.background='transparent'; this.style.color='var(--primary)';">
+            <!-- Session History Link -->
+            <div class="mode-selector" style="text-align: center; background: var(--gray-50);">
+                <a href="{{ route('lecturer.attendance.sessions') }}" class="btn-qr primary"
+                    style="width: 100%; justify-content: center; background: transparent; color: var(--primary); border: 2px solid var(--primary);">
                     <i class="bi bi-clock-history"></i> View Full Session History
                 </a>
-                <small class="text-muted"
-                    style="display: block; margin-top: 8px; color: var(--text-gray); font-size: 12px;">
+                <div style="font-size: 0.7rem; color: var(--gray-400); margin-top: 0.5rem;">
                     View all past sessions, attendance statistics, and detailed reports
-                </small>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        @if ($activeSession && $activeSession->qr_mode == 'session' && $activeSession->expires_at)
+        // ============================================================
+        // TIMER FOR DYNAMIC QR
+        // ============================================================
+        @if ($activeSession && $activeSession->expires_at)
             let expiresAt = new Date('{{ $activeSession->expires_at }}').getTime();
 
             function updateTimer() {
                 let now = new Date().getTime();
                 let distance = expiresAt - now;
-
                 if (distance < 0) {
                     document.getElementById('countdownTimer').innerHTML = '⏹ EXPIRED';
                     return;
                 }
-
                 let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 let seconds = Math.floor((distance % (1000 * 60)) / 1000);
                 document.getElementById('countdownTimer').innerHTML = '⏱ Time remaining: ' + minutes + 'm ' + seconds + 's';
             }
-
             updateTimer();
             setInterval(updateTimer, 1000);
         @endif
 
-        document.querySelectorAll('input[name="qr_mode"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const durationField = document.getElementById('durationField');
-                if (this.value === 'semester') {
-                    durationField.style.display = 'none';
-                } else {
-                    durationField.style.display = 'block';
-                }
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const selected = document.querySelector('input[name="qr_mode"]:checked');
-            if (selected && selected.value === 'semester') {
-                const durationField = document.getElementById('durationField');
-                if (durationField) {
-                    durationField.style.display = 'none';
-                }
-            }
-        });
-
+        // ============================================================
+        // LIVE ATTENDANCE POLLING
+        // ============================================================
         @if ($activeSession)
             const sessionId = {{ $activeSession->id }};
             const pollInterval = 3000;
@@ -1104,32 +1465,24 @@
                                     const statusClass = record.status || 'absent';
                                     const isManual = record.is_manual || false;
                                     const methodLabel = isManual ? 'Manual' : 'QR Scan';
-
                                     html += `
                                         <tr id="attendance-row-${index}" class="${index === data.records.length - 1 ? 'new-row' : ''}">
                                             <td>${index + 1}</td>
                                             <td>
                                                 <strong>${record.student_name || 'Unknown'}</strong>
                                                 <br>
-                                                <small style="color: var(--text-gray); font-size: 10px;">${record.student_email || 'N/A'}</small>
+                                                <small style="color: var(--gray-500); font-size: 0.6rem;">${record.student_email || 'N/A'}</small>
                                             </td>
+                                            <td><span class="status-badge ${statusClass}">${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}</span></td>
+                                            <td style="font-size: 0.7rem; color: var(--gray-500);">${record.scanned_at ? new Date(record.scanned_at).toLocaleTimeString() : 'N/A'}</td>
                                             <td>
-                                                <span class="status-badge ${statusClass}">
-                                                    ${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}
-                                                </span>
-                                            </td>
-                                            <td style="font-size: 12px; color: var(--text-gray);">
-                                                ${record.scanned_at ? new Date(record.scanned_at).toLocaleTimeString() : 'N/A'}
-                                            </td>
-                                            <td>
-                                                <span style="font-size: 10px; background: ${isManual ? '#dbeafe' : '#dcfce7'}; color: ${isManual ? '#1e40af' : '#166534'}; padding: 2px 8px; border-radius: 4px;">
+                                                <span style="font-size: 0.6rem; background: ${isManual ? '#dbeafe' : '#dcfce7'}; color: ${isManual ? '#1e40af' : '#166534'}; padding: 0.1rem 0.4rem; border-radius: 4px;">
                                                     ${methodLabel}
                                                 </span>
                                             </td>
                                         </tr>
                                     `;
                                 });
-
                                 if (tbody.querySelector('tr td[colspan]')) {
                                     tbody.innerHTML = html;
                                 } else {
@@ -1145,24 +1498,10 @@
                                             newHtml += `
                                                 <tr class="new-row">
                                                     <td>${globalIndex + 1}</td>
-                                                    <td>
-                                                        <strong>${record.student_name || 'Unknown'}</strong>
-                                                        <br>
-                                                        <small style="color: var(--text-gray); font-size: 10px;">${record.student_email || 'N/A'}</small>
-                                                    </td>
-                                                    <td>
-                                                        <span class="status-badge ${statusClass}">
-                                                            ${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}
-                                                        </span>
-                                                    </td>
-                                                    <td style="font-size: 12px; color: var(--text-gray);">
-                                                        ${record.scanned_at ? new Date(record.scanned_at).toLocaleTimeString() : 'N/A'}
-                                                    </td>
-                                                    <td>
-                                                        <span style="font-size: 10px; background: ${isManual ? '#dbeafe' : '#dcfce7'}; color: ${isManual ? '#1e40af' : '#166534'}; padding: 2px 8px; border-radius: 4px;">
-                                                            ${methodLabel}
-                                                        </span>
-                                                    </td>
+                                                    <td><strong>${record.student_name || 'Unknown'}</strong></td>
+                                                    <td><span class="status-badge ${statusClass}">${statusClass.charAt(0).toUpperCase() + statusClass.slice(1)}</span></td>
+                                                    <td style="font-size: 0.7rem; color: var(--gray-500);">${record.scanned_at ? new Date(record.scanned_at).toLocaleTimeString() : 'N/A'}</td>
+                                                    <td><span style="font-size: 0.6rem; background: ${isManual ? '#dbeafe' : '#dcfce7'}; color: ${isManual ? '#1e40af' : '#166534'}; padding: 0.1rem 0.4rem; border-radius: 4px;">${methodLabel}</span></td>
                                                 </tr>
                                             `;
                                         });
@@ -1175,13 +1514,12 @@
                                         });
                                     }
                                 }
-
                                 document.getElementById('totalScanned').innerText = data.records.length;
                             } else {
                                 tbody.innerHTML = `
                                     <tr>
-                                        <td colspan="5" style="text-align: center; padding: 20px; color: #9ca3af;">
-                                            <i class="bi bi-inbox" style="font-size: 24px; display: block; margin-bottom: 8px;"></i>
+                                        <td colspan="5" style="text-align: center; padding: 1.5rem; color: #9ca3af;">
+                                            <i class="bi bi-inbox" style="font-size: 1.5rem; display: block; margin-bottom: 0.3rem;"></i>
                                             No students have scanned yet
                                         </td>
                                     </tr>
@@ -1190,13 +1528,157 @@
                             }
                         }
                     })
-                    .catch(error => {
-                        console.error('Error fetching live attendance:', error);
-                    });
+                    .catch(error => console.error('Error fetching live attendance:', error));
             }
-
             fetchLiveAttendance();
             setInterval(fetchLiveAttendance, pollInterval);
         @endif
+
+        // ============================================================
+        // CUSTOM CONFIRM MODAL
+        // ============================================================
+        function showConfirmModal(options) {
+            const {
+                title,
+                message,
+                details,
+                confirmText,
+                cancelText,
+                confirmClass,
+                onConfirm,
+                onCancel
+            } = options;
+
+            const existingModal = document.getElementById('customConfirmModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            const modal = document.createElement('div');
+            modal.id = 'customConfirmModal';
+            modal.className = 'custom-confirm-overlay';
+            modal.innerHTML = `
+                <div class="custom-confirm-box">
+                    <div class="custom-confirm-header">
+                        <div class="custom-confirm-icon ${confirmClass || 'warning'}">
+                            <i class="bi ${confirmClass === 'danger' ? 'bi-exclamation-triangle-fill' : confirmClass === 'success' ? 'bi-check-circle-fill' : 'bi-info-circle-fill'}"></i>
+                        </div>
+                        <div class="custom-confirm-title-group">
+                            <h4>${title}</h4>
+                            <p>${message}</p>
+                        </div>
+                        <button class="custom-confirm-close" onclick="closeConfirmModal()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="custom-confirm-body">
+                        ${details ? `<div class="custom-confirm-details">${details}</div>` : ''}
+                    </div>
+                    <div class="custom-confirm-footer">
+                        <button class="custom-confirm-btn cancel" onclick="closeConfirmModal()">
+                            <i class="bi bi-x-lg"></i> ${cancelText || 'Cancel'}
+                        </button>
+                        <button class="custom-confirm-btn ${confirmClass || 'primary'}" id="customConfirmAction">
+                            <i class="bi ${confirmClass === 'danger' ? 'bi-stop-circle' : confirmClass === 'success' ? 'bi-check-lg' : 'bi-check-lg'}"></i> ${confirmText || 'Confirm'}
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+
+            const confirmBtn = document.getElementById('customConfirmAction');
+            confirmBtn.addEventListener('click', function() {
+                closeConfirmModal();
+                if (typeof onConfirm === 'function') {
+                    onConfirm();
+                }
+            });
+
+            const handleEsc = function(e) {
+                if (e.key === 'Escape') {
+                    closeConfirmModal();
+                    if (typeof onCancel === 'function') {
+                        onCancel();
+                    }
+                    document.removeEventListener('keydown', handleEsc);
+                }
+            };
+            document.addEventListener('keydown', handleEsc);
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeConfirmModal();
+                    if (typeof onCancel === 'function') {
+                        onCancel();
+                    }
+                }
+            });
+
+            return modal;
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('customConfirmModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
+        }
+
+        // ============================================================
+        // CONFIRM END SESSION
+        // ============================================================
+        function confirmEndSession(sessionId) {
+            const totalScanned = document.getElementById('totalScanned')?.innerText || '0';
+            showConfirmModal({
+                title: 'End Session?',
+                message: 'This will end the current QR session. Students will no longer be able to scan.',
+                details: `
+                    <div class="confirm-detail-row">
+                        <span class="confirm-detail-label"><i class="bi bi-people" style="color: var(--info);"></i> Scans Recorded</span>
+                        <span class="confirm-detail-value"><strong>${totalScanned}</strong> students</span>
+                    </div>
+                    <div class="confirm-detail-row">
+                        <span class="confirm-detail-label"><i class="bi bi-clock" style="color: var(--warning);"></i> Session Duration</span>
+                        <span class="confirm-detail-value">{{ $activeSession->duration ?? 'N/A' }} minutes</span>
+                    </div>
+                `,
+                confirmText: 'End Session',
+                cancelText: 'Cancel',
+                confirmClass: 'danger',
+                onConfirm: function() {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/lecturer/attendance/sessions/${sessionId}/end`;
+                    const csrf = document.createElement('input');
+                    csrf.type = 'hidden';
+                    csrf.name = '{{ csrf_token() }}';
+                    form.appendChild(csrf);
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        // ============================================================
+        // AUTO-CLOSE ALERTS
+        // ============================================================
+        document.querySelectorAll('.notification-success, .notification-info').forEach(function(notification) {
+            setTimeout(function() {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-10px)';
+                notification.style.transition = 'all 0.3s ease';
+                setTimeout(function() {
+                    notification.remove();
+                }, 300);
+            }, 5000);
+        });
     </script>
 @endsection

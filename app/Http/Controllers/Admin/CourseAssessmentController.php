@@ -526,6 +526,7 @@ class CourseAssessmentController extends Controller
     {
         $student = Auth::user();
 
+        // 🟢 Map the student's numeric year to the string format stored in assessments
         $yearMap = [
             1 => 'First Year',
             2 => 'Second Year',
@@ -534,16 +535,20 @@ class CourseAssessmentController extends Controller
             5 => 'Fifth Year',
             6 => 'Sixth Year',
         ];
-        $yearString = $yearMap[$student->current_year] ?? '';
+        $studentYearString = $yearMap[$student->current_year] ?? '';
 
+        // 🟢 Grab the currently active semester from the database
         $currentSemester = Semester::where('is_current', true)->first();
         $semesterString = $currentSemester ? $currentSemester->semester_name : 'Second Semester';
 
-        $activeAssessments = CourseAssessment::active()
-            ->where('year', $yearString)
+        // 🟢 Fetch Active Assessments that match the student's Year and the current Semester
+        $activeAssessments = CourseAssessment::where('status', 'active')
+            ->where('year', $studentYearString)
             ->where('semester', $semesterString)
+            ->orderBy('created_at', 'desc')
             ->get();
 
+        // 🟢 Filter out assessments the student has already submitted
         $submittedIds = AssessmentSubmission::where('student_id', $student->id)
             ->pluck('assessment_id')
             ->toArray();
@@ -552,6 +557,7 @@ class CourseAssessmentController extends Controller
             return !in_array($assessment->id, $submittedIds);
         });
 
+        // 🟢 Count total completed assessments for the counter
         $submittedCount = AssessmentSubmission::where('student_id', $student->id)->count();
 
         return view('student.assessments.index', compact('pendingAssessments', 'submittedCount'));

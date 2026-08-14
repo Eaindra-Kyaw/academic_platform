@@ -10,15 +10,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
         :root {
-            --primary: #0D47A1;
-            --primary-dark: #0B2B5B;
-            --primary-light: #1565C0;
-            --secondary: #42A5F5;
-            --accent: #F9A825;
-            --bg-light: #E3F2FD;
+            --primary: #0A2463;
+            --primary-dark: #061840;
+            --primary-light: #1E3A8A;
+            --secondary: #3B82F6;
+            --accent: #D4A017;
+            --bg-light: #EEF2F7;
             --white: #FFFFFF;
             --text-gray: #64748b;
-            --shadow: 0 4px 20px rgba(13, 71, 161, 0.08);
+            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
         }
 
         * {
@@ -41,7 +41,7 @@
             background: var(--white);
             border-radius: 24px;
             padding: 40px;
-            max-width: 500px;
+            max-width: 450px;
             width: 100%;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }

@@ -192,8 +192,8 @@
         }
 
         /* ============================================================
-                       CONFIRMATION MODAL STYLES
-                       ============================================================ */
+                               CONFIRMATION MODAL STYLES
+                               ============================================================ */
         .confirmation-modal-overlay {
             display: none;
             position: fixed;
@@ -423,7 +423,6 @@
                             <th>Course</th>
                             <th>Students</th>
                             <th>Attendance</th>
-                            <th>Avg Roll Call</th>
                             <th>Eligible</th>
                             <th>Warning</th>
                             <th>Not Eligible</th>
@@ -445,7 +444,7 @@
                                         {{ $stat['attendance'] }}%
                                     </span>
                                 </td>
-                                <td>{{ $stat['avg_roll_call'] ?? 'N/A' }}/10</td>
+
                                 <td>{{ $stat['eligible'] ?? 0 }}</td>
                                 <td>{{ $stat['warning'] ?? 0 }}</td>
                                 <td>{{ $stat['not_eligible'] ?? 0 }}</td>
@@ -532,8 +531,8 @@
     </div>
 
     <!-- ============================================================
-                     CONFIRMATION MODAL
-                     ============================================================ -->
+                             CONFIRMATION MODAL
+                             ============================================================ -->
     <div class="confirmation-modal-overlay" id="confirmationModal">
         <div class="confirmation-modal">
             <div class="confirmation-modal-header">

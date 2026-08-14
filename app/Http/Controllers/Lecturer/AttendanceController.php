@@ -20,13 +20,11 @@ class AttendanceController extends Controller
 {
     /**
      * Session History (Paginated list of all sessions)
-     * This is what renders the table shown in your screenshot.
      */
     public function sessions()
     {
         $lecturer = Auth::user();
 
-        // ✅ CRITICAL FIX: Pagination MUST be the last chain. NO 'get()' here!
         $sessions = AttendanceSession::where('lecturer_id', $lecturer->id)
             ->with(['course', 'records'])
             ->orderBy('created_at', 'desc')
@@ -34,6 +32,7 @@ class AttendanceController extends Controller
 
         $activeSessions = AttendanceSession::where('lecturer_id', $lecturer->id)
             ->where('status', 'active')
+            ->where('qr_mode', 'session')
             ->with(['course', 'records'])
             ->get();
 
@@ -70,10 +69,6 @@ class AttendanceController extends Controller
         ));
     }
 
-    // ============================================================
-    // ALL OTHER METHODS (Take Attendance, Create, End, Stats, etc.)
-    // ============================================================
-
     public function takeAttendance(Request $request)
     {
         $lecturer = Auth::user();
@@ -107,6 +102,7 @@ class AttendanceController extends Controller
 
         $activeSession = AttendanceSession::where('lecturer_id', $lecturer->id)
             ->where('status', 'active')
+            ->where('qr_mode', 'session')
             ->with(['course', 'records.student'])
             ->first();
 
@@ -123,6 +119,7 @@ class AttendanceController extends Controller
 
         if ($activeSession && is_null($activeSession->qr_expires_at)) {
             $activeSession->qr_expires_at = Carbon::now()->addMinutes($activeSession->duration ?? 30);
+            $activeSession->expires_at = Carbon::now()->addMinutes($activeSession->duration ?? 30);
             $activeSession->save();
         }
 
@@ -197,51 +194,59 @@ class AttendanceController extends Controller
         $request->validate([
             'course_id' => 'required|exists:courses,id',
             'qr_mode' => 'required|in:session,semester',
-            'period_count' => 'required|integer|min:1|max:8',
+            'period_count' => 'required_if:qr_mode,session|integer|min:1|max:8',
             'duration' => 'required_if:qr_mode,session|integer|min:5|max:120',
             'room' => 'nullable|string|max:50',
         ]);
 
         $lecturer = Auth::user();
         $course = Course::findOrFail($request->course_id);
-        $periodCount = (int) $request->period_count;
-
-        $existingSession = AttendanceSession::where('course_id', $course->id)
-            ->where('status', 'active')
-            ->first();
-
-        if ($existingSession) {
-            $existingSession->status = 'ended';
-            $existingSession->ended_at = Carbon::now();
-            $existingSession->save();
-
-            AuditLog::log(
-                Auth::id(),
-                'end_session',
-                [
-                    'course_id' => $course->id,
-                    'course_name' => $course->course_name,
-                    'session_id' => $existingSession->id,
-                    'reason' => 'New session started for this course',
-                ],
-                $existingSession,
-                'success'
-            );
-        }
-
-        session()->forget('show_create_form');
-
         $sessionToken = AttendanceSession::generateSessionToken();
         $sessionCode = AttendanceSession::generateSessionCode();
 
         if ($request->qr_mode == 'semester') {
-            $duration = 480;
-            $expiresAt = Carbon::now()->addHours(8);
-            $qrExpiresAt = Carbon::now()->addHours(8);
+            // SEMESTER QR: No expiry, no periods
+            $duration = 999999;
+            $expiresAt = Carbon::now()->addYears(10);
+            $qrExpiresAt = Carbon::now()->addYears(10);
+            $periodCount = 0;
+            $conductedPeriods = 1;
+
+            // End existing semester QR for this course
+            $existingSemesterQr = AttendanceSession::where('course_id', $course->id)
+                ->where('qr_mode', 'semester')
+                ->where('status', 'active')
+                ->first();
+
+            if ($existingSemesterQr) {
+                $existingSemesterQr->status = 'ended';
+                $existingSemesterQr->ended_at = Carbon::now();
+                $existingSemesterQr->save();
+            }
+
+            // Update course with semester QR token
+            $course->semester_qr_token = $sessionToken;
+            $course->save();
+
         } else {
+            // DYNAMIC QR: With periods and expiry
             $duration = (int) $request->duration;
             $expiresAt = Carbon::now()->addMinutes($duration);
             $qrExpiresAt = Carbon::now()->addMinutes($duration);
+            $periodCount = (int) $request->period_count;
+            $conductedPeriods = $periodCount;
+
+            // End existing dynamic session for this course
+            $existingSession = AttendanceSession::where('course_id', $course->id)
+                ->where('qr_mode', 'session')
+                ->where('status', 'active')
+                ->first();
+
+            if ($existingSession) {
+                $existingSession->status = 'ended';
+                $existingSession->ended_at = Carbon::now();
+                $existingSession->save();
+            }
         }
 
         $session = AttendanceSession::create([
@@ -252,7 +257,7 @@ class AttendanceController extends Controller
             'session_code' => $sessionCode,
             'session_date' => Carbon::now()->toDateString(),
             'period_count' => $periodCount,
-            'conducted_periods' => $periodCount,
+            'conducted_periods' => $conductedPeriods,
             'duration' => $duration,
             'started_at' => Carbon::now(),
             'room' => $request->room ?? $course->room,
@@ -267,11 +272,6 @@ class AttendanceController extends Controller
                 ->count(),
         ]);
 
-        if ($request->qr_mode == 'semester' && !$course->semester_qr_token) {
-            $course->semester_qr_token = $sessionToken;
-            $course->save();
-        }
-
         AuditLog::log(
             Auth::id(),
             'create_session',
@@ -282,18 +282,19 @@ class AttendanceController extends Controller
                 'session_id' => $session->id,
                 'manual_code' => $session->manual_code,
                 'period_count' => $periodCount,
-                'duration' => $duration,
+                'duration' => $request->qr_mode == 'semester' ? 'Semester (No Expiry)' : $duration . ' minutes',
             ],
             $session,
             'success'
         );
 
-        $message = $request->qr_mode == 'semester'
-            ? 'Semester QR activated! Periods: ' . $periodCount
-            : 'Dynamic QR session created! Expires in ' . $duration . ' minutes. Periods: ' . $periodCount;
+        if ($request->qr_mode == 'semester') {
+            return redirect()->route('lecturer.semester-qr.management')
+                ->with('success', 'Semester QR created successfully! It will work for the entire semester.');
+        }
 
         return redirect()->route('lecturer.attendance.take')
-            ->with('success', $message)
+            ->with('success', 'Dynamic QR session created! Expires in ' . $duration . ' minutes.')
             ->with('new_session', $session);
     }
 
@@ -338,8 +339,13 @@ class AttendanceController extends Controller
 
         $this->recalculateCourseEvaluations($session->course_id);
 
+        if ($session->qr_mode == 'semester') {
+            return redirect()->route('lecturer.semester-qr.management')
+                ->with('success', 'Semester QR deactivated. Students can no longer scan it. All records are preserved.');
+        }
+
         return redirect()->route('lecturer.attendance.take')
-            ->with('success', 'QR session ended. Attendance evaluations updated with KG+12 calculations.');
+            ->with('success', 'QR session ended.');
     }
 
     private function recalculateCourseEvaluations($courseId)
@@ -464,6 +470,7 @@ class AttendanceController extends Controller
     {
         $session = AttendanceSession::where('lecturer_id', Auth::id())
             ->where('id', $id)
+            ->where('qr_mode', 'session')
             ->firstOrFail();
 
         $newExpiry = Carbon::now()->addMinutes(5);
@@ -489,18 +496,51 @@ class AttendanceController extends Controller
     public function regenerateSemesterQr($courseId)
     {
         $course = Course::where('lecturer_id', Auth::id())->findOrFail($courseId);
-        $course->semester_qr_token = AttendanceSession::generateSessionToken();
-        $course->save();
 
-        $activeSession = AttendanceSession::where('course_id', $course->id)
+        // Check if there's an active semester QR
+        $activeSemesterQr = AttendanceSession::where('course_id', $course->id)
+            ->where('qr_mode', 'semester')
             ->where('status', 'active')
             ->first();
 
-        if ($activeSession) {
-            $activeSession->session_token = $course->semester_qr_token;
-            $activeSession->manual_code = AttendanceSession::generateSessionCode();
-            $activeSession->save();
+        if ($activeSemesterQr) {
+            // End the active one first
+            $activeSemesterQr->status = 'ended';
+            $activeSemesterQr->ended_at = Carbon::now();
+            $activeSemesterQr->save();
         }
+
+        // Generate new token and code
+        $newToken = AttendanceSession::generateSessionToken();
+        $newCode = AttendanceSession::generateSessionCode();
+
+        // Update course with new token
+        $course->semester_qr_token = $newToken;
+        $course->save();
+
+        // Create new semester session
+        $session = AttendanceSession::create([
+            'course_id' => $course->id,
+            'lecturer_id' => Auth::id(),
+            'session_token' => $newToken,
+            'manual_code' => $newCode,
+            'session_code' => $newCode,
+            'session_date' => Carbon::now()->toDateString(),
+            'period_count' => 0,
+            'conducted_periods' => 1,
+            'duration' => 999999,
+            'started_at' => Carbon::now(),
+            'room' => $course->room,
+            'status' => 'active',
+            'expires_at' => Carbon::now()->addYears(10),
+            'qr_expires_at' => Carbon::now()->addYears(10),
+            'qr_mode' => 'semester',
+            'present_count' => 0,
+            'late_count' => 0,
+            'total_students' => Enrollment::where('course_id', $course->id)
+                ->where('status', 'approved')
+                ->count(),
+        ]);
 
         AuditLog::log(
             Auth::id(),
@@ -508,12 +548,16 @@ class AttendanceController extends Controller
             [
                 'course_id' => $course->id,
                 'course_name' => $course->course_name,
+                'new_token' => $newToken,
+                'new_code' => $newCode,
+                'session_id' => $session->id,
             ],
             $course,
             'success'
         );
 
-        return redirect()->back()->with('success', 'Semester QR code regenerated successfully!');
+        return redirect()->route('lecturer.semester-qr.management')
+            ->with('success', 'New Semester QR created! Old QR has been deactivated.');
     }
 
     public function manualAttendance(Request $request)
@@ -587,9 +631,15 @@ class AttendanceController extends Controller
     {
         $lecturer = Auth::user();
 
+        $courses = Course::where('lecturer_id', $lecturer->id)
+            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+            ->where('is_active', true)
+            ->get()
+            ->unique('id');
+
         $semesterQrs = AttendanceSession::where('lecturer_id', $lecturer->id)
             ->where('qr_mode', 'semester')
-            ->with('course')
+            ->with(['course', 'records'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -599,7 +649,8 @@ class AttendanceController extends Controller
         return view('lecturer.attendance.semester-qr-management', compact(
             'semesterQrs',
             'activeCount',
-            'endedCount'
+            'endedCount',
+            'courses'
         ));
     }
 
@@ -621,13 +672,70 @@ class AttendanceController extends Controller
                 'course_id' => $session->course_id,
                 'course_name' => $session->course->course_name ?? 'Unknown',
                 'session_id' => $session->id,
+                'manual_code' => $session->manual_code,
+                'total_scans' => $session->records->count(),
             ],
             $session,
             'success'
         );
 
         return redirect()->route('lecturer.semester-qr.management')
-            ->with('success', 'Semester QR deactivated successfully!');
+            ->with('success', 'Semester QR deactivated. Students can no longer scan it. All ' . $session->records->count() . ' attendance records are preserved.');
+    }
+
+    /**
+     * View a specific semester QR code page
+     */
+    public function viewSemesterQr($id)
+    {
+        $lecturer = Auth::user();
+
+        $qr = AttendanceSession::where('lecturer_id', $lecturer->id)
+            ->where('id', $id)
+            ->where('qr_mode', 'semester')
+            ->with(['course', 'records'])
+            ->firstOrFail();
+
+        // Get the QR URL for display
+        $qrText = route('student.scan.semester') . '?token=' . $qr->session_token . '&course=' . $qr->course_id;
+        $qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($qrText);
+
+        // We must generate a Base64 image for the Blade file
+        // and provide a real internal download route.
+        $imageContent = file_get_contents('https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' . urlencode($qrText));
+        $qrImageBase64 = 'data:image/png;base64,' . base64_encode($imageContent);
+
+        // Point to the new download route
+        $downloadUrl = route('lecturer.semester-qr.download', $id);
+
+        return view('lecturer.attendance.view-semester-qr', compact('qr', 'qrImageUrl', 'downloadUrl', 'qrText', 'qrImageBase64'));
+    }
+
+    /**
+     * Download the Semester QR Code as a PNG
+     */
+    public function downloadSemesterQr($id)
+    {
+        $lecturer = Auth::user();
+
+        $qr = AttendanceSession::where('lecturer_id', $lecturer->id)
+            ->where('id', $id)
+            ->where('qr_mode', 'semester')
+            ->firstOrFail();
+
+        $qrText = route('student.scan.semester') . '?token=' . $qr->session_token . '&course=' . $qr->course_id;
+        $qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' . urlencode($qrText);
+
+        // Fetch the image content directly from the API
+        $imageContent = file_get_contents($qrImageUrl);
+
+        // Generate a safe filename
+        $filename = 'semester-qr-' . ($qr->course->course_code ?? 'qr') . '.png';
+
+        // Return the image directly as a downloadable file
+        return response($imageContent)
+            ->header('Content-Type', 'image/png')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
     public function generateQr(Request $request)
@@ -702,6 +810,7 @@ class AttendanceController extends Controller
     {
         $session = AttendanceSession::where('lecturer_id', Auth::id())
             ->where('id', $id)
+            ->where('qr_mode', 'session')
             ->firstOrFail();
 
         $newExpiry = Carbon::now()->addMinutes(5);
@@ -764,6 +873,7 @@ class AttendanceController extends Controller
 
         $activeSession = AttendanceSession::where('lecturer_id', $lecturer->id)
             ->where('status', 'active')
+            ->where('qr_mode', 'session')
             ->with(['course', 'records.student'])
             ->first();
 

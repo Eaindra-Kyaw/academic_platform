@@ -92,6 +92,7 @@ class QRScanController extends Controller
         $session = AttendanceSession::where('id', $sessionId)
             ->where('session_token', $token)
             ->where('status', 'active')
+            ->where('qr_mode', 'session')
             ->first();
 
         if (!$session) {
@@ -162,7 +163,7 @@ class QRScanController extends Controller
     }
 
     /**
-     * Process Semester QR Scan (Static QR - NO active session needed!)
+     * Process Semester QR Scan (Static QR - NO expiry, works for entire semester)
      */
     public function semesterScan(Request $request)
     {
@@ -207,14 +208,13 @@ class QRScanController extends Controller
             ]);
         }
 
-        // ✅ Create or find a session for TODAY
-        $today = Carbon::now()->toDateString();
+        // ✅ Find the active semester session for this course
         $session = AttendanceSession::where('course_id', $courseId)
             ->where('qr_mode', 'semester')
-            ->whereDate('created_at', $today)
+            ->where('status', 'active')
             ->first();
 
-        // If no session exists for today, create one automatically
+        // If no active session exists, create one
         if (!$session) {
             $session = AttendanceSession::create([
                 'course_id' => $courseId,
@@ -222,15 +222,15 @@ class QRScanController extends Controller
                 'session_token' => $course->semester_qr_token,
                 'manual_code' => AttendanceSession::generateSessionCode(),
                 'session_code' => AttendanceSession::generateSessionCode(),
-                'session_date' => $today,
-                'period_count' => 4,
-                'conducted_periods' => 4,
-                'duration' => 480, // 8 hours for whole day
+                'session_date' => Carbon::now()->toDateString(),
+                'period_count' => 0,
+                'conducted_periods' => 1,
+                'duration' => 999999,
                 'started_at' => Carbon::now(),
                 'room' => $course->room ?? 'N/A',
                 'status' => 'active',
-                'expires_at' => Carbon::now()->addHours(8),
-                'qr_expires_at' => Carbon::now()->addHours(8),
+                'expires_at' => Carbon::now()->addYears(10),
+                'qr_expires_at' => Carbon::now()->addYears(10),
                 'qr_mode' => 'semester',
                 'present_count' => 0,
                 'late_count' => 0,
@@ -240,9 +240,11 @@ class QRScanController extends Controller
             ]);
         }
 
-        // Check if already scanned today
+        // ✅ Check if student already scanned TODAY
+        $today = Carbon::now()->toDateString();
         $existing = AttendanceRecord::where('student_id', $student->id)
             ->where('attendance_session_id', $session->id)
+            ->whereDate('scanned_at', $today)
             ->first();
 
         if ($existing) {
@@ -254,40 +256,28 @@ class QRScanController extends Controller
             ]);
         }
 
-        // Record attendance
-        $status = 'present';
-        $scannedAt = Carbon::now();
-
-        // Check if late (after 15 minutes from session start)
-        if ($session->started_at && Carbon::now()->diffInMinutes($session->started_at) > 15) {
-            $status = 'late';
-        }
-
+        // Record attendance - always "present" for semester QR
         $record = AttendanceRecord::create([
             'student_id' => $student->id,
             'attendance_session_id' => $session->id,
-            'scanned_at' => $scannedAt,
-            'status' => $status,
+            'scanned_at' => Carbon::now(),
+            'status' => 'present',
             'is_manual' => false,
             'ip_address' => $request->ip(),
             'notes' => 'Semester QR scan - ' . Carbon::now()->format('Y-m-d'),
         ]);
 
-        // Update session stats
-        if ($status == 'present') {
-            $session->increment('present_count');
-        } else {
-            $session->increment('late_count');
-        }
+        $session->increment('present_count');
 
         return view('student.scan-result', [
             'success' => true,
             'message' => '✅ Attendance recorded for ' . Carbon::now()->format('M d, Y') . '!',
             'record' => $record,
-            'status' => $status,
+            'status' => 'present',
             'course_name' => $course->course_name ?? 'Unknown',
             'is_semester_qr' => true,
-            'session' => $session
+            'session' => $session,
+            'scanned_at' => Carbon::now()->format('h:i A'),
         ]);
     }
 
@@ -402,5 +392,20 @@ class QRScanController extends Controller
                 'qr_mode' => $activeSession->qr_mode,
             ]
         ]);
+    }
+
+    /**
+     * Static scan page for semester QR (redirects to semester scan)
+     */
+    public function staticScan(Request $request)
+    {
+        $token = $request->query('token');
+        $courseId = $request->query('course');
+
+        if ($token && $courseId) {
+            return redirect()->route('student.scan.semester', ['token' => $token, 'course' => $courseId]);
+        }
+
+        return redirect()->route('student.scan')->with('error', 'Invalid QR code.');
     }
 }

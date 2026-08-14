@@ -27,6 +27,7 @@ class Course extends Model
         'schedule_time',
         'schedule_end_time',
         'is_active',
+        'semester_qr_token',
     ];
 
     protected $casts = [
@@ -111,17 +112,11 @@ class Course extends Model
         return $this->hasManyThrough(AttendanceRecord::class, AttendanceSession::class);
     }
 
-    /**
-     * Relationship to attendance evaluations (KG+12 roll call & risk)
-     */
     public function evaluations()
     {
         return $this->hasMany(AttendanceEvaluation::class, 'course_id');
     }
 
-    /**
-     * Get the latest evaluation for this course (for quick stats)
-     */
     public function latestEvaluation()
     {
         return $this->hasOne(AttendanceEvaluation::class, 'course_id')
@@ -149,37 +144,32 @@ class Course extends Model
         return $query->where('semester_id', $semesterId);
     }
 
-    // Get student count (approved only)
+    // Accessors
     public function getStudentCountAttribute()
     {
         return $this->students()->wherePivot('status', 'approved')->count();
     }
 
-    // Get total enrollments count (all statuses)
     public function getTotalEnrollmentsAttribute()
     {
         return $this->enrollments()->count();
     }
 
-    // Get pending enrollments count
     public function getPendingCountAttribute()
     {
         return $this->enrollments()->where('status', 'pending')->count();
     }
 
-    // Get approved enrollments count
     public function getApprovedCountAttribute()
     {
         return $this->enrollments()->where('status', 'approved')->count();
     }
 
-    // Get rejected enrollments count
     public function getRejectedCountAttribute()
     {
         return $this->enrollments()->where('status', 'rejected')->count();
     }
 
-    // Get average attendance
     public function getAverageAttendanceAttribute()
     {
         return round($this->students()
@@ -187,37 +177,32 @@ class Course extends Model
             ->avg('enrollments.attendance_percentage') ?? 0, 1);
     }
 
-    // Get year label with proper formatting
     public function getYearLabelAttribute()
     {
         return $this->year ?? 'N/A';
     }
 
-    // Get year numeric value
     public function getYearNumericAttribute()
     {
         return self::$yearReverseMap[$this->year] ?? null;
     }
 
-    // Get semester label
     public function getSemesterLabelAttribute()
     {
         return $this->semester ?? 'N/A';
     }
 
-    // Get semester full name from relationship
     public function getSemesterFullNameAttribute()
     {
         return $this->semester ? $this->semester->full_name : 'No Semester';
     }
 
-    // Check if student is enrolled
+    // Methods
     public function hasStudent($studentId)
     {
         return $this->students()->where('users.id', $studentId)->exists();
     }
 
-    // Get enrollment status for a student
     public function getStudentEnrollmentStatus($studentId)
     {
         $enrollment = $this->enrollments()
@@ -227,7 +212,6 @@ class Course extends Model
         return $enrollment ? $enrollment->status : null;
     }
 
-    // Get all available years with course counts
     public static function getYearsWithCounts($departmentId = null)
     {
         $query = self::query();
@@ -242,7 +226,6 @@ class Course extends Model
             ->pluck('total', 'year')
             ->toArray();
 
-        // Ensure all 6 years are present
         $allYears = ['First Year', 'Second Year', 'Third Year', 'Fourth Year', 'Fifth Year', 'Sixth Year'];
         $result = [];
         foreach ($allYears as $year) {

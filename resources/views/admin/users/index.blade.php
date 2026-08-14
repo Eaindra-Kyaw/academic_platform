@@ -713,7 +713,7 @@
                 <div class="icon lecturer"><i class="bi bi-person-badge"></i></div>
                 <div class="info">
                     <div class="number">{{ $lecturers->count() }}</div>
-                    <div class="label">Lecturers</div>
+                    <div class="label">Teachers</div>
                 </div>
             </div>
             <div class="stat-card" onclick="filterUsers('student')">
@@ -736,7 +736,7 @@
                 <span class="badge-count">{{ $admins->count() }}</span>
             </button>
             <button class="role-tab" data-role="lecturer" onclick="filterUsers('lecturer')">
-                <i class="bi bi-person-badge"></i> Lecturers
+                <i class="bi bi-person-badge"></i> Teachers
                 <span class="badge-count">{{ $lecturers->count() }}</span>
             </button>
             <button class="role-tab" data-role="student" onclick="filterUsers('student')">
@@ -781,7 +781,7 @@
                                     $roleClass = 'admin';
                                     $avatarClass = 'admin';
                                 } elseif ($user->role_id == 2) {
-                                    $roleName = 'Lecturer';
+                                    $roleName = 'Teacher';
                                     $roleClass = 'lecturer';
                                     $avatarClass = 'lecturer';
                                 } else {

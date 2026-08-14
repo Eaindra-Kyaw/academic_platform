@@ -20,6 +20,7 @@
             --text-gray: #64748b;
             --danger: #ef4444;
             --success: #10b981;
+            --warning-light: #fef3c7;
             --radius: 12px;
             --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             --transition: all 0.2s ease;
@@ -29,7 +30,7 @@
             background-color: var(--bg-main);
         }
 
-        /* 🟢 CLEAN HEADER (White box removed) */
+        /* 🟢 CLEAN HEADER */
         .header-wrapper {
             margin-bottom: 1.5rem;
             display: flex;
@@ -134,7 +135,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* 🟢 COLUMN ALIGNMENT CLASSES */
         .text-left {
             text-align: left;
         }
@@ -157,7 +157,6 @@
             border-bottom: none;
         }
 
-        /* 🟢 FIXED: LEFT ALIGNED TITLE & COURSE */
         .course-detail {
             display: flex;
             flex-direction: column;
@@ -170,7 +169,6 @@
             font-size: 0.95rem;
             display: flex;
             justify-content: flex-start;
-            /* Left aligned */
             align-items: center;
             gap: 0.5rem;
         }
@@ -262,6 +260,263 @@
             display: block;
         }
 
+        /* ============================================================
+                       🟢 CUSTOM CONFIRM MODAL
+                       ============================================================ */
+        .custom-confirm-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: overlayFadeIn 0.3s ease;
+        }
+
+        .custom-confirm-overlay.show {
+            display: flex;
+        }
+
+        @keyframes overlayFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .custom-confirm-box {
+            background: var(--white);
+            border-radius: 16px;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+            animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .custom-confirm-header {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
+            background: #f8fafc;
+        }
+
+        .custom-confirm-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .custom-confirm-icon.warning {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .custom-confirm-icon.danger {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .custom-confirm-icon.success {
+            background: #d1fae5;
+            color: var(--success);
+        }
+
+        .custom-confirm-title-group {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .custom-confirm-title-group h4 {
+            margin: 0;
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 1.05rem;
+        }
+
+        .custom-confirm-title-group p {
+            margin: 0.15rem 0 0;
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            line-height: 1.5;
+        }
+
+        .custom-confirm-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            padding: 0.2rem;
+            transition: var(--transition);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .custom-confirm-close:hover {
+            color: #334155;
+            transform: rotate(90deg);
+        }
+
+        .custom-confirm-body {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .custom-confirm-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .confirm-detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+
+        .confirm-detail-row .confirm-detail-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+
+        .confirm-detail-row .confirm-detail-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .custom-confirm-footer {
+            padding: 1rem 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
+            background: #f8fafc;
+        }
+
+        .custom-confirm-btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .custom-confirm-btn.cancel {
+            background: #f1f5f9;
+            color: var(--text-gray);
+        }
+
+        .custom-confirm-btn.cancel:hover {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .custom-confirm-btn.primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .custom-confirm-btn.primary:hover {
+            background: #061840;
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .custom-confirm-btn.danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .custom-confirm-btn.danger:hover {
+            background: #b91c1c;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .custom-confirm-btn.warning {
+            background: var(--warning);
+            color: var(--white);
+        }
+
+        .custom-confirm-btn.warning:hover {
+            background: #d97706;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 480px) {
+            .custom-confirm-box {
+                margin: 10px;
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+
+            .custom-confirm-header {
+                flex-wrap: wrap;
+            }
+
+            .custom-confirm-title-group {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .confirm-detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.2rem;
+            }
+
+            .custom-confirm-footer {
+                flex-direction: column-reverse;
+            }
+
+            .custom-confirm-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
         @media (max-width: 768px) {
             .header-wrapper {
                 justify-content: center;
@@ -278,7 +533,7 @@
         }
     </style>
 
-    {{-- 🟢 FIXED HEADER (No white background, button right) --}}
+    {{-- 🟢 FIXED HEADER --}}
     <div class="header-wrapper">
         <a href="{{ route('admin.assessments.create') }}" class="btn-primary">
             <i class="bi bi-plus-lg"></i> New Assessment
@@ -330,20 +585,17 @@
             <table>
                 <thead>
                     <tr>
-                        {{-- 🟢 TITLE HEADER LEFT ALIGNED --}}
                         <th class="text-left" style="width: 35%;">Title & Course</th>
                         <th class="text-left" style="width: 20%;">Dates</th>
                         <th class="text-center" style="width: 10%;">Questions</th>
                         <th class="text-center" style="width: 10%;">Submissions</th>
                         <th class="text-left" style="width: 10%;">Status</th>
-                        {{-- 🟢 ACTIONS HEADER CENTERED --}}
                         <th class="text-center" style="width: 15%;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($assessments as $assessment)
                         <tr>
-                            {{-- 🟢 TITLE & COURSE DATA LEFT ALIGNED (Correct variables used) --}}
                             <td class="text-left">
                                 <div class="course-detail">
                                     @php
@@ -374,22 +626,16 @@
                                                 : '');
                                         $id = is_object($assessment) ? $assessment->id : $assessment['id'] ?? 0;
                                     @endphp
-
                                     <div class="main-title">
                                         <span>
-                                            {{ $courseCode }}
-                                            <span class="teacher-separator">|</span>
-                                            {{ $lecturerName }}
+                                            {{ $courseCode }} <span class="teacher-separator">|</span> {{ $lecturerName }}
                                         </span>
                                     </div>
-
-                                    {{-- 🟢 FIX: Using $courseName instead of Assessment Name --}}
                                     <div class="sub-title">
                                         {{ $courseName }}
                                     </div>
                                 </div>
                             </td>
-
                             <td class="text-left">
                                 <div class="date-info">
                                     @php
@@ -405,7 +651,6 @@
                                     - {{ $closesAt ? \Carbon\Carbon::parse($closesAt)->format('M d, Y') : '' }}
                                 </div>
                             </td>
-
                             <td class="text-center">
                                 @php
                                     $questionCount = is_object($assessment)
@@ -416,7 +661,6 @@
                                 @endphp
                                 {{ $questionCount }}
                             </td>
-
                             <td class="text-center">
                                 @php
                                     $submittedCount = is_object($assessment)
@@ -427,7 +671,6 @@
                                 @endphp
                                 {{ $submittedCount }}
                             </td>
-
                             <td class="text-left">
                                 @php
                                     $status = is_object($assessment)
@@ -444,8 +687,6 @@
                                     <span class="badge badge-closed">Closed</span>
                                 @endif
                             </td>
-
-                            {{-- 🟢 ACTIONS DATA CENTERED --}}
                             <td class="text-center" style="white-space: nowrap;">
                                 <a href="{{ route('admin.assessments.results', $id) }}" class="action-btn view"><i
                                         class="bi bi-bar-chart"></i> Results</a>
@@ -453,11 +694,19 @@
                                 {{-- Toggle Button --}}
                                 @if ($status == 'active')
                                     <form action="{{ route('admin.assessments.toggle', $id) }}" method="POST"
-                                        style="display:inline;">
+                                        style="display:inline;" id="closeForm_{{ $id }}">
                                         @csrf
                                         @method('PUT')
-                                        <button type="submit" class="action-btn toggle"
-                                            onclick="return confirm('Close this assessment? Students will no longer be able to submit.')">
+                                        {{-- 🟢 FIX: Extracting name safely for both Object and Array --}}
+                                        @php
+                                            $displayName = is_object($assessment)
+                                                ? $assessment->name
+                                                : (is_array($assessment) && isset($assessment['name'])
+                                                    ? $assessment['name']
+                                                    : '');
+                                        @endphp
+                                        <button type="button" class="action-btn toggle"
+                                            onclick="confirmCloseAssessment({{ $id }}, '{{ addslashes($displayName) }}')">
                                             <i class="bi bi-lock"></i> Close
                                         </button>
                                     </form>
@@ -475,11 +724,19 @@
 
                                 {{-- Delete Button --}}
                                 <form action="{{ route('admin.assessments.destroy', $id) }}" method="POST"
-                                    style="display:inline;">
+                                    style="display:inline;" id="deleteForm_{{ $id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="action-btn delete"
-                                        onclick="return confirm('Are you sure you want to delete this assessment? This cannot be undone.')">
+                                    {{-- 🟢 FIX: Extracting name safely for both Object and Array --}}
+                                    @php
+                                        $displayName = is_object($assessment)
+                                            ? $assessment->name
+                                            : (is_array($assessment) && isset($assessment['name'])
+                                                ? $assessment['name']
+                                                : '');
+                                    @endphp
+                                    <button type="button" class="action-btn delete"
+                                        onclick="confirmDeleteAssessment({{ $id }}, '{{ addslashes($displayName) }}')">
                                         <i class="bi bi-trash3"></i>
                                     </button>
                                 </form>
@@ -501,4 +758,126 @@
             </table>
         </div>
     </div>
+
+    {{-- 🟢 CUSTOM CONFIRM MODAL HTML --}}
+    <div class="custom-confirm-overlay" id="customConfirmModal">
+        <div class="custom-confirm-box">
+            <div class="custom-confirm-header">
+                <div class="custom-confirm-icon warning" id="modalIcon">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div class="custom-confirm-title-group">
+                    <h4 id="modalTitle">Are you sure?</h4>
+                    <p id="modalMessage">This action cannot be undone.</p>
+                </div>
+                <button class="custom-confirm-close" onclick="closeCustomModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="custom-confirm-body">
+                <div class="custom-confirm-details" id="modalDetails"></div>
+            </div>
+            <div class="custom-confirm-footer">
+                <button class="custom-confirm-btn cancel" onclick="closeCustomModal()">
+                    <i class="bi bi-x-lg"></i> Cancel
+                </button>
+                <button class="custom-confirm-btn danger" id="modalConfirmBtn">
+                    <i class="bi bi-check-lg"></i> Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🟢 GLOBAL MODAL FUNCTIONS
+        let modalAction = null;
+
+        function openCustomModal(title, message, detailsHtml, confirmText, confirmClass, actionCallback) {
+            const modal = document.getElementById('customConfirmModal');
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            document.getElementById('modalDetails').innerHTML = detailsHtml;
+
+            const btn = document.getElementById('modalConfirmBtn');
+            btn.innerText = confirmText;
+            btn.className = 'custom-confirm-btn ' + confirmClass;
+
+            // Update icon based on class
+            const icon = document.getElementById('modalIcon');
+            if (confirmClass === 'danger') {
+                icon.className = 'custom-confirm-icon danger';
+                icon.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i>';
+            } else if (confirmClass === 'warning') {
+                icon.className = 'custom-confirm-icon warning';
+                icon.innerHTML = '<i class="bi bi-info-circle-fill"></i>';
+            } else {
+                icon.className = 'custom-confirm-icon success';
+                icon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+            }
+
+            modalAction = actionCallback;
+            modal.classList.add('show');
+        }
+
+        function closeCustomModal() {
+            document.getElementById('customConfirmModal').classList.remove('show');
+            modalAction = null;
+        }
+
+        // 🟢 CONFIRM CLOSE ASSESSMENT
+        function confirmCloseAssessment(id, name) {
+            const detailsHtml = `
+                <div class="confirm-detail-row">
+                    <span class="confirm-detail-label"><i class="bi bi-file-earmark-text" style="color: var(--primary);"></i> Assessment</span>
+                    <span class="confirm-detail-value"><strong>${name}</strong></span>
+                </div>
+                <div class="confirm-detail-row">
+                    <span class="confirm-detail-label"><i class="bi bi-lock" style="color: var(--danger);"></i> Action</span>
+                    <span class="confirm-detail-value" style="color: var(--danger);"><strong>Close permanently</strong></span>
+                </div>
+            `;
+            openCustomModal(
+                'Close Assessment?',
+                'Students will no longer be able to submit responses for this assessment.',
+                detailsHtml,
+                'Close Assessment',
+                'danger',
+                function() {
+                    document.getElementById('closeForm_' + id).submit();
+                }
+            );
+        }
+
+        // 🟢 CONFIRM DELETE ASSESSMENT
+        function confirmDeleteAssessment(id, name) {
+            const detailsHtml = `
+                <div class="confirm-detail-row">
+                    <span class="confirm-detail-label"><i class="bi bi-file-earmark-x" style="color: var(--danger);"></i> Assessment</span>
+                    <span class="confirm-detail-value"><strong>${name}</strong></span>
+                </div>
+                <div class="confirm-detail-row">
+                    <span class="confirm-detail-label"><i class="bi bi-trash3" style="color: var(--danger);"></i> Action</span>
+                    <span class="confirm-detail-value" style="color: var(--danger);"><strong>Delete permanently (Cannot be undone)</strong></span>
+                </div>
+            `;
+            openCustomModal(
+                'Delete Assessment?',
+                'This will permanently delete the assessment, all questions, and all student submissions. This cannot be undone.',
+                detailsHtml,
+                'Delete Permanently',
+                'danger',
+                function() {
+                    document.getElementById('deleteForm_' + id).submit();
+                }
+            );
+        }
+
+        // 🟢 Auto-initialize the confirm button
+        document.getElementById('modalConfirmBtn').addEventListener('click', function() {
+            if (modalAction) {
+                modalAction();
+            }
+            closeCustomModal();
+        });
+    </script>
 @endsection

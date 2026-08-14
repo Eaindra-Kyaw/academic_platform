@@ -12,28 +12,28 @@ class AttendanceSession extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-    'course_id',
-    'lecturer_id',
-    'session_token',
-    'manual_code',
-    'session_code',
-    'session_date',
-    'period_count',
-    'conducted_periods',
-    'is_cancelled',
-    'cancellation_reason',
-    'qr_mode',
-    'room',
-    'duration',
-    'status',
-    'started_at',
-    'expires_at',
-    'qr_expires_at',
-    'ended_at',
-    'present_count',
-    'late_count',
-    'total_students',
-];
+        'course_id',
+        'lecturer_id',
+        'session_token',
+        'manual_code',
+        'session_code',
+        'session_date',
+        'period_count',
+        'conducted_periods',
+        'is_cancelled',
+        'cancellation_reason',
+        'qr_mode',
+        'room',
+        'duration',
+        'status',
+        'started_at',
+        'expires_at',
+        'qr_expires_at',
+        'ended_at',
+        'present_count',
+        'late_count',
+        'total_students',
+    ];
 
     protected $casts = [
         'started_at' => 'datetime',
@@ -59,12 +59,20 @@ class AttendanceSession extends Model
 
     public function scopeActive($query)
     {
-        return $query->where('status', 'active')
-                     ->where('expires_at', '>', now());
+        return $query->where('status', 'active');
+    }
+
+    public function scopeSemester($query)
+    {
+        return $query->where('qr_mode', 'semester');
     }
 
     public function isExpired()
     {
+        // Semester QR never expires
+        if ($this->qr_mode === 'semester') {
+            return false;
+        }
         return $this->expires_at && now()->gt($this->expires_at);
     }
 
@@ -73,7 +81,6 @@ class AttendanceSession extends Model
         return $this->status === 'active' && !$this->isExpired();
     }
 
-    // Generate SHA-256 token for QR
     public static function generateSessionToken()
     {
         do {
@@ -82,7 +89,6 @@ class AttendanceSession extends Model
         return $token;
     }
 
-    // Generate 6-character manual code
     public static function generateSessionCode()
     {
         do {
@@ -91,14 +97,17 @@ class AttendanceSession extends Model
         return $code;
     }
 
-    // Get QR URL for scanning
     public function getQRUrl()
     {
         $baseUrl = config('app.url');
+
+        if ($this->qr_mode === 'semester') {
+            return $baseUrl . '/student/scan/semester?token=' . $this->session_token . '&course=' . $this->course_id;
+        }
+
         return $baseUrl . '/student/scan/process?token=' . $this->session_token . '&session=' . $this->id;
     }
 
-    // Get attendance statistics from records
     public function getPresentCountAttribute()
     {
         return $this->records()->where('status', 'present')->count();

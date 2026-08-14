@@ -431,12 +431,17 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     Route::post('/refresh-qr/{id}', [AttendanceController::class, 'refreshQrAjax'])->name('refreshQr');
     Route::get('/session-stats/{id}', [AttendanceController::class, 'getSessionStats'])->name('sessionStats');
     Route::post('/attendance/generate-qr', [AttendanceController::class, 'generateQr'])->name('attendance.generate.qr');
+    Route::get('/semester-qr/view/{id}', [AttendanceController::class, 'viewSemesterQr'])->name('semester-qr.view');
 
-    // ============================================================
+        // ============================================================
     // SEMESTER QR ROUTES
     // ============================================================
-    Route::post('/course/{course}/regenerate-semester-qr', [AttendanceController::class, 'regenerateSemesterQr'])->name('course.regenerate-semester-qr');
-    Route::post('/generate-semester-qr-direct', [AttendanceController::class, 'generateSemesterQrDirect'])->name('lecturer.generate.semester.qr.direct');
+    Route::get('/semester-qr/management', [AttendanceController::class, 'semesterQrManagement'])->name('semester-qr.management');
+    Route::get('/semester-qr/view/{id}', [AttendanceController::class, 'viewSemesterQr'])->name('semester-qr.view');
+    Route::post('/semester-qr/{id}/end', [AttendanceController::class, 'endSemesterQr'])->name('semester-qr.end');
+
+    // 🟢 ADD THIS LINE BELOW THE EXISTING SEMESTER QR ROUTES
+    Route::get('/semester-qr/{id}/download', [AttendanceController::class, 'downloadSemesterQr'])->name('semester-qr.download');
 
     // ============================================================
     // MESSAGE ROUTES

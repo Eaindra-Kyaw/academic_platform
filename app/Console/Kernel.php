@@ -9,7 +9,7 @@ class Kernel extends ConsoleKernel
 {
     /**
      * The Artisan commands provided by your application.
-     *
+
      * @var array
      */
     protected $commands = [
@@ -19,38 +19,31 @@ class Kernel extends ConsoleKernel
 
     /**
      * Define the application's command schedule.
-     *
+
      * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
     {
-        // ============================================================
         // DAILY TASKS
-        // ============================================================
 
         // Run attendance evaluation daily at 11:59 PM
         $schedule->command('attendance:evaluate')->dailyAt('23:59');
 
-        // ============================================================
         // WEEKLY TASKS
-        // ============================================================
 
         // Weekly roll call calculation every Monday at 6:00 AM
         // (Calculate for the previous week)
         $schedule->command('attendance:evaluate --weekly')->weekly()->mondays()->at('06:00');
 
-        // ============================================================
         // MONTHLY TASKS
-        // ============================================================
 
         // Monthly roll call calculation on the 1st of each month at 1:00 AM
         // (Calculate for the previous month)
         $schedule->command('attendance:evaluate --monthly')->monthlyOn(1, '01:00');
 
-        // ============================================================
-        // RECURRING TASKS (Optional)
-        // ============================================================
+    }
+// RECURRING TASKS (Optional)
 
         // Cache warmup for dashboards daily at 3:00 AM
         // $schedule->command('cache:clear')->dailyAt('03:00');
@@ -58,9 +51,7 @@ class Kernel extends ConsoleKernel
         // Clean up old audit logs monthly (keep last 5 years)
         // $schedule->command('attendance:cleanup')->monthly();
 
-        // ============================================================
         // EXPLANATION OF SCHEDULES
-        // ============================================================
         //
         // 1. Daily: attendance:evaluate
         //    - Calculates attendance percentage for all students
@@ -78,9 +69,7 @@ class Kernel extends ConsoleKernel
         //    - Considers 4 Mondays vs 5 Mondays
         //    - Runs on the 1st of each month at 1:00 AM
         //
-        // ============================================================
         // MTU (Myanmar) Specific Logic
-        // ============================================================
         //
         // For the monthly calculation:
         // - Gets all weekdays in the month (e.g., all Mondays)
@@ -91,8 +80,6 @@ class Kernel extends ConsoleKernel
         // - Determines: Roll Call Mark (0-10) based on MTU system
         // - Determines: Eligibility (>=75% = Eligible, >=60% = Warning, <60% = Not Eligible)
         //
-        // ============================================================
-    }
 
     /**
      * Register the commands for the application.
