@@ -20,9 +20,11 @@
             --text-gray: #64748b;
             --danger: #ef4444;
             --success: #10b981;
+            --warning: #f59e0b;
             --warning-light: #fef3c7;
             --radius: 12px;
             --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-hover: 0 8px 25px rgba(10, 36, 99, 0.08);
             --transition: all 0.2s ease;
         }
 
@@ -103,123 +105,212 @@
             letter-spacing: 0.5px;
         }
 
-        /* Main Table */
-        .table-card {
+        /* ============================================================
+               🟢 YEAR GROUPED CARDS (WITH DEPT TABS)
+               ============================================================ */
+        .year-section {
             background: var(--white);
             border-radius: var(--radius);
             box-shadow: var(--shadow);
-            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border: 1px solid rgba(10, 36, 99, 0.04);
+            transition: var(--transition);
         }
 
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
+        .year-section:hover {
+            box-shadow: var(--shadow-hover);
         }
 
-        table {
+        .year-header {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
+        }
+
+        .year-header h3 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .year-header h3 i {
+            color: var(--primary);
+        }
+
+        .year-header .year-stats {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .year-header .year-stats .count-badge {
+            background: var(--primary);
+            color: var(--white);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .year-header .year-stats .count-badge.active-badge {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .year-body {
+            padding: 1rem 1.5rem 1.5rem 1.5rem;
+        }
+
+        /* 🟢 DEPARTMENT TABS */
+        .dept-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+
+        .dept-tab {
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            background: #f1f5f9;
+            color: var(--text-gray);
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .dept-tab:hover {
+            background: #e2e8f0;
+        }
+
+        .dept-tab.active {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary-light);
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.2);
+        }
+
+        .dept-tab .tab-count {
+            font-size: 0.6rem;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+        }
+
+        .dept-tab.active .tab-count {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Inner Table */
+        .year-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.85rem;
         }
 
-        thead {
-            border-bottom: 2px solid #e2e8f0;
+        .year-table thead tr {
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        th {
-            padding: 0.8rem 0.5rem 0.8rem 0;
+        .year-table th {
+            padding: 0.6rem 0.5rem 0.6rem 0;
             color: var(--text-gray);
             font-weight: 600;
             text-transform: uppercase;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             letter-spacing: 0.5px;
-        }
-
-        .text-left {
             text-align: left;
         }
 
-        .text-center {
-            text-align: center;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        td {
-            padding: 1rem 0.5rem 1rem 0;
+        .year-table td {
+            padding: 0.8rem 0.5rem 0.8rem 0;
             border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
         }
 
-        tr:last-child td {
+        .year-table tbody tr:last-child td {
             border-bottom: none;
         }
 
-        .course-detail {
+        .year-table .course-detail {
             display: flex;
             flex-direction: column;
-            text-align: left;
         }
 
-        .course-detail .main-title {
+        .year-table .course-detail .main-title {
             color: var(--text-dark);
             font-weight: 700;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             display: flex;
-            justify-content: flex-start;
             align-items: center;
             gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
-        .course-detail .main-title .teacher-separator {
+        .year-table .course-detail .main-title .teacher-separator {
             color: var(--text-gray);
             font-weight: 400;
         }
 
-        .course-detail .sub-title {
+        .year-table .course-detail .sub-title {
             color: var(--text-gray);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             margin-top: 0.1rem;
         }
 
-        .badge {
+        .year-table .badge {
             display: inline-block;
-            padding: 0.2rem 0.7rem;
+            padding: 0.15rem 0.6rem;
             border-radius: 20px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
         }
 
-        .badge-active {
+        .year-table .badge-active {
             background: #dcfce7;
             color: #166534;
         }
 
-        .badge-draft {
+        .year-table .badge-draft {
             background: #f1f5f9;
             color: #475569;
         }
 
-        .badge-closed {
+        .year-table .badge-closed {
             background: #fee2e2;
             color: #991b1b;
         }
 
-        .date-info {
-            font-size: 0.75rem;
+        .year-table .date-info {
+            font-size: 0.7rem;
             color: var(--text-gray);
             display: flex;
             align-items: center;
             gap: 5px;
         }
 
-        .action-btn {
-            padding: 0.3rem 0.6rem;
+        .year-table .action-btn {
+            padding: 0.25rem 0.5rem;
             border-radius: 6px;
             border: none;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 500;
             cursor: pointer;
             transition: var(--transition);
@@ -227,42 +318,27 @@
             display: inline-block;
         }
 
-        .action-btn.view {
+        .year-table .action-btn.view {
             background: #e0e7ff;
             color: #4338ca;
         }
 
-        .action-btn.toggle {
+        .year-table .action-btn.toggle {
             background: #fef3c7;
             color: #92400e;
         }
 
-        .action-btn.delete {
+        .year-table .action-btn.delete {
             background: #fee2e2;
             color: #991b1b;
         }
 
-        .action-btn:hover {
+        .year-table .action-btn:hover {
             transform: translateY(-1px);
             opacity: 0.9;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--text-gray);
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            color: #cbd5e1;
-            margin-bottom: 1rem;
-            display: block;
-        }
-
-        /* ============================================================
-                       🟢 CUSTOM CONFIRM MODAL
-                       ============================================================ */
+        /* Custom Modal Styles */
         .custom-confirm-overlay {
             display: none;
             position: fixed;
@@ -474,17 +550,6 @@
             transform: translateY(-1px);
         }
 
-        .custom-confirm-btn.warning {
-            background: var(--warning);
-            color: var(--white);
-        }
-
-        .custom-confirm-btn.warning:hover {
-            background: #d97706;
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-            transform: translateY(-1px);
-        }
-
         @media (max-width: 480px) {
             .custom-confirm-box {
                 margin: 10px;
@@ -530,10 +595,40 @@
             .stats-row {
                 grid-template-columns: 1fr;
             }
+
+            .year-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .dept-tabs {
+                flex-wrap: wrap;
+                gap: 0.3rem;
+            }
+
+            .dept-tab {
+                padding: 0.3rem 0.8rem;
+                font-size: 0.7rem;
+            }
+
+            .year-table {
+                font-size: 0.75rem;
+            }
+
+            .year-table th,
+            .year-table td {
+                padding: 0.4rem 0.3rem;
+            }
+
+            .year-table .action-btn {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.6rem;
+            }
         }
     </style>
 
-    {{-- 🟢 FIXED HEADER --}}
+    {{-- 🟢 HEADER --}}
     <div class="header-wrapper">
         <a href="{{ route('admin.assessments.create') }}" class="btn-primary">
             <i class="bi bi-plus-lg"></i> New Assessment
@@ -579,185 +674,251 @@
         </div>
     </div>
 
-    {{-- The Assessment List Table --}}
-    <div class="table-card">
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="text-left" style="width: 35%;">Title & Course</th>
-                        <th class="text-left" style="width: 20%;">Dates</th>
-                        <th class="text-center" style="width: 10%;">Questions</th>
-                        <th class="text-center" style="width: 10%;">Submissions</th>
-                        <th class="text-left" style="width: 10%;">Status</th>
-                        <th class="text-center" style="width: 15%;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($assessments as $assessment)
-                        <tr>
-                            <td class="text-left">
-                                <div class="course-detail">
-                                    @php
-                                        $courseObj = is_object($assessment)
-                                            ? $assessment->course
-                                            : (isset($assessment['course'])
-                                                ? $assessment['course']
-                                                : null);
-                                        $courseCode = is_object($courseObj)
-                                            ? $courseObj->course_code
-                                            : (is_array($courseObj)
-                                                ? $courseObj['course_code'] ?? ''
-                                                : '');
-                                        $courseName = is_object($courseObj)
-                                            ? $courseObj->course_name
-                                            : (is_array($courseObj)
-                                                ? $courseObj['course_name'] ?? ''
-                                                : '');
-                                        $lecturerObj = is_object($assessment)
-                                            ? $assessment->lecturer
-                                            : (isset($assessment['lecturer'])
-                                                ? $assessment['lecturer']
-                                                : null);
-                                        $lecturerName = is_object($lecturerObj)
-                                            ? $lecturerObj->name
-                                            : (is_array($lecturerObj)
-                                                ? $lecturerObj['name'] ?? ''
-                                                : '');
-                                        $id = is_object($assessment) ? $assessment->id : $assessment['id'] ?? 0;
-                                    @endphp
-                                    <div class="main-title">
-                                        <span>
-                                            {{ $courseCode }} <span class="teacher-separator">|</span> {{ $lecturerName }}
-                                        </span>
-                                    </div>
-                                    <div class="sub-title">
-                                        {{ $courseName }}
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="text-left">
-                                <div class="date-info">
-                                    @php
-                                        $opensAt = is_object($assessment)
-                                            ? $assessment->opens_at
-                                            : $assessment['opens_at'] ?? '';
-                                        $closesAt = is_object($assessment)
-                                            ? $assessment->closes_at
-                                            : $assessment['closes_at'] ?? '';
-                                    @endphp
-                                    <i class="bi bi-calendar3"></i>
-                                    {{ $opensAt ? \Carbon\Carbon::parse($opensAt)->format('M d') : '' }}
-                                    - {{ $closesAt ? \Carbon\Carbon::parse($closesAt)->format('M d, Y') : '' }}
-                                </div>
-                            </td>
-                            <td class="text-center">
-                                @php
-                                    $questionCount = is_object($assessment)
-                                        ? $assessment->questions_count
-                                        : (isset($assessment['questions_count'])
-                                            ? $assessment['questions_count']
-                                            : 0);
-                                @endphp
-                                {{ $questionCount }}
-                            </td>
-                            <td class="text-center">
-                                @php
-                                    $submittedCount = is_object($assessment)
-                                        ? $assessment->submitted
-                                        : (isset($assessment['submitted'])
-                                            ? $assessment['submitted']
-                                            : 0);
-                                @endphp
-                                {{ $submittedCount }}
-                            </td>
-                            <td class="text-left">
-                                @php
-                                    $status = is_object($assessment)
-                                        ? $assessment->status
-                                        : (isset($assessment['status'])
-                                            ? $assessment['status']
-                                            : 'draft');
-                                @endphp
-                                @if ($status == 'active')
-                                    <span class="badge badge-active">Active</span>
-                                @elseif($status == 'draft')
-                                    <span class="badge badge-draft">Draft</span>
-                                @else
-                                    <span class="badge badge-closed">Closed</span>
-                                @endif
-                            </td>
-                            <td class="text-center" style="white-space: nowrap;">
-                                <a href="{{ route('admin.assessments.results', $id) }}" class="action-btn view"><i
-                                        class="bi bi-bar-chart"></i> Results</a>
+    {{-- 🟢 YEAR GROUPED SECTIONS WITH DEPT TABS --}}
+    @php
+        $years = ['First Year', 'Second Year', 'Third Year', 'Fourth Year', 'Fifth Year', 'Sixth Year'];
 
-                                {{-- Toggle Button --}}
-                                @if ($status == 'active')
-                                    <form action="{{ route('admin.assessments.toggle', $id) }}" method="POST"
-                                        style="display:inline;" id="closeForm_{{ $id }}">
-                                        @csrf
-                                        @method('PUT')
-                                        {{-- 🟢 FIX: Extracting name safely for both Object and Array --}}
-                                        @php
-                                            $displayName = is_object($assessment)
-                                                ? $assessment->name
-                                                : (is_array($assessment) && isset($assessment['name'])
-                                                    ? $assessment['name']
-                                                    : '');
-                                        @endphp
-                                        <button type="button" class="action-btn toggle"
-                                            onclick="confirmCloseAssessment({{ $id }}, '{{ addslashes($displayName) }}')">
-                                            <i class="bi bi-lock"></i> Close
-                                        </button>
-                                    </form>
-                                @else
-                                    <form action="{{ route('admin.assessments.toggle', $id) }}" method="POST"
-                                        style="display:inline;">
-                                        @csrf
-                                        @method('PUT')
-                                        <button type="submit" class="action-btn toggle"
-                                            style="background:#dcfce7; color:#166534;">
-                                            <i class="bi bi-unlock"></i> Open
-                                        </button>
-                                    </form>
-                                @endif
+        // 1. Group by Year, then by Department ID
+        $groupedData = [];
+        foreach ($years as $year) {
+            $groupedData[$year] = [];
+        }
 
-                                {{-- Delete Button --}}
-                                <form action="{{ route('admin.assessments.destroy', $id) }}" method="POST"
-                                    style="display:inline;" id="deleteForm_{{ $id }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    {{-- 🟢 FIX: Extracting name safely for both Object and Array --}}
-                                    @php
-                                        $displayName = is_object($assessment)
-                                            ? $assessment->name
-                                            : (is_array($assessment) && isset($assessment['name'])
-                                                ? $assessment['name']
-                                                : '');
-                                    @endphp
-                                    <button type="button" class="action-btn delete"
-                                        onclick="confirmDeleteAssessment({{ $id }}, '{{ addslashes($displayName) }}')">
-                                        <i class="bi bi-trash3"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6">
-                                <div class="empty-state">
-                                    <i class="bi bi-folder2-open"></i>
-                                    <h4>No Assessments Created Yet</h4>
-                                    <p>Click the <strong>"New Assessment"</strong> button above to create your first
-                                        evaluation form.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
+        foreach ($assessments as $assess) {
+            $year = is_object($assess) ? $assess->year : (isset($assess['year']) ? $assess['year'] : '');
+
+            // Safely extract department name from the course array/object
+            $courseData = is_object($assess) ? $assess->course : (isset($assess['course']) ? $assess['course'] : null);
+            $deptName = 'General';
+            if (is_object($courseData) && isset($courseData->department) && is_object($courseData->department)) {
+                $deptName = $courseData->department->name ?? ($courseData->department->code ?? 'General');
+            } elseif (
+                is_array($courseData) &&
+                isset($courseData['department']) &&
+                is_array($courseData['department'])
+            ) {
+                $deptName = $courseData['department']['name'] ?? ($courseData['department']['code'] ?? 'General');
+            }
+
+            if (!isset($groupedData[$year][$deptName])) {
+                $groupedData[$year][$deptName] = [];
+            }
+            $groupedData[$year][$deptName][] = $assess;
+        }
+    @endphp
+
+    @foreach ($years as $year)
+        @if (count($groupedData[$year]) > 0)
+            <div class="year-section">
+                {{-- Year Header --}}
+                <div class="year-header">
+                    <h3>
+                        <i class="bi bi-calendar4-range"></i> {{ $year }} Assessments
+                    </h3>
+                    <div class="year-stats">
+                        @php
+                            $totalInYear = 0;
+                            $activeInYear = 0;
+                            foreach ($groupedData[$year] as $dept => $items) {
+                                $totalInYear += count($items);
+                                foreach ($items as $a) {
+                                    $stat = is_object($a) ? $a->status : (isset($a['status']) ? $a['status'] : 'draft');
+                                    if ($stat == 'active') {
+                                        $activeInYear++;
+                                    }
+                                }
+                            }
+                        @endphp
+                        <span class="count-badge">{{ $totalInYear }} Total</span>
+                        @if ($activeInYear > 0)
+                            <span class="count-badge active-badge">{{ $activeInYear }} Active</span>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="year-body">
+                    {{-- Department Tabs (JavaScript will handle visibility) --}}
+                    @php
+                        $deptKeys = array_keys($groupedData[$year]);
+                        $firstDept = $deptKeys[0] ?? null;
+                    @endphp
+
+                    <div class="dept-tabs">
+                        @foreach ($groupedData[$year] as $dept => $items)
+                            <button class="dept-tab {{ $loop->first ? 'active' : '' }}"
+                                onclick="switchDept('{{ Str::slug($year) }}-{{ Str::slug($dept) }}', this)"
+                                data-target="dept-{{ Str::slug($year) }}-{{ Str::slug($dept) }}">
+                                {{ $dept }}
+                                <span class="tab-count">{{ count($items) }}</span>
+                            </button>
+                        @endforeach
+                    </div>
+
+                    {{-- Department Tables --}}
+                    @foreach ($groupedData[$year] as $dept => $items)
+                        <div id="dept-{{ Str::slug($year) }}-{{ Str::slug($dept) }}"
+                            class="dept-content {{ $loop->first ? '' : 'd-none' }}">
+                            <table class="year-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 35%;">Course & Lecturer</th>
+                                        <th style="width: 20%;">Dates</th>
+                                        <th style="width: 10%;">Q's</th>
+                                        <th style="width: 10%;">Subs</th>
+                                        <th style="width: 10%;">Status</th>
+                                        <th style="width: 15%;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($items as $assessment)
+                                        <tr>
+                                            <td>
+                                                <div class="course-detail">
+                                                    @php
+                                                        $courseObj = is_object($assessment)
+                                                            ? $assessment->course
+                                                            : (isset($assessment['course'])
+                                                                ? $assessment['course']
+                                                                : null);
+                                                        $courseCode = is_object($courseObj)
+                                                            ? $courseObj->course_code
+                                                            : (is_array($courseObj)
+                                                                ? $courseObj['course_code'] ?? ''
+                                                                : '');
+                                                        $courseName = is_object($courseObj)
+                                                            ? $courseObj->course_name
+                                                            : (is_array($courseObj)
+                                                                ? $courseObj['course_name'] ?? ''
+                                                                : '');
+                                                        $lecturerObj = is_object($assessment)
+                                                            ? $assessment->lecturer
+                                                            : (isset($assessment['lecturer'])
+                                                                ? $assessment['lecturer']
+                                                                : null);
+                                                        $lecturerName = is_object($lecturerObj)
+                                                            ? $lecturerObj->name
+                                                            : (is_array($lecturerObj)
+                                                                ? $lecturerObj['name'] ?? ''
+                                                                : '');
+                                                        $id = is_object($assessment)
+                                                            ? $assessment->id
+                                                            : $assessment['id'] ?? 0;
+                                                        $displayName = is_object($assessment)
+                                                            ? $assessment->name
+                                                            : (is_array($assessment) && isset($assessment['name'])
+                                                                ? $assessment['name']
+                                                                : '');
+                                                    @endphp
+                                                    <div class="main-title">
+                                                        <span>
+                                                            {{ $courseCode }} <span class="teacher-separator">|</span>
+                                                            {{ $lecturerName }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="sub-title">
+                                                        {{ $courseName }}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="date-info">
+                                                    @php
+                                                        $opensAt = is_object($assessment)
+                                                            ? $assessment->opens_at
+                                                            : $assessment['opens_at'] ?? '';
+                                                        $closesAt = is_object($assessment)
+                                                            ? $assessment->closes_at
+                                                            : $assessment['closes_at'] ?? '';
+                                                    @endphp
+                                                    <i class="bi bi-calendar3"></i>
+                                                    {{ $opensAt ? \Carbon\Carbon::parse($opensAt)->format('M d') : '' }}
+                                                    -
+                                                    {{ $closesAt ? \Carbon\Carbon::parse($closesAt)->format('M d, Y') : '' }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @php
+                                                    $questionCount = is_object($assessment)
+                                                        ? $assessment->questions_count
+                                                        : (isset($assessment['questions_count'])
+                                                            ? $assessment['questions_count']
+                                                            : 0);
+                                                @endphp
+                                                {{ $questionCount }}
+                                            </td>
+                                            <td>
+                                                @php
+                                                    $submittedCount = is_object($assessment)
+                                                        ? $assessment->submitted
+                                                        : (isset($assessment['submitted'])
+                                                            ? $assessment['submitted']
+                                                            : 0);
+                                                @endphp
+                                                {{ $submittedCount }}
+                                            </td>
+                                            <td>
+                                                @php
+                                                    $status = is_object($assessment)
+                                                        ? $assessment->status
+                                                        : (isset($assessment['status'])
+                                                            ? $assessment['status']
+                                                            : 'draft');
+                                                @endphp
+                                                @if ($status == 'active')
+                                                    <span class="badge badge-active">Active</span>
+                                                @elseif($status == 'draft')
+                                                    <span class="badge badge-draft">Draft</span>
+                                                @else
+                                                    <span class="badge badge-closed">Closed</span>
+                                                @endif
+                                            </td>
+                                            <td style="white-space: nowrap;">
+                                                <a href="{{ route('admin.assessments.results', $id) }}"
+                                                    class="action-btn view"><i class="bi bi-bar-chart"></i> Results</a>
+
+                                                @if ($status == 'active')
+                                                    <form action="{{ route('admin.assessments.toggle', $id) }}"
+                                                        method="POST" style="display:inline;"
+                                                        id="closeForm_{{ $id }}">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <button type="button" class="action-btn toggle"
+                                                            onclick="confirmCloseAssessment({{ $id }}, '{{ addslashes($displayName) }}')">
+                                                            <i class="bi bi-lock"></i> Close
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <form action="{{ route('admin.assessments.toggle', $id) }}"
+                                                        method="POST" style="display:inline;">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <button type="submit" class="action-btn toggle"
+                                                            style="background:#dcfce7; color:#166534;">
+                                                            <i class="bi bi-unlock"></i> Open
+                                                        </button>
+                                                    </form>
+                                                @endif
+
+                                                <form action="{{ route('admin.assessments.destroy', $id) }}" method="POST"
+                                                    style="display:inline;" id="deleteForm_{{ $id }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="action-btn delete"
+                                                        onclick="confirmDeleteAssessment({{ $id }}, '{{ addslashes($displayName) }}')">
+                                                        <i class="bi bi-trash3"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     {{-- 🟢 CUSTOM CONFIRM MODAL HTML --}}
     <div class="custom-confirm-overlay" id="customConfirmModal">
@@ -789,6 +950,25 @@
     </div>
 
     <script>
+        // 🟢 SWITCH DEPARTMENT TABS
+        function switchDept(targetId, btnElement) {
+            // Hide all contents in the same year section
+            const parentSection = btnElement.closest('.year-body');
+            const allContents = parentSection.querySelectorAll('.dept-content');
+            allContents.forEach(el => el.classList.add('d-none'));
+
+            // Show the target
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) {
+                targetContent.classList.remove('d-none');
+            }
+
+            // Update active state on tabs
+            const allTabs = parentSection.querySelectorAll('.dept-tab');
+            allTabs.forEach(tab => tab.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+
         // 🟢 GLOBAL MODAL FUNCTIONS
         let modalAction = null;
 
@@ -802,7 +982,6 @@
             btn.innerText = confirmText;
             btn.className = 'custom-confirm-btn ' + confirmClass;
 
-            // Update icon based on class
             const icon = document.getElementById('modalIcon');
             if (confirmClass === 'danger') {
                 icon.className = 'custom-confirm-icon danger';

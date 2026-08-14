@@ -171,12 +171,12 @@
         </div>
     @endif
 
-    <a href="{{ route('admin.reports.detail', ['type' => 'departments']) }}" class="report-card">
+    {{-- <a href="{{ route('admin.reports.detail', ['type' => 'departments']) }}" class="report-card">
         <span class="icon">🏛️</span>
         <h5>Department Report</h5>
         <p>Export department statistics and performance metrics</p>
         <span class="arrow">Click to generate →</span>
-    </a>
+    </a> --}}
 
     <div class="reports-grid">
         <a href="{{ route('admin.reports.detail', ['type' => 'students']) }}" class="report-card">
