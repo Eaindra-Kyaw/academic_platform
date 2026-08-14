@@ -23,6 +23,8 @@
             --shadow-hover: 0 8px 30px rgba(10, 36, 99, 0.15);
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
             --radius: 12px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -152,8 +154,8 @@
         }
 
         /* ============================================================
-                                           QUESTIONS SECTION - SINGLE COLUMN LAYOUT
-                                           ============================================================ */
+                                               QUESTIONS SECTION - SINGLE COLUMN LAYOUT
+                                               ============================================================ */
         .questions-section {
             background: var(--white);
             border-radius: var(--radius);
@@ -342,6 +344,213 @@
             border: 1px solid #fca5a5;
         }
 
+        /* ============================================================
+                       🟢 CUSTOM CONFIRM MODAL
+                       ============================================================ */
+        .custom-confirm-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: overlayFadeIn 0.3s ease;
+        }
+
+        .custom-confirm-overlay.show {
+            display: flex;
+        }
+
+        @keyframes overlayFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .custom-confirm-box {
+            background: var(--white);
+            border-radius: 16px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+            animation: modalSlideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .custom-confirm-header {
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            border-bottom: 1px solid rgba(10, 36, 99, 0.06);
+            background: #f8fafc;
+        }
+
+        .custom-confirm-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .custom-confirm-icon.warning {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .custom-confirm-icon.danger {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .custom-confirm-icon.success {
+            background: #d1fae5;
+            color: var(--success);
+        }
+
+        .custom-confirm-title-group {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .custom-confirm-title-group h4 {
+            margin: 0;
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 1.05rem;
+        }
+
+        .custom-confirm-title-group p {
+            margin: 0.15rem 0 0;
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            line-height: 1.5;
+        }
+
+        .custom-confirm-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            padding: 0.2rem;
+            transition: var(--transition);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .custom-confirm-close:hover {
+            color: #334155;
+            transform: rotate(90deg);
+        }
+
+        .custom-confirm-footer {
+            padding: 1rem 1.5rem;
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            border-top: 1px solid rgba(10, 36, 99, 0.06);
+            background: #f8fafc;
+        }
+
+        .custom-confirm-btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .custom-confirm-btn.cancel {
+            background: #f1f5f9;
+            color: var(--text-gray);
+        }
+
+        .custom-confirm-btn.cancel:hover {
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .custom-confirm-btn.primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .custom-confirm-btn.primary:hover {
+            background: #061840;
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .custom-confirm-btn.danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .custom-confirm-btn.danger:hover {
+            background: #b91c1c;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 480px) {
+            .custom-confirm-box {
+                margin: 10px;
+                max-height: 95vh;
+                overflow-y: auto;
+            }
+
+            .custom-confirm-header {
+                flex-wrap: wrap;
+            }
+
+            .custom-confirm-title-group {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .custom-confirm-footer {
+                flex-direction: column-reverse;
+            }
+
+            .custom-confirm-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
         @media (max-width: 768px) {
             .form-header h2 {
                 font-size: 1.1rem;
@@ -456,7 +665,6 @@
                 @if ($assessment->course)
                     <span><strong>Course:</strong> {{ $assessment->course->course_code ?? '' }}</span>
                 @endif
-                {{-- <span><strong>Questions:</strong> {{ $assessment->questions->where('type', 'rating')->count() }}</span> --}}
                 <span><i class="bi bi-info-circle"></i> Rate 1–5 (1 = သဘောမတူ၊ 5 = အလွန်သဘောတူ)</span>
             </div>
         </div>
@@ -545,6 +753,35 @@
         </form>
     </div>
 
+    <!-- 🟢 CUSTOM VALIDATION MODAL HTML -->
+    <div class="custom-confirm-overlay" id="customValidationModal">
+        <div class="custom-confirm-box">
+            <div class="custom-confirm-header">
+                <div class="custom-confirm-icon warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div class="custom-confirm-title-group">
+                    <h4 id="validationTitle">Incomplete Form</h4>
+                    <p id="validationMessage">Please answer all required questions before submitting.</p>
+                </div>
+                <button class="custom-confirm-close" onclick="closeValidationModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="custom-confirm-body">
+                <div id="validationDetails" style="font-size: 0.85rem; color: var(--text-gray); line-height: 1.6;">
+                    You have missed one or more rating questions. Please scroll up and ensure every question has a
+                    selection.
+                </div>
+            </div>
+            <div class="custom-confirm-footer">
+                <button class="custom-confirm-btn primary" onclick="closeValidationModal()">
+                    <i class="bi bi-check-lg"></i> Got it
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const courseSelect = document.getElementById('courseSelect');
@@ -611,41 +848,71 @@
             });
 
             // ============================================================
-            // Form validation
+            // 🟢 COMPLETELY FIXED VALIDATION
             // ============================================================
             document.getElementById('assessmentForm').addEventListener('submit', function(e) {
                 const submitBtn = document.getElementById('submitBtn');
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="bi bi-hourglass"></i> Submitting...';
 
+                // 1. Check if course is selected
                 if (!courseSelect.value) {
                     e.preventDefault();
-                    alert('Please select a subject (course).');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="bi bi-send"></i> Submit';
+                    showValidationModal('Missing Course', 'Please select a subject (course) to evaluate.');
                     return;
                 }
 
+                // 2. Check if lecturer is selected
                 if (!lecturerSelect.value) {
                     e.preventDefault();
-                    alert('Please select a teacher.');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="bi bi-send"></i> Submit';
+                    showValidationModal('Missing Teacher', 'Please select a teacher to evaluate.');
                     return;
                 }
 
-                const ratings = document.querySelectorAll('input[type="radio"]:checked');
-                const requiredQuestions = document.querySelectorAll('.question-item input[type="radio"]');
-                const requiredCount = requiredQuestions.length;
+                // 3. 🔥 NEW LOGIC: Directly loop through all rating inputs
+                //    Instead of checking HTML DIVs, we check every single radio button
+                const allRadioInputs = document.querySelectorAll('.question-item input[type="radio"]');
+                const totalQuestions = allRadioInputs.length / 5; // 5 options per question
+                let answeredCount = 0;
 
-                if (ratings.length < requiredCount) {
+                // Loop through each question's radio group
+                for (let i = 0; i < totalQuestions; i++) {
+                    const name = allRadioInputs[i * 5].name; // Get the unique name
+                    const checked = document.querySelector(`input[name="${name}"]:checked`);
+                    if (checked) {
+                        answeredCount++;
+                    }
+                }
+
+                // 4. Validate
+                if (answeredCount < totalQuestions) {
                     e.preventDefault();
-                    alert('Please answer all rating questions.');
+                    const missing = totalQuestions - answeredCount;
+                    showValidationModal(
+                        'Incomplete Form',
+                        `Please answer all required questions before submitting. (${missing} question(s) remaining)`
+                    );
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="bi bi-send"></i> Submit';
                     return;
                 }
+
+                // 5. If all passed, show submitting state
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="bi bi-hourglass"></i> Submitting...';
             });
         });
+
+        // ============================================================
+        // CUSTOM MODAL FUNCTIONS
+        // ============================================================
+        function showValidationModal(title, message) {
+            const modal = document.getElementById('customValidationModal');
+            document.getElementById('validationTitle').innerText = title;
+            document.getElementById('validationMessage').innerText = message;
+            modal.classList.add('show');
+        }
+
+        function closeValidationModal() {
+            document.getElementById('customValidationModal').classList.remove('show');
+        }
     </script>
 @endsection

@@ -25,6 +25,13 @@
             --warning: #f59e0b;
             --radius: 12px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* 🟢 PROFESSIONAL ALERT COLORS */
+            --alert-bg: #f0fdf4;
+            --alert-border: #bbf7d0;
+            --alert-text: #166534;
+            --alert-icon-bg: #dcfce7;
+            --alert-icon-color: #10b981;
         }
 
         .assessment-card {
@@ -119,6 +126,101 @@
             margin-bottom: 1rem;
         }
 
+        /* ============================================================
+               🟢 PROFESSIONAL SUCCESS ALERT BANNER (STRICTLY NO EMOJI)
+               ============================================================ */
+        .success-alert {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.25rem;
+            border-radius: var(--radius);
+            background: var(--white);
+            border: 1px solid var(--alert-border);
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1);
+            margin-bottom: 1.5rem;
+            animation: slideDownAlert 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+                fadeOutAlert 0.5s ease 6.5s forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--success);
+        }
+
+        .success-alert .alert-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--alert-icon-bg);
+            color: var(--alert-icon-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .success-alert .alert-content {
+            flex: 1;
+        }
+
+        .success-alert .alert-content .alert-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 0.05rem;
+        }
+
+        .success-alert .alert-content .alert-message {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .success-alert .alert-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 0.2rem;
+            transition: var(--transition);
+        }
+
+        .success-alert .alert-close:hover {
+            color: #334155;
+            transform: rotate(90deg);
+        }
+
+        @keyframes slideDownAlert {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.96);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes fadeOutAlert {
+            to {
+                opacity: 0;
+                transform: translateY(-15px) scale(0.96);
+            }
+        }
+
         @media (max-width: 768px) {
             .assessment-card .title {
                 font-size: 0.95rem;
@@ -126,17 +228,35 @@
         }
     </style>
 
+    {{-- 🟢 PROFESSIONAL SUCCESS ALERT (STRICTLY NO EMOJI & CACHE BUSTER) --}}
     @if (session('success'))
-        <div
-            style="background:var(--success-light); color:#166534; padding:0.75rem 1rem; border-radius:0.5rem; margin-bottom:1rem; border-left:4px solid var(--success);">
-            <i class="bi bi-check-circle"></i> {{ session('success') }}
+        {{-- Check if the string contains emojis and strip them forcefully --}}
+        @php
+            $cleanMessage = preg_replace('/[\x{2705}\x{1F44D}\x{1F600}-\x{1F64F}]/u', '', session('success'));
+            // Remove any remaining accidental whitespace
+            $cleanMessage = trim($cleanMessage);
+        @endphp
+
+        <div class="success-alert" id="successAlert">
+            <div class="alert-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="alert-content">
+                <div class="alert-title">Success</div>
+                {{-- ✅ We output the clean message here WITHOUT any emoji --}}
+                <div class="alert-message">{{ $cleanMessage }}</div>
+            </div>
+            <button class="alert-close" onclick="this.parentElement.remove()">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
     @endif
 
     @if (session('error'))
         <div
-            style="background:var(--danger-light); color:#991b1b; padding:0.75rem 1rem; border-radius:0.5rem; margin-bottom:1rem; border-left:4px solid var(--danger);">
-            <i class="bi bi-exclamation-triangle"></i> {{ session('error') }}
+            style="background:#fef2f2; color:#991b1b; padding:0.75rem 1rem; border-radius:0.5rem; margin-bottom:1rem; border-left:4px solid var(--danger); display:flex; align-items:center; gap:0.5rem;">
+            <i class="bi bi-exclamation-triangle-fill" style="color: #ef4444;"></i>
+            {{ session('error') }}
         </div>
     @endif
 
@@ -186,4 +306,15 @@
             <p>You have no pending course assessments.</p>
         </div>
     @endif
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const alert = document.getElementById('successAlert');
+            if (alert) {
+                setTimeout(() => {
+                    alert.remove();
+                }, 7000);
+            }
+        });
+    </script>
 @endsection
