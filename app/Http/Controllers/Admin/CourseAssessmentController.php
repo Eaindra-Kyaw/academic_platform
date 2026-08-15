@@ -19,7 +19,7 @@ use Carbon\Carbon;
 class CourseAssessmentController extends Controller
 {
     /**
-     * Assessment Dashboard (Admin)
+     * Assessment Dashboard (Admin) - Grouped by Year & Department
      */
     public function dashboard()
     {
@@ -30,6 +30,7 @@ class CourseAssessmentController extends Controller
             'archived' => CourseAssessment::where('status', 'archived')->count(),
         ];
 
+        // 🟢 Fetch ALL assessments without filters for the Year/Dept cards
         $assessments = CourseAssessment::with(['semester', 'course', 'lecturer', 'questions', 'submissions'])
     ->when(request('year'), function($query) {
         return $query->where('year', request('year'));
@@ -42,14 +43,10 @@ class CourseAssessmentController extends Controller
     })
     ->orderBy('created_at', 'desc')
     ->get()
-
             ->map(function($assessment) {
-                // Calculate submission count
                 $submitted = $assessment->submissions->count();
                 $uniqueStudents = $assessment->submissions->groupBy('student_id')->count();
                 $totalStudents = $this->getTotalEnrolledStudentsForAssessment($assessment);
-
-                // Only count 'rating' type questions, ignore 'text' (Comments)
                 $ratingQuestionsCount = $assessment->questions->where('type', 'rating')->count();
 
                 return [
@@ -436,51 +433,64 @@ class CourseAssessmentController extends Controller
     }
 
     /**
-     * Export results to CSV
+     * 🟢 EXPORT AS PRINTABLE HTML VIEW (No Composer or PDF library needed)
      */
     public function export($id)
     {
-        $assessment = CourseAssessment::with(['questions', 'submissions.student', 'submissions.course'])
-            ->findOrFail($id);
+        $assessment = CourseAssessment::with([
+            'questions',
+            'submissions.student',
+            'submissions.course',
+            'course',
+            'lecturer'
+        ])->findOrFail($id);
 
-        $filename = 'assessment_results_' . str_replace(' ', '_', $assessment->name) . '_' . date('Y-m-d') . '.csv';
+        // Calculate Overall Stats
+        $totalSubmissions = $assessment->submissions->count();
+        $uniqueStudents = $assessment->submissions->unique('student_id')->count();
+        $overallAverage = $assessment->average_rating;
+        $responseRate = $assessment->response_rate;
 
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"$filename\"",
-        ];
-
-        $callback = function() use ($assessment) {
-            $file = fopen('php://output', 'w');
-            fwrite($file, "\xEF\xBB\xBF");
-
-            $header = ['Student Name', 'Student ID', 'Course', 'Average Rating'];
-            foreach ($assessment->questions as $q) {
-                $header[] = 'Q' . $q->order;
-            }
-            $header[] = 'Comments';
-            fputcsv($file, $header);
+        $questionData = [];
+        foreach ($assessment->questions as $question) {
+            $ratings = [];
+            $textResponses = [];
 
             foreach ($assessment->submissions as $submission) {
-                $row = [
-                    $submission->student->name ?? 'N/A',
-                    $submission->student->student_id ?? 'N/A',
-                    $submission->course->course_code ?? 'N/A',
-                    $submission->average_rating,
-                ];
-
-                foreach ($assessment->questions as $q) {
-                    $row[] = $submission->answers[$q->id] ?? '';
+                $answer = $submission->answers[$question->id] ?? null;
+                if ($question->type === 'text') {
+                    if ($answer) {
+                        $textResponses[] = $answer;
+                    }
+                } else {
+                    if (is_numeric($answer)) {
+                        $ratings[] = $answer;
+                    }
                 }
-
-                $row[] = $submission->comments ?? '';
-                fputcsv($file, $row);
             }
 
-            fclose($file);
-        };
+            $questionData[] = [
+                'question' => $question,
+                'ratings' => $ratings,
+                'average' => count($ratings) > 0 ? round(array_sum($ratings) / count($ratings), 2) : 0,
+                'count' => count($ratings),
+                'distribution' => $this->getDistribution($ratings, 1, 5),
+                'text_responses' => $textResponses,
+            ];
+        }
 
-        return response()->stream($callback, 200, $headers);
+        // Prepare Data for the Print View
+        $data = [
+            'assessment' => $assessment,
+            'totalSubmissions' => $totalSubmissions,
+            'uniqueStudents' => $uniqueStudents,
+            'overallAverage' => $overallAverage,
+            'responseRate' => $responseRate,
+            'questionData' => $questionData,
+        ];
+
+        // Return the special print view instead of a PDF stream
+        return view('admin.assessments.print-export', $data);
     }
 
     /**
@@ -651,7 +661,7 @@ class CourseAssessmentController extends Controller
         ]);
 
         return redirect()->route('student.assessments.index')
-            ->with('success', '✅ Thank you! Your course assessment has been submitted successfully.');
+            ->with('success', 'Thank you! Your course assessment has been submitted successfully.');
     }
 
     // ============================================================
