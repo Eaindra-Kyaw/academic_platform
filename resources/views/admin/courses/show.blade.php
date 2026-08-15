@@ -385,7 +385,7 @@
                 <span class="value">{{ $department->name }} ({{ $department->code }})</span>
             </div>
             <div class="info-item">
-                <span class="label">Lecturer</span>
+                <span class="label">Teacher</span>
                 <span class="value">{{ $course->lecturer->name ?? ($course->lecturer_name ?? 'Not Assigned') }}</span>
             </div>
             <div class="info-item">

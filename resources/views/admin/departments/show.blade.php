@@ -29,6 +29,10 @@
             --purple: #8b5cf6;
             --radius: 12px;
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --warning-light: #fef3c7;
+            --success-light: #d1fae5;
+            --danger-light: #fee2e2;
+            --info-light: #dbeafe;
         }
 
         .back-link {
@@ -700,28 +704,28 @@
     <!-- Stats -->
     <div class="stats-grid">
         <div class="stat-item">
-            <div class="stat-icon blue"><i class="bi bi-people"></i></div>
+            <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
             <div class="stat-content">
                 <div class="number">{{ $stats['total_students'] }}</div>
                 <div class="label">Total Students</div>
             </div>
         </div>
         <div class="stat-item">
-            <div class="stat-icon green"><i class="bi bi-book"></i></div>
+            <div class="stat-icon green"><i class="bi bi-book-fill"></i></div>
             <div class="stat-content">
                 <div class="number">{{ $stats['total_courses'] }}</div>
                 <div class="label">Total Courses</div>
             </div>
         </div>
         <div class="stat-item">
-            <div class="stat-icon yellow"><i class="bi bi-person-badge"></i></div>
+            <div class="stat-icon yellow"><i class="bi bi-person-badge-fill"></i></div>
             <div class="stat-content">
                 <div class="number">{{ $stats['total_lecturers'] }}</div>
-                <div class="label">Total Lecturers</div>
+                <div class="label">Total Teachers</div>
             </div>
         </div>
         <div class="stat-item">
-            <div class="stat-icon red"><i class="bi bi-graph-up"></i></div>
+            <div class="stat-icon red"><i class="bi bi-graph-up-arrow"></i></div>
             <div class="stat-content">
                 <div class="number">{{ number_format($stats['overall_attendance'], 1) }}%</div>
                 <div class="label">Avg Attendance</div>
@@ -732,18 +736,18 @@
     <!-- Tabs -->
     <div class="tabs-modern">
         <button class="tab-btn-modern active" data-tab="overview">
-            📊 Overview
+            <i class="bi bi-grid-fill"></i> Overview
         </button>
         <button class="tab-btn-modern" data-tab="students">
-            👨‍🎓 Students
+            <i class="bi bi-people-fill"></i> Students
             <span class="badge-tab">{{ $stats['total_students'] }}</span>
         </button>
         <button class="tab-btn-modern" data-tab="courses">
-            📚 Courses
+            <i class="bi bi-book-fill"></i> Courses
             <span class="badge-tab">{{ $stats['total_courses'] }}</span>
         </button>
         <button class="tab-btn-modern" data-tab="lecturers">
-            👨‍🏫 Lecturers
+            <i class="bi bi-person-badge-fill"></i> Teachers
             <span class="badge-tab">{{ $stats['total_lecturers'] }}</span>
         </button>
     </div>
@@ -755,7 +759,7 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
             <div class="section-card">
                 <div class="section-header">
-                    <span class="title"><i class="bi bi-people"></i> Students by Year</span>
+                    <span class="title"><i class="bi bi-people-fill"></i> Students by Year</span>
                 </div>
                 <div class="section-body">
                     @if ($studentsByYear->count() > 0)
@@ -778,14 +782,14 @@
                                             style="color:var(--success);">{{ number_format($data->avg_attendance ?? 0, 1) }}%</span>
                                         <a href="{{ route('admin.departments.year.students', [$department, $year]) }}"
                                             style="color:var(--primary); text-decoration:none; font-weight:500; font-size:0.7rem;">View
-                                            →</a>
+                                            <i class="bi bi-arrow-right"></i></a>
                                     </span>
                                 </div>
                             </div>
                         @endforeach
                     @else
                         <div class="empty-modern">
-                            <i class="bi bi-people"></i>
+                            <i class="bi bi-people-fill"></i>
                             <p>No students enrolled yet</p>
                         </div>
                     @endif
@@ -794,7 +798,7 @@
 
             <div class="section-card">
                 <div class="section-header">
-                    <span class="title"><i class="bi bi-book"></i> Courses by Year</span>
+                    <span class="title"><i class="bi bi-book-fill"></i> Courses by Year</span>
                 </div>
                 <div class="section-body">
                     @if ($coursesByYear->count() > 0)
@@ -826,14 +830,14 @@
                                         <span>{{ $courses->count() }} courses</span>
                                         <a href="{{ route('admin.departments.courses.index', $department) }}"
                                             style="color:var(--primary); text-decoration:none; font-weight:500; font-size:0.7rem;">View
-                                            All →</a>
+                                            All <i class="bi bi-arrow-right"></i></a>
                                     </span>
                                 </div>
                             </div>
                         @endforeach
                     @else
                         <div class="empty-modern">
-                            <i class="bi bi-book"></i>
+                            <i class="bi bi-book-fill"></i>
                             <p>No courses created yet</p>
                         </div>
                     @endif
@@ -848,7 +852,7 @@
     <div class="tab-panel-modern" id="panel-students">
         <div class="section-card">
             <div class="section-header">
-                <span class="title"><i class="bi bi-people"></i> Students by Year</span>
+                <span class="title"><i class="bi bi-people-fill"></i> Students by Year</span>
             </div>
             <div class="section-body">
                 <div class="student-grid-modern">
@@ -870,9 +874,10 @@
                             @if ($hasStudents)
                                 <div class="count">{{ $yearData->total }}</div>
                                 <div class="sub">Students</div>
-                                <div class="attendance">📊 {{ number_format($yearData->avg_attendance ?? 0, 1) }}%</div>
+                                <div class="attendance"><i class="bi bi-bar-chart-fill"></i>
+                                    {{ number_format($yearData->avg_attendance ?? 0, 1) }}%</div>
                                 <a href="{{ route('admin.departments.year.students', [$department, $year]) }}"
-                                    class="btn-view-sm">View →</a>
+                                    class="btn-view-sm">View <i class="bi bi-arrow-right"></i></a>
                             @else
                                 <div style="color:#d1d5db; font-size:0.75rem; padding:0.3rem 0;">No students</div>
                             @endif
@@ -922,7 +927,7 @@
                                 <tr>
                                     <th style="width:12%;">Code</th>
                                     <th style="width:22%;">Course Name</th>
-                                    <th style="width:18%;">Lecturer</th>
+                                    <th style="width:18%;">Teacher</th>
                                     <th style="width:8%;text-align:center;">Room</th>
                                     <th style="width:8%;text-align:center;">Students</th>
                                     <th style="width:12%;text-align:center;">Attendance</th>
@@ -943,11 +948,12 @@
                                         <td style="font-weight:500; color:var(--text-dark);">{{ $course->course_name }}
                                         </td>
                                         <td style="color:var(--text-gray); font-size:0.75rem;">
-                                            <i class="bi bi-person" style="color:var(--primary); font-size:0.6rem;"></i>
+                                            <i class="bi bi-person-fill"
+                                                style="color:var(--primary); font-size:0.6rem;"></i>
                                             {{ $lecturerName }}
                                         </td>
                                         <td style="color:var(--text-gray); font-size:0.75rem; text-align:center;">
-                                            <i class="bi bi-door-open" style="font-size:0.6rem;"></i>
+                                            <i class="bi bi-door-open-fill" style="font-size:0.6rem;"></i>
                                             {{ $course->room ?? 'N/A' }}
                                         </td>
                                         <td style="text-align:center; font-weight:600; color:var(--text-dark);">
@@ -962,16 +968,16 @@
                                             <div class="action-cell">
                                                 <a href="{{ route('admin.departments.courses.show', [$department, $course]) }}"
                                                     class="btn-action-sm btn-view-course" title="View Course">
-                                                    <i class="bi bi-eye"></i>
+                                                    <i class="bi bi-eye-fill"></i>
                                                 </a>
                                                 <a href="{{ route('admin.departments.courses.edit', [$department, $course]) }}"
                                                     class="btn-action-sm btn-edit-course" title="Edit Course">
-                                                    <i class="bi bi-pencil"></i>
+                                                    <i class="bi bi-pencil-fill"></i>
                                                 </a>
                                                 <button type="button" class="btn-action-sm btn-delete-course"
                                                     title="Delete Course"
                                                     onclick="showDeleteConfirm('{{ addslashes($course->course_name) }}', '{{ route('admin.departments.courses.destroy', [$department, $course]) }}')">
-                                                    <i class="bi bi-trash"></i>
+                                                    <i class="bi bi-trash-fill"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -986,11 +992,11 @@
             <div class="section-card">
                 <div class="section-body">
                     <div class="empty-modern">
-                        <i class="bi bi-book"></i>
+                        <i class="bi bi-book-fill"></i>
                         <p>No courses created in this department yet.</p>
                         <a href="{{ route('admin.departments.courses.create', $department) }}"
                             style="color:var(--primary); text-decoration:none; font-weight:500; font-size:0.85rem;">
-                            Add your first course →
+                            Add your first course <i class="bi bi-arrow-right"></i>
                         </a>
                     </div>
                 </div>
@@ -1007,7 +1013,7 @@
                 style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.75rem;">
                 <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
                     <h5 style="font-size:0.95rem; font-weight:700; color:var(--text-dark); margin:0;">
-                        <i class="bi bi-person-badge" style="color:var(--primary);"></i>
+                        <i class="bi bi-person-badge-fill" style="color:var(--primary);"></i>
                         Lecturers
                     </h5>
                     <span
@@ -1021,13 +1027,13 @@
                         <i class="bi bi-search" style="color:#9ca3af; font-size:0.7rem;"></i>
                         <input type="text" id="facultySearch" placeholder="Search lecturers..."
                             style="border:none; outline:none; padding:0.25rem 0.4rem; font-size:0.75rem; color:var(--text-dark); background:transparent; width:150px;">
-                        <i class="bi bi-x-circle" id="clearFacultySearch"
+                        <i class="bi bi-x-circle-fill" id="clearFacultySearch"
                             style="color:#9ca3af; font-size:0.7rem; cursor:pointer; display:none;"
                             onclick="document.getElementById('facultySearch').value=''; filterFaculty();"></i>
                     </div>
                     <a href="{{ route('admin.lecturers.create') }}?department={{ $department->id }}"
                         style="background:var(--primary); color:var(--white); border:none; padding:0.25rem 0.8rem; border-radius:6px; font-size:0.7rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.3rem;">
-                        <i class="bi bi-plus-circle"></i> Assign Lecturers
+                        <i class="bi bi-plus-circle-fill"></i> Assign Lecturers
                     </a>
                 </div>
             </div>
@@ -1083,7 +1089,7 @@
                                     {{ $lecturer->name }}</div>
                                 <div
                                     style="font-size:0.65rem; color:var(--text-gray); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                    {{ $lecturer->email }}
+                                    <i class="bi bi-envelope-fill" style="font-size:0.5rem;"></i> {{ $lecturer->email }}
                                 </div>
                             </div>
                             <div
@@ -1099,14 +1105,16 @@
                                     {{ $coursesCount }}</div>
                                 <div
                                     style="font-size:0.55rem; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.3px;">
-                                    Courses</div>
+                                    <i class="bi bi-book-fill"></i> Courses
+                                </div>
                             </div>
                             <div style="text-align:center;">
                                 <div style="font-size:1.1rem; font-weight:700; color:var(--text-dark);">
                                     {{ $studentCount }}</div>
                                 <div
                                     style="font-size:0.55rem; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.3px;">
-                                    Students</div>
+                                    <i class="bi bi-people-fill"></i> Students
+                                </div>
                             </div>
                             <div style="text-align:center;">
                                 <div style="font-size:1.1rem; font-weight:700; color:{{ $color }};">
@@ -1114,7 +1122,8 @@
                                 </div>
                                 <div
                                     style="font-size:0.55rem; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.3px;">
-                                    Attendance</div>
+                                    <i class="bi bi-bar-chart-fill"></i> Attendance
+                                </div>
                             </div>
                         </div>
 
@@ -1128,11 +1137,11 @@
                         <div style="display:flex; gap:0.5rem;">
                             <a href="{{ route('admin.lecturers.show', $lecturer) }}"
                                 style="flex:1; text-align:center; background:var(--primary); color:var(--white); border:none; padding:0.3rem 0.75rem; border-radius:6px; font-size:0.75rem; text-decoration:none; transition:var(--transition);">
-                                <i class="bi bi-eye"></i> View Profile
+                                <i class="bi bi-eye-fill"></i> View Profile
                             </a>
                             <a href="{{ route('admin.lecturers.edit', $lecturer) }}"
                                 style="flex:1; text-align:center; background:var(--warning-light); color:#92400e; border:none; padding:0.3rem 0.75rem; border-radius:6px; font-size:0.75rem; text-decoration:none; transition:var(--transition);">
-                                <i class="bi bi-pencil"></i> Edit
+                                <i class="bi bi-pencil-fill"></i> Edit
                             </a>
                         </div>
                     </div>
@@ -1153,7 +1162,7 @@
         @else
             <div
                 style="text-align:center; padding:2.5rem 1rem; background:var(--white); border-radius:var(--radius); border:1px solid rgba(10, 36, 99, 0.06);">
-                <i class="bi bi-person-badge"
+                <i class="bi bi-person-badge-fill"
                     style="font-size:2rem; color:#d1d5db; display:block; margin-bottom:0.5rem;"></i>
                 <h6 style="color:var(--text-dark); margin:0; font-size:0.9rem;">No Lecturers Assigned</h6>
                 <p style="color:var(--text-gray); font-size:0.8rem; margin:0.2rem 0 0.8rem;">
@@ -1161,7 +1170,7 @@
                 </p>
                 <a href="{{ route('admin.lecturers.create') }}?department={{ $department->id }}"
                     style="background:var(--primary); color:var(--white); border:none; padding:0.3rem 1rem; border-radius:6px; font-size:0.75rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem;">
-                    <i class="bi bi-plus-circle"></i> Assign Lecturer
+                    <i class="bi bi-plus-circle-fill"></i> Assign Lecturer
                 </a>
             </div>
         @endif
@@ -1209,7 +1218,7 @@
 
     <div class="confirm-overlay" id="deleteConfirm">
         <div class="confirm-box">
-            <div class="icon">🗑️</div>
+            <div class="icon"><i class="bi bi-trash-fill"></i></div>
             <h4>Delete Course</h4>
             <p>Are you sure you want to delete "<span id="confirmCourseName"></span>"?<br>This action cannot be undone.</p>
             <div class="buttons">

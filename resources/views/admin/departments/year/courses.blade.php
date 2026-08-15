@@ -447,7 +447,7 @@
                         <tr>
                             <th style="width:10%;">Code</th>
                             <th style="width:20%;">Course Name</th>
-                            <th style="width:18%;">Lecturer</th>
+                            <th style="width:18%;">Teacher</th>
                             <th style="width:8%;text-align:center;">Room</th>
                             <th style="width:8%;text-align:center;">Students</th>
                             <th style="width:12%;text-align:center;">Attendance</th>

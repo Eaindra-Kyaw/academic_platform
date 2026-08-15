@@ -438,7 +438,7 @@
             <div class="stat-icon-dept red"><i class="bi bi-person-badge"></i></div>
             <div class="stat-info-dept">
                 <div class="number">{{ $departments->sum('lecturers_count') }}</div>
-                <div class="label">Total Lecturers</div>
+                <div class="label">Total Teachers</div>
             </div>
         </div>
     </div>

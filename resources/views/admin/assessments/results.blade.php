@@ -375,7 +375,7 @@
         </div>
         <div>
             <a href="{{ route('admin.assessments.export', $assessment->id) }}" class="btn-export">
-                <i class="bi bi-download"></i> Export CSV
+                <i class="bi bi-download"></i> Export
             </a>
         </div>
     </div>
