@@ -5,22 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - MTU</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     <style>
-        :root {
-            --primary: #0A2463;
-            --primary-dark: #061840;
-            --primary-light: #1E3A8A;
-            --secondary: #3B82F6;
-            --accent: #D4A017;
-            --bg-light: #EEF2F7;
-            --white: #FFFFFF;
-            --text-gray: #64748b;
-            --shadow: 0 4px 20px rgba(10, 36, 99, 0.08);
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -28,8 +13,8 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0B2B5B 0%, #0D47A1 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -38,12 +23,12 @@
         }
 
         .card {
-            background: var(--white);
+            background: white;
             border-radius: 24px;
             padding: 40px;
             max-width: 450px;
             width: 100%;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .logo {
@@ -51,42 +36,21 @@
             margin-bottom: 30px;
         }
 
-        .logo-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            color: var(--accent);
-            font-size: 24px;
-            font-weight: bold;
-            box-shadow: 0 4px 16px rgba(10, 36, 99, 0.2);
-        }
-
         .logo h2 {
-            color: var(--primary);
-            font-size: 20px;
-            margin-top: 10px;
+            color: #0A2463;
+            font-size: 22px;
             font-weight: 700;
         }
 
         .logo p {
-            color: var(--text-gray);
-            font-size: 12px;
-            margin-top: 5px;
-        }
-
-        .logo p .gold {
-            color: var(--accent);
-            font-weight: 600;
+            color: #6B7280;
+            font-size: 14px;
+            margin-top: 4px;
         }
 
         .role-badge {
-            background: var(--bg-light);
-            color: var(--primary);
+            background: #FEF3C7;
+            color: #92400E;
             padding: 10px;
             border-radius: 12px;
             text-align: center;
@@ -95,97 +59,86 @@
             font-size: 14px;
         }
 
-        .role-badge i {
-            color: var(--accent);
-            margin-right: 6px;
-        }
-
-        .input-group {
+        .form-group {
             margin-bottom: 20px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
             font-weight: 600;
-            color: #333;
+            color: #1F2937;
             font-size: 14px;
+            margin-bottom: 6px;
         }
 
         input {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 14px;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
+            border: 2px solid #E5E7EB;
+            border-radius: 12px;
+            font-size: 15px;
+            box-sizing: border-box;
         }
 
         input:focus {
             outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
+            border-color: #0A2463;
+            box-shadow: 0 0 0 4px rgba(10, 36, 99, 0.08);
         }
 
         .btn {
             width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: var(--white);
+            padding: 14px;
+            background: #0A2463;
+            color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
         }
 
         .btn:hover {
+            background: #1E3A8A;
             transform: translateY(-2px);
             box-shadow: 0 4px 16px rgba(10, 36, 99, 0.3);
+        }
+
+        .alert-danger {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #DC2626;
         }
 
         .back-link {
             text-align: center;
             margin-top: 20px;
             padding-top: 20px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid #E5E7EB;
         }
 
         .back-link a {
-            color: var(--primary);
+            color: #0A2463;
             text-decoration: none;
             font-size: 14px;
             font-weight: 500;
-            transition: all 0.2s;
-            display: block;
-            /* 🟢 Makes them stack nicely */
-            margin-bottom: 6px;
         }
 
-        .back-link a:hover {
-            color: var(--accent);
-            text-decoration: underline;
-        }
-
-        .alert-danger {
-            background: #fee2e2;
-            color: #991b1b;
+        .test-users {
+            margin-top: 16px;
             padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            border-left: 4px solid #dc2626;
+            background: #F3F4F6;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #6B7280;
+            text-align: center;
         }
 
-        .alert-danger p {
-            margin: 0;
-        }
-
-        .alert-danger i {
-            margin-right: 6px;
+        .test-users strong {
+            color: #1F2937;
         }
     </style>
 </head>
@@ -193,46 +146,32 @@
 <body>
     <div class="card">
         <div class="logo">
-            <div class="logo-icon">MTU</div>
-            <h2>Mandalay Technological University</h2>
-            <p><span class="gold">✦</span> Ministry of Science and Technology <span class="gold">✦</span></p>
+            <h2>🏛️ MTU Academic System</h2>
+            <p>Mandalay Technological University</p>
         </div>
-
-        <div class="role-badge">
-            <i class="bi bi-shield-lock-fill"></i> Admin Login
-        </div>
-
+        <div class="role-badge"><i class="bi bi-shield-lock-fill"></i> Admin Login</div>
         @if ($errors->any())
             <div class="alert-danger">
                 @foreach ($errors->all() as $error)
-                    <p><i class="bi bi-exclamation-triangle-fill"></i> {{ $error }}</p>
+                    <div>❌ {{ $error }}</div>
                 @endforeach
             </div>
         @endif
-
         <form method="POST" action="{{ route('admin.login.submit') }}">
             @csrf
-            <div class="input-group">
+            <div class="form-group">
                 <label>Email Address</label>
                 <input type="email" name="email" placeholder="Enter your email" value="{{ old('email') }}"
                     required>
             </div>
-            <div class="input-group">
+            <div class="form-group">
                 <label>Password</label>
                 <input type="password" name="password" placeholder="Enter your password" required>
             </div>
             <button type="submit" class="btn">Login as Admin</button>
         </form>
-
-        <div class="back-link">
-            <!-- 🟢 Added Register Link here -->
-            <a href="{{ route('register') }}">
-                <i class="bi bi-person-plus"></i> Need an account? Register
-            </a>
-            <a href="{{ route('home') }}">
-                <i class="bi bi-arrow-left"></i> Back to Home
-            </a>
-        </div>
+        <div class="test-users"><strong>Test Account:</strong><br>admin1@mtu.edu.mm / admin001</div>
+        <div class="back-link"><a href="{{ route('home') }}">← Back to Home</a></div>
     </div>
 </body>
 

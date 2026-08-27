@@ -22,9 +22,6 @@
             overflow-x: hidden;
         }
 
-        /* ============================================================
-           NAVBAR
-           ============================================================ */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -118,9 +115,6 @@
             box-shadow: 0 8px 30px rgba(13, 71, 161, 0.35);
         }
 
-        /* ============================================================
-           HERO
-           ============================================================ */
         .hero {
             display: flex;
             align-items: center;
@@ -276,9 +270,6 @@
             color: #F9A825;
         }
 
-        /* ============================================================
-           STATS
-           ============================================================ */
         .stats {
             display: flex;
             justify-content: center;
@@ -307,9 +298,6 @@
             color: #F9A825;
         }
 
-        /* ============================================================
-           ABOUT / UNIVERSITY PORTAL CONTENT
-           ============================================================ */
         .about-section {
             padding: 50px 50px 40px;
             max-width: 1200px;
@@ -337,7 +325,6 @@
             margin-top: 4px;
         }
 
-        /* 🟢 PUSH DEPARTMENTS TO FAR RIGHT */
         .about-grid {
             display: grid;
             grid-template-columns: 1fr 1.4fr;
@@ -385,9 +372,6 @@
             color: #0D47A1;
         }
 
-        /* ============================================================
-           ORIGINAL RIGHT-ALIGNED DEPARTMENT CARDS
-           ============================================================ */
         .dept-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -466,9 +450,6 @@
             flex-shrink: 0;
         }
 
-        /* ============================================================
-           FEATURES
-           ============================================================ */
         .features-section {
             padding: 40px 50px 50px;
             max-width: 1200px;
@@ -536,9 +517,6 @@
             line-height: 1.5;
         }
 
-        /* ============================================================
-           FOOTER
-           ============================================================ */
         .footer {
             background: #0B2B5B;
             color: #ffffff;
@@ -636,7 +614,6 @@
             color: #F9A825;
         }
 
-        /* 🟢 CENTERED FOOTER LOGO */
         .footer-logo-col {
             display: flex;
             flex-direction: column;
@@ -704,9 +681,6 @@
             font-weight: 500;
         }
 
-        /* ============================================================
-           RESPONSIVE
-           ============================================================ */
         @media (max-width: 1024px) {
             .hero {
                 flex-direction: column;
@@ -729,7 +703,6 @@
                 font-size: 38px;
             }
 
-            /* 🟢 STACK VERTICALLY ON TABLETS */
             .about-grid {
                 grid-template-columns: 1fr;
             }
@@ -890,7 +863,6 @@
 </head>
 
 <body>
-    <!-- NAVBAR -->
     <nav class="navbar">
         <div class="logo">
             <div class="icon">MTU</div>
@@ -900,32 +872,25 @@
             </div>
         </div>
         <div class="buttons">
-            <a href="{{ route('login') }}" class="btn btn-outline" id="loginBtn">
+            <a href="/login" class="btn btn-outline" id="loginBtn">
                 <i class="bi bi-box-arrow-in-right"></i> Login
             </a>
-            <a href="{{ route('register') }}" class="btn btn-primary">
+            <a href="/register" class="btn btn-primary">
                 <i class="bi bi-person-plus"></i> Register
             </a>
         </div>
     </nav>
 
-    <!-- HERO -->
     <section class="hero">
         <div class="left">
             <div class="badge"><i class="bi bi-stars"></i> Academic Intelligence System</div>
             <h1>
                 <nobr>Intelligent University Portal</nobr>
             </h1>
-            <p>
-                <i class="bi bi-qr-code"></i> QR Attendance &middot;
-                <i class="bi bi-graph-up"></i> Predictive Analytics &middot;
-                <i class="bi bi-robot"></i> Uni Bot Assistant
-            </p>
+            <p><i class="bi bi-qr-code"></i> QR Attendance &middot; <i class="bi bi-graph-up"></i> Predictive Analytics
+                &middot; <i class="bi bi-robot"></i> Uni Bot Assistant</p>
             <div class="hero-buttons">
-                <a href="#about" class="btn-hero btn-hero-primary">
-                    <i class="bi bi-compass"></i> Explore the Portal
-                </a>
-
+                <a href="#about" class="btn-hero btn-hero-primary"><i class="bi bi-compass"></i> Explore the Portal</a>
             </div>
         </div>
         <div class="right">
@@ -942,7 +907,6 @@
         </div>
     </section>
 
-    <!-- STATS -->
     <div class="stats">
         <div class="stat">
             <div class="number" id="statStudents">0</div>
@@ -962,153 +926,119 @@
         </div>
     </div>
 
-    <!-- FOR STUDENTS & UNIVERSITY USERS -->
     <section class="about-section" id="about">
         <div class="section-title">
             <h2>For the <span class="gold">MTU Community</span></h2>
             <p>Your connected hub for modern academic life at MTU.</p>
         </div>
         <div class="about-grid">
-            <!-- 🟢 LEFT SIDE: TEXT JUSTIFIED -->
             <div class="about-text">
-                <p>
-                    Welcome to the <span class="highlight">Mandalay Technological University Academic Portal</span> — a
+                <p>Welcome to the <span class="highlight">Mandalay Technological University Academic Portal</span> — a
                     powerful digital ecosystem developed by the <span class="highlight">CEIT Department</span> to
-                    enhance the educational journey of our community.
-                </p>
-                <p>
-                    Designed with <span class="highlight-gold">admins, teachers, and students</span> in mind,
-                    this platform
-                    bridges the gap between management and academics. It offers seamless QR attendance tracking,
-                    intelligent
-                    risk prediction, and real-time analytics, allowing teachers to monitor progress while giving
-                    students a clear
-                    view of their own academic health.
-                </p>
+                    enhance the educational journey of our community.</p>
+                <p>Designed with <span class="highlight-gold">admins, teachers, and students</span> in mind, this
+                    platform bridges the gap between management and academics. It offers seamless QR attendance
+                    tracking, intelligent risk prediction, and real-time analytics, allowing teachers to monitor
+                    progress while giving students a clear view of their own academic health.</p>
                 <div class="vision-box">
                     <div class="label"><i class="bi bi-heart-fill" style="color: #F9A825;"></i> Built for You</div>
-                    <p>"Designed to simplify your daily university journey—from seamless attendance tracking to
-                        clear academic insights, we're here to support every step of your growth."</p>
+                    <p>"Designed to simplify your daily university journey—from seamless attendance tracking to clear
+                        academic insights, we're here to support every step of your growth."</p>
                 </div>
             </div>
-
-            <!-- 🟢 RIGHT SIDE: EXACT SAME CARDS, PUSHED MORE RIGHT -->
             <div class="dept-grid">
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-cpu"></i></div>
                         <div class="dept-info">
-                            <h4>Computer Engineering & Information Technology</h4>
-                            <span>CEIT Department</span>
+                            <h4>Computer Engineering & Information Technology</h4><span>CEIT Department</span>
                         </div>
-                    </div>
-                    <span class="hod">Dr. Phyo Thu Zar Tun</span>
+                    </div><span class="hod">Dr. Phyo Thu Zar Tun</span>
                 </div>
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-bricks"></i></div>
                         <div class="dept-info">
-                            <h4>Civil Engineering</h4>
-                            <span>CE Department</span>
+                            <h4>Civil Engineering</h4><span>CE Department</span>
                         </div>
-                    </div>
-                    <span class="hod">Dr. Nilar Aye</span>
+                    </div><span class="hod">Dr. Nilar Aye</span>
                 </div>
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-gear-wide-connected"></i></div>
                         <div class="dept-info">
-                            <h4>Mechanical Engineering</h4>
-                            <span>ME Department</span>
+                            <h4>Mechanical Engineering</h4><span>ME Department</span>
                         </div>
-                    </div>
-                    <span class="hod">....</span>
+                    </div><span class="hod">....</span>
                 </div>
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-lightning-charge-fill"></i></div>
                         <div class="dept-info">
-                            <h4>Electrical Power Engineering</h4>
-                            <span>EP Department</span>
+                            <h4>Electrical Power Engineering</h4><span>EP Department</span>
                         </div>
-                    </div>
-                    <span class="hod">...</span>
+                    </div><span class="hod">...</span>
                 </div>
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-thermometer-half"></i></div>
                         <div class="dept-info">
-                            <h4>Electronic Engineering</h4>
-                            <span>EC Department</span>
+                            <h4>Electronic Engineering</h4><span>EC Department</span>
                         </div>
-                    </div>
-                    <span class="hod">....</span>
+                    </div><span class="hod">....</span>
                 </div>
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-magic"></i></div>
                         <div class="dept-info">
-                            <h4>Mechatronics Engineering</h4>
-                            <span>MEC Department</span>
+                            <h4>Mechatronics Engineering</h4><span>MEC Department</span>
                         </div>
-                    </div>
-                    <span class="hod">....</span>
+                    </div><span class="hod">....</span>
                 </div>
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-droplet-half"></i></div>
                         <div class="dept-info">
-                            <h4>Chemical Engineering</h4>
-                            <span>CH Department</span>
+                            <h4>Chemical Engineering</h4><span>CH Department</span>
                         </div>
-                    </div>
-                    <span class="hod">....</span>
+                    </div><span class="hod">....</span>
                 </div>
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-tree"></i></div>
                         <div class="dept-info">
-                            <h4>Agricultural Engineering</h4>
-                            <span>AE Department</span>
+                            <h4>Agricultural Engineering</h4><span>AE Department</span>
                         </div>
-                    </div>
-                    <span class="hod">....</span>
+                    </div><span class="hod">....</span>
                 </div>
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-fingerprint"></i></div>
                         <div class="dept-info">
-                            <h4>Biotechnology</h4>
-                            <span>BT Department</span>
+                            <h4>Biotechnology</h4><span>BT Department</span>
                         </div>
-                    </div>
-                    <span class="hod">....</span>
+                    </div><span class="hod">....</span>
                 </div>
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-pencil"></i></div>
                         <div class="dept-info">
-                            <h4>Architecture</h4>
-                            <span>AR Department</span>
+                            <h4>Architecture</h4><span>AR Department</span>
                         </div>
-                    </div>
-                    <span class="hod">....</span>
+                    </div><span class="hod">....</span>
                 </div>
                 <div class="dept-item">
                     <div class="dept-left">
                         <div class="dept-icon-wrap"><i class="bi bi-radioactive"></i></div>
                         <div class="dept-info">
-                            <h4>Nuclear Technology</h4>
-                            <span>NT Department</span>
+                            <h4>Nuclear Technology</h4><span>NT Department</span>
                         </div>
-                    </div>
-                    <span class="hod">....</span>
+                    </div><span class="hod">....</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- PLATFORM FEATURES -->
     <section class="features-section" id="features">
         <div class="section-title">
             <h2>Portal <span class="gold">Features</span></h2>
@@ -1150,36 +1080,27 @@
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="footer">
         <div class="footer-container">
-            <!-- Navigation Links -->
             <div class="footer-column">
                 <ul>
-                    <li><a href="{{ route('login') }}"><i class="bi bi-arrow-right"></i> Mandalay Technological
-                            University</a></li>
+                    <li><a href="/login"><i class="bi bi-arrow-right"></i> Mandalay Technological University</a></li>
                     <li><a href="#about"><i class="bi bi-arrow-right"></i> About</a></li>
                     <li><a href="#features"><i class="bi bi-arrow-right"></i> Features</a></li>
-                    <li><a href="{{ route('login') }}"><i class="bi bi-arrow-right"></i> Login</a></li>
-                    <li><a href="{{ route('register') }}"><i class="bi bi-arrow-right"></i> Register</a></li>
+                    <li><a href="/login"><i class="bi bi-arrow-right"></i> Login</a></li>
+                    <li><a href="/register"><i class="bi bi-arrow-right"></i> Register</a></li>
                 </ul>
             </div>
-
-            <!-- Contact Details -->
             <div class="footer-column">
                 <h4>Contact Details</h4>
                 <div class="footer-contact">
                     <p><strong>Phone</strong> <a href="tel:123456" class="phone-link">+95 2 123 456</a></p>
                     <p><strong>International</strong> <a href="tel:+95912345678" class="phone-link">+95 9 123 456
                             78</a></p>
-                    <p style="margin-top: 12px;"><strong>Address</strong><br>
-                        Mandalay Technological University<br>
-                        Patheingyi Township, Mandalay<br>
-                        Myanmar</p>
+                    <p style="margin-top: 12px;"><strong>Address</strong><br>Mandalay Technological
+                        University<br>Patheingyi Township, Mandalay<br>Myanmar</p>
                 </div>
             </div>
-
-            <!-- Connect With Us -->
             <div class="footer-column connect-col">
                 <h4>Connect with us</h4>
                 <div class="footer-socials">
@@ -1190,26 +1111,16 @@
                     <a href="#"><i class="bi bi-tiktok"></i></a>
                 </div>
             </div>
-
-            <!-- Logo -->
             <div class="footer-logo-col">
-                <img src="{{ asset('/images/mtu-logo.png') }}" alt="MTU Logo">
-                <div class="address-text">
-                    <i class="bi bi-geo-alt-fill"></i> Mandalay Technological University
-                </div>
+                <img src="{{ asset('images/mtu-logo.png') }}" alt="MTU Logo">
+                <div class="address-text"><i class="bi bi-geo-alt-fill"></i> Mandalay Technological University</div>
             </div>
         </div>
-
-        <!-- Bottom Section -->
         <div class="footer-bottom">
-            <div class="contact-note">
-                <i class="bi bi-info-circle"></i> Accounts created by admins only. Contact <strong>CEIT
-                    Department</strong>
-            </div>
-            <div class="footer-bottom-copy">
-                &copy; {{ date('Y') }} <strong>Ministry of Science and Technology</strong> &middot; Mandalay
-                Technological University
-            </div>
+            <div class="contact-note"><i class="bi bi-info-circle"></i> Accounts created by admins only. Contact
+                <strong>CEIT Department</strong></div>
+            <div class="footer-bottom-copy">&copy; {{ date('Y') }} <strong>Ministry of Science and
+                    Technology</strong> &middot; Mandalay Technological University</div>
         </div>
     </footer>
 
@@ -1219,7 +1130,6 @@
             const lecturers = {{ \App\Models\User::where('role_id', 2)->count() ?? 0 }};
             const courses = {{ \App\Models\Course::where('is_active', true)->count() ?? 0 }};
             const departments = 11;
-
             animateNumber('statStudents', students);
             animateNumber('statLecturers', lecturers);
             animateNumber('statCourses', courses);
@@ -1234,7 +1144,6 @@
             const stepTime = 20;
             const steps = duration / stepTime;
             const increment = end / steps;
-
             const interval = setInterval(() => {
                 start += increment;
                 if (start >= end) {
@@ -1245,19 +1154,9 @@
             }, stepTime);
         }
 
-        document.querySelector('.btn-hero-secondary')?.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.querySelector('#about');
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
-        });
-
         document.getElementById('loginBtn')?.addEventListener('click', function(e) {
             e.preventDefault();
-            window.location.href = "{{ route('login') }}";
+            window.location.href = '/login';
         });
     </script>
 </body>

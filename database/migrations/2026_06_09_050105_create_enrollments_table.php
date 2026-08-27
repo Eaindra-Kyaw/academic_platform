@@ -12,13 +12,11 @@ return new class extends Migration
             $table->id();
 
             // Student enrolled in a course
-            $table->foreignId('student_id')
-                  ->constrained('users')
-                  ->onDelete('cascade');
+           $table->unsignedBigInteger('student_id');
+$table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');
 
-            $table->foreignId('course_id')
-                  ->constrained('courses')
-                  ->onDelete('cascade');
+$table->unsignedBigInteger('course_id');
+$table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
 
             // Enrollment details
             $table->date('enrollment_date');

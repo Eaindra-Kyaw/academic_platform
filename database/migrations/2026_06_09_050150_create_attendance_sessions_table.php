@@ -10,8 +10,11 @@ return new class extends Migration
     {
         Schema::create('attendance_sessions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('course_id')->constrained()->onDelete('cascade');
-            $table->foreignId('lecturer_id')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('course_id');
+$table->foreign('course_id')->references('id')->on('courses')->onDelete('cascade');
+
+$table->unsignedBigInteger('lecturer_id');
+$table->foreign('lecturer_id')->references('id')->on('users')->onDelete('cascade');
 
             // Session identifiers
             $table->string('session_token')->unique()->nullable();

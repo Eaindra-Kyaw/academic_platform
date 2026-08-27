@@ -471,3 +471,16 @@ php\040artisan\040config:clear
 php\040artisan\040view:clear
 php\040artisan\040cache:clear
 exit;
+config('database.connections.sqlite.prefix');
+xit;
+config('database.connections.sqlite.prefix');
+xit;
+exit;
+require_once\040base_path('routes/web.php');
+tail\040-50\040storage/logs/laravel.log
+exit
+Schema::hasTable('announcements');
+exit;
+$user\040=\040App\134Models\134User::where('email',\040'admin1@mtu.edu.mm')->first();
+App\134Models\134User::updateOrCreate(\012\040\040\040\040['email'\040=>\040'admin1@mtu.edu.mm'],\012\040\040\040\040[\012\040\040\040\040\040\040\040\040'name'\040=>\040'Admin\040User',\012\040\040\040\040\040\040\040\040'password'\040=>\040bcrypt('admin001'),\012\040\040\040\040\040\040\040\040'role_id'\040=>\0401,\012\040\040\040\040\040\040\040\040'is_active'\040=>\040true,\012\040\040\040\040\040\040\040\040'email_verified_at'\040=>\040now(),\012\040\040\040\040\040\040\040\040'must_change_password'\040=>\040false,\012\040\040\040\040]\012);
+$user\040=\040App\134Models\134User::where('email',\040'admin1@mtu.edu.mm')->first();

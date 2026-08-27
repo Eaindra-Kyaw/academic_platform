@@ -15,8 +15,6 @@
             --primary: #0A2463;
             --primary-dark: #061840;
             --primary-light: #1E3A8A;
-            --secondary: #C5A020;
-            --accent: #D4A017;
             --bg-main: #EEF2F7;
             --white: #FFFFFF;
             --text-gray: #64748b;
@@ -35,6 +33,12 @@
             width: 100%;
             max-width: 500px;
             margin: 0 auto;
+        }
+
+        #qr-reader video {
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 12px;
         }
 
         .session-card {
@@ -193,6 +197,55 @@
             color: #92400e;
         }
 
+        .camera-permission-box {
+            background: #fff;
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .camera-permission-box .camera-icon {
+            font-size: 48px;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        .camera-permission-box h4 {
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .camera-permission-box p {
+            color: var(--text-gray);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .btn-start-camera {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-start-camera:hover {
+            background: var(--primary-dark);
+            transform: scale(1.02);
+        }
+
+        .btn-start-camera:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         @media (max-width: 480px) {
             .tab-btn {
                 font-size: 0.75rem;
@@ -214,7 +267,17 @@
             <button class="tab-btn" id="manualTabBtn">⌨️ Manual Code</button>
         </div>
 
-        <div id="cameraSection">
+        <!-- Camera Permission Box -->
+        <div id="cameraPermissionBox" class="camera-permission-box">
+            <span class="camera-icon">📷</span>
+            <h4>Camera Access Required</h4>
+            <p>Tap the button below to allow camera access for QR scanning.</p>
+            <button class="btn-start-camera" id="startCameraBtn">
+                <i class="bi bi-camera"></i> Start Camera
+            </button>
+        </div>
+
+        <div id="cameraSection" style="display: none;">
             <div id="qr-reader"></div>
             <div id="resultArea" style="display: none;"></div>
         </div>
@@ -254,6 +317,8 @@
 
         <button class="btn-back" onclick="window.location.href='/student/dashboard'">← Back to Dashboard</button>
     </div>
+
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
@@ -323,25 +388,63 @@
         }
 
         function startScanner() {
-            if (html5QrCode) {
-                html5QrCode.stop().then(() => startScannerInternal()).catch(() => startScannerInternal());
-            } else {
-                startScannerInternal();
+            const btn = document.getElementById('startCameraBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Starting...';
+
+            // Hide permission box, show scanner area
+            document.getElementById('cameraPermissionBox').style.display = 'none';
+            document.getElementById('cameraSection').style.display = 'block';
+            document.getElementById('manualSection').style.display = 'none';
+
+            // Check if camera is available
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showResult('Camera not supported on this device. Please use manual code entry.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-camera"></i> Try Again';
+                return;
             }
+
+            // Request camera permission first
+            navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment'
+                    }
+                })
+                .then(function(stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    // Start the actual scanner
+                    startScannerInternal();
+                })
+                .catch(function(err) {
+                    console.error('Camera permission error:', err);
+                    showResult(
+                        'Camera permission denied. Please enable camera in Safari settings: Settings > Safari > Camera > Allow',
+                        'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-camera"></i> Try Again';
+                    // Show permission box again
+                    document.getElementById('cameraPermissionBox').style.display = 'block';
+                    document.getElementById('cameraSection').style.display = 'none';
+                });
         }
 
         function startScannerInternal() {
             const readerElement = document.getElementById('qr-reader');
             if (!readerElement) return;
 
+            // Show scanning status
+            showResult('📷 Scanning for QR code...', 'info');
+
             html5QrCode = new Html5Qrcode("qr-reader");
 
             const config = {
-                fps: 10,
+                fps: 15,
                 qrbox: {
-                    width: 250,
-                    height: 250
-                }
+                    width: 280,
+                    height: 280
+                },
+                aspectRatio: 1.0
             };
 
             Html5Qrcode.getCameras()
@@ -354,7 +457,8 @@
                     let cameraId = devices[0].id;
                     const backCamera = devices.find(device =>
                         device.label.toLowerCase().includes('back') ||
-                        device.label.toLowerCase().includes('rear')
+                        device.label.toLowerCase().includes('rear') ||
+                        device.label.toLowerCase().includes('environment')
                     );
 
                     if (backCamera) {
@@ -369,11 +473,16 @@
                                 .then(() => processQR(decodedText))
                                 .catch(() => processQR(decodedText));
                         },
-                        (errorMessage) => {}
+                        (errorMessage) => {
+                            // Ignore scanning errors (they happen between frames)
+                        }
                     );
                 })
                 .catch(error => {
+                    console.error('Camera error:', error);
                     showResult('Camera Error: ' + error.message + '. Please use manual code entry.', 'error');
+                    // Show manual code tab as fallback
+                    document.getElementById('manualTabBtn').click();
                 });
         }
 
@@ -406,7 +515,6 @@
 
             if (!token || !sessionId) {
                 showResult('Invalid QR code format. Please try again.', 'error');
-                setTimeout(startScanner, 2000);
                 return;
             }
 
@@ -434,13 +542,9 @@
                     } else {
                         showResult('❌ ' + (data.message || 'Unknown error'), 'error');
                     }
-                    setTimeout(startScanner, 3000);
                 })
                 .catch(error => {
-                    showResult(
-                        '⚠️ Cannot connect to server. Please try again.<br>Make sure you are on the same network.',
-                        'error');
-                    setTimeout(startScanner, 5000);
+                    showResult('⚠️ Cannot connect to server. Please try again.', 'error');
                 });
         }
 
@@ -486,16 +590,22 @@
                 });
         }
 
-        // Tab switching
+        // Event Listeners
+        document.getElementById('startCameraBtn').addEventListener('click', startScanner);
+
         document.getElementById('cameraTabBtn').addEventListener('click', function() {
-            document.getElementById('cameraSection').style.display = 'block';
+            document.getElementById('cameraPermissionBox').style.display = 'block';
+            document.getElementById('cameraSection').style.display = 'none';
             document.getElementById('manualSection').style.display = 'none';
             this.classList.add('active');
             document.getElementById('manualTabBtn').classList.remove('active');
-            startScanner();
+            if (html5QrCode) {
+                html5QrCode.stop().catch(() => {});
+            }
         });
 
         document.getElementById('manualTabBtn').addEventListener('click', function() {
+            document.getElementById('cameraPermissionBox').style.display = 'none';
             document.getElementById('cameraSection').style.display = 'none';
             document.getElementById('manualSection').style.display = 'block';
             this.classList.add('active');
@@ -517,7 +627,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             checkActiveSession();
             setInterval(checkActiveSession, 15000);
-            setTimeout(startScanner, 800);
         });
     </script>
 @endsection

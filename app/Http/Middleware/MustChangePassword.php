@@ -12,13 +12,9 @@ class MustChangePassword
     {
         $user = Auth::user();
 
-        if ($user && $user->must_change_password) {
-            // If no token exists, generate one
-            if (!$user->remember_token) {
-                $user->remember_token = \Illuminate\Support\Str::random(60);
-                $user->save();
-            }
-            return redirect()->route('password.setup.form', ['token' => $user->remember_token]);
+        if ($user && $user->must_change_password && $user->role_id != 1) {
+            return redirect()->route('profile.edit')
+                ->with('warning', 'Please change your password before continuing.');
         }
 
         return $next($request);

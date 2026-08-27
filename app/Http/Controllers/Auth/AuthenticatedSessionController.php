@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Auth/AuthenticatedSessionController.php
 
 namespace App\Http\Controllers\Auth;
 
@@ -12,47 +11,32 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.login');
+        $role = $request->input('role');
+        return view('auth.login', compact('role'));
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
         $request->session()->regenerate();
-
         $user = Auth::user();
 
-        // ✅ CHECK: Is email verified?
         if (!$user->hasVerifiedEmail()) {
             Auth::logout();
-            return redirect()->route('login')
-                ->withErrors(['email' => 'Please verify your email address before logging in.'])
-                ->with('verification_required', true);
+            return redirect()->route('login')->withErrors(['email' => 'Please verify your email address.']);
         }
 
-        // ✅ CHECK: Is user active?
         if (!$user->is_active) {
             Auth::logout();
-            return redirect()->route('login')
-                ->withErrors(['email' => 'Your account is pending approval. Please contact admin.']);
+            return redirect()->route('login')->withErrors(['email' => 'Your account is pending approval.']);
         }
 
-        // ✅ CHECK: Must change password? (Skip for Admins)
         if ($user->must_change_password && $user->role_id != 1) {
-            return redirect()->route('profile.edit')
-                ->with('warning', 'Please change your password before continuing.');
+            return redirect()->route('profile.edit')->with('warning', 'Please change your password.');
         }
 
-        // ✅ REDIRECT BASED ON ROLE
         if ($user->role_id == 1) {
             return redirect()->route('admin.dashboard');
         } elseif ($user->role_id == 2) {
@@ -62,17 +46,11 @@ class AuthenticatedSessionController extends Controller
         }
     }
 
-    /**
-     * Destroy an authenticated session.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
-
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
-
-        return redirect('/login');
+        return redirect()->route('login');
     }
 }
