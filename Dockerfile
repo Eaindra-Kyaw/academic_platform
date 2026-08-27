@@ -1,40 +1,4 @@
-
-UW PICO 5.09                              File: Dockerfile
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-^G Get Help    ^O WriteOut    ^R Read File   ^Y Prev Pg     ^K Cut Text    ^C Cur Pos
-^X Exit        ^J Justify     ^W Where is    ^V Next Pg     ^U UnCut Text  ^T To Spell    FROM php:8.2-apache
+FROM php:8.2-apache
 
 WORKDIR /var/www/html
 
@@ -62,5 +26,3 @@ RUN chmod -R 775 storage bootstrap/cache
 EXPOSE 10000
 
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
-
-
