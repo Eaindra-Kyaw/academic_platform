@@ -29,14 +29,10 @@ const server = https.createServer(options, (req, res) => {
         ...req.headers,
         host: `127.0.0.1:${TARGET_PORT}`,
         'x-forwarded-proto': 'https',
-        'x-forwarded-for': req.socket.remoteAddress || req.connection.remoteAddress,
-        'x-forwarded-host': req.headers.host,
-        'x-forwarded-port': '443'
+        'x-forwarded-for': req.socket.remoteAddress || req.connection.remoteAddress
     };
 
-    // Remove problematic headers
     delete headers['accept-encoding'];
-    delete headers['content-length'];
 
     const proxyReq = http.request({
         host: '127.0.0.1',
@@ -45,7 +41,6 @@ const server = https.createServer(options, (req, res) => {
         method: req.method,
         headers: headers
     }, (proxyRes) => {
-        // Forward response headers
         res.writeHead(proxyRes.statusCode, proxyRes.headers);
         proxyRes.pipe(res);
     });
