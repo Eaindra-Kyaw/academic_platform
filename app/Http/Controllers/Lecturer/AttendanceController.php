@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Lecturer;
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceSession;
 use App\Models\AttendanceRecord;
+use App\Models\AttendanceEvaluation;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\User;
 use App\Models\AuditLog;
-use App\Models\AttendanceEvaluation;
 use App\Helpers\AttendanceHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,54 +19,238 @@ use Carbon\Carbon;
 class AttendanceController extends Controller
 {
     /**
-     * Session History (Paginated list of all sessions)
+     * Session History (Paginated list of all sessions with advanced filters)
      */
-    public function sessions()
+    public function sessions(Request $request)
     {
         $lecturer = Auth::user();
+        $lecturerId = $lecturer->id;
 
-        $sessions = AttendanceSession::where('lecturer_id', $lecturer->id)
-            ->with(['course', 'records'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $query = AttendanceSession::where('lecturer_id', $lecturerId)
+            ->with(['course', 'records.student']);
 
-        $activeSessions = AttendanceSession::where('lecturer_id', $lecturer->id)
-            ->where('status', 'active')
-            ->where('qr_mode', 'session')
-            ->with(['course', 'records'])
-            ->get();
-
-        $totalSessions = AttendanceSession::where('lecturer_id', $lecturer->id)->count();
-        $activeSessionsCount = $activeSessions->count();
-
-        $totalStudents = 0;
-        $totalPresent = 0;
-
-        foreach ($sessions as $session) {
-            $present = $session->records->where('status', 'present')->count();
-            $totalPresent += $present;
-            $totalStudents += $session->records->count();
+        // Date Range Filters
+        if ($request->filled('date_from')) {
+            $query->whereDate('session_date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('session_date', '<=', $request->date_to);
         }
 
-        $averageAttendance = $totalStudents > 0
-            ? round(($totalPresent / $totalStudents) * 100)
-            : 0;
+        // Course Filter
+        if ($request->filled('course_id')) {
+            $query->where('course_id', $request->course_id);
+        }
 
-        $courses = Course::where('lecturer_id', $lecturer->id)
+        // Status Filter
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // QR Mode Filter
+        if ($request->filled('qr_mode')) {
+            $query->where('qr_mode', $request->qr_mode);
+        }
+
+        // Search Filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('course', function ($q) use ($search) {
+                $q->where('course_name', 'LIKE', "%{$search}%")
+                    ->orWhere('course_code', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $sessions = $query->orderBy('session_date', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        $courses = Course::where('lecturer_id', $lecturerId)
             ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
             ->where('is_active', true)
             ->get()
             ->unique('id');
 
-        return view('lecturer.attendance.history', compact(
+        $totalSessions = AttendanceSession::where('lecturer_id', $lecturerId)->count();
+        $activeSessions = AttendanceSession::where('lecturer_id', $lecturerId)
+            ->where('status', 'active')
+            ->count();
+
+        return view('lecturer.attendance.sessions', compact(
             'sessions',
-            'activeSessions',
+            'courses',
             'totalSessions',
-            'activeSessionsCount',
-            'averageAttendance',
-            'totalStudents',
-            'courses'
+            'activeSessions'
         ));
+    }
+
+    /**
+     * Get detailed student list for a specific session (AJAX)
+     * ✅ FIXED: Added comprehensive session info with proper fallbacks
+     */
+    public function sessionStudents($sessionId)
+    {
+        try {
+            $session = AttendanceSession::with(['course', 'records.student'])
+                ->where('lecturer_id', Auth::id())
+                ->findOrFail($sessionId);
+
+            $enrolledStudents = Enrollment::where('course_id', $session->course_id)
+                ->where('status', 'approved')
+                ->with('student')
+                ->get();
+
+            $students = [];
+            foreach ($enrolledStudents as $enrollment) {
+                $record = $session->records->firstWhere('student_id', $enrollment->student_id);
+
+                $evaluation = AttendanceEvaluation::where('student_id', $enrollment->student_id)
+                    ->where('course_id', $session->course_id)
+                    ->orderBy('evaluation_date', 'desc')
+                    ->first();
+
+                $students[] = [
+                    'id' => $enrollment->student_id,
+                    'name' => $enrollment->student->name,
+                    'student_id' => $enrollment->student->student_id ?? 'N/A',
+                    'email' => $enrollment->student->email,
+                    'status' => $record ? $record->status : 'absent',
+                    'scanned_at' => $record ? $record->scanned_at : null,
+                    'is_manual' => $record ? $record->is_manual : false,
+                    'attendance_percentage' => $evaluation ? $evaluation->attendance_percentage : 0,
+                    'eligibility' => $evaluation ? $evaluation->eligibility_status : 'not_eligible',
+                    'risk_level' => $evaluation ? $evaluation->risk_level : 'Low',
+                ];
+            }
+
+            // Sort: present first, then late, then absent
+            usort($students, function ($a, $b) {
+                $order = ['present' => 0, 'late' => 1, 'absent' => 2];
+                return ($order[$a['status']] ?? 3) - ($order[$b['status']] ?? 3);
+            });
+
+            // ✅ FIXED: Build comprehensive session info with NO null values
+            $sessionInfo = [
+                'course_name' => $session->course->course_name ?? 'N/A',
+                'course_code' => $session->course->course_code ?? 'N/A',
+                'session_date' => $session->session_date
+                    ? Carbon::parse($session->session_date)->format('M d, Y')
+                    : 'N/A',
+                'session_time' => $session->started_at
+                    ? Carbon::parse($session->started_at)->format('h:i A')
+                    : 'N/A',
+                'manual_code' => $session->manual_code ?? 'N/A',
+                'room' => $session->room ?? 'Not specified',
+                'qr_mode' => $session->qr_mode == 'semester' ? 'Semester QR' : 'Dynamic QR',
+                'status' => $session->status == 'active' ? 'Active' : 'Ended',
+                'conducted_periods' => $session->conducted_periods ?? 1,
+            ];
+
+            $presentCount = collect($students)->where('status', 'present')->count();
+            $lateCount = collect($students)->where('status', 'late')->count();
+            $absentCount = collect($students)->where('status', 'absent')->count();
+            $totalCount = count($students);
+
+            return response()->json([
+                'success' => true,
+                'session' => $sessionInfo,
+                'students' => $students,
+                'stats' => [
+                    'total' => $totalCount,
+                    'present' => $presentCount,
+                    'late' => $lateCount,
+                    'absent' => $absentCount,
+                    'present_percentage' => $totalCount > 0
+                        ? round((($presentCount + $lateCount) / $totalCount) * 100)
+                        : 0,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Export session attendance to CSV
+     */
+    public function exportSessionAttendance($sessionId)
+    {
+        try {
+            $session = AttendanceSession::with(['records.student', 'course'])
+                ->where('lecturer_id', Auth::id())
+                ->findOrFail($sessionId);
+
+            $enrolledStudents = Enrollment::where('course_id', $session->course_id)
+                ->where('status', 'approved')
+                ->with('student')
+                ->get();
+
+            $courseCode = $session->course->course_code ?? 'N/A';
+            $sessionDate = $session->session_date ? Carbon::parse($session->session_date)->format('Y-m-d') : 'unknown';
+            $filename = 'attendance_' . $courseCode . '_' . $sessionDate . '.csv';
+
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"$filename\"",
+            ];
+
+            $callback = function () use ($session, $enrolledStudents) {
+                $file = fopen('php://output', 'w');
+                fwrite($file, "\xEF\xBB\xBF");
+
+                fputcsv($file, [
+                    'Student ID',
+                    'Name',
+                    'Email',
+                    'Status',
+                    'Scanned At',
+                    'Method',
+                    'Attendance %',
+                    'Eligibility',
+                    'Risk Level'
+                ]);
+
+                foreach ($enrolledStudents as $enrollment) {
+                    $record = $session->records->firstWhere('student_id', $enrollment->student_id);
+
+                    $evaluation = AttendanceEvaluation::where('student_id', $enrollment->student_id)
+                        ->where('course_id', $session->course_id)
+                        ->orderBy('evaluation_date', 'desc')
+                        ->first();
+
+                    fputcsv($file, [
+                        $enrollment->student->student_id ?? 'N/A',
+                        $enrollment->student->name ?? 'N/A',
+                        $enrollment->student->email ?? 'N/A',
+                        $record ? ucfirst($record->status) : 'Absent',
+                        $record && $record->scanned_at ? $record->scanned_at->format('Y-m-d H:i:s') : 'N/A',
+                        $record && $record->is_manual ? 'Manual' : ($record ? 'QR Scan' : 'N/A'),
+                        $evaluation ? $evaluation->attendance_percentage . '%' : '0%',
+                        $evaluation ? ucfirst($evaluation->eligibility_status) : 'N/A',
+                        $evaluation ? $evaluation->risk_level : 'N/A',
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to export: ' . $e->getMessage());
+        }
+    }
+
+    // ============================================================
+    // EXISTING METHODS (Unchanged)
+    // ============================================================
+
+    public function history()
+    {
+        return $this->sessions(request());
     }
 
     public function takeAttendance(Request $request)
@@ -124,7 +308,7 @@ class AttendanceController extends Controller
         }
 
         $courseIds = $courses->pluck('id');
-        $students = User::whereHas('enrollments', function($q) use ($courseIds) {
+        $students = User::whereHas('enrollments', function ($q) use ($courseIds) {
             $q->whereIn('course_id', $courseIds)->where('status', 'approved');
         })->get();
 
@@ -151,44 +335,6 @@ class AttendanceController extends Controller
         ));
     }
 
-    public function allRecords(Request $request)
-    {
-        $lecturer = Auth::user();
-
-        $courses = Course::where('lecturer_id', $lecturer->id)
-            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
-            ->where('is_active', true)
-            ->get()
-            ->unique('id');
-
-        $courseIds = $courses->pluck('id')->toArray();
-
-        $query = AttendanceRecord::whereHas('session', function($q) use ($courseIds) {
-            $q->whereIn('course_id', $courseIds);
-        })->with(['session.course', 'student']);
-
-        if ($request->filled('course_id')) {
-            $query->whereHas('session', function($q) use ($request) {
-                $q->where('course_id', $request->course_id);
-            });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        $records = $query->orderBy('created_at', 'desc')->paginate(20);
-
-        return view('lecturer.attendance.all-records', compact('records', 'courses'));
-    }
-
     public function createSession(Request $request)
     {
         $request->validate([
@@ -205,14 +351,12 @@ class AttendanceController extends Controller
         $sessionCode = AttendanceSession::generateSessionCode();
 
         if ($request->qr_mode == 'semester') {
-            // SEMESTER QR: No expiry, no periods
             $duration = 999999;
             $expiresAt = Carbon::now()->addYears(10);
             $qrExpiresAt = Carbon::now()->addYears(10);
             $periodCount = 0;
             $conductedPeriods = 1;
 
-            // End existing semester QR for this course
             $existingSemesterQr = AttendanceSession::where('course_id', $course->id)
                 ->where('qr_mode', 'semester')
                 ->where('status', 'active')
@@ -224,19 +368,16 @@ class AttendanceController extends Controller
                 $existingSemesterQr->save();
             }
 
-            // Update course with semester QR token
             $course->semester_qr_token = $sessionToken;
             $course->save();
 
         } else {
-            // DYNAMIC QR: With periods and expiry
             $duration = (int) $request->duration;
             $expiresAt = Carbon::now()->addMinutes($duration);
             $qrExpiresAt = Carbon::now()->addMinutes($duration);
             $periodCount = (int) $request->period_count;
             $conductedPeriods = $periodCount;
 
-            // End existing dynamic session for this course
             $existingSession = AttendanceSession::where('course_id', $course->id)
                 ->where('qr_mode', 'session')
                 ->where('status', 'active')
@@ -497,28 +638,23 @@ class AttendanceController extends Controller
     {
         $course = Course::where('lecturer_id', Auth::id())->findOrFail($courseId);
 
-        // Check if there's an active semester QR
         $activeSemesterQr = AttendanceSession::where('course_id', $course->id)
             ->where('qr_mode', 'semester')
             ->where('status', 'active')
             ->first();
 
         if ($activeSemesterQr) {
-            // End the active one first
             $activeSemesterQr->status = 'ended';
             $activeSemesterQr->ended_at = Carbon::now();
             $activeSemesterQr->save();
         }
 
-        // Generate new token and code
         $newToken = AttendanceSession::generateSessionToken();
         $newCode = AttendanceSession::generateSessionCode();
 
-        // Update course with new token
         $course->semester_qr_token = $newToken;
         $course->save();
 
-        // Create new semester session
         $session = AttendanceSession::create([
             'course_id' => $course->id,
             'lecturer_id' => Auth::id(),
@@ -622,9 +758,42 @@ class AttendanceController extends Controller
         return redirect()->back()->with('success', 'Manual attendance recorded successfully.');
     }
 
-    public function history()
+    public function allRecords(Request $request)
     {
-        return $this->sessions();
+        $lecturer = Auth::user();
+
+        $courses = Course::where('lecturer_id', $lecturer->id)
+            ->orWhere('lecturer_name', 'like', '%' . $lecturer->name . '%')
+            ->where('is_active', true)
+            ->get()
+            ->unique('id');
+
+        $courseIds = $courses->pluck('id')->toArray();
+
+        $query = AttendanceRecord::whereHas('session', function ($q) use ($courseIds) {
+            $q->whereIn('course_id', $courseIds);
+        })->with(['session.course', 'student']);
+
+        if ($request->filled('course_id')) {
+            $query->whereHas('session', function ($q) use ($request) {
+                $q->where('course_id', $request->course_id);
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $records = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        return view('lecturer.attendance.all-records', compact('records', 'courses'));
     }
 
     public function semesterQrManagement()
@@ -683,9 +852,6 @@ class AttendanceController extends Controller
             ->with('success', 'Semester QR deactivated. Students can no longer scan it. All ' . $session->records->count() . ' attendance records are preserved.');
     }
 
-    /**
-     * View a specific semester QR code page
-     */
     public function viewSemesterQr($id)
     {
         $lecturer = Auth::user();
@@ -696,24 +862,17 @@ class AttendanceController extends Controller
             ->with(['course', 'records'])
             ->firstOrFail();
 
-        // Get the QR URL for display
         $qrText = route('student.scan.semester') . '?token=' . $qr->session_token . '&course=' . $qr->course_id;
         $qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($qrText);
 
-        // We must generate a Base64 image for the Blade file
-        // and provide a real internal download route.
         $imageContent = file_get_contents('https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' . urlencode($qrText));
         $qrImageBase64 = 'data:image/png;base64,' . base64_encode($imageContent);
 
-        // Point to the new download route
         $downloadUrl = route('lecturer.semester-qr.download', $id);
 
         return view('lecturer.attendance.view-semester-qr', compact('qr', 'qrImageUrl', 'downloadUrl', 'qrText', 'qrImageBase64'));
     }
 
-    /**
-     * Download the Semester QR Code as a PNG
-     */
     public function downloadSemesterQr($id)
     {
         $lecturer = Auth::user();
@@ -726,13 +885,9 @@ class AttendanceController extends Controller
         $qrText = route('student.scan.semester') . '?token=' . $qr->session_token . '&course=' . $qr->course_id;
         $qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=' . urlencode($qrText);
 
-        // Fetch the image content directly from the API
         $imageContent = file_get_contents($qrImageUrl);
-
-        // Generate a safe filename
         $filename = 'semester-qr-' . ($qr->course->course_code ?? 'qr') . '.png';
 
-        // Return the image directly as a downloadable file
         return response($imageContent)
             ->header('Content-Type', 'image/png')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -844,7 +999,7 @@ class AttendanceController extends Controller
         $totalPeriods = $totalStudents * $periods;
         $percentage = $totalPeriods > 0 ? round(($attendedPeriods / $totalPeriods) * 100, 1) : 0;
 
-        $records = $session->records->map(function($record) {
+        $records = $session->records->map(function ($record) {
             return [
                 'student_name' => $record->student->name ?? 'Unknown',
                 'student_email' => $record->student->email ?? 'N/A',

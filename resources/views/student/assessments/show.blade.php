@@ -144,18 +144,6 @@
             box-shadow: 0 0 0 3px rgba(10, 36, 99, 0.08);
         }
 
-        .auto-filled-lecturer {
-            padding: 0.6rem 0.75rem;
-            background: var(--bg-main);
-            border-radius: 0.5rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            border: 1px solid rgba(10, 36, 99, 0.06);
-        }
-
-        /* ============================================================
-                                               QUESTIONS SECTION - SINGLE COLUMN LAYOUT
-                                               ============================================================ */
         .questions-section {
             background: var(--white);
             border-radius: var(--radius);
@@ -203,7 +191,6 @@
             margin-left: 0.2rem;
         }
 
-        /* Rating options - horizontal */
         .rating-group {
             display: flex;
             gap: 1.5rem;
@@ -344,9 +331,6 @@
             border: 1px solid #fca5a5;
         }
 
-        /* ============================================================
-                       🟢 CUSTOM CONFIRM MODAL
-                       ============================================================ */
         .custom-confirm-overlay {
             display: none;
             position: fixed;
@@ -422,16 +406,6 @@
         .custom-confirm-icon.warning {
             background: var(--warning-light);
             color: var(--warning);
-        }
-
-        .custom-confirm-icon.danger {
-            background: #fee2e2;
-            color: var(--danger);
-        }
-
-        .custom-confirm-icon.success {
-            background: #d1fae5;
-            color: var(--success);
         }
 
         .custom-confirm-title-group {
@@ -511,17 +485,6 @@
         .custom-confirm-btn.primary:hover {
             background: #061840;
             box-shadow: 0 4px 12px rgba(10, 36, 99, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .custom-confirm-btn.danger {
-            background: var(--danger);
-            color: var(--white);
-        }
-
-        .custom-confirm-btn.danger:hover {
-            background: #b91c1c;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
             transform: translateY(-1px);
         }
 
@@ -654,7 +617,6 @@
     </a>
 
     <div class="form-container">
-        {{-- Header --}}
         <div class="form-header">
             <h2>Mandalay Technological University</h2>
             <h3>Student Evaluation Sheet</h3>
@@ -673,14 +635,14 @@
             @csrf
             <input type="hidden" name="assessment_id" value="{{ $assessment->id }}">
 
-            {{-- Selection Section: Teacher & Subject --}}
             <div class="selection-section">
                 <div class="form-group">
                     <label>Teaching Subject (Course) <span class="required-star">*</span></label>
                     <select name="course_id" id="courseSelect" required>
                         <option value="">-- Select Subject --</option>
                         @foreach ($courses as $course)
-                            <option value="{{ $course->id }}" data-lecturer-id="{{ $course->lecturer_id ?? '' }}">
+                            <option value="{{ $course->id }}" data-lecturer-id="{{ $course->lecturer_id ?? '' }}"
+                                data-lecturer-name="{{ $course->lecturer_name ?? '' }}">
                                 {{ $course->course_code }} - {{ $course->course_name }}
                             </option>
                         @endforeach
@@ -689,19 +651,17 @@
 
                 <div class="form-group">
                     <label>Teacher Name <span class="required-star">*</span></label>
+
+                    {{-- Main dropdown - always visible --}}
                     <select name="lecturer_id" id="lecturerSelect" required>
                         <option value="">-- Select Teacher --</option>
                         @foreach (\App\Models\User::where('role_id', 2)->orderBy('name')->get() as $lecturer)
                             <option value="{{ $lecturer->id }}">{{ $lecturer->name }}</option>
                         @endforeach
                     </select>
-                    <div id="autoLecturerDisplay" style="display:none;" class="auto-filled-lecturer">
-                        <span id="autoLecturerName"></span>
-                    </div>
                 </div>
             </div>
 
-            {{-- Questions Section --}}
             <div class="questions-section">
                 <div class="section-title">Course Evaluation Questions</div>
 
@@ -729,7 +689,6 @@
                 @endforeach
             </div>
 
-            {{-- Comments Section --}}
             @php
                 $textQuestion = $assessment->questions->where('type', 'text')->first();
             @endphp
@@ -741,7 +700,6 @@
                 </div>
             @endif
 
-            {{-- Form Actions --}}
             <div class="form-actions">
                 <a href="{{ route('student.assessments.index') }}" class="btn-cancel">
                     <i class="bi bi-x-circle"></i> Cancel
@@ -753,7 +711,6 @@
         </form>
     </div>
 
-    <!-- 🟢 CUSTOM VALIDATION MODAL HTML -->
     <div class="custom-confirm-overlay" id="customValidationModal">
         <div class="custom-confirm-box">
             <div class="custom-confirm-header">
@@ -786,69 +743,64 @@
         document.addEventListener('DOMContentLoaded', function() {
             const courseSelect = document.getElementById('courseSelect');
             const lecturerSelect = document.getElementById('lecturerSelect');
-            const autoDisplay = document.getElementById('autoLecturerDisplay');
-            const autoName = document.getElementById('autoLecturerName');
 
-            // Store all lecturer options for filtering
-            const allOptions = Array.from(lecturerSelect.options);
+            // Store all original lecturer options (for fallback)
+            let allLecturerOptions = [];
+            for (let opt of lecturerSelect.options) {
+                if (opt.value) {
+                    allLecturerOptions.push({
+                        value: opt.value,
+                        text: opt.textContent
+                    });
+                }
+            }
 
             // ============================================================
-            // When course changes, auto-select lecturer
+            // ✅ Auto-select lecturer when course changes
             // ============================================================
             courseSelect.addEventListener('change', function() {
-                const selectedCourse = this.options[this.selectedIndex];
-                const lecturerId = selectedCourse.getAttribute('data-lecturer-id');
+                const selectedOption = this.options[this.selectedIndex];
+                const lecturerId = selectedOption.getAttribute('data-lecturer-id');
+                const lecturerName = selectedOption.getAttribute('data-lecturer-name');
 
-                lecturerSelect.innerHTML = '';
+                // Reset dropdown to show all lecturers first
+                lecturerSelect.innerHTML = '<option value="">-- Select Teacher --</option>';
+                allLecturerOptions.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt.value;
+                    option.textContent = opt.text;
+                    lecturerSelect.appendChild(option);
+                });
 
-                // Add default option
-                const defaultOpt = document.createElement('option');
-                defaultOpt.value = '';
-                defaultOpt.textContent = '-- Select Teacher --';
-                lecturerSelect.appendChild(defaultOpt);
-
-                if (!lecturerId) {
-                    // No lecturer assigned - show all
-                    allOptions.forEach(opt => {
-                        if (opt.value !== '') {
-                            const clone = opt.cloneNode(true);
-                            lecturerSelect.appendChild(clone);
-                        }
-                    });
-                    lecturerSelect.style.display = 'block';
-                    autoDisplay.style.display = 'none';
+                if (!this.value) {
+                    // No course selected
                     return;
                 }
 
-                // Find the matching lecturer
-                const matchedOption = allOptions.find(opt => opt.value == lecturerId);
-
-                if (matchedOption) {
-                    // Auto-select
-                    autoName.textContent = matchedOption.textContent;
-                    autoDisplay.style.display = 'block';
-                    lecturerSelect.style.display = 'none';
-                    // Add hidden option for form submission
-                    const hiddenOpt = document.createElement('option');
-                    hiddenOpt.value = matchedOption.value;
-                    hiddenOpt.textContent = matchedOption.textContent;
-                    hiddenOpt.selected = true;
-                    lecturerSelect.appendChild(hiddenOpt);
-                } else {
-                    // Show all lecturers
-                    allOptions.forEach(opt => {
-                        if (opt.value !== '') {
-                            const clone = opt.cloneNode(true);
-                            lecturerSelect.appendChild(clone);
+                // ✅ If lecturer ID exists in the course data, auto-select it
+                if (lecturerId && lecturerId !== '') {
+                    for (let opt of lecturerSelect.options) {
+                        if (opt.value == lecturerId) {
+                            opt.selected = true;
+                            break;
                         }
-                    });
-                    lecturerSelect.style.display = 'block';
-                    autoDisplay.style.display = 'none';
+                    }
+                    return;
+                }
+
+                // If no lecturer in course data, try to find by name
+                if (lecturerName && lecturerName !== '') {
+                    for (let opt of lecturerSelect.options) {
+                        if (opt.textContent.toLowerCase().includes(lecturerName.toLowerCase())) {
+                            opt.selected = true;
+                            return;
+                        }
+                    }
                 }
             });
 
             // ============================================================
-            // 🟢 COMPLETELY FIXED VALIDATION
+            // Validation
             // ============================================================
             document.getElementById('assessmentForm').addEventListener('submit', function(e) {
                 const submitBtn = document.getElementById('submitBtn');
@@ -867,22 +819,17 @@
                     return;
                 }
 
-                // 3. 🔥 NEW LOGIC: Directly loop through all rating inputs
-                //    Instead of checking HTML DIVs, we check every single radio button
+                // 3. Check all rating questions
                 const allRadioInputs = document.querySelectorAll('.question-item input[type="radio"]');
-                const totalQuestions = allRadioInputs.length / 5; // 5 options per question
+                const totalQuestions = allRadioInputs.length / 5;
                 let answeredCount = 0;
 
-                // Loop through each question's radio group
                 for (let i = 0; i < totalQuestions; i++) {
-                    const name = allRadioInputs[i * 5].name; // Get the unique name
+                    const name = allRadioInputs[i * 5].name;
                     const checked = document.querySelector(`input[name="${name}"]:checked`);
-                    if (checked) {
-                        answeredCount++;
-                    }
+                    if (checked) answeredCount++;
                 }
 
-                // 4. Validate
                 if (answeredCount < totalQuestions) {
                     e.preventDefault();
                     const missing = totalQuestions - answeredCount;
@@ -895,14 +842,14 @@
                     return;
                 }
 
-                // 5. If all passed, show submitting state
+                // If all passed, show submitting state
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="bi bi-hourglass"></i> Submitting...';
             });
         });
 
         // ============================================================
-        // CUSTOM MODAL FUNCTIONS
+        // Modal Functions
         // ============================================================
         function showValidationModal(title, message) {
             const modal = document.getElementById('customValidationModal');
@@ -914,5 +861,15 @@
         function closeValidationModal() {
             document.getElementById('customValidationModal').classList.remove('show');
         }
+
+        // Close modal on overlay click
+        document.getElementById('customValidationModal').addEventListener('click', function(e) {
+            if (e.target === this) closeValidationModal();
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeValidationModal();
+        });
     </script>
 @endsection

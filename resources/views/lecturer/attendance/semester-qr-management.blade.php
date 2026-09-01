@@ -2,7 +2,7 @@
 
 @section('title', 'Semester QR Management')
 @section('role', 'Lecturer')
-@section('page-title', '📚 Semester QR Management')
+@section('page-title', 'Semester QR Management')
 @section('welcome-text', 'Create and manage static QR codes for the entire semester')
 
 @section('sidebar')
@@ -804,8 +804,8 @@
         }
 
         /* ============================================================
-               CUSTOM CONFIRM MODAL
-               ============================================================ */
+                   CUSTOM CONFIRM MODAL
+                   ============================================================ */
         .custom-confirm-overlay {
             display: none;
             position: fixed;

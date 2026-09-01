@@ -287,6 +287,13 @@
             font-weight: 700;
             color: var(--primary);
             margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .page-title-section h1 i {
+            color: var(--primary);
         }
 
         .page-title-section h1 .gold {

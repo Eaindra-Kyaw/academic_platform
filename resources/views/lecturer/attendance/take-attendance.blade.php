@@ -44,8 +44,8 @@
         }
 
         /* ============================================================
-                                   PROFESSIONAL NOTIFICATIONS
-                                   ============================================================ */
+                                       PROFESSIONAL NOTIFICATIONS
+                                       ============================================================ */
         .notification-success,
         .notification-info {
             display: flex;
@@ -170,8 +170,8 @@
         }
 
         /* ============================================================
-                                   QR CONTAINER
-                                   ============================================================ */
+                                       QR CONTAINER
+                                       ============================================================ */
         .qr-container {
             background: var(--primary-gradient);
             color: var(--white);
@@ -731,8 +731,8 @@
         }
 
         /* ============================================================
-                                   CUSTOM CONFIRM MODAL
-                                   ============================================================ */
+                                       CUSTOM CONFIRM MODAL
+                                       ============================================================ */
         .custom-confirm-overlay {
             display: none;
             position: fixed;
@@ -1076,8 +1076,8 @@
     </style>
 
     <!-- ============================================================
-                            NOTIFICATIONS
-                            ============================================================ -->
+                                NOTIFICATIONS
+                                ============================================================ -->
     @if (session('success'))
         <div class="notification-success" id="notificationSuccess">
             <div class="notification-icon">
@@ -1111,8 +1111,8 @@
     <div class="row">
         <div class="col-md-6">
             <!-- ============================================================
-                                    ACTIVE SESSION DISPLAY (Always shown if exists)
-                                    ============================================================ -->
+                                        ACTIVE SESSION DISPLAY (Always shown if exists)
+                                        ============================================================ -->
             @if ($activeSession)
                 <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
                     <a href="{{ route('lecturer.attendance.take') }}?back=1" class="btn-qr secondary">
@@ -1270,8 +1270,8 @@
             @endif
 
             <!-- ============================================================
-                                    CREATE DYNAMIC QR FORM - Always visible if no active session OR if "Back" was clicked
-                                    ============================================================ -->
+                                        CREATE DYNAMIC QR FORM - Always visible if no active session OR if "Back" was clicked
+                                        ============================================================ -->
             @if (!$activeSession || $showCreateForm)
                 <div class="mode-selector">
                     <h5><i class="bi bi-sliders2"></i> Create Dynamic QR Session</h5>
@@ -1322,9 +1322,9 @@
             @endif
 
             <!-- ============================================================
-                                    SEMESTER QR MANAGEMENT LINK - Always visible
-                                    ============================================================ -->
-            {{-- <div class="semester-link-card">
+                                        SEMESTER QR MANAGEMENT LINK - ALWAYS VISIBLE (UNCOMMENTED)
+                                        ============================================================ -->
+            <div class="semester-link-card">
                 <div class="left">
                     <h5><i class="bi bi-infinity"></i> Semester QR (Static)</h5>
                     <p>Create QR codes that last for the entire semester. Students can scan anytime - no expiry.</p>
@@ -1332,7 +1332,7 @@
                 <a href="{{ route('lecturer.semester-qr.management') }}" class="btn-qr info">
                     <i class="bi bi-gear"></i> Manage Semester QRs
                 </a>
-            </div> --}}
+            </div>
 
             <!-- Active Semester QR Notice -->
             @if (isset($existingStaticQrs) && $existingStaticQrs->count() > 0)
@@ -1366,8 +1366,8 @@
         </div>
 
         <!-- ============================================================
-                                RIGHT COLUMN - MANUAL ATTENDANCE
-                                ============================================================ -->
+                                    RIGHT COLUMN - MANUAL ATTENDANCE
+                                    ============================================================ -->
         <div class="col-md-6">
             <div class="mode-selector">
                 <h5><i class="bi bi-pencil-square"></i> Manual Attendance Entry</h5>

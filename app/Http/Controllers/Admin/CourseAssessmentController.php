@@ -11,6 +11,7 @@ use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Message;
 use App\Models\User;
+use App\Models\TimetableEntry;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,19 +31,18 @@ class CourseAssessmentController extends Controller
             'archived' => CourseAssessment::where('status', 'archived')->count(),
         ];
 
-        // 🟢 Fetch ALL assessments without filters for the Year/Dept cards
         $assessments = CourseAssessment::with(['semester', 'course', 'lecturer', 'questions', 'submissions'])
-    ->when(request('year'), function($query) {
-        return $query->where('year', request('year'));
-    })
-    ->when(request('semester'), function($query) {
-        return $query->where('semester', request('semester'));
-    })
-    ->when(request('status'), function($query) {
-        return $query->where('status', request('status'));
-    })
-    ->orderBy('created_at', 'desc')
-    ->get()
+            ->when(request('year'), function($query) {
+                return $query->where('year', request('year'));
+            })
+            ->when(request('semester'), function($query) {
+                return $query->where('semester', request('semester'));
+            })
+            ->when(request('status'), function($query) {
+                return $query->where('status', request('status'));
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
             ->map(function($assessment) {
                 $submitted = $assessment->submissions->count();
                 $uniqueStudents = $assessment->submissions->groupBy('student_id')->count();
@@ -205,7 +205,7 @@ class CourseAssessmentController extends Controller
         }
 
         // Also check timetable entries
-        $timetableLecturers = \App\Models\TimetableEntry::where('course_id', $courseId)
+        $timetableLecturers = TimetableEntry::where('course_id', $courseId)
             ->where('is_active', true)
             ->with('lecturer')
             ->get()
@@ -260,6 +260,7 @@ class CourseAssessmentController extends Controller
 
     /**
      * STORE: Create assessments (Supports Single OR Batch creation)
+     * ✅ FIXED: Clean assessment name without "(No Lecturer)"
      */
     public function store(Request $request)
     {
@@ -297,10 +298,32 @@ class CourseAssessmentController extends Controller
             }
 
             foreach ($coursesToProcess as $course) {
+                // ✅ Get lecturer from course, timetable, or form input
+                $lecturerId = null;
 
-                // UPDATE TITLE: Code + Name + Lecturer
-                $lecturerName = $course->lecturer ? $course->lecturer->name : 'No Lecturer';
-                $name = $course->course_code . ' - ' . $course->course_name . ' (' . $lecturerName . ')';
+                // 1. Try course lecturer
+                if ($course->lecturer_id) {
+                    $lecturerId = $course->lecturer_id;
+                }
+
+                // 2. If no lecturer in course, try timetable
+                if (!$lecturerId) {
+                    $timetableEntry = TimetableEntry::where('course_id', $course->id)
+                        ->where('is_active', true)
+                        ->first();
+
+                    if ($timetableEntry && $timetableEntry->lecturer_id) {
+                        $lecturerId = $timetableEntry->lecturer_id;
+                    }
+                }
+
+                // 3. If still no lecturer, use form input (if provided)
+                if (!$lecturerId && $request->filled('lecturer_id')) {
+                    $lecturerId = $request->lecturer_id;
+                }
+
+                // ✅ FIX: Clean assessment name - NO "(No Lecturer)" appended
+                $name = $course->course_code . ' - ' . $course->course_name;
 
                 $assessment = CourseAssessment::create([
                     'name' => $name,
@@ -309,7 +332,7 @@ class CourseAssessmentController extends Controller
                     'year' => $request->year,
                     'semester' => $request->semester,
                     'course_id' => $course->id,
-                    'lecturer_id' => $course->lecturer_id,
+                    'lecturer_id' => $lecturerId,
                     'status' => $request->status,
                     'opens_at' => $request->opens_at,
                     'closes_at' => $request->closes_at,
@@ -350,6 +373,7 @@ class CourseAssessmentController extends Controller
 
     /**
      * Show assessment results (Admin only)
+     * ✅ FIXED: Passes $lecturerName to view
      */
     public function results($id)
     {
@@ -360,6 +384,14 @@ class CourseAssessmentController extends Controller
             'course',
             'lecturer'
         ])->findOrFail($id);
+
+        // ✅ Get lecturer name only if exists
+        $lecturerName = null;
+        if ($assessment->lecturer) {
+            $lecturerName = $assessment->lecturer->name;
+        } elseif ($assessment->course && $assessment->course->lecturer_name) {
+            $lecturerName = $assessment->course->lecturer_name;
+        }
 
         $stats = [
             'total_submissions' => $assessment->submissions->count(),
@@ -428,12 +460,13 @@ class CourseAssessmentController extends Controller
             'questionResults',
             'courseBreakdown',
             'lecturerBreakdown',
-            'stats'
+            'stats',
+            'lecturerName'  // ✅ Pass to view
         ));
     }
 
     /**
-     * 🟢 EXPORT AS PRINTABLE HTML VIEW (No Composer or PDF library needed)
+     * EXPORT AS PRINTABLE HTML VIEW
      */
     public function export($id)
     {
@@ -445,7 +478,6 @@ class CourseAssessmentController extends Controller
             'lecturer'
         ])->findOrFail($id);
 
-        // Calculate Overall Stats
         $totalSubmissions = $assessment->submissions->count();
         $uniqueStudents = $assessment->submissions->unique('student_id')->count();
         $overallAverage = $assessment->average_rating;
@@ -479,7 +511,6 @@ class CourseAssessmentController extends Controller
             ];
         }
 
-        // Prepare Data for the Print View
         $data = [
             'assessment' => $assessment,
             'totalSubmissions' => $totalSubmissions,
@@ -489,7 +520,6 @@ class CourseAssessmentController extends Controller
             'questionData' => $questionData,
         ];
 
-        // Return the special print view instead of a PDF stream
         return view('admin.assessments.print-export', $data);
     }
 
@@ -555,12 +585,10 @@ class CourseAssessmentController extends Controller
         ];
         $yearString = $yearMap[$student->current_year] ?? '';
 
-        $currentSemester = Semester::where('is_current', true)->first();
-        $semesterString = $currentSemester ? $currentSemester->semester_name : 'Second Semester';
-
+        // ✅ Get ALL active assessments for this student's year
         $activeAssessments = CourseAssessment::active()
             ->where('year', $yearString)
-            ->where('semester', $semesterString)
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $submittedIds = AssessmentSubmission::where('student_id', $student->id)
@@ -662,6 +690,98 @@ class CourseAssessmentController extends Controller
 
         return redirect()->route('student.assessments.index')
             ->with('success', 'Thank you! Your course assessment has been submitted successfully.');
+    }
+
+    /**
+     * ✅ Get lecturers for a specific course (for student assessment)
+     */
+    public function getLecturersByCourse(Request $request)
+    {
+        $courseId = $request->query('course_id');
+
+        if (!$courseId) {
+            return response()->json([]);
+        }
+
+        $course = Course::with('lecturer')->find($courseId);
+
+        $lecturers = [];
+
+        // 1. Get lecturer from the course itself
+        if ($course && $course->lecturer) {
+            $lecturers[] = [
+                'id' => $course->lecturer->id,
+                'name' => $course->lecturer->name,
+            ];
+        }
+
+        // 2. Also check timetable entries for additional lecturers
+        $timetableLecturers = TimetableEntry::where('course_id', $courseId)
+            ->where('is_active', true)
+            ->with('lecturer')
+            ->get()
+            ->pluck('lecturer')
+            ->filter()
+            ->unique('id')
+            ->map(function($lecturer) {
+                return [
+                    'id' => $lecturer->id,
+                    'name' => $lecturer->name,
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        foreach ($timetableLecturers as $tl) {
+            $exists = false;
+            foreach ($lecturers as $l) {
+                if ($l['id'] == $tl['id']) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if (!$exists) {
+                $lecturers[] = $tl;
+            }
+        }
+
+        // 3. If still no lecturer, try to find by lecturer_name field
+        if (empty($lecturers) && $course && $course->lecturer_name) {
+            $lecturer = User::where('role_id', 2)
+                ->where('name', 'LIKE', '%' . $course->lecturer_name . '%')
+                ->first();
+
+            if ($lecturer) {
+                $lecturers[] = [
+                    'id' => $lecturer->id,
+                    'name' => $lecturer->name,
+                ];
+            } else {
+                $lecturers[] = [
+                    'id' => null,
+                    'name' => $course->lecturer_name . ' (Not in system)',
+                ];
+            }
+        }
+
+        // 4. If still no lecturers, return all lecturers in the department as fallback
+        if (empty($lecturers) && $course && $course->department_id) {
+            $departmentLecturers = User::where('role_id', 2)
+                ->where('department_id', $course->department_id)
+                ->orderBy('name')
+                ->get()
+                ->map(function($lecturer) {
+                    return [
+                        'id' => $lecturer->id,
+                        'name' => $lecturer->name,
+                    ];
+                })
+                ->toArray();
+
+            $lecturers = array_merge($lecturers, $departmentLecturers);
+        }
+
+        return response()->json($lecturers);
     }
 
     // ============================================================

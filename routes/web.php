@@ -270,6 +270,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/lecturers/{lecturer}', [AdminLecturerController::class, 'update'])->name('lecturers.update');
     Route::delete('/lecturers/{lecturer}', [AdminLecturerController::class, 'destroy'])->name('lecturers.destroy');
 
+    // ============================================================
+    // ✅ ASSESSMENT ROUTES - COMPLETE
+    // ============================================================
     Route::prefix('assessments')->name('assessments.')->group(function () {
         Route::get('/dashboard', [CourseAssessmentController::class, 'dashboard'])->name('dashboard');
         Route::get('/', [CourseAssessmentController::class, 'index'])->name('index');
@@ -277,9 +280,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/', [CourseAssessmentController::class, 'store'])->name('store');
         Route::get('/{id}/results', [CourseAssessmentController::class, 'results'])->name('results');
         Route::get('/{id}/export', [CourseAssessmentController::class, 'export'])->name('export');
+
+        // ✅ AJAX Routes
         Route::get('/courses', [CourseAssessmentController::class, 'fetchCourses'])->name('fetchCourses');
         Route::get('/lecturers', [CourseAssessmentController::class, 'fetchLecturers'])->name('fetchLecturers');
         Route::get('/courses-by-year', [CourseAssessmentController::class, 'fetchCoursesByYearAndSemester'])->name('fetchCoursesByYear');
+
+        // ✅ Student assessment lecturer route
+        Route::get('/get-lecturers', [CourseAssessmentController::class, 'getLecturersByCourse'])->name('get-lecturers');
+
         Route::put('/{id}/toggle', [CourseAssessmentController::class, 'toggleStatus'])->name('toggle');
         Route::delete('/{id}', [CourseAssessmentController::class, 'destroy'])->name('destroy');
     });
@@ -325,6 +334,8 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     Route::prefix('semester-qr')->name('semester-qr.')->group(function () {
         Route::get('/management', [AttendanceController::class, 'semesterQrManagement'])->name('management');
         Route::post('/{id}/end', [AttendanceController::class, 'endSemesterQr'])->name('end');
+        Route::get('/view/{id}', [AttendanceController::class, 'viewSemesterQr'])->name('view');
+        Route::get('/{id}/download', [AttendanceController::class, 'downloadSemesterQr'])->name('download');
     });
 
     Route::get('/students', [LecturerController::class, 'monitoring'])->name('students');
@@ -333,28 +344,41 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
 
     Route::get('/enrollments', [App\Http\Controllers\Lecturer\EnrollmentController::class, 'index'])->name('enrollments.index');
 
-    Route::get('/attendance/take', [AttendanceController::class, 'takeAttendance'])->name('attendance.take');
-    Route::get('/attendance/sessions', [AttendanceController::class, 'sessions'])->name('attendance.sessions');
-    Route::get('/attendance/history', [AttendanceController::class, 'history'])->name('attendance.history');
-    Route::get('/attendance/records', [AttendanceController::class, 'allRecords'])->name('attendance.records');
+    // ============================================================
+    // ✅ ATTENDANCE ROUTES - ENHANCED
+    // ============================================================
+    Route::prefix('attendance')->name('attendance.')->group(function () {
 
-    Route::post('/attendance/sessions', [AttendanceController::class, 'createSession'])->name('attendance.sessions.create');
-    Route::post('/attendance/sessions/{id}/end', [AttendanceController::class, 'endSession'])->name('attendance.sessions.end');
-    Route::get('/attendance/sessions/{id}/refresh', [AttendanceController::class, 'refreshSession'])->name('attendance.sessions.refresh');
-    Route::post('/attendance/manual', [AttendanceController::class, 'manualAttendance'])->name('attendance.manual');
+        // --- Main Pages ---
+        Route::get('/take', [AttendanceController::class, 'takeAttendance'])->name('take');
+        Route::get('/history', [AttendanceController::class, 'history'])->name('history');
+        Route::get('/records', [AttendanceController::class, 'allRecords'])->name('records');
 
-    Route::post('/generate-qr', [AttendanceController::class, 'generateQr'])->name('generateQr');
-    Route::post('/end-session/{id}', [AttendanceController::class, 'endSessionAjax'])->name('endSession');
-    Route::post('/refresh-qr/{id}', [AttendanceController::class, 'refreshQrAjax'])->name('refreshQr');
-    Route::get('/session-stats/{id}', [AttendanceController::class, 'getSessionStats'])->name('sessionStats');
-    Route::post('/attendance/generate-qr', [AttendanceController::class, 'generateQr'])->name('attendance.generate.qr');
-    Route::get('/semester-qr/view/{id}', [AttendanceController::class, 'viewSemesterQr'])->name('semester-qr.view');
+        // --- ✅ ENHANCED: Session History with filters ---
+        Route::get('/sessions', [AttendanceController::class, 'sessions'])->name('sessions');
 
-    Route::get('/semester-qr/management', [AttendanceController::class, 'semesterQrManagement'])->name('semester-qr.management');
-    Route::get('/semester-qr/view/{id}', [AttendanceController::class, 'viewSemesterQr'])->name('semester-qr.view');
-    Route::post('/semester-qr/{id}/end', [AttendanceController::class, 'endSemesterQr'])->name('semester-qr.end');
-    Route::get('/semester-qr/{id}/download', [AttendanceController::class, 'downloadSemesterQr'])->name('semester-qr.download');
+        // --- ✅ NEW: Session Students AJAX ---
+        Route::get('/sessions/{id}/students', [AttendanceController::class, 'sessionStudents'])->name('sessions.students');
 
+        // --- ✅ NEW: Export Session Attendance ---
+        Route::get('/sessions/{id}/export', [AttendanceController::class, 'exportSessionAttendance'])->name('sessions.export');
+
+        // --- Session Management ---
+        Route::post('/sessions', [AttendanceController::class, 'createSession'])->name('sessions.create');
+        Route::post('/sessions/{id}/end', [AttendanceController::class, 'endSession'])->name('sessions.end');
+        Route::get('/sessions/{id}/refresh', [AttendanceController::class, 'refreshSession'])->name('sessions.refresh');
+
+        // --- Manual Attendance ---
+        Route::post('/manual', [AttendanceController::class, 'manualAttendance'])->name('manual');
+
+        // --- AJAX Endpoints ---
+        Route::post('/generate-qr', [AttendanceController::class, 'generateQr'])->name('generate.qr');
+        Route::post('/end-session/{id}', [AttendanceController::class, 'endSessionAjax'])->name('end');
+        Route::post('/refresh-qr/{id}', [AttendanceController::class, 'refreshQrAjax'])->name('refresh');
+        Route::get('/session-stats/{id}', [AttendanceController::class, 'getSessionStats'])->name('stats');
+    });
+
+    // --- Lecturer Messages ---
     Route::get('/messages', [LecturerMessageController::class, 'inbox'])->name('messages.inbox');
     Route::get('/messages/sent', [LecturerMessageController::class, 'sent'])->name('messages.sent');
     Route::get('/messages/compose', [LecturerMessageController::class, 'compose'])->name('messages.compose');
@@ -362,12 +386,15 @@ Route::middleware(['auth', 'lecturer'])->prefix('lecturer')->name('lecturer.')->
     Route::get('/messages/{message}', [LecturerMessageController::class, 'show'])->name('messages.show');
     Route::get('/messages/unread/count', [LecturerMessageController::class, 'unreadCount'])->name('messages.unread');
 
+    // --- Lecturer Reports ---
     Route::get('/reports', [LecturerController::class, 'reports'])->name('reports');
     Route::get('/reports/export', [LecturerController::class, 'exportReport'])->name('reports.export');
     Route::get('/reports/at-risk', [LecturerController::class, 'exportAtRiskReport'])->name('reports.at-risk');
 
+    // --- Announcements Unread Count ---
     Route::get('/announcements/unread-count', [AnnouncementController::class, 'unreadCount'])->name('announcements.unread');
 
+    // --- Course Attendance Period ---
     Route::get('/course/{courseId}/attendance-period', [LecturerController::class, 'courseAttendancePeriod'])
         ->name('course.attendance.period');
 
@@ -418,6 +445,7 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
         Route::get('/', [CourseAssessmentController::class, 'studentIndex'])->name('index');
         Route::get('/{id}', [CourseAssessmentController::class, 'studentShow'])->name('show');
         Route::post('/submit', [CourseAssessmentController::class, 'studentSubmit'])->name('submit');
+        // ✅ This route now exists in the controller
         Route::get('/get-lecturers', [CourseAssessmentController::class, 'getLecturersByCourse'])->name('get-lecturers');
     });
 

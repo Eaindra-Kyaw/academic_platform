@@ -33,7 +33,6 @@
             background-color: var(--bg-main);
         }
 
-        /* Back Button */
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -56,7 +55,6 @@
             transform: translateX(-4px);
         }
 
-        /* Top Header */
         .results-header {
             background: var(--white);
             border-radius: var(--radius);
@@ -77,10 +75,15 @@
             font-size: 1.2rem;
         }
 
-        .results-header p {
+        .results-header .subtitle {
             margin: 0.2rem 0 0;
             color: var(--text-gray);
             font-size: 0.85rem;
+        }
+
+        .results-header .subtitle .lecturer-name {
+            color: var(--primary);
+            font-weight: 500;
         }
 
         .btn-export {
@@ -105,11 +108,9 @@
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
-        /* Stats Cards - FIXED LAYOUT */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            /* Perfectly balances 3 columns */
             gap: 1.2rem;
             margin-bottom: 2rem;
         }
@@ -156,7 +157,6 @@
             font-weight: 600;
         }
 
-        /* Question Section */
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -170,7 +170,6 @@
             margin: 0;
         }
 
-        /* Question Card */
         .question-card {
             background: var(--white);
             border-radius: var(--radius);
@@ -203,7 +202,6 @@
             margin-right: 0.3rem;
         }
 
-        /* Scale Distribution (1 to 5 Bars) */
         .scale-distribution {
             display: flex;
             align-items: center;
@@ -241,7 +239,6 @@
             transition: width 0.6s ease;
         }
 
-        /* Color coded bars for 1 to 5 */
         .scale-item .bar-track .fill.c1 {
             background: var(--danger);
         }
@@ -268,7 +265,6 @@
             margin-top: 2px;
         }
 
-        /* Text Responses */
         .text-responses {
             margin-top: 0.8rem;
             width: 100%;
@@ -302,7 +298,6 @@
             font-style: italic;
         }
 
-        /* Empty State for No Submissions */
         .empty-state-box {
             background: var(--white);
             border-radius: var(--radius);
@@ -363,13 +358,14 @@
     <div class="results-header">
         <div>
             <h2>{{ $assessment->name }}</h2>
-            <p>
+            <p class="subtitle">
                 {{ $assessment->year }} - {{ $assessment->semester }}
                 @if ($assessment->course)
                     • {{ $assessment->course->course_code }}
                 @endif
-                @if ($assessment->lecturer)
-                    • {{ $assessment->lecturer->name }}
+                {{-- ✅ Only show lecturer if exists --}}
+                @if (isset($lecturerName) && $lecturerName)
+                    • <span class="lecturer-name">{{ $lecturerName }}</span>
                 @endif
             </p>
         </div>
@@ -466,7 +462,7 @@
             </div>
         @endforeach
     @else
-        {{-- Beautiful Empty State if no student has submitted yet --}}
+        {{-- Empty State --}}
         <div class="empty-state-box">
             <i class="bi bi-inbox"></i>
             <h4>No Submissions Yet</h4>
