@@ -19,10 +19,8 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-RUN php artisan key:generate
-
 RUN chmod -R 775 storage bootstrap/cache
 
-EXPOSE 10000
+EXPOSE 8080
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
