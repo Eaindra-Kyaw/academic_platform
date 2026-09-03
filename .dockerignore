@@ -2,6 +2,5 @@
 .env
 node_modules
 vendor
-storage
 *.log
 *.sqlite
