@@ -25,3 +25,15 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# --- PRODUCTION / DEPLOYMENT FILES TO IGNORE ---
+Dockerfile
+Dockerfile.save
+http-proxy.js
+https_server.py
+https_server.js
+ngrok.zip
+upload.zip
+*.pem
+*.key
+*.crt
