@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('course_id')->constrained()->onDelete('cascade');
             $table->foreignId('lecturer_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->json('answers');
+            $table->json('answers')->nullable();
             $table->text('comments')->nullable();
             $table->timestamp('submitted_at');
             $table->timestamps();

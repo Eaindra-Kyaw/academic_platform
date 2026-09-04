@@ -33,7 +33,7 @@ return new class extends Migration
 
             $table->integer('busiest_classroom_count')->nullable();
 
-            $table->json('weekly_engagement')->nullable();
+$table->json('weekly_engagement')->nullable()->default(null);
 
             $table->date('analytics_date');
 
