@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => 'https://academicplatform-production.up.railway.app',
 
     'asset_url' => env('ASSET_URL', null),
 
