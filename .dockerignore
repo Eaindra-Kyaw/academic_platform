@@ -2,7 +2,6 @@ node_modules
 npm-debug.log
 .git
 .gitignore
-.env
 .vscode
 .idea
 .DS_Store
@@ -13,5 +12,4 @@ Thumbs.db
 .vagrant
 Homestead.yaml
 Homestead.json
-.env.*
 .phpunit.result.cache
